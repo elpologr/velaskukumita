@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velas Artesanales - Catálogo Personalizado</title>
+    <style>
+        /* --- CONFIGURACIÓN BASE Y COLORES --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: #fdfbf7;
+            color: #4a3b32;
+        }
+
+        header {
+            background-color: #8c7565;
+            color: white;
+            text-align: center;
+            padding: 2.5rem 1rem;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* --- PANEL DE FILTROS AVANZADOS --- */
+        .seccion-filtros {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .filtro-bloque {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filtro-bloque label {
+            font-weight: bold;
+            color: #5c4d43;
+            font-size: 0.95rem;
+        }
+
+        .grupo-botones {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-filtro {
+            background-color: #f0eae4;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 20px;
+            color: #5c4d43;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-filtro.activo, .btn-filtro:hover {
+            background-color: #8c7565;
+            color: white;
+        }
+
+        .control-precio {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            max-width: 400px;
+        }
+
+        .slider-precio {
+            flex-grow: 1;
+            accent-color: #8c7565;
+            cursor: pointer;
+        }
+
+        .valor-precio {
+            font-weight: bold;
+            background: #f0eae4;
+            padding: 4px 10px;
+            border-radius: 6px;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        /* --- GRILLA DE PRODUCTOS PRINCIPALES --- */
+        .grid-productos {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 40px;
+            margin-bottom: 4rem;
+        }
+
+        .card-producto {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+            padding-bottom: 1.5rem;
+        }
+
+        .card-producto.oculto {
+            display: none;
+        }
+
+        .card-producto:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Contenedor Imagen 1000x800 */
+        .imagen-producto {
+            width: 50%;
+            height: 400px; 
+            overflow: hidden;
+            background-color: #f5f5f5;
+        }
+
+        .imagen-producto img {
+            width: 50%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .info-producto {
+            padding: 1.5rem 1.5rem 0.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .contenedor-tags {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 0.5rem;
+        }
+
+        .tag {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+        .tag-forma { background-color: #e8e0d7; color: #705c4f; }
+        .tag-evento { background-color: #e3edf7; color: #4b6b94; }
+
+        .titulo-producto {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: #362a22;
+        }
+
+        .precio {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #8c7565;
+            margin-bottom: 1rem;
+        }
+
+        /* --- NUEVA ZONA: RECUADROS DE ADITIVOS / COMPLEMENTOS --- */
+        .zona-aditivos {
+            padding: 0 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .titulo-aditivos {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #8a7a70;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .aditivos-recuadros {
+            display: flex;
+            gap: 10px;
+        }
+
+        .recuadro-item {
+            position: relative;
+            width: 65px;
+            height: 65px;
+            border: 2px solid #f0eae4;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            background: #fafafa;
+        }
+
+        .recuadro-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Efecto Hover para mostrar el nombre del aditivo */
+        .recuadro-item::after {
+            content: attr(data-nombre);
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: rgba(140, 117, 101, 0.9);
+            color: white;
+            font-size: 0.6rem;
+            text-align: center;
+            padding: 2px 0;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .recuadro-item:hover::after {
+            opacity: 1;
+        }
+
+        /* --- NUEVA ZONA: GALERÍA DE DETALLES --- */
+        .zona-galeria {
+            padding: 0 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .galeria-minis {
+            display: flex;
+            gap: 8px;
+            margin-top: 0.5rem;
+        }
+
+        .mini-foto {
+            width: 50px;
+            height: 40px;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #dcd5ce;
+        }
+
+        .mini-foto img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* --- NUEVA ZONA: RESULTADO FINAL --- */
+        .zona-resultado-final {
+            background-color: #fdfaf7;
+            border: 1px dashed #bfa38f;
+            margin: 0 1.5rem 1.5rem 1.5rem;
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .foto-resultado {
+            width: 60px;
+            height: 60px;
+            border-radius: 6px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .foto-resultado img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .texto-resultado {
+            font-size: 0.75rem;
+            color: #6e5a4f;
+            line-height: 1.2;
+        }
+
+        .btn-modal {
+            background-color: #8c7565;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 1.5rem;
+            transition: background 0.3s;
+        }
+
+        .btn-modal:hover {
+            background-color: #5c4d43;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Catálogo de Velas Artesanales</h1>
+        <p>Encuentra o diseña el recuerdo perfecto para tu evento</p>
+    </header>
+
+    <div class="container">
+        
+        <div class="seccion-filtros">
+            <div class="filtro-bloque">
+                <label>1. Filtrar por Forma / Molde:</label>
+                <div class="grupo-botones" id="filtro-formas">
+                    <button class="btn-filtro activo" data-forma="todos">Todas las formas</button>
+                    <button class="btn-filtro" data-forma="tazones">Tazones</button>
+                    <button class="btn-filtro" data-forma="animales">Animales</button>
+                    <button class="btn-filtro" data-forma="humana">Forma Humana</button>
+                </div>
+            </div>
+
+            <div class="filtro-bloque">
+                <label>2. Filtrar por Tipo de Evento:</label>
+                <div class="grupo-botones" id="filtro-eventos">
+                    <button class="btn-filtro activo" data-evento="todos">Todos los eventos</button>
+                    <button class="btn-filtro" data-evento="bautizo">Bautizo</button>
+                    <button class="btn-filtro" data-evento="boda">Boda</button>
+                    <button class="btn-filtro" data-evento="comunion">Primera Comunión</button>
+                    <button class="btn-filtro" data-evento="luctuoso">Aniv. Luctuoso</button>
+                </div>
+            </div>
+
+            <div class="filtro-bloque">
+                <label for="filtroPrecio">3. Precio Máximo:</label>
+                <div class="control-precio">
+                    <input type="range" id="filtroPrecio" class="slider-precio" min="0" max="500" value="500" step="10">
+                    <span id="txtPrecioMax" class="valor-precio">$500 MXN</span>
+                </div>
+            </div>
+        </div>
+
+        <style>
+    .grid-productos-inteligente {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr); /* 5 Columnas perfectas en PC */
+        gap: 15px;
+        padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .card-dinamica {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background: #fff;
+        font-family: sans-serif;
+    }
+
+    .img-contenedor-dinamico {
+        width: 100%;
+        height: 340px;
+        overflow: hidden;
+        border-radius: 6px;
+    }
+
+    /* 📱 RESPONSIVO: Ajuste automático para Celulares */
+    @media (max-width: 768px) {
+        .grid-productos-inteligente {
+            grid-template-columns: repeat(2, 1fr); /* Cambia a 2 columnas en celular */
+            gap: 10px;
+            padding: 10px;
+        }
+        .img-contenedor-dinamico {
+            height: 220px; /* Se acorta para pantallas táctiles */
+        }
+    }
+</style>
+
+<div class="grid-productos-inteligente">
+
+    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="280">
+        <div class="img-contenedor-dinamico">
+            <img src="imagenes/cirio-con-etiqueta-y-medallon-1.JPG" alt="Cirio Real" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div style="margin-top: 10px; flex-grow: 1;">
+            <div style="display: flex; gap: 5px; margin-bottom: 6px;">
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
+                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
+            </div>
+            <h3 style="font-size: 14px; margin: 5px 0;">Cirio Con Etiqueta y Medallón</h3>
+            <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px; font-size: 14px;">$280 MXN</div>
+        </div>
+        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
+            <div style="display: flex; gap: 5px; margin-top: 3px;">
+                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Medallita" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 4px; margin-top: 6px;">
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-1.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-2.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 6px; background: #fffde7; padding: 4px; border-radius: 4px; font-size: 9px; border: 1px solid #fff59d;">
+            <img src="imagenes/empaque-celofan.jpg" style="width: 20px; height: 20px; object-fit: cover; border-radius: 2px;">
+            <span>Celofán y moño gratis.</span>
+        </div>
+       <button onclick="abrirModal('Cirio Con Etiqueta y Medallón', '$280 MXN', 'Precioso cirio artesanal ideal para ceremonias elegantes. Acabado firme de alta duración hecho a mano.', '<li>De 1 a 19 piezas: $280 c/u</li><li>A partir de 20 piezas: $260 c/u</li><li>A partir de 50 piezas: $240 c/u</li>', 'imagenes/detalle-boda-1.jpg', 'imagenes/detalle-boda-2.jpg', 'imagenes/cirio-con-etiqueta-y-medallon1.jpg')" style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
+    </div>
+
+    <div class="card-dinamica" data-forma="tazon" data-evento="sin evento" data-precio="50">
+        <div class="img-contenedor-dinamico">
+            <img src="imagenes/tazon-con-angel-y -plantas.JPG" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div style="margin-top: 10px; flex-grow: 1;">
+            <div style="display: flex; gap: 5px; margin-bottom: 6px;">
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">tazon</span>
+                <span style="background: #e8eaf6; padding: 2px 6px; border-radius: 4px; font-size: 10px;">sin evento</span>
+            </div>
+            <h3 style="font-size: 14px; margin: 5px 0;">Tazon Con Angel y</h3>
+            <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px; font-size: 14px;">$50 MXN</div>
+        </div>
+        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
+            <div style="display: flex; gap: 5px; margin-top: 3px;">
+                <div class="recuadro-item" title="Molde Oso" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-molde-oso.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Listón" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-liston.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 4px; margin-top: 6px;">
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-oso-1.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-oso-2.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 6px; background: #fffde7; padding: 4px; border-radius: 4px; font-size: 9px; border: 1px solid #fff59d;">
+            <img src="imagenes/empaque-celofan.jpg" style="width: 20px; height: 20px; object-fit: cover; border-radius: 2px;">
+            <span>Celofán y moño gratis.</span>
+        </div>
+        <button onclick="abrirModal('Tazón con Ángel y Plantas', '$50 MXN', 'Hermoso tazón decorativo con detalles de ángel y plantas, ideal para recuerdos de bautizo o primera comunión.', '<li>Menos de 20 piezas: $50 c/u</li><li>Más de 20 piezas: $45 c/u</li><li>Más de 50 piezas: $40 c/u</li><li>Más de 100 piezas: $35 c/u</li>', 'imagenes/detalle-angel-1.jpg', 'imagenes/detalle-angel-2.jpg', 'imagenes/tazon-con-angel-y-plantas.jpg')" style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
+    </div>
+
+    <div class="card-dinamica" data-forma="tazones" data-evento="comunion" data-precio="160">
+        <div class="img-contenedor-dinamico">
+            <img src="imagenes/tazon-comunion.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div style="margin-top: 10px; flex-grow: 1;">
+            <div style="display: flex; gap: 5px; margin-bottom: 6px;">
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Tazones</span>
+                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Comunión</span>
+            </div>
+            <h3 style="font-size: 14px; margin: 5px 0;">Vela Ejemplo 3</h3>
+            <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px; font-size: 14px;">$160 MXN</div>
+        </div>
+        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
+            <div style="display: flex; gap: 5px; margin-top: 3px;">
+                <div class="recuadro-item" title="Contenedor" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-tazon-vacio.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Esencia" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-esencia.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 4px; margin-top: 6px;">
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-tazon-1.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-tazon-2.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 6px; background: #fffde7; padding: 4px; border-radius: 4px; font-size: 9px; border: 1px solid #fff59d;">
+            <img src="imagenes/empaque-celofan.jpg" style="width: 20px; height: 20px; object-fit: cover; border-radius: 2px;">
+            <span>Celofán y moño gratis.</span>
+        </div>
+        <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
+    </div>
+
+    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+        <div class="img-contenedor-dinamico">
+            <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div style="margin-top: 10px; flex-grow: 1;">
+            <div style="display: flex; gap: 5px; margin-bottom: 6px;">
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
+                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
+            </div>
+            <h3 style="font-size: 14px; margin: 5px 0;">Vela Ejemplo 4</h3>
+            <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px; font-size: 14px;">$250 MXN</div>
+        </div>
+        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
+            <div style="display: flex; gap: 5px; margin-top: 3px;">
+                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 4px; margin-top: 6px;">
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-1.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-2.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 6px; background: #fffde7; padding: 4px; border-radius: 4px; font-size: 9px; border: 1px solid #fff59d;">
+            <img src="imagenes/empaque-celofan.jpg" style="width: 20px; height: 20px; object-fit: cover; border-radius: 2px;">
+            <span>Celofán y moño gratis.</span>
+        </div>
+        <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
+    </div>
+
+    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="300">
+        <div class="img-contenedor-dinamico">
+            <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div style="margin-top: 10px; flex-grow: 1;">
+            <div style="display: flex; gap: 5px; margin-bottom: 6px;">
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
+                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
+            </div>
+            <h3 style="font-size: 14px; margin: 5px 0;">Vela Ejemplo 5</h3>
+            <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px; font-size: 14px;">$300 MXN</div>
+        </div>
+        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
+            <div style="display: flex; gap: 5px; margin-top: 3px;">
+                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 4px; margin-top: 6px;">
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-1.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-2.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 6px; background: #fffde7; padding: 4px; border-radius: 4px; font-size: 9px; border: 1px solid #fff59d;">
+            <img src="imagenes/empaque-celofan.jpg" style="width: 20px; height: 20px; object-fit: cover; border-radius: 2px;">
+            <span>Celofán y moño gratis.</span>
+        </div>
+        <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
+    </div>
+
+
+    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+        <div class="img-contenedor-dinamico">
+            <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div style="margin-top: 10px; flex-grow: 1;">
+            <div style="display: flex; gap: 5px; margin-bottom: 6px;">
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
+                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
+            </div>
+            <h3 style="font-size: 14px; margin: 5px 0;">Vela Ejemplo 6</h3>
+            <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px; font-size: 14px;">$250 MXN</div>
+        </div>
+        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
+            <div style="display: flex; gap: 5px; margin-top: 3px;">
+                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 4px; margin-top: 6px;">
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-1.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-2.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 6px; background: #fffde7; padding: 4px; border-radius: 4px; font-size: 9px; border: 1px solid #fff59d;">
+            <img src="imagenes/empaque-celofan.jpg" style="width: 20px; height: 20px; object-fit: cover; border-radius: 2px;">
+            <span>Celofán y moño gratis.</span>
+        </div>
+        <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
+    </div>
+
+    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+        <div class="img-contenedor-dinamico">
+            <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div style="margin-top: 10px; flex-grow: 1;">
+            <div style="display: flex; gap: 5px; margin-bottom: 6px;">
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
+                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
+            </div>
+            <h3 style="font-size: 14px; margin: 5px 0;">Vela Ejemplo 7</h3>
+            <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px; font-size: 14px;">$250 MXN</div>
+        </div>
+        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
+            <div style="display: flex; gap: 5px; margin-top: 3px;">
+                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 4px; margin-top: 6px;">
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-1.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-2.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 6px; background: #fffde7; padding: 4px; border-radius: 4px; font-size: 9px; border: 1px solid #fff59d;">
+            <img src="imagenes/empaque-celofan.jpg" style="width: 20px; height: 20px; object-fit: cover; border-radius: 2px;">
+            <span>Celofán y moño gratis.</span>
+        </div>
+        <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
+    </div>
+
+    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+        <div class="img-contenedor-dinamico">
+            <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div style="margin-top: 10px; flex-grow: 1;">
+            <div style="display: flex; gap: 5px; margin-bottom: 6px;">
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
+                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
+            </div>
+            <h3 style="font-size: 14px; margin: 5px 0;">Vela Ejemplo 8</h3>
+            <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px; font-size: 14px;">$250 MXN</div>
+        </div>
+        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
+            <div style="display: flex; gap: 5px; margin-top: 3px;">
+                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 4px; margin-top: 6px;">
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-1.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-2.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 6px; background: #fffde7; padding: 4px; border-radius: 4px; font-size: 9px; border: 1px solid #fff59d;">
+            <img src="imagenes/empaque-celofan.jpg" style="width: 20px; height: 20px; object-fit: cover; border-radius: 2px;">
+            <span>Celofán y moño gratis.</span>
+        </div>
+        <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
+    </div>
+
+    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+        <div class="img-contenedor-dinamico">
+            <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div style="margin-top: 10px; flex-grow: 1;">
+            <div style="display: flex; gap: 5px; margin-bottom: 6px;">
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
+                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
+            </div>
+            <h3 style="font-size: 14px; margin: 5px 0;">Vela Ejemplo 9</h3>
+            <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px; font-size: 14px;">$250 MXN</div>
+        </div>
+        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
+            <div style="display: flex; gap: 5px; margin-top: 3px;">
+                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 4px; margin-top: 6px;">
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-1.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-2.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 6px; background: #fffde7; padding: 4px; border-radius: 4px; font-size: 9px; border: 1px solid #fff59d;">
+            <img src="imagenes/empaque-celofan.jpg" style="width: 20px; height: 20px; object-fit: cover; border-radius: 2px;">
+            <span>Celofán y moño gratis.</span>
+        </div>
+        <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
+    </div>
+
+    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+        <div class="img-contenedor-dinamico">
+            <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div style="margin-top: 10px; flex-grow: 1;">
+            <div style="display: flex; gap: 5px; margin-bottom: 6px;">
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
+                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
+            </div>
+            <h3 style="font-size: 14px; margin: 5px 0;">Vela Ejemplo 10</h3>
+            <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px; font-size: 14px;">$250 MXN</div>
+        </div>
+        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
+            <div style="display: flex; gap: 5px; margin-top: 3px;">
+                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 4px; margin-top: 6px;">
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-1.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-2.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 6px; background: #fffde7; padding: 4px; border-radius: 4px; font-size: 9px; border: 1px solid #fff59d;">
+            <img src="imagenes/empaque-celofan.jpg" style="width: 20px; height: 20px; object-fit: cover; border-radius: 2px;">
+            <span>Celofán y moño gratis.</span>
+        </div>
+        <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
+    </div>
+
+
+    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+        <div class="img-contenedor-dinamico">
+            <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div style="margin-top: 10px; flex-grow: 1;">
+            <div style="display: flex; gap: 5px; margin-bottom: 6px;">
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
+                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
+            </div>
+            <h3 style="font-size: 14px; margin: 5px 0;">Vela Ejemplo 11</h3>
+            <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px; font-size: 14px;">$250 MXN</div>
+        </div>
+        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
+            <div style="display: flex; gap: 5px; margin-top: 3px;">
+                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 4px; margin-top: 6px;">
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-1.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-2.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 6px; background: #fffde7; padding: 4px; border-radius: 4px; font-size: 9px; border: 1px solid #fff59d;">
+            <img src="imagenes/empaque-celofan.jpg" style="width: 20px; height: 20px; object-fit: cover; border-radius: 2px;">
+            <span>Celofán y moño gratis.</span>
+        </div>
+        <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
+    </div>
+
+    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+        <div class="img-contenedor-dinamico">
+            <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div style="margin-top: 10px; flex-grow: 1;">
+            <div style="display: flex; gap: 5px; margin-bottom: 6px;">
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
+                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
+            </div>
+            <h3 style="font-size: 14px; margin: 5px 0;">Vela Ejemplo 12</h3>
+            <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px; font-size: 14px;">$250 MXN</div>
+        </div>
+        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
+            <div style="display: flex; gap: 5px; margin-top: 3px;">
+                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 4px; margin-top: 6px;">
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-1.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-2.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 6px; background: #fffde7; padding: 4px; border-radius: 4px; font-size: 9px; border: 1px solid #fff59d;">
+            <img src="imagenes/empaque-celofan.jpg" style="width: 20px; height: 20px; object-fit: cover; border-radius: 2px;">
+            <span>Celofán y moño gratis.</span>
+        </div>
+        <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
+    </div>
+
+    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+        <div class="img-contenedor-dinamico">
+            <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div style="margin-top: 10px; flex-grow: 1;">
+            <div style="display: flex; gap: 5px; margin-bottom: 6px;">
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
+                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
+            </div>
+            <h3 style="font-size: 14px; margin: 5px 0;">Vela Ejemplo 13</h3>
+            <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px; font-size: 14px;">$250 MXN</div>
+        </div>
+        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
+            <div style="display: flex; gap: 5px; margin-top: 3px;">
+                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 4px; margin-top: 6px;">
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-1.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-2.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 6px; background: #fffde7; padding: 4px; border-radius: 4px; font-size: 9px; border: 1px solid #fff59d;">
+            <img src="imagenes/empaque-celofan.jpg" style="width: 20px; height: 20px; object-fit: cover; border-radius: 2px;">
+            <span>Celofán y moño gratis.</span>
+        </div>
+        <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
+    </div>
+
+    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+        <div class="img-contenedor-dinamico">
+            <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div style="margin-top: 10px; flex-grow: 1;">
+            <div style="display: flex; gap: 5px; margin-bottom: 6px;">
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
+                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
+            </div>
+            <h3 style="font-size: 14px; margin: 5px 0;">Vela Ejemplo 14</h3>
+            <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px; font-size: 14px;">$250 MXN</div>
+        </div>
+        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
+            <div style="display: flex; gap: 5px; margin-top: 3px;">
+                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 4px; margin-top: 6px;">
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-1.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-2.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 6px; background: #fffde7; padding: 4px; border-radius: 4px; font-size: 9px; border: 1px solid #fff59d;">
+            <img src="imagenes/empaque-celofan.jpg" style="width: 20px; height: 20px; object-fit: cover; border-radius: 2px;">
+            <span>Celofán y moño gratis.</span>
+        </div>
+        <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
+    </div>
+
+    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+        <div class="img-contenedor-dinamico">
+            <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div style="margin-top: 10px; flex-grow: 1;">
+            <div style="display: flex; gap: 5px; margin-bottom: 6px;">
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
+                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
+            </div>
+            <h3 style="font-size: 14px; margin: 5px 0;">Vela Ejemplo 15</h3>
+            <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px; font-size: 14px;">$250 MXN</div>
+        </div>
+        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
+            <div style="display: flex; gap: 5px; margin-top: 3px;">
+                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 4px; margin-top: 6px;">
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-1.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+            <div style="width: 28px; height: 28px; border-radius: 4px; overflow: hidden;"><img src="imagenes/detalle-boda-2.jpg" style="width:100%; height:100%; object-fit:cover;"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 6px; background: #fffde7; padding: 4px; border-radius: 4px; font-size: 9px; border: 1px solid #fff59d;">
+            <img src="imagenes/empaque-celofan.jpg" style="width: 20px; height: 20px; object-fit: cover; border-radius: 2px;">
+            <span>Celofán y moño gratis.</span>
+        </div>
+        <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
+    </div>
+
+</div>
+
+    <script>
+        const sliderPrecio = document.getElementById('filtroPrecio');
+        const txtPrecioMax = document.getElementById('txtPrecioMax');
+        const tarjetas = document.querySelectorAll('.card-producto');
+
+        let formaActiva = 'todos';
+        let eventoActivo = 'todos';
+        let precioMaximoActivo = 500;
+
+        function aplicarFiltros() {
+            tarjetas.forEach(tarjeta => {
+                const fTarjeta = tarjeta.getAttribute('data-forma');
+                const eTarjeta = tarjeta.getAttribute('data-evento');
+                const pTarjeta = parseInt(tarjeta.getAttribute('data-precio'));
+
+                const cumpleForma = (formaActiva === 'todos' || fTarjeta === formaActiva);
+                const cumpleEvento = (eventoActivo === 'todos' || eTarjeta === eventoActivo);
+                const cumplePrecio = (pTarjeta <= precioMaximoActivo);
+
+                if (cumpleForma && cumpleEvento && cumplePrecio) {
+                    tarjeta.classList.remove('oculto');
+                } else {
+                    tarjeta.classList.add('oculto');
+                }
+            });
+        }
+
+        document.querySelectorAll('#filtro-formas .btn-filtro').forEach(boton => {
+            boton.addEventListener('click', () => {
+                document.querySelector('#filtro-formas .btn-filtro.activo').classList.remove('activo');
+                boton.classList.add('activo');
+                formaActiva = boton.getAttribute('data-forma');
+                aplicarFiltros();
+            });
+        });
+
+        document.querySelectorAll('#filtro-eventos .btn-filtro').forEach(boton => {
+            boton.addEventListener('click', () => {
+                document.querySelector('#filtro-eventos .btn-filtro.activo').classList.remove('activo');
+                boton.classList.add('activo');
+                eventoActivo = boton.getAttribute('data-evento');
+                aplicarFiltros();
+            });
+        });
+
+        sliderPrecio.addEventListener('input', (e) => {
+            precioMaximoActivo = parseInt(e.target.value);
+            txtPrecioMax.textContent = `$${precioMaximoActivo} MXN`;
+            aplicarFiltros();
+        });
+    </script>
+
+    <div id="miModalDetalles" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(3px); align-items: center; justify-content: center; padding: 15px;">
+    
+    <div style="background-color: #fff; width: 100%; max-width: 600px; max-height: 90vh; border-radius: 12px; overflow-y: auto; box-shadow: 0 5px 25px rgba(0,0,0,0.3); position: relative; font-family: sans-serif; display: flex; flex-direction: column;">
+        
+        <div style="position: sticky; top: 0; background: #fff; padding: 12px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; z-index: 10;">
+            <h2 id="modalTitulo" style="margin: 0; font-size: 18px; color: #333;">Detalles del Producto</h2>
+            <button onclick="cerrarModal()" style="background: #f5f5f5; border: none; font-size: 20px; font-weight: bold; color: #666; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">&times;</button>
+        </div>
+
+        <div style="padding: 20px;">
+            
+            <div style="width: 100%; height: 100px; border-radius: 6px; overflow: hidden; margin-bottom: 15px; background: #f0f0f0;">
+                <img src="imagenes/banner-empresa.jpg" alt="Yesos Polo Banner" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <div id="modalPrecio" style="font-size: 22px; font-weight: bold; color: #2e7d32; margin-bottom: 8px;">$0.00 MXN</div>
+                <p id="modalDescripcion" style="font-size: 14px; color: #555; line-height: 1.5; margin: 0 0 15px 0;">Descripción del producto...</p>
+            </div>
+
+            <div style="background: #f1f8e9; border: 1px solid #c5e1a5; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
+                <h4 style="margin: 0 0 8px 0; color: #33691e; font-size: 14px;">📊 Lista de Precios de Mayoreo</h4>
+                <ul id="modalMayoreoLista" style="margin: 0; padding-left: 20px; font-size: 13px; color: #33691e; line-height: 1.6;">
+                    </ul>
+            </div>
+
+            <div style="margin-bottom: 25px;">
+                <h4 style="margin: 0 0 10px 0; color: #444; font-size: 14px;">🔎 Acercamientos y Detalles</h4>
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1; height: 150px; border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
+                        <img id="modalMini1" src="" style="width:100%; height:100%; object-fit:cover;">
+                    </div>
+                    <div style="flex: 1; height: 150px; border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
+                        <img id="modalMini2" src="" style="width:100%; height:100%; object-fit:cover;">
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin: 0 0 10px 0; color: #444; font-size: 14px;">📦 Resultado Real Terminado</h4>
+                <div style="width: 100%; height: 300px; border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
+                    <img id="modalFotoFinal" src="" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div style="margin-top: 8px; text-align: center; font-size: 12px; color: #777; font-style: italic;">
+                    * Todas las piezas finales incluyen empaque de celofán y moño decorativo sin costo.
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const ventanaModal = document.getElementById('miModalDetalles');
+    
+    function abrirModal(titulo, precio, descripcion, listaMayoreoHTML, mini1, mini2, fotoFinal) {
+        document.getElementById('modalTitulo').textContent = titulo;
+        document.getElementById('modalPrecio').textContent = precio;
+        document.getElementById('modalDescripcion').textContent = descripcion;
+        document.getElementById('modalMayoreoLista').innerHTML = listaMayoreoHTML;
+        document.getElementById('modalMini1').src = mini1;
+        document.getElementById('modalMini2').src = mini2;
+        document.getElementById('modalFotoFinal').src = fotoFinal;
+        
+        ventanaModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden'; 
+    }
+
+    function cerrarModal() {
+        ventanaModal.style.display = 'none';
+        document.body.style.overflow = 'auto'; 
+    }
+
+    window.addEventListener('click', function(event) {
+        if (event.target == ventanaModal) {
+            cerrarModal();
+        }
+    });
+</script>
+</body>
+</html>
