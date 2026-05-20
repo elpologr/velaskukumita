@@ -20,15 +20,28 @@
 
         header {
             background-color: #8c7565;
+            background-image: url('imagenes/banner-kukumita.jpg');
+            background-size: cover;
+            background-position: center;
             color: white;
             text-align: center;
-            padding: 2.5rem 1rem;
+            padding: 4rem 1rem;
+            position: relative;
         }
 
-        header h1 {
-            font-size: 2.2rem;
-            margin-bottom: 0.5rem;
+        header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(60, 35, 20, 0.52);
         }
+
+        header h1, header p {
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.55);
+        }
+
 
         .container {
             max-width: 1200px;
@@ -310,14 +323,331 @@
         .btn-modal:hover {
             background-color: #5c4d43;
         }
+
+        /* ===== BANNER: 4 ESPACIOS IMÁGENES CATÁLOGO ===== */
+        .banner-catalogo {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0;
+            width: 100%;
+            height: 420px;
+            overflow: hidden;
+        }
+
+        .banner-slot {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .banner-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .banner-slot:hover img {
+            transform: scale(1.05);
+        }
+
+        .banner-num {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(140,117,101,0.85);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            z-index: 3;
+        }
+
+        @media (max-width: 768px) {
+            .banner-catalogo {
+                grid-template-columns: repeat(2, 1fr);
+                height: 280px;
+            }
+        }
+
+        .card-dinamica.oculto {
+            display: none;
+        }
+
+        /* ===== MODAL DE PRODUCTO ===== */
+        #modalProducto {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            background: rgba(0,0,0,0.72);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        #modalProducto.abierto {
+            display: flex;
+        }
+
+        .modal-producto-caja {
+            background: #fff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 560px;
+            max-height: 92vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Cabecera del modal */
+        .modal-prod-header {
+            position: sticky;
+            top: 0;
+            background: #fff;
+            padding: 14px 18px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 5;
+            border-radius: 16px 16px 0 0;
+        }
+        .modal-prod-titulo {
+            font-size: 17px;
+            font-weight: 700;
+            color: #362a22;
+            margin: 0;
+        }
+        .modal-prod-cerrar {
+            background: #f0eae4;
+            border: none;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            color: #5c4d43;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            transition: background 0.2s;
+        }
+        .modal-prod-cerrar:hover { background: #d9cfc8; }
+
+        /* Zona de texto */
+        .modal-prod-descripcion {
+            padding: 16px 18px 10px;
+            font-size: 14px;
+            color: #555;
+            line-height: 1.6;
+            min-height: 48px;
+        }
+
+        /* Galería de imágenes */
+        .modal-galeria-wrap {
+            padding: 0 18px 18px;
+        }
+
+        .modal-galeria-visor {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/3;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f5f5f5;
+        }
+
+        /* Track deslizable con scroll horizontal */
+        .modal-galeria-track {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .modal-galeria-track::-webkit-scrollbar { display: none; }
+
+        .modal-galeria-slide {
+            flex: 0 0 100%;
+            scroll-snap-align: start;
+            height: 100%;
+        }
+        .modal-galeria-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Botones anterior / siguiente */
+        .modal-btn-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(44,31,24,0.65);
+            color: white;
+            border: none;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 4;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s, opacity 0.2s;
+        }
+        .modal-btn-nav:hover { background: rgba(44,31,24,0.9); }
+        .modal-btn-nav.oculto-nav { opacity: 0; pointer-events: none; }
+        .modal-btn-prev { left: 8px; }
+        .modal-btn-next { right: 8px; }
+
+        /* Indicadores de puntos */
+        .modal-dots {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .modal-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #d9cfc8;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .modal-dot.activo { background: #8c7565; }
+
+        /* Contador */
+        .modal-contador {
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            margin-top: 6px;
+        }
+
+        /* ===== ZONA DE 3 ENLACES ===== */
+        .zona-enlaces {
+            display: flex;
+            width: 100%;
+            justify-content: center;
+            background: #2c1f18;
+            padding: 28px 40px;
+            gap: 30px;
+        }
+
+        .enlace-pagina {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            flex: 1;
+            max-width: 280px;
+            transition: transform 0.3s ease;
+        }
+
+        .enlace-pagina:hover {
+            transform: translateY(-6px);
+        }
+
+        .doble-imagen-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+
+        .doble-imagen-container .img-fondo {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        .doble-imagen-container .img-frente {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            z-index: 2;
+            opacity: 0.88;
+            transition: opacity 0.3s ease;
+        }
+
+        .enlace-pagina:hover .img-frente {
+            opacity: 0.3;
+        }
+
+        .enlace-label {
+            color: #e8d5c3;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 768px) {
+            .zona-enlaces {
+                flex-direction: column;
+                align-items: center;
+                padding: 20px;
+            }
+            .enlace-pagina {
+                max-width: 220px;
+            }
+        }
     </style>
 </head>
 <body>
+
+    <!-- ===== BANNER: 4 IMÁGENES ALEATORIAS DEL CATÁLOGO ===== -->
+    <div class="banner-catalogo">
+        <div class="banner-slot" id="banner-slot-1"></div>
+        <div class="banner-slot" id="banner-slot-2"></div>
+        <div class="banner-slot" id="banner-slot-3"></div>
+        <div class="banner-slot" id="banner-slot-4"></div>
+    </div>
 
     <header>
         <h1>Catálogo de Velas Artesanales</h1>
         <p>Encuentra o diseña el recuerdo perfecto para tu evento</p>
     </header>
+
+    <!-- ===== ZONA DE 3 ENLACES A OTRAS PÁGINAS ===== -->
+    <div class="zona-enlaces">
+        <!-- Enlace 1 -->
+        <a href="#" class="enlace-pagina" id="enlace-1">
+            <div class="doble-imagen-container">
+                <!-- Imagen de fondo (logo empresa) -->
+                <img class="img-fondo" src="imagenes/logo-empresa.jpg" alt="Logo empresa">
+                <!-- Imagen frontal (foto dueño) -->
+                <img class="img-frente" src="imagenes/foto-dueno.jpg" alt="Foto dueño">
+            </div>
+            <span class="enlace-label">Página 1</span>
+        </a>
+        <!-- Enlace 2 -->
+        <a href="#" class="enlace-pagina" id="enlace-2">
+            <div class="doble-imagen-container">
+                <img class="img-fondo" src="imagenes/logo-empresa.jpg" alt="Logo empresa">
+                <img class="img-frente" src="imagenes/foto-dueno.jpg" alt="Foto dueño">
+            </div>
+            <span class="enlace-label">Página 2</span>
+        </a>
+        <!-- Enlace 3 -->
+        <a href="#" class="enlace-pagina" id="enlace-3">
+            <div class="doble-imagen-container">
+                <img class="img-fondo" src="imagenes/logo-empresa.jpg" alt="Logo empresa">
+                <img class="img-frente" src="imagenes/foto-dueno.jpg" alt="Foto dueño">
+            </div>
+            <span class="enlace-label">Página 3</span>
+        </a>
+    </div>
 
     <div class="container">
         
@@ -355,7 +685,7 @@
         <style>
     .grid-productos-inteligente {
         display: grid;
-        grid-template-columns: repeat(5, 1fr); /* 5 Columnas perfectas en PC */
+        grid-template-columns: repeat(3, 1fr); /* 3 Columnas en PC */
         gap: 15px;
         padding: 20px;
         max-width: 1400px;
@@ -395,9 +725,11 @@
 
 <div class="grid-productos-inteligente">
 
-    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="280">
+    <div class="card-dinamica" data-num="1" data-forma="humana" data-evento="boda" data-precio="280"
+         data-nombre="Cirio Con Etiqueta y Medallón"
+         data-imagenes='["imagenes/cirio-con-etiqueta-y-medallon-1.jpg"]'>
         <div class="img-contenedor-dinamico">
-            <img src="imagenes/cirio-con-etiqueta-y-medallon-1.JPG" alt="Cirio Real" style="width: 100%; height: 100%; object-fit: cover;">
+            <img src="imagenes/cirio-con-etiqueta-y-medallon-1.jpg" alt="Cirio Real" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
         <div style="margin-top: 10px; flex-grow: 1;">
             <div style="display: flex; gap: 5px; margin-bottom: 6px;">
@@ -425,9 +757,11 @@
        <button onclick="abrirModal('Cirio Con Etiqueta y Medallón', '$280 MXN', 'Precioso cirio artesanal ideal para ceremonias elegantes. Acabado firme de alta duración hecho a mano.', '<li>De 1 a 19 piezas: $280 c/u</li><li>A partir de 20 piezas: $260 c/u</li><li>A partir de 50 piezas: $240 c/u</li>', 'imagenes/detalle-boda-1.jpg', 'imagenes/detalle-boda-2.jpg', 'imagenes/cirio-con-etiqueta-y-medallon1.jpg')" style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
     </div>
 
-    <div class="card-dinamica" data-forma="tazon" data-evento="sin evento" data-precio="50">
+    <div class="card-dinamica" data-num="2" data-forma="tazon" data-evento="sin evento" data-precio="50"
+         data-nombre="Tazón con Ángel y Plantas"
+         data-imagenes='["imagenes/tazon-con-angel-y-plantas.jpg"]'>
         <div class="img-contenedor-dinamico">
-            <img src="imagenes/tazon-con-angel-y -plantas.JPG" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
+            <img src="imagenes/tazon-con-angel-y-plantas.jpg" alt="Tazón con Ángel y Plantas" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
         <div style="margin-top: 10px; flex-grow: 1;">
             <div style="display: flex; gap: 5px; margin-bottom: 6px;">
@@ -455,16 +789,18 @@
         <button onclick="abrirModal('Tazón con Ángel y Plantas', '$50 MXN', 'Hermoso tazón decorativo con detalles de ángel y plantas, ideal para recuerdos de bautizo o primera comunión.', '<li>Menos de 20 piezas: $50 c/u</li><li>Más de 20 piezas: $45 c/u</li><li>Más de 50 piezas: $40 c/u</li><li>Más de 100 piezas: $35 c/u</li>', 'imagenes/detalle-angel-1.jpg', 'imagenes/detalle-angel-2.jpg', 'imagenes/tazon-con-angel-y-plantas.jpg')" style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
     </div>
 
-    <div class="card-dinamica" data-forma="tazones" data-evento="comunion" data-precio="160">
+    <div class="card-dinamica" data-num="3" data-forma="tazones" data-evento="comunion" data-precio="160"
+         data-nombre="Tazón de Whinnie de Poo"
+         data-imagenes='["imagenes/whinnie-tazon1.jpg","imagenes/whinnie-tazon2.jpg"]'>
         <div class="img-contenedor-dinamico">
-            <img src="imagenes/tazon-comunion.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
+            <img src="imagenes/whinnie-tazon1.jpg" alt="Tazón de Whinnie de Poo" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
         <div style="margin-top: 10px; flex-grow: 1;">
             <div style="display: flex; gap: 5px; margin-bottom: 6px;">
                 <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Tazones</span>
                 <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Comunión</span>
             </div>
-            <h3 style="font-size: 14px; margin: 5px 0;">Vela Ejemplo 3</h3>
+            <h3 style="font-size: 14px; margin: 5px 0;">Tazón de Whinnie de Poo</h3>
             <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px; font-size: 14px;">$160 MXN</div>
         </div>
         <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
@@ -485,16 +821,18 @@
         <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
     </div>
 
-    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+    <div class="card-dinamica" data-num="4" data-forma="humana" data-evento="boda" data-precio="250"
+         data-nombre="Tazón de Osito"
+         data-imagenes='["imagenes/tazon-de-osito1.jpg"]'>
         <div class="img-contenedor-dinamico">
-            <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
+            <img src="imagenes/tazon-de-osito1.jpg" alt="Tazón de Osito" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
         <div style="margin-top: 10px; flex-grow: 1;">
             <div style="display: flex; gap: 5px; margin-bottom: 6px;">
                 <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
                 <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
             </div>
-            <h3 style="font-size: 14px; margin: 5px 0;">Vela Ejemplo 4</h3>
+            <h3 style="font-size: 14px; margin: 5px 0;">Tazón de Osito</h3>
             <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px; font-size: 14px;">$250 MXN</div>
         </div>
         <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
@@ -515,16 +853,18 @@
         <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
     </div>
 
-    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="300">
+    <div class="card-dinamica" data-num="5" data-forma="humana" data-evento="boda" data-precio="300"
+         data-nombre="Tazón de Cerdito"
+         data-imagenes='["imagenes/tazon-cerdito1.jpg"]'>
         <div class="img-contenedor-dinamico">
-            <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
+            <img src="imagenes/tazon-cerdito1.jpg" alt="Tazón de Cerdito" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
         <div style="margin-top: 10px; flex-grow: 1;">
             <div style="display: flex; gap: 5px; margin-bottom: 6px;">
                 <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
                 <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
             </div>
-            <h3 style="font-size: 14px; margin: 5px 0;">Vela Ejemplo 5</h3>
+            <h3 style="font-size: 14px; margin: 5px 0;">Tazón de Cerdito</h3>
             <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px; font-size: 14px;">$300 MXN</div>
         </div>
         <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
@@ -546,16 +886,18 @@
     </div>
 
 
-    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+    <div class="card-dinamica" data-num="6" data-forma="humana" data-evento="boda" data-precio="250"
+         data-nombre="Vela Stich"
+         data-imagenes='["imagenes/stich-solo1.jpg"]'>
         <div class="img-contenedor-dinamico">
-            <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
+            <img src="imagenes/stich-solo1.jpg" alt="Vela Stich" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
         <div style="margin-top: 10px; flex-grow: 1;">
             <div style="display: flex; gap: 5px; margin-bottom: 6px;">
                 <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
                 <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
             </div>
-            <h3 style="font-size: 14px; margin: 5px 0;">Vela Ejemplo 6</h3>
+            <h3 style="font-size: 14px; margin: 5px 0;">Vela Stich</h3>
             <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px; font-size: 14px;">$250 MXN</div>
         </div>
         <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
@@ -576,7 +918,7 @@
         <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
     </div>
 
-    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+    <div class="card-dinamica" data-num="7" data-forma="humana" data-evento="boda" data-precio="250">
         <div class="img-contenedor-dinamico">
             <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
@@ -606,7 +948,7 @@
         <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
     </div>
 
-    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+    <div class="card-dinamica" data-num="8" data-forma="humana" data-evento="boda" data-precio="250">
         <div class="img-contenedor-dinamico">
             <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
@@ -636,7 +978,7 @@
         <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
     </div>
 
-    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+    <div class="card-dinamica" data-num="9" data-forma="humana" data-evento="boda" data-precio="250">
         <div class="img-contenedor-dinamico">
             <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
@@ -666,7 +1008,7 @@
         <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
     </div>
 
-    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+    <div class="card-dinamica" data-num="10" data-forma="humana" data-evento="boda" data-precio="250">
         <div class="img-contenedor-dinamico">
             <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
@@ -697,7 +1039,7 @@
     </div>
 
 
-    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+    <div class="card-dinamica" data-num="11" data-forma="humana" data-evento="boda" data-precio="250">
         <div class="img-contenedor-dinamico">
             <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
@@ -727,7 +1069,7 @@
         <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
     </div>
 
-    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+    <div class="card-dinamica" data-num="12" data-forma="humana" data-evento="boda" data-precio="250">
         <div class="img-contenedor-dinamico">
             <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
@@ -757,7 +1099,7 @@
         <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
     </div>
 
-    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+    <div class="card-dinamica" data-num="13" data-forma="humana" data-evento="boda" data-precio="250">
         <div class="img-contenedor-dinamico">
             <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
@@ -787,7 +1129,7 @@
         <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
     </div>
 
-    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+    <div class="card-dinamica" data-num="14" data-forma="humana" data-evento="boda" data-precio="250">
         <div class="img-contenedor-dinamico">
             <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
@@ -817,7 +1159,7 @@
         <button style="width: 100%; margin-top: 8px; padding: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">Ver detalles</button>
     </div>
 
-    <div class="card-dinamica" data-forma="humana" data-evento="boda" data-precio="250">
+    <div class="card-dinamica" data-num="15" data-forma="humana" data-evento="boda" data-precio="250">
         <div class="img-contenedor-dinamico">
             <img src="imagenes/cirio-boda.jpg" alt="Vela" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
@@ -850,9 +1192,46 @@
 </div>
 
     <script>
+        // ===== BANNER: IMÁGENES ALEATORIAS DEL CATÁLOGO =====
+        (function() {
+            // Recopila todas las imágenes principales del catálogo junto con su número de producto
+            const tarjetasCatalogo = document.querySelectorAll('.card-dinamica');
+            const imagenesCatalogo = [];
+
+            tarjetasCatalogo.forEach(card => {
+                const numProducto = card.getAttribute('data-num');
+                const img = card.querySelector('.img-contenedor-dinamico img');
+                if (img && img.src) {
+                    imagenesCatalogo.push({ src: img.getAttribute('src'), num: numProducto });
+                }
+            });
+
+            // Mezcla aleatoria (Fisher-Yates)
+            for (let i = imagenesCatalogo.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [imagenesCatalogo[i], imagenesCatalogo[j]] = [imagenesCatalogo[j], imagenesCatalogo[i]];
+            }
+
+            // Llena los 4 slots del banner
+            const slots = document.querySelectorAll('.banner-slot');
+            slots.forEach((slot, index) => {
+                const item = imagenesCatalogo[index % imagenesCatalogo.length];
+                const img = document.createElement('img');
+                img.src = item.src;
+                img.alt = 'Producto ' + item.num;
+
+                const num = document.createElement('span');
+                num.className = 'banner-num';
+                num.textContent = '#' + item.num;
+
+                slot.appendChild(img);
+                slot.appendChild(num);
+            });
+        })();
+
         const sliderPrecio = document.getElementById('filtroPrecio');
         const txtPrecioMax = document.getElementById('txtPrecioMax');
-        const tarjetas = document.querySelectorAll('.card-producto');
+        const tarjetas = document.querySelectorAll('.card-dinamica');
 
         let formaActiva = 'todos';
         let eventoActivo = 'todos';
@@ -860,36 +1239,40 @@
 
         function aplicarFiltros() {
             tarjetas.forEach(tarjeta => {
-                const fTarjeta = tarjeta.getAttribute('data-forma');
-                const eTarjeta = tarjeta.getAttribute('data-evento');
-                const pTarjeta = parseInt(tarjeta.getAttribute('data-precio'));
+                const fTarjeta = (tarjeta.getAttribute('data-forma') || '').trim().toLowerCase();
+                const eTarjeta = (tarjeta.getAttribute('data-evento') || '').trim().toLowerCase();
+                const pTarjeta = parseInt(tarjeta.getAttribute('data-precio')) || 0;
 
-                const cumpleForma = (formaActiva === 'todos' || fTarjeta === formaActiva);
+                const cumpleForma  = (formaActiva  === 'todos' || fTarjeta === formaActiva);
                 const cumpleEvento = (eventoActivo === 'todos' || eTarjeta === eventoActivo);
                 const cumplePrecio = (pTarjeta <= precioMaximoActivo);
 
-                if (cumpleForma && cumpleEvento && cumplePrecio) {
-                    tarjeta.classList.remove('oculto');
-                } else {
-                    tarjeta.classList.add('oculto');
-                }
+                tarjeta.classList.toggle('oculto', !(cumpleForma && cumpleEvento && cumplePrecio));
             });
+
+            // Indicador visual: resaltar encabezados de filtros activos
+            document.querySelector('#filtro-formas').closest('.filtro-bloque')
+                .querySelector('label').style.color = formaActiva !== 'todos' ? '#8c7565' : '';
+            document.querySelector('#filtro-eventos').closest('.filtro-bloque')
+                .querySelector('label').style.color = eventoActivo !== 'todos' ? '#4b6b94' : '';
         }
 
+        // Filtro de FORMA — selección exclusiva dentro del grupo
         document.querySelectorAll('#filtro-formas .btn-filtro').forEach(boton => {
             boton.addEventListener('click', () => {
-                document.querySelector('#filtro-formas .btn-filtro.activo').classList.remove('activo');
+                document.querySelectorAll('#filtro-formas .btn-filtro').forEach(b => b.classList.remove('activo'));
                 boton.classList.add('activo');
-                formaActiva = boton.getAttribute('data-forma');
+                formaActiva = (boton.getAttribute('data-forma') || 'todos').trim().toLowerCase();
                 aplicarFiltros();
             });
         });
 
+        // Filtro de EVENTO — selección exclusiva dentro del grupo, independiente del de forma
         document.querySelectorAll('#filtro-eventos .btn-filtro').forEach(boton => {
             boton.addEventListener('click', () => {
-                document.querySelector('#filtro-eventos .btn-filtro.activo').classList.remove('activo');
+                document.querySelectorAll('#filtro-eventos .btn-filtro').forEach(b => b.classList.remove('activo'));
                 boton.classList.add('activo');
-                eventoActivo = boton.getAttribute('data-evento');
+                eventoActivo = (boton.getAttribute('data-evento') || 'todos').trim().toLowerCase();
                 aplicarFiltros();
             });
         });
@@ -977,6 +1360,138 @@
     window.addEventListener('click', function(event) {
         if (event.target == ventanaModal) {
             cerrarModal();
+        }
+    });
+</script>
+
+<!-- ===== MODAL DE PRODUCTO CON GALERÍA ===== -->
+<div id="modalProducto">
+    <div class="modal-producto-caja">
+        <div class="modal-prod-header">
+            <h2 class="modal-prod-titulo" id="modalProdTitulo">Nombre del Producto</h2>
+            <button class="modal-prod-cerrar" onclick="cerrarModalProducto()">&#x2715;</button>
+        </div>
+
+        <p class="modal-prod-descripcion" id="modalProdDescripcion">
+            Descripción del producto. Aquí puedes escribir los detalles, materiales, medidas y más.
+        </p>
+
+        <div class="modal-galeria-wrap">
+            <div class="modal-galeria-visor">
+                <div class="modal-galeria-track" id="modalGaleriaTrack"></div>
+                <button class="modal-btn-nav modal-btn-prev oculto-nav" id="btnGalPrev" onclick="moverGaleria(-1)">&#8249;</button>
+                <button class="modal-btn-nav modal-btn-next" id="btnGalNext" onclick="moverGaleria(1)">&#8250;</button>
+            </div>
+            <div class="modal-dots" id="modalDots"></div>
+            <div class="modal-contador" id="modalContador"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ===== MODAL DE PRODUCTO =====
+    let galeriaImagenes = [];
+    let galeriaIndice = 0;
+
+    function abrirModalProducto(card) {
+        const nombre = card.getAttribute('data-nombre') || card.querySelector('h3')?.textContent || 'Producto';
+        const descripcion = card.getAttribute('data-descripcion') || 'Descripción del producto.';
+        const imagenesJSON = card.getAttribute('data-imagenes');
+
+        try {
+            galeriaImagenes = imagenesJSON ? JSON.parse(imagenesJSON) : [];
+        } catch(e) { galeriaImagenes = []; }
+
+        // Si no hay imágenes definidas, usa la imagen principal de la card
+        if (galeriaImagenes.length === 0) {
+            const imgPrincipal = card.querySelector('.img-contenedor-dinamico img');
+            if (imgPrincipal) galeriaImagenes = [imgPrincipal.getAttribute('src')];
+        }
+
+        galeriaIndice = 0;
+        document.getElementById('modalProdTitulo').textContent = nombre;
+        document.getElementById('modalProdDescripcion').textContent = descripcion;
+
+        renderizarGaleria();
+
+        document.getElementById('modalProducto').classList.add('abierto');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function cerrarModalProducto() {
+        document.getElementById('modalProducto').classList.remove('abierto');
+        document.body.style.overflow = 'auto';
+    }
+
+    function renderizarGaleria() {
+        const track = document.getElementById('modalGaleriaTrack');
+        const dotsContainer = document.getElementById('modalDots');
+        track.innerHTML = '';
+        dotsContainer.innerHTML = '';
+
+        galeriaImagenes.forEach((src, i) => {
+            const slide = document.createElement('div');
+            slide.className = 'modal-galeria-slide';
+            const img = document.createElement('img');
+            img.src = src;
+            img.alt = 'Imagen ' + (i + 1);
+            slide.appendChild(img);
+            track.appendChild(slide);
+
+            const dot = document.createElement('div');
+            dot.className = 'modal-dot' + (i === 0 ? ' activo' : '');
+            dot.onclick = () => irASlide(i);
+            dotsContainer.appendChild(dot);
+        });
+
+        // Ocultar dots si solo hay 1 imagen
+        dotsContainer.style.display = galeriaImagenes.length <= 1 ? 'none' : 'flex';
+
+        actualizarNavegacion();
+
+        // Escuchar scroll para actualizar índice
+        track.addEventListener('scroll', () => {
+            const nuevoIndice = Math.round(track.scrollLeft / track.offsetWidth);
+            if (nuevoIndice !== galeriaIndice) {
+                galeriaIndice = nuevoIndice;
+                actualizarNavegacion();
+            }
+        }, { passive: true });
+    }
+
+    function irASlide(indice) {
+        const track = document.getElementById('modalGaleriaTrack');
+        galeriaIndice = Math.max(0, Math.min(indice, galeriaImagenes.length - 1));
+        track.scrollTo({ left: galeriaIndice * track.offsetWidth, behavior: 'smooth' });
+        actualizarNavegacion();
+    }
+
+    function moverGaleria(direccion) {
+        irASlide(galeriaIndice + direccion);
+    }
+
+    function actualizarNavegacion() {
+        const total = galeriaImagenes.length;
+        document.getElementById('btnGalPrev').classList.toggle('oculto-nav', galeriaIndice === 0);
+        document.getElementById('btnGalNext').classList.toggle('oculto-nav', galeriaIndice >= total - 1);
+        document.getElementById('modalContador').textContent = total > 1 ? `${galeriaIndice + 1} / ${total}` : '';
+
+        document.querySelectorAll('.modal-dot').forEach((dot, i) => {
+            dot.classList.toggle('activo', i === galeriaIndice);
+        });
+    }
+
+    // Cerrar al hacer clic en el fondo
+    document.getElementById('modalProducto').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModalProducto();
+    });
+
+    // Activar click en imagen de cada card
+    document.querySelectorAll('.card-dinamica').forEach(card => {
+        const imgContenedor = card.querySelector('.img-contenedor-dinamico');
+        if (imgContenedor) {
+            imgContenedor.style.cursor = 'pointer';
+            imgContenedor.addEventListener('click', () => abrirModalProducto(card));
         }
     });
 </script>
