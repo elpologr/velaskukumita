@@ -1131,7 +1131,246 @@
         body.modo-oscuro .drawer-perfil-nombre { color: #e0d5cc; }
         body.modo-oscuro .drawer-zona-sesion { border-color: #3a3028; }
         body.modo-oscuro .btn-drawer-crear { background: #2a2218; color: #d0c0b0; border-color: #3a3028 !important; }
-    </style>
+    
+    .grid-productos-inteligente {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* 3 Columnas en PC */
+        gap: 15px;
+        padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .card-dinamica {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background: #fff;
+        font-family: sans-serif;
+    }
+
+    .img-contenedor-dinamico {
+        width: 100%;
+        height: 340px;
+        overflow: hidden;
+        border-radius: 6px;
+    }
+
+    /* 📱 RESPONSIVO: Ajuste automático para Celulares */
+    @media (max-width: 768px) {
+        .grid-productos-inteligente {
+            grid-template-columns: repeat(2, 1fr); /* Cambia a 2 columnas en celular */
+            gap: 10px;
+            padding: 10px;
+        }
+        .img-contenedor-dinamico {
+            height: 220px; /* Se acorta para pantallas táctiles */
+        }
+    }
+
+        /* ===== SECCIONES COLAPSABLES (OFERTAS / MÁS VENDIDOS) ===== */
+        .zona-ofertas-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 14px 20px;
+            border-radius: 12px;
+            background: #fff;
+            border: 1.5px solid #e8ddd5;
+            margin: 16px auto 0;
+            max-width: 1200px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: background 0.2s;
+            user-select: none;
+        }
+        .zona-ofertas-header:hover { background: #fdf6f0; }
+        .zona-ofertas-header h2 {
+            font-size: 1.15rem;
+            margin: 0;
+            color: #5c4d43;
+            font-weight: 700;
+        }
+        .zona-ofertas-header .chevron {
+            font-size: 20px;
+            color: #8c7565;
+            transition: transform 0.3s;
+        }
+        .zona-ofertas-header.abierto .chevron { transform: rotate(180deg); }
+        .zona-ofertas-body {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.4s cubic-bezier(.4,0,.2,1), opacity 0.3s;
+            opacity: 0;
+        }
+        .zona-ofertas-body.abierto {
+            max-height: 800px;
+            opacity: 1;
+        }
+        body.modo-oscuro .zona-ofertas-header { background: #1e1e1e; border-color: #333; }
+        body.modo-oscuro .zona-ofertas-header:hover { background: #252525; }
+        body.modo-oscuro .zona-ofertas-header h2 { color: #e0d0c0; }
+
+        /* ===== DRAWER LATERAL ===== */
+        .drawer-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 2000;
+            backdrop-filter: blur(2px);
+        }
+        .drawer-overlay.activo { display: block; }
+        .drawer {
+            position: fixed;
+            top: 0; left: 0;
+            width: 300px;
+            max-width: 85vw;
+            height: 100%;
+            background: #fff;
+            z-index: 2001;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+            overflow-y: auto;
+            box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+        }
+        .drawer.activo { transform: translateX(0); }
+        .btn-abrir-drawer {
+            position: fixed;
+            top: 14px; left: 14px;
+            z-index: 1999;
+            background: #8c7565;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            width: 44px; height: 44px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            transition: background 0.2s;
+        }
+        .btn-abrir-drawer:hover { background: #6b5a50; }
+        .drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 16px 12px;
+            border-bottom: 1px solid #eee;
+            flex-shrink: 0;
+            background: #fdf6f0;
+        }
+        .drawer-header-titulo { font-size: 17px; font-weight: 700; color: #5c4d43; }
+        .btn-cerrar-drawer {
+            background: none; border: none; font-size: 22px;
+            cursor: pointer; color: #666; padding: 4px 8px; border-radius: 6px;
+        }
+        .btn-cerrar-drawer:hover { background: #f0e8e0; }
+        .drawer-seccion { padding: 16px; border-bottom: 1px solid #eee; }
+        .drawer-seccion-titulo {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.8px; color: #aaa; margin: 0 0 10px 0;
+        }
+        .drawer-busqueda-fila { display: flex; gap: 8px; }
+        .drawer-input-busqueda {
+            flex: 1; padding: 10px 12px;
+            border: 1.5px solid #ddd; border-radius: 8px;
+            font-size: 14px; outline: none; transition: border-color 0.2s;
+        }
+        .drawer-input-busqueda:focus { border-color: #8c7565; }
+        .btn-buscar-drawer {
+            padding: 10px 14px; background: #8c7565; color: #fff;
+            border: none; border-radius: 8px; font-size: 14px;
+            cursor: pointer; transition: background 0.2s;
+        }
+        .btn-buscar-drawer:hover { background: #6b5a50; }
+        .drawer-recomendaciones { padding: 0 16px 8px; display: none; }
+        .drawer-recomendaciones.visible { display: block; }
+        .drawer-rec-titulo {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.8px; color: #aaa; margin: 12px 0 8px 0;
+        }
+        .drawer-rec-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 10px; border-radius: 8px; cursor: pointer;
+            transition: background 0.15s; border: 1px solid #eee;
+            margin-bottom: 8px; background: #fff;
+        }
+        .drawer-rec-item:hover { background: #fdf6f0; border-color: #8c7565; }
+        .drawer-rec-img {
+            width: 44px; height: 44px; border-radius: 6px;
+            object-fit: cover; background: #eee; flex-shrink: 0;
+        }
+        .drawer-rec-info { flex: 1; min-width: 0; }
+        .drawer-rec-nombre {
+            font-size: 13px; font-weight: 700; color: #4a3b32;
+            margin: 0 0 2px 0; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
+        }
+        .drawer-rec-precio { font-size: 12px; color: #8c7565; font-weight: 600; margin: 0; }
+        .drawer-sin-resultados {
+            font-size: 13px; color: #aaa; text-align: center; padding: 10px 0; display: none;
+        }
+        .drawer-espaciador { flex: 1; min-height: 20px; }
+        .drawer-config { padding: 16px; border-top: 1px solid #eee; flex-shrink: 0; }
+        .btn-drawer-config {
+            display: flex; align-items: center; gap: 10px;
+            width: 100%; padding: 11px 14px;
+            background: #f5f0ec; border: none; border-radius: 10px;
+            font-size: 14px; font-weight: 600; color: #5c4d43;
+            cursor: pointer; transition: background 0.2s; text-align: left;
+        }
+        .btn-drawer-config:hover { background: #e8ddd5; }
+        .drawer-subpanel { display: none; padding: 0 0 12px; animation: fadeInDrawer 0.2s ease; }
+        .drawer-subpanel.visible { display: block; }
+        @keyframes fadeInDrawer { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+        .drawer-sub-btn {
+            display: flex; align-items: center; gap: 10px;
+            width: 100%; padding: 10px 12px;
+            background: none; border: 1px solid #eee; border-radius: 8px;
+            font-size: 13px; font-weight: 600; color: #444;
+            cursor: pointer; margin-bottom: 8px; transition: all 0.2s; text-align: left;
+        }
+        .drawer-sub-btn:hover { background: #fdf6f0; border-color: #8c7565; color: #8c7565; }
+        .toggle-modo-drawer {
+            display: flex; align-items: center; justify-content: space-between;
+            width: 100%; padding: 10px 12px;
+            background: none; border: 1px solid #eee; border-radius: 8px;
+            font-size: 13px; font-weight: 600; color: #444;
+            cursor: pointer; margin-bottom: 8px;
+        }
+        .toggle-interruptor-drawer {
+            width: 40px; height: 22px; background: #ccc;
+            border-radius: 11px; position: relative; transition: background 0.2s; flex-shrink:0;
+        }
+        .toggle-interruptor-drawer::after {
+            content: ''; position: absolute; top: 3px; left: 3px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: white; transition: transform 0.2s;
+        }
+        .toggle-interruptor-drawer.activo { background: #8c7565; }
+        .toggle-interruptor-drawer.activo::after { transform: translateX(18px); }
+        body.modo-oscuro .drawer { background: #111; }
+        body.modo-oscuro .drawer-header { background: #1a1410; border-color: #333; }
+        body.modo-oscuro .drawer-header-titulo { color: #e0d0c0; }
+        body.modo-oscuro .drawer-seccion,
+        body.modo-oscuro .drawer-config { border-color: #333; background: #111; }
+        body.modo-oscuro .drawer-input-busqueda { background: #1e1e1e; border-color: #333; color: #f0f0f0; }
+        body.modo-oscuro .drawer-input-busqueda::placeholder { color: #555; }
+        body.modo-oscuro .btn-buscar-drawer { background: #4a3b32; }
+        body.modo-oscuro .drawer-rec-item { background: #1a1a1a; border-color: #333; }
+        body.modo-oscuro .drawer-rec-item:hover { background: #241c18; border-color: #8c7565; }
+        body.modo-oscuro .drawer-rec-nombre { color: #f0f0f0; }
+        body.modo-oscuro .btn-drawer-config { background: #1e1e1e; color: #ccc; }
+        body.modo-oscuro .btn-cerrar-drawer { color: #aaa; }
+        body.modo-oscuro .drawer-sub-btn,
+        body.modo-oscuro .toggle-modo-drawer { border-color: #333; color: #ccc; background: #1a1a1a; }
+</style>
 </head>
 <body>
 
@@ -1160,19 +1399,19 @@
                 </div>
             </button>
 
-            <button class="btn-opcion-perfil" onclick="alert('Cambio de nombre de usuario — próximamente con Firebase.')">
+            <button class="btn-opcion-perfil" onclick="cambiarNombreUsuario()">
                 <span class="op-icono">✏️</span>
                 <div>
                     Nombre de usuario
-                    <span class="op-sub">Modifica cómo aparece tu nombre</span>
+                    <span class="op-sub" id="subNombreActual">Modifica cómo aparece tu nombre</span>
                 </div>
             </button>
 
-            <button class="btn-opcion-perfil" onclick="alert('Cambio de contraseña — próximamente con Firebase.')">
+            <button class="btn-opcion-perfil" id="btnContrasena" onclick="gestionarContrasena()">
                 <span class="op-icono">🔒</span>
                 <div>
                     Contraseña
-                    <span class="op-sub">Actualiza tu contraseña de acceso</span>
+                    <span class="op-sub" id="subContrasenaInfo">Actualiza tu contraseña de acceso</span>
                 </div>
             </button>
 
@@ -1195,13 +1434,11 @@
             <button class="btn-cerrar-drawer" onclick="cerrarDrawer()">✕</button>
         </div>
 
-        <!-- ZONA SIN SESIÓN: solo Iniciar sesión y Crear cuenta -->
+        <!-- ZONA SIN SESIÓN: solo Google -->
         <div class="drawer-zona-sesion" id="drawerZonaSesion">
-            <button class="btn-drawer-sesion btn-drawer-iniciar" onclick="alert('Iniciar sesión — próximamente con Firebase.')">
-                🔑 Iniciar sesión
-            </button>
-            <button class="btn-drawer-sesion btn-drawer-crear" onclick="alert('Crear cuenta — próximamente con Firebase.')">
-                ✨ Crear cuenta
+            <button class="btn-drawer-sesion btn-drawer-google" onclick="abrirModalGoogle()">
+                <svg width="18" height="18" viewBox="0 0 48 48" style="vertical-align:middle;margin-right:8px;"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+                Continuar con Google
             </button>
         </div>
 
@@ -1484,246 +1721,7 @@
             </div>
         </div>
 
-        <style>
-    .grid-productos-inteligente {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr); /* 3 Columnas en PC */
-        gap: 15px;
-        padding: 20px;
-        max-width: 1400px;
-        margin: 0 auto;
-    }
-
-    .card-dinamica {
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 12px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        background: #fff;
-        font-family: sans-serif;
-    }
-
-    .img-contenedor-dinamico {
-        width: 100%;
-        height: 340px;
-        overflow: hidden;
-        border-radius: 6px;
-    }
-
-    /* 📱 RESPONSIVO: Ajuste automático para Celulares */
-    @media (max-width: 768px) {
-        .grid-productos-inteligente {
-            grid-template-columns: repeat(2, 1fr); /* Cambia a 2 columnas en celular */
-            gap: 10px;
-            padding: 10px;
-        }
-        .img-contenedor-dinamico {
-            height: 220px; /* Se acorta para pantallas táctiles */
-        }
-    }
-
-        /* ===== SECCIONES COLAPSABLES (OFERTAS / MÁS VENDIDOS) ===== */
-        .zona-ofertas-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            padding: 14px 20px;
-            border-radius: 12px;
-            background: #fff;
-            border: 1.5px solid #e8ddd5;
-            margin: 16px auto 0;
-            max-width: 1200px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            transition: background 0.2s;
-            user-select: none;
-        }
-        .zona-ofertas-header:hover { background: #fdf6f0; }
-        .zona-ofertas-header h2 {
-            font-size: 1.15rem;
-            margin: 0;
-            color: #5c4d43;
-            font-weight: 700;
-        }
-        .zona-ofertas-header .chevron {
-            font-size: 20px;
-            color: #8c7565;
-            transition: transform 0.3s;
-        }
-        .zona-ofertas-header.abierto .chevron { transform: rotate(180deg); }
-        .zona-ofertas-body {
-            overflow: hidden;
-            max-height: 0;
-            transition: max-height 0.4s cubic-bezier(.4,0,.2,1), opacity 0.3s;
-            opacity: 0;
-        }
-        .zona-ofertas-body.abierto {
-            max-height: 800px;
-            opacity: 1;
-        }
-        body.modo-oscuro .zona-ofertas-header { background: #1e1e1e; border-color: #333; }
-        body.modo-oscuro .zona-ofertas-header:hover { background: #252525; }
-        body.modo-oscuro .zona-ofertas-header h2 { color: #e0d0c0; }
-
-        /* ===== DRAWER LATERAL ===== */
-        .drawer-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.45);
-            z-index: 2000;
-            backdrop-filter: blur(2px);
-        }
-        .drawer-overlay.activo { display: block; }
-        .drawer {
-            position: fixed;
-            top: 0; left: 0;
-            width: 300px;
-            max-width: 85vw;
-            height: 100%;
-            background: #fff;
-            z-index: 2001;
-            display: flex;
-            flex-direction: column;
-            transform: translateX(-100%);
-            transition: transform 0.3s cubic-bezier(.4,0,.2,1);
-            overflow-y: auto;
-            box-shadow: 4px 0 24px rgba(0,0,0,0.15);
-        }
-        .drawer.activo { transform: translateX(0); }
-        .btn-abrir-drawer {
-            position: fixed;
-            top: 14px; left: 14px;
-            z-index: 1999;
-            background: #8c7565;
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            width: 44px; height: 44px;
-            font-size: 20px;
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-            transition: background 0.2s;
-        }
-        .btn-abrir-drawer:hover { background: #6b5a50; }
-        .drawer-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 18px 16px 12px;
-            border-bottom: 1px solid #eee;
-            flex-shrink: 0;
-            background: #fdf6f0;
-        }
-        .drawer-header-titulo { font-size: 17px; font-weight: 700; color: #5c4d43; }
-        .btn-cerrar-drawer {
-            background: none; border: none; font-size: 22px;
-            cursor: pointer; color: #666; padding: 4px 8px; border-radius: 6px;
-        }
-        .btn-cerrar-drawer:hover { background: #f0e8e0; }
-        .drawer-seccion { padding: 16px; border-bottom: 1px solid #eee; }
-        .drawer-seccion-titulo {
-            font-size: 11px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 0.8px; color: #aaa; margin: 0 0 10px 0;
-        }
-        .drawer-busqueda-fila { display: flex; gap: 8px; }
-        .drawer-input-busqueda {
-            flex: 1; padding: 10px 12px;
-            border: 1.5px solid #ddd; border-radius: 8px;
-            font-size: 14px; outline: none; transition: border-color 0.2s;
-        }
-        .drawer-input-busqueda:focus { border-color: #8c7565; }
-        .btn-buscar-drawer {
-            padding: 10px 14px; background: #8c7565; color: #fff;
-            border: none; border-radius: 8px; font-size: 14px;
-            cursor: pointer; transition: background 0.2s;
-        }
-        .btn-buscar-drawer:hover { background: #6b5a50; }
-        .drawer-recomendaciones { padding: 0 16px 8px; display: none; }
-        .drawer-recomendaciones.visible { display: block; }
-        .drawer-rec-titulo {
-            font-size: 11px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 0.8px; color: #aaa; margin: 12px 0 8px 0;
-        }
-        .drawer-rec-item {
-            display: flex; align-items: center; gap: 10px;
-            padding: 8px 10px; border-radius: 8px; cursor: pointer;
-            transition: background 0.15s; border: 1px solid #eee;
-            margin-bottom: 8px; background: #fff;
-        }
-        .drawer-rec-item:hover { background: #fdf6f0; border-color: #8c7565; }
-        .drawer-rec-img {
-            width: 44px; height: 44px; border-radius: 6px;
-            object-fit: cover; background: #eee; flex-shrink: 0;
-        }
-        .drawer-rec-info { flex: 1; min-width: 0; }
-        .drawer-rec-nombre {
-            font-size: 13px; font-weight: 700; color: #4a3b32;
-            margin: 0 0 2px 0; white-space: nowrap;
-            overflow: hidden; text-overflow: ellipsis;
-        }
-        .drawer-rec-precio { font-size: 12px; color: #8c7565; font-weight: 600; margin: 0; }
-        .drawer-sin-resultados {
-            font-size: 13px; color: #aaa; text-align: center; padding: 10px 0; display: none;
-        }
-        .drawer-espaciador { flex: 1; min-height: 20px; }
-        .drawer-config { padding: 16px; border-top: 1px solid #eee; flex-shrink: 0; }
-        .btn-drawer-config {
-            display: flex; align-items: center; gap: 10px;
-            width: 100%; padding: 11px 14px;
-            background: #f5f0ec; border: none; border-radius: 10px;
-            font-size: 14px; font-weight: 600; color: #5c4d43;
-            cursor: pointer; transition: background 0.2s; text-align: left;
-        }
-        .btn-drawer-config:hover { background: #e8ddd5; }
-        .drawer-subpanel { display: none; padding: 0 0 12px; animation: fadeInDrawer 0.2s ease; }
-        .drawer-subpanel.visible { display: block; }
-        @keyframes fadeInDrawer { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
-        .drawer-sub-btn {
-            display: flex; align-items: center; gap: 10px;
-            width: 100%; padding: 10px 12px;
-            background: none; border: 1px solid #eee; border-radius: 8px;
-            font-size: 13px; font-weight: 600; color: #444;
-            cursor: pointer; margin-bottom: 8px; transition: all 0.2s; text-align: left;
-        }
-        .drawer-sub-btn:hover { background: #fdf6f0; border-color: #8c7565; color: #8c7565; }
-        .toggle-modo-drawer {
-            display: flex; align-items: center; justify-content: space-between;
-            width: 100%; padding: 10px 12px;
-            background: none; border: 1px solid #eee; border-radius: 8px;
-            font-size: 13px; font-weight: 600; color: #444;
-            cursor: pointer; margin-bottom: 8px;
-        }
-        .toggle-interruptor-drawer {
-            width: 40px; height: 22px; background: #ccc;
-            border-radius: 11px; position: relative; transition: background 0.2s; flex-shrink:0;
-        }
-        .toggle-interruptor-drawer::after {
-            content: ''; position: absolute; top: 3px; left: 3px;
-            width: 16px; height: 16px; border-radius: 50%;
-            background: white; transition: transform 0.2s;
-        }
-        .toggle-interruptor-drawer.activo { background: #8c7565; }
-        .toggle-interruptor-drawer.activo::after { transform: translateX(18px); }
-        body.modo-oscuro .drawer { background: #111; }
-        body.modo-oscuro .drawer-header { background: #1a1410; border-color: #333; }
-        body.modo-oscuro .drawer-header-titulo { color: #e0d0c0; }
-        body.modo-oscuro .drawer-seccion,
-        body.modo-oscuro .drawer-config { border-color: #333; background: #111; }
-        body.modo-oscuro .drawer-input-busqueda { background: #1e1e1e; border-color: #333; color: #f0f0f0; }
-        body.modo-oscuro .drawer-input-busqueda::placeholder { color: #555; }
-        body.modo-oscuro .btn-buscar-drawer { background: #4a3b32; }
-        body.modo-oscuro .drawer-rec-item { background: #1a1a1a; border-color: #333; }
-        body.modo-oscuro .drawer-rec-item:hover { background: #241c18; border-color: #8c7565; }
-        body.modo-oscuro .drawer-rec-nombre { color: #f0f0f0; }
-        body.modo-oscuro .btn-drawer-config { background: #1e1e1e; color: #ccc; }
-        body.modo-oscuro .btn-cerrar-drawer { color: #aaa; }
-        body.modo-oscuro .drawer-sub-btn,
-        body.modo-oscuro .toggle-modo-drawer { border-color: #333; color: #ccc; background: #1a1a1a; }
-</style>
+        
 
 <!-- Controles de paginación superiores -->
 <div class="container" style="padding-bottom:0;">
@@ -6408,228 +6406,263 @@ function toggleSeccion(cual) {
 </script>
 
 <!-- ══════════════════════════════════════════════
-     FIREBASE AUTH — Velas Kukumita
-     ══════════════════════════════════════════════ -->
-<script type="module">
-    import { initializeApp }                          from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword,
-             signInWithEmailAndPassword, signOut,
-             onAuthStateChanged, updateProfile }      from "https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js";
+     MODAL DE GOOGLE AUTH
+══════════════════════════════════════════════ -->
+<style>
+.modal-auth-overlay {
+    display: none; position: fixed; inset: 0; z-index: 99999;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+    align-items: center; justify-content: center; padding: 20px;
+}
+.modal-auth-overlay.abierto { display: flex; }
+.modal-auth-caja {
+    background: #fff; border-radius: 20px; width: 100%; max-width: 360px;
+    padding: 36px 28px 28px; box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+    text-align: center; position: relative;
+}
+.modal-auth-cerrar {
+    position: absolute; top: 14px; right: 14px;
+    background: #f0eae4; border: none; width: 32px; height: 32px;
+    border-radius: 50%; font-size: 18px; cursor: pointer; color: #5c4d43;
+    display: flex; align-items: center; justify-content: center;
+}
+.modal-auth-cerrar:hover { background: #d9cfc8; }
+.modal-auth-logo { font-size: 40px; margin-bottom: 8px; }
+.modal-auth-titulo { font-size: 20px; font-weight: 700; color: #362a22; margin: 0 0 4px; }
+.modal-auth-sub { font-size: 13px; color: #9a8878; margin: 0 0 24px; }
+.btn-google-auth {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    width: 100%; padding: 14px 20px; border-radius: 12px;
+    border: 2px solid #e0e0e0; background: #fff;
+    font-size: 15px; font-weight: 700; color: #3c4043; cursor: pointer;
+    transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.btn-google-auth:hover { background: #f8f8f8; border-color: #8c7565; box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
+.modal-auth-nota { font-size: 11px; color: #bbb; margin-top: 16px; }
+/* Botón Google en drawer */
+.btn-drawer-google {
+    display: flex; align-items: center; justify-content: center;
+    background: #fff; color: #3c4043;
+    border: 2px solid #e0e0e0 !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    font-weight: 700;
+}
+.btn-drawer-google:hover { background: #f8f8f8; border-color: #8c7565 !important; }
+/* Modo oscuro modal */
+body.modo-oscuro .modal-auth-caja { background: #1e1a16; }
+body.modo-oscuro .modal-auth-titulo { color: #e0d5cc; }
+body.modo-oscuro .modal-auth-sub { color: #9a8878; }
+body.modo-oscuro .btn-google-auth { background: #2a2218; border-color: #3a3028; color: #e0d0c0; }
+body.modo-oscuro .btn-google-auth:hover { background: #3a2e26; }
+/* Toast notificación */
+.toast-notif {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: #362a22; color: white; padding: 12px 24px;
+    border-radius: 24px; font-size: 14px; font-weight: 600;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3); z-index: 99999;
+    opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap;
+}
+.toast-notif.visible { opacity: 1; }
+</style>
 
-    const firebaseConfig = {
-        apiKey:            "AIzaSyBc_AUz1lfgAPFuQd9oKvDYGm1lyrHALGs",
-        authDomain:        "velas-kukumita.firebaseapp.com",
-        projectId:         "velas-kukumita",
-        storageBucket:     "velas-kukumita.firebasestorage.app",
-        messagingSenderId: "76727611900",
-        appId:             "1:76727611900:web:8eb54f485d2da99e40c279",
-        measurementId:     "G-KPV214PPVY"
-    };
-
-    const app  = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    // ── Escuchar cambios de sesión ──────────────────
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            // Usuario con sesión activa
-            localStorage.setItem('velas-sesion-activa', '1');
-            localStorage.setItem('velas-nombre-usuario', user.displayName || user.email || 'Mi cuenta');
-            actualizarEstadoSesionDrawer();
-        } else {
-            // Sin sesión
-            localStorage.removeItem('velas-sesion-activa');
-            localStorage.removeItem('velas-nombre-usuario');
-            actualizarEstadoSesionDrawer();
-        }
-    });
-
-    // ── Exponer funciones al scope global ──────────
-    window._firebaseAuth = auth;
-
-    window.firebaseIniciarSesion = async function(email, password) {
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-            cerrarModalAuth();
-        } catch (e) {
-            mostrarErrorAuth(e.code);
-        }
-    };
-
-    window.firebaseCrearCuenta = async function(email, password, nombre) {
-        try {
-            const cred = await createUserWithEmailAndPassword(auth, email, password);
-            if (nombre) await updateProfile(cred.user, { displayName: nombre });
-            cerrarModalAuth();
-        } catch (e) {
-            mostrarErrorAuth(e.code);
-        }
-    };
-
-    window.firebaseCerrarSesion = async function() {
-        await signOut(auth);
-        cerrarPantallaPerfil();
-    };
-</script>
-
-<!-- ══ MODAL DE AUTENTICACIÓN ══ -->
-<div id="modalAuth" style="
-    display:none; position:fixed; inset:0; z-index:4000;
-    background:rgba(0,0,0,0.6); backdrop-filter:blur(4px);
-    align-items:center; justify-content:center; padding:16px;">
-
-    <div style="background:#fff; border-radius:20px; width:100%; max-width:400px;
-                padding:32px 28px; position:relative; box-shadow:0 8px 40px rgba(0,0,0,0.2);">
-
-        <button onclick="cerrarModalAuth()" style="
-            position:absolute; top:14px; right:16px; background:#f0eae4; border:none;
-            width:32px; height:32px; border-radius:50%; font-size:18px; cursor:pointer;
-            color:#5c4d43; display:flex; align-items:center; justify-content:center;">✕</button>
-
-        <!-- Tabs -->
-        <div style="display:flex; gap:0; margin-bottom:24px; border-radius:10px; overflow:hidden; border:2px solid #e8ddd5;">
-            <button id="tabIniciar" onclick="switchTabAuth('iniciar')" style="
-                flex:1; padding:11px; border:none; font-size:14px; font-weight:700;
-                cursor:pointer; background:#8c7565; color:white; transition:all 0.2s;">
-                Iniciar sesión
-            </button>
-            <button id="tabCrear" onclick="switchTabAuth('crear')" style="
-                flex:1; padding:11px; border:none; font-size:14px; font-weight:700;
-                cursor:pointer; background:#f0eae4; color:#5c4d43; transition:all 0.2s;">
-                Crear cuenta
-            </button>
-        </div>
-
-        <!-- Panel Iniciar sesión -->
-        <div id="panelIniciar">
-            <input id="authEmailIniciar" type="email" placeholder="Correo electrónico"
-                   style="width:100%; padding:12px 14px; border:2px solid #e0d8d0; border-radius:10px;
-                          font-size:14px; outline:none; box-sizing:border-box; margin-bottom:12px;
-                          transition:border-color 0.2s;"
-                   onfocus="this.style.borderColor='#8c7565'" onblur="this.style.borderColor='#e0d8d0'">
-            <input id="authPassIniciar" type="password" placeholder="Contraseña"
-                   style="width:100%; padding:12px 14px; border:2px solid #e0d8d0; border-radius:10px;
-                          font-size:14px; outline:none; box-sizing:border-box; margin-bottom:16px;
-                          transition:border-color 0.2s;"
-                   onfocus="this.style.borderColor='#8c7565'" onblur="this.style.borderColor='#e0d8d0'"
-                   onkeydown="if(event.key==='Enter') submitIniciarSesion()">
-            <button onclick="submitIniciarSesion()" style="
-                width:100%; padding:14px; background:#8c7565; color:white; border:none;
-                border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; transition:background 0.2s;"
-                onmouseover="this.style.background='#5c4d43'" onmouseout="this.style.background='#8c7565'">
-                Entrar 🔑
-            </button>
-        </div>
-
-        <!-- Panel Crear cuenta -->
-        <div id="panelCrear" style="display:none;">
-            <input id="authNombreCrear" type="text" placeholder="Tu nombre"
-                   style="width:100%; padding:12px 14px; border:2px solid #e0d8d0; border-radius:10px;
-                          font-size:14px; outline:none; box-sizing:border-box; margin-bottom:12px;
-                          transition:border-color 0.2s;"
-                   onfocus="this.style.borderColor='#8c7565'" onblur="this.style.borderColor='#e0d8d0'">
-            <input id="authEmailCrear" type="email" placeholder="Correo electrónico"
-                   style="width:100%; padding:12px 14px; border:2px solid #e0d8d0; border-radius:10px;
-                          font-size:14px; outline:none; box-sizing:border-box; margin-bottom:12px;
-                          transition:border-color 0.2s;"
-                   onfocus="this.style.borderColor='#8c7565'" onblur="this.style.borderColor='#e0d8d0'">
-            <input id="authPassCrear" type="password" placeholder="Contraseña (mín. 6 caracteres)"
-                   style="width:100%; padding:12px 14px; border:2px solid #e0d8d0; border-radius:10px;
-                          font-size:14px; outline:none; box-sizing:border-box; margin-bottom:16px;
-                          transition:border-color 0.2s;"
-                   onfocus="this.style.borderColor='#8c7565'" onblur="this.style.borderColor='#e0d8d0'"
-                   onkeydown="if(event.key==='Enter') submitCrearCuenta()">
-            <button onclick="submitCrearCuenta()" style="
-                width:100%; padding:14px; background:#8c7565; color:white; border:none;
-                border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; transition:background 0.2s;"
-                onmouseover="this.style.background='#5c4d43'" onmouseout="this.style.background='#8c7565'">
-                Crear cuenta ✨
-            </button>
-        </div>
-
-        <!-- Mensaje de error -->
-        <p id="authError" style="display:none; color:#c0392b; font-size:13px;
-           text-align:center; margin-top:12px; font-weight:600;"></p>
+<!-- Modal Google Auth -->
+<div class="modal-auth-overlay" id="modalGoogleAuth">
+    <div class="modal-auth-caja">
+        <button class="modal-auth-cerrar" onclick="cerrarModalGoogle()">✕</button>
+        <div class="modal-auth-logo">🕯️</div>
+        <h2 class="modal-auth-titulo">Bienvenida a Kukumita</h2>
+        <p class="modal-auth-sub">Inicia sesión para guardar tus favoritos y hacer pedidos</p>
+        <button class="btn-google-auth" onclick="iniciarSesionGoogle()">
+            <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+            Continuar con Google
+        </button>
+        <p class="modal-auth-nota">Al continuar aceptas nuestros términos de uso</p>
     </div>
 </div>
 
+<!-- Toast -->
+<div class="toast-notif" id="toastNotif"></div>
+
+<!-- Firebase SDK (versión compat para uso directo en HTML) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
 <script>
-    // ── Modal Auth ──────────────────────────────────
-    function abrirModalAuth(tab) {
-        document.getElementById('modalAuth').style.display = 'flex';
-        switchTabAuth(tab || 'iniciar');
-        document.getElementById('authError').style.display = 'none';
-    }
-    function cerrarModalAuth() {
-        document.getElementById('modalAuth').style.display = 'none';
-        // Limpiar campos
-        ['authEmailIniciar','authPassIniciar','authNombreCrear','authEmailCrear','authPassCrear']
-            .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
-        document.getElementById('authError').style.display = 'none';
-    }
-    function switchTabAuth(tab) {
-        const esIniciar = tab === 'iniciar';
-        document.getElementById('panelIniciar').style.display = esIniciar ? 'block' : 'none';
-        document.getElementById('panelCrear').style.display   = esIniciar ? 'none'  : 'block';
-        document.getElementById('tabIniciar').style.background = esIniciar ? '#8c7565' : '#f0eae4';
-        document.getElementById('tabIniciar').style.color     = esIniciar ? 'white'  : '#5c4d43';
-        document.getElementById('tabCrear').style.background  = esIniciar ? '#f0eae4' : '#8c7565';
-        document.getElementById('tabCrear').style.color       = esIniciar ? '#5c4d43' : 'white';
-        document.getElementById('authError').style.display = 'none';
-    }
-    function mostrarErrorAuth(code) {
-        const mensajes = {
-            'auth/invalid-email':          'Correo electrónico no válido.',
-            'auth/user-not-found':         'No existe una cuenta con ese correo.',
-            'auth/wrong-password':         'Contraseña incorrecta.',
-            'auth/invalid-credential':     'Correo o contraseña incorrectos.',
-            'auth/email-already-in-use':   'Ese correo ya tiene una cuenta.',
-            'auth/weak-password':          'La contraseña debe tener al menos 6 caracteres.',
-            'auth/too-many-requests':      'Demasiados intentos. Intenta más tarde.',
-            'auth/network-request-failed': 'Sin conexión. Revisa tu internet.',
-        };
-        const el = document.getElementById('authError');
-        el.textContent = mensajes[code] || 'Ocurrió un error. Intenta de nuevo.';
-        el.style.display = 'block';
-    }
-    function submitIniciarSesion() {
-        const email    = document.getElementById('authEmailIniciar').value.trim();
-        const password = document.getElementById('authPassIniciar').value;
-        if (!email || !password) { mostrarErrorAuth('auth/invalid-email'); return; }
-        window.firebaseIniciarSesion(email, password);
-    }
-    function submitCrearCuenta() {
-        const nombre   = document.getElementById('authNombreCrear').value.trim();
-        const email    = document.getElementById('authEmailCrear').value.trim();
-        const password = document.getElementById('authPassCrear').value;
-        if (!email || !password) { mostrarErrorAuth('auth/invalid-email'); return; }
-        window.firebaseCrearCuenta(email, password, nombre);
-    }
+// ═══════════════════════════════════════════
+//  FIREBASE CONFIGURACIÓN
+// ═══════════════════════════════════════════
+const firebaseConfig = {
+    apiKey: "AIzaSyBc_AUz1lfgAPFuQd9oKvDYGm1lyrHALGs",
+    authDomain: "velas-kukumita.firebaseapp.com",
+    projectId: "velas-kukumita",
+    storageBucket: "velas-kukumita.firebasestorage.app",
+    messagingSenderId: "76727611900",
+    appId: "1:76727611900:web:8eb54f485d2da99e40c279",
+    measurementId: "G-KPV214PPVY"
+};
 
-    // Cerrar modal al hacer clic fuera
-    document.getElementById('modalAuth').addEventListener('click', function(e) {
-        if (e.target === this) cerrarModalAuth();
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const providerGoogle = new firebase.auth.GoogleAuthProvider();
+
+// ─── TOAST ───
+function mostrarToast(msg) {
+    const t = document.getElementById('toastNotif');
+    t.textContent = msg;
+    t.classList.add('visible');
+    setTimeout(() => t.classList.remove('visible'), 2800);
+}
+
+// ─── MODAL GOOGLE ───
+function abrirModalGoogle() {
+    document.getElementById('modalGoogleAuth').classList.add('abierto');
+}
+function cerrarModalGoogle() {
+    document.getElementById('modalGoogleAuth').classList.remove('abierto');
+}
+
+// ─── INICIAR SESIÓN CON GOOGLE ───
+async function iniciarSesionGoogle() {
+    try {
+        const result = await auth.signInWithPopup(providerGoogle);
+        cerrarModalGoogle();
+        cerrarDrawer();
+    } catch (e) {
+        console.error(e);
+        mostrarToast('No se pudo iniciar sesión. Intenta de nuevo.');
+    }
+}
+
+// ─── CERRAR SESIÓN (override del anterior) ───
+function cerrarSesion() {
+    auth.signOut().then(() => {
+        cerrarPantallaPerfil();
+        mostrarToast('Sesión cerrada');
     });
+}
 
-    // ── Reemplazar los alert de los botones del drawer ──
-    // Conectar botones del drawer con el modal real
-    document.addEventListener('DOMContentLoaded', () => {
-        const btnIniciar = document.querySelector('.btn-drawer-iniciar');
-        const btnCrear   = document.querySelector('.btn-drawer-crear');
-        if (btnIniciar) btnIniciar.onclick = () => { cerrarDrawer(); abrirModalAuth('iniciar'); };
-        if (btnCrear)   btnCrear.onclick   = () => { cerrarDrawer(); abrirModalAuth('crear');   };
-    });
+// ─── ESCUCHAR CAMBIOS DE SESIÓN ───
+auth.onAuthStateChanged(user => {
+    if (user) {
+        // Guardar datos en localStorage como cache visual
+        localStorage.setItem('velas-sesion-activa', '1');
+        if (user.photoURL) localStorage.setItem('velas-foto-perfil', user.photoURL);
+        localStorage.setItem('velas-nombre-usuario', user.displayName || 'Mi cuenta');
+        localStorage.setItem('velas-email-usuario', user.email || '');
+        localStorage.setItem('velas-proveedor', user.providerData[0]?.providerId || '');
+    } else {
+        localStorage.removeItem('velas-sesion-activa');
+        localStorage.removeItem('velas-foto-perfil');
+        localStorage.removeItem('velas-nombre-usuario');
+        localStorage.removeItem('velas-email-usuario');
+        localStorage.removeItem('velas-proveedor');
+    }
+    actualizarEstadoSesionDrawer();
+    actualizarPantallaPerfil();
+});
 
-    // ── Cerrar sesión real ──────────────────────────
-    function cerrarSesion() {
-        if (window.firebaseCerrarSesion) window.firebaseCerrarSesion();
-        else {
-            localStorage.removeItem('velas-sesion-activa');
-            cerrarPantallaPerfil();
-            actualizarEstadoSesionDrawer();
+// ─── ACTUALIZAR PANTALLA PERFIL CON DATOS REALES ───
+function actualizarPantallaPerfil() {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const foto = user.photoURL || '';
+    const nombre = user.displayName || 'Mi cuenta';
+    const email = user.email || '';
+    const esGoogle = user.providerData.some(p => p.providerId === 'google.com');
+
+    const avatarEl = document.getElementById('pantallaAvatar');
+    const nombreEl = document.getElementById('pantallaUsuarioNombre');
+    const subNombre = document.getElementById('subNombreActual');
+    const subContrasena = document.getElementById('subContrasenaInfo');
+    const btnContrasena = document.getElementById('btnContrasena');
+
+    if (avatarEl && foto) avatarEl.src = foto;
+    if (nombreEl) nombreEl.textContent = nombre;
+    if (subNombre) subNombre.textContent = nombre + (email ? '  ·  ' + email : '');
+
+    if (esGoogle) {
+        if (subContrasena) subContrasena.textContent = 'Cuenta Google — sin contraseña local';
+        if (btnContrasena) {
+            btnContrasena.querySelector('div').innerHTML =
+                'Contraseña <span class="op-sub">Cuenta Google — sin contraseña local</span>';
+            btnContrasena.style.opacity = '0.5';
+            btnContrasena.style.cursor = 'default';
+            btnContrasena.onclick = () => mostrarToast('Tu cuenta usa Google. No necesitas contraseña.');
         }
+    } else {
+        if (btnContrasena) btnContrasena.onclick = gestionarContrasena;
     }
-</script>
+}
 
+// ─── CAMBIAR NOMBRE DE USUARIO ───
+async function cambiarNombreUsuario() {
+    const user = auth.currentUser;
+    if (!user) return;
+    const nuevoNombre = prompt('Escribe tu nuevo nombre de usuario:', user.displayName || '');
+    if (!nuevoNombre || !nuevoNombre.trim()) return;
+    try {
+        await user.updateProfile({ displayName: nuevoNombre.trim() });
+        localStorage.setItem('velas-nombre-usuario', nuevoNombre.trim());
+        document.getElementById('pantallaUsuarioNombre').textContent = nuevoNombre.trim();
+        document.getElementById('drawerNombreUsuario').textContent = nuevoNombre.trim();
+        const subNombre = document.getElementById('subNombreActual');
+        if (subNombre) subNombre.textContent = nuevoNombre.trim() + '  ·  ' + (user.email || '');
+        mostrarToast('✅ Nombre actualizado');
+    } catch (e) {
+        mostrarToast('Error al actualizar el nombre');
+    }
+}
+
+// ─── GESTIONAR CONTRASEÑA ───
+async function gestionarContrasena() {
+    const user = auth.currentUser;
+    if (!user) return;
+    const esGoogle = user.providerData.some(p => p.providerId === 'google.com');
+    if (esGoogle) {
+        mostrarToast('Tu cuenta usa Google. No necesitas contraseña.');
+        return;
+    }
+    // Enviar email de restablecimiento
+    const confirmado = confirm('¿Enviar un correo para restablecer tu contraseña a ' + user.email + '?');
+    if (!confirmado) return;
+    try {
+        await auth.sendPasswordResetEmail(user.email);
+        mostrarToast('📧 Correo enviado a ' + user.email);
+    } catch (e) {
+        mostrarToast('Error al enviar el correo');
+    }
+}
+
+// ─── FOTO DE PERFIL (override con Firebase Storage si se desea) ───
+function aplicarFotoPerfil(event) {
+    const archivo = event.target.files[0];
+    if (!archivo) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        const src = e.target.result;
+        const avatarDrawer = document.getElementById('drawerAvatar');
+        const avatarPantalla = document.getElementById('pantallaAvatar');
+        if (avatarDrawer) avatarDrawer.src = src;
+        if (avatarPantalla) avatarPantalla.src = src;
+        localStorage.setItem('velas-foto-perfil', src);
+        mostrarToast('✅ Foto actualizada localmente');
+    };
+    reader.readAsDataURL(archivo);
+}
+
+// ─── ABRIR PANTALLA PERFIL (override con datos reales) ───
+function abrirPantallaPerfil() {
+    actualizarPantallaPerfil();
+    // Fallback si Firebase aún no tiene usuario pero hay sesión guardada
+    const foto = (auth.currentUser?.photoURL) || localStorage.getItem('velas-foto-perfil');
+    const nombre = (auth.currentUser?.displayName) || localStorage.getItem('velas-nombre-usuario') || 'Mi cuenta';
+    const avatarEl = document.getElementById('pantallaAvatar');
+    const nombreEl = document.getElementById('pantallaUsuarioNombre');
+    if (avatarEl && foto) avatarEl.src = foto;
+    if (nombreEl) nombreEl.textContent = nombre;
+    document.getElementById('pantallaPerfil').classList.add('activo');
+}
+</script>
 </body>
 </html>
