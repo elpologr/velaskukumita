@@ -6487,6 +6487,7 @@ body.modo-oscuro .btn-google-auth:hover { background: #3a2e26; }
 <!-- Firebase SDK (versión compat para uso directo en HTML) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
 <script>
 // ═══════════════════════════════════════════
@@ -6504,9 +6505,96 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+const db = firebase.firestore();
 const providerGoogle = new firebase.auth.GoogleAuthProvider();
 
-// ─── TOAST ───
+// ─── VERIFICAR SI ES ADMINISTRADOR ───
+async function verificarSiEsAdmin(emailUsuario) {
+    try {
+        const docSnap = await db.collection('admins').doc(emailUsuario).get();
+        if (docSnap.exists()) {
+            const datos = docSnap.data();
+            console.log('✅ Admin verificado:', datos.nombre);
+            mostrarPanelAdmin(datos.nombre || emailUsuario);
+            return true;
+        } else {
+            ocultarPanelAdmin();
+            return false;
+        }
+    } catch (e) {
+        console.error('Error al verificar admin:', e);
+        ocultarPanelAdmin();
+        return false;
+    }
+}
+
+function mostrarPanelAdmin(nombre) {
+    let panel = document.getElementById('panelAdmin');
+    if (panel) { panel.style.display = 'flex'; return; }
+
+    panel = document.createElement('div');
+    panel.id = 'panelAdmin';
+    panel.innerHTML = `
+        <style>
+        #panelAdmin {
+            position: fixed; bottom: 80px; right: 16px; z-index: 9000;
+            background: #362a22; color: white;
+            border-radius: 16px; padding: 14px 18px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+            display: flex; flex-direction: column; gap: 10px;
+            min-width: 210px; font-family: 'Segoe UI', sans-serif;
+        }
+        #panelAdmin .admin-titulo {
+            font-size: 12px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; color: #c8a98a; margin-bottom: 2px;
+        }
+        #panelAdmin .admin-nombre {
+            font-size: 14px; font-weight: 600; color: #fff;
+            margin-bottom: 4px;
+        }
+        #panelAdmin .admin-btn {
+            background: #8c7565; border: none; color: white;
+            padding: 9px 14px; border-radius: 10px; font-size: 13px;
+            font-weight: 600; cursor: pointer; text-align: left;
+            transition: background 0.2s; display: flex; align-items: center; gap: 8px;
+        }
+        #panelAdmin .admin-btn:hover { background: #6b5a50; }
+        #panelAdmin .admin-btn.peligro { background: #7a2020; }
+        #panelAdmin .admin-btn.peligro:hover { background: #a03030; }
+        #panelAdmin .admin-toggle {
+            position: fixed; bottom: 80px; right: 16px; z-index: 9001;
+            background: #362a22; color: #c8a98a; border: none;
+            border-radius: 50%; width: 48px; height: 48px; font-size: 22px;
+            cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            display: none; align-items: center; justify-content: center;
+        }
+        </style>
+        <span class="admin-titulo">🔐 Panel Admin</span>
+        <span class="admin-nombre">👤 ${nombre}</span>
+        <button class="admin-btn" onclick="adminAgregarProducto()">➕ Agregar producto</button>
+        <button class="admin-btn" onclick="adminVerPedidos()">📋 Ver pedidos</button>
+        <button class="admin-btn" onclick="adminModoEdicion()">✏️ Editar precios / visibilidad</button>
+        <button class="admin-btn peligro" onclick="adminCerrarPanel()">— Ocultar panel</button>
+    `;
+    document.body.appendChild(panel);
+}
+
+function ocultarPanelAdmin() {
+    const panel = document.getElementById('panelAdmin');
+    if (panel) panel.style.display = 'none';
+}
+
+function adminCerrarPanel() {
+    ocultarPanelAdmin();
+    mostrarToast('Panel admin oculto. Recarga para volver a verlo.');
+}
+
+// Funciones stub — aquí irán las funcionalidades completas en el siguiente paso
+function adminAgregarProducto() { mostrarToast('🚧 Próximamente: agregar producto'); }
+function adminVerPedidos()      { mostrarToast('🚧 Próximamente: ver pedidos'); }
+function adminModoEdicion()     { mostrarToast('🚧 Próximamente: editar precios y visibilidad'); }
+
+
 function mostrarToast(msg) {
     const t = document.getElementById('toastNotif');
     t.textContent = msg;
@@ -6551,12 +6639,15 @@ auth.onAuthStateChanged(user => {
         localStorage.setItem('velas-nombre-usuario', user.displayName || 'Mi cuenta');
         localStorage.setItem('velas-email-usuario', user.email || '');
         localStorage.setItem('velas-proveedor', user.providerData[0]?.providerId || '');
+        // Verificar si es administrador
+        verificarSiEsAdmin(user.email);
     } else {
         localStorage.removeItem('velas-sesion-activa');
         localStorage.removeItem('velas-foto-perfil');
         localStorage.removeItem('velas-nombre-usuario');
         localStorage.removeItem('velas-email-usuario');
         localStorage.removeItem('velas-proveedor');
+        ocultarPanelAdmin();
     }
     actualizarEstadoSesionDrawer();
     actualizarPantallaPerfil();
