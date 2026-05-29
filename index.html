@@ -6380,7 +6380,7 @@ function renderizarResultadosDrawer(lista, titulo) {
     lista.slice(0, 4).forEach(function(p) {
         var item = document.createElement('div');
         item.className = 'drawer-rec-item';
-        item.innerHTML = '<img class="drawer-rec-img" src="' + p.img + '" alt="' + p.nombre + '" onerror="this.style.background='#eee'">'
+        item.innerHTML = '<img class="drawer-rec-img" src="' + p.img + '" alt="' + p.nombre + '" onerror="this.style.background=\'#eee\'">'
             + '<div class="drawer-rec-info"><p class="drawer-rec-nombre">' + p.nombre + '</p>'
             + '<p class="drawer-rec-precio">$' + p.precio + ' MXN</p></div>'
             + '<span style="color:#bbb;">›</span>';
