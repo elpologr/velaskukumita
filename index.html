@@ -49,6 +49,86 @@
             padding: 0 1rem;
         }
 
+        /* --- SELECTOR DE MODO FILTRO (Forma / Tamaño) --- */
+        .selector-modo-filtro-velas {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .btn-modo-filtro {
+            background-color: #f0eae4;
+            border: 2px solid #d4c5b8;
+            color: #5c4d43;
+            padding: 10px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+        .btn-modo-filtro.activo {
+            background-color: #8c7565;
+            border-color: #8c7565;
+            color: white;
+        }
+        .btn-modo-filtro:hover:not(.activo) {
+            border-color: #8c7565;
+            color: #5c4d43;
+        }
+
+        /* --- GRUPO DE BOTONES ESTILO YESOS --- */
+        .grupo-botones-velas {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        /* --- SELECTOR DE TIPO DE PRECIO (Original / Bazar) --- */
+        .selector-tipo-precio-velas {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+        .btn-tipo-precio-velas {
+            background-color: #f0eae4;
+            border: 2px solid #d4c5b8;
+            color: #5c4d43;
+            padding: 10px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+        .btn-tipo-precio-velas.activo {
+            background-color: #8c7565;
+            border-color: #8c7565;
+            color: white;
+        }
+        .btn-tipo-precio-velas.bazar {
+            background-color: #f0fff4;
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+        .btn-tipo-precio-velas.bazar.activo {
+            background-color: #4caf50;
+            border-color: #4caf50;
+            color: white;
+        }
+        .btn-tipo-precio-velas:hover:not(.activo) {
+            border-color: #8c7565;
+        }
+        .btn-tipo-precio-velas.bazar:hover:not(.activo) {
+            background-color: #e8f5e9;
+            border-color: #2e7d32;
+        }
+
         /* --- PANEL DE FILTROS AVANZADOS --- */
         .seccion-filtros {
             background: white;
@@ -1163,18 +1243,26 @@
             margin: 0 auto 16px auto;
             max-width: 1200px;
             padding: 0 1rem;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
         }
         .btn-modo-velas {
             background-color: #f0eae4;
             border: 2px solid #d9cfc8;
             color: #5c4d43;
-            padding: 12px 30px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
-            border-radius: 25px;
+            border-radius: 10px;
             cursor: pointer;
             transition: all 0.25s;
+            flex: 1;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 8px;
+            line-height: 1.3;
+            word-break: break-word;
         }
         .btn-modo-velas.activo {
             background-color: #5c4d43;
@@ -1890,6 +1978,48 @@
         body.modo-oscuro .btn-cerrar-drawer { color: #aaa; }
         body.modo-oscuro .drawer-sub-btn,
         body.modo-oscuro .toggle-modo-drawer { border-color: #333; color: #ccc; background: #1a1a1a; }
+
+        /* ─── SELECTOR TIPO PRECIO (Original / Bazar) ─── */
+        .selector-tipo-precio {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .btn-tipo-precio {
+            background-color: #f0f0f0;
+            border: 2px solid #ddd;
+            color: #555;
+            padding: 11px 26px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+        .btn-tipo-precio.activo {
+            background-color: #333;
+            border-color: #333;
+            color: white;
+        }
+        .btn-tipo-precio.bazar {
+            background-color: #f0fff4;
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+        .btn-tipo-precio.bazar.activo {
+            background-color: #4caf50;
+            border-color: #4caf50;
+            color: white;
+        }
+        .btn-tipo-precio:hover:not(.activo) {
+            border-color: #999;
+        }
+        .btn-tipo-precio.bazar:hover:not(.activo) {
+            background-color: #e8f5e9;
+            border-color: #2e7d32;
+        }
 </style>
 </head>
 <body>
@@ -2230,32 +2360,42 @@
 
         <!-- ===== PANEL FILTROS: ARREGLOS ===== -->
         <div class="panel-filtros-arreglos visible" id="panelArreglos">
-            <div class="filtro-bloque">
-                <div class="grupo-botones">
-                    <button class="btn-filtro activo" id="btnArreglosTodo" onclick="filtroArreglos('todo')">Ver Todo</button>
-                    <button class="btn-filtro" id="btnArreglosNombre" onclick="filtroArreglos('nombre')">🔍 Filtrar por Nombre</button>
-                    <button class="btn-filtro" id="btnArreglosEvento" onclick="filtroArreglos('evento')">🎉 Filtrar por Evento</button>
+
+            <!-- Selector de modo: por forma o por tamaño -->
+            <div class="selector-modo-filtro-velas">
+                <button class="btn-modo-filtro activo" id="btn-arreglos-modo-forma" onclick="cambiarModoFiltroArreglos('forma')">🔷 Filtrar por Forma</button>
+                <button class="btn-modo-filtro" id="btn-arreglos-modo-tamano" onclick="cambiarModoFiltroArreglos('tamano')">📐 Filtrar por Tamaño</button>
+            </div>
+
+            <!-- Panel: Filtrar por Forma -->
+            <div id="panel-arreglos-forma">
+                <div class="grupo-botones-velas" id="menu-formas-arreglos">
+                    <button class="btn-filtro activo" onclick="filtrarFormaArreglos(this, 'todos')">Ver Todo</button>
+                    <button class="btn-filtro" onclick="filtrarFormaArreglos(this, 'humana')">Figuras</button>
+                    <button class="btn-filtro" onclick="filtrarFormaArreglos(this, 'tazones')">Tazones</button>
+                    <button class="btn-filtro" onclick="filtrarFormaArreglos(this, 'animales')">Animales</button>
                 </div>
             </div>
-            <!-- Buscador por nombre (Arreglos) -->
-            <div class="busqueda-arreglos" id="busquedaArreglos">
-                <input type="text" id="inputBusquedaArreglos" placeholder="Buscar arreglo por nombre…" oninput="aplicarFiltroArreglosNombre(this.value)">
-                <button onclick="limpiarBusquedaArreglos()">✕ Limpiar</button>
+
+            <!-- Panel: Filtrar por Tamaño -->
+            <div id="panel-arreglos-tamano" style="display:none;">
+                <div class="grupo-botones-velas">
+                    <button class="btn-filtro activo" id="btn-arreglos-tam-todos" onclick="filtrarTamanoArreglos(this, 'todos')">Ver Todo</button>
+                    <button class="btn-filtro" onclick="filtrarTamanoArreglos(this, 'mini')">Mini</button>
+                    <button class="btn-filtro" onclick="filtrarTamanoArreglos(this, 'mini-chico')">Mini Chico</button>
+                    <button class="btn-filtro" onclick="filtrarTamanoArreglos(this, 'chico')">Chico</button>
+                    <button class="btn-filtro" onclick="filtrarTamanoArreglos(this, 'chico-medio')">Chico Medio</button>
+                    <button class="btn-filtro" onclick="filtrarTamanoArreglos(this, 'mediano')">Mediano</button>
+                    <button class="btn-filtro" onclick="filtrarTamanoArreglos(this, 'mediano-grande')">Mediano Grande</button>
+                </div>
             </div>
-            <!-- Subfiltros de evento (Arreglos) -->
-            <div class="subfiltros-evento" id="subfiltrosEvento">
-                <button class="btn-subfiltro-evento activo" data-evento-arreglo="todos" onclick="filtrarArreglosPorEvento(this, 'todos')">Todos</button>
-                <button class="btn-subfiltro-evento" data-evento-arreglo="boda" onclick="filtrarArreglosPorEvento(this, 'boda')">Boda</button>
-                <button class="btn-subfiltro-evento" data-evento-arreglo="confirmacion" onclick="filtrarArreglosPorEvento(this, 'confirmacion')">Confirmación</button>
-                <button class="btn-subfiltro-evento" data-evento-arreglo="baby-shower" onclick="filtrarArreglosPorEvento(this, 'baby-shower')">Baby Shower</button>
-                <button class="btn-subfiltro-evento" data-evento-arreglo="bautizo" onclick="filtrarArreglosPorEvento(this, 'bautizo')">Bautizo</button>
-                <button class="btn-subfiltro-evento" data-evento-arreglo="primera-comunion" onclick="filtrarArreglosPorEvento(this, 'primera-comunion')">Primera Comunión</button>
-                <button class="btn-subfiltro-evento" data-evento-arreglo="quince-anos" onclick="filtrarArreglosPorEvento(this, 'quince-anos')">Quince Años</button>
-                <button class="btn-subfiltro-evento" data-evento-arreglo="aniversario-luctuoso" onclick="filtrarArreglosPorEvento(this, 'aniversario-luctuoso')">Aniversario Luctuoso</button>
-                <button class="btn-subfiltro-evento" data-evento-arreglo="fin-novenario" onclick="filtrarArreglosPorEvento(this, 'fin-novenario')">Fin de Novenario</button>
-                <button class="btn-subfiltro-evento" data-evento-arreglo="despedida-soltera" onclick="filtrarArreglosPorEvento(this, 'despedida-soltera')">Despedida de Soltera</button>
-                <button class="btn-subfiltro-evento" data-evento-arreglo="graduacion" onclick="filtrarArreglosPorEvento(this, 'graduacion')">Graduación</button>
+
+            <!-- Selector de tipo de precio -->
+            <div class="selector-tipo-precio-velas">
+                <button class="btn-tipo-precio-velas activo" id="btn-arreglos-precio-original" onclick="cambiarTipoPrecioArreglos('original')">🏷️ Precio Original</button>
+                <button class="btn-tipo-precio-velas bazar" id="btn-arreglos-precio-bazar" onclick="cambiarTipoPrecioArreglos('bazar')">🟢 Precio de Bazar</button>
             </div>
+
         </div>
 
         <!-- ===== PANEL FILTROS: ETIQUETAS ===== -->
@@ -2301,8 +2441,13 @@
                     <button class="btn-filtro" data-evento="luctuoso">Aniv. Luctuoso</button>
                 </div>
             </div>
-            <div class="filtro-bloque">
-                <label>Precio Máximo:</label>
+                    <!-- Selector de tipo de precio -->
+        <div class="selector-tipo-precio">
+            <button class="btn-tipo-precio activo" id="btn-precio-original" onclick="cambiarTipoPrecio('original')">🏷️ Precio Original</button>
+            <button class="btn-tipo-precio bazar" id="btn-precio-bazar" onclick="cambiarTipoPrecio('bazar')">🟢 Precio de Bazar</button>
+        </div>
+<div class="filtro-bloque">
+                <label id="labelTipoPrecio">Precio Máximo:</label>
                 <div class="control-precio-todos">
                     <input type="range" id="filtroPrecio" min="0" max="500" value="500" step="10" oninput="actualizarPrecio(this.value)">
                     <span id="txtPrecioMax" class="valor-precio">$500 MXN</span>
@@ -2327,7 +2472,7 @@
 
 <div class="grid-productos-inteligente" id="gridProductos">
 
-    <div class="card-dinamica" data-num="1" data-forma="humana" data-evento="bautizo primera-comunion fin-novenario quince-anos boda baby-shower aniversario-luctuoso confirmacion despedida-soltera" data-precio="75"
+    <div class="card-dinamica" data-num="1" data-forma="humana" data-evento="bautizo primera-comunion fin-novenario quince-anos boda baby-shower aniversario-luctuoso confirmacion despedida-soltera" data-precio="75" data-precio-bazar="65"
          data-nombre="Cirio Con Etiqueta y Medallón"
          data-imagenes='["imagenes/cirio-con-etiqueta-y-medallon-1.webp"]' onclick="abrirModal('Cirio Con Etiqueta y Medallón', '$75 MXN', 'Precioso cirio artesanal ideal para ceremonias elegantes. Acabado firme de alta duración hecho a mano.', '<li>De 1 a 19 piezas: $280 c/u</li><li>A partir de 20 piezas: $260 c/u</li><li>A partir de 50 piezas: $240 c/u</li>', 'imagenes/detalle-boda-1.webp', 'imagenes/detalle-boda-2.webp', 'imagenes/cirio-con-etiqueta-y-medallon-1.webp')" style="cursor:pointer;">
         <div class="img-contenedor-dinamico">
@@ -2350,7 +2495,7 @@
         </div>
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$75 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$65 MXN</span></div></div>
     </div>
-    <div class="card-dinamica" data-num="2" data-forma="tazon" data-evento="bautizo primera-comunion aniversario-luctuoso fin-novenario" data-precio="50"
+    <div class="card-dinamica" data-num="2" data-forma="tazon" data-evento="bautizo primera-comunion aniversario-luctuoso fin-novenario" data-precio="50" data-precio-bazar="45"
          data-nombre="Tazón con Ángel y Decoración de Suculentas"
          data-imagenes='["imagenes/tazon-con-angel-y-plantas.webp"]' onclick="abrirModal('Tazón con Ángel y Decoración de Suculentas', '$50 MXN', 'Hermoso tazón decorativo con detalles de ángel y plantas, ideal para recuerdos de bautizo o primera comunión.', '<li>Menos de 20 piezas: $50 c/u</li><li>Más de 20 piezas: $45 c/u</li><li>Más de 50 piezas: $40 c/u</li><li>Más de 100 piezas: $35 c/u</li>', 'imagenes/detalle-angel-1.webp', 'imagenes/detalle-angel-2.webp', 'imagenes/tazon-con-angel-y-plantas.png')" style="cursor:pointer;">
         <div class="img-contenedor-dinamico">
@@ -2374,7 +2519,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$50 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$45 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="3" data-forma="tazones" data-evento="baby-shower confirmacion bautizo primera-comunion" data-precio="90"
+    <div class="card-dinamica" data-num="3" data-forma="tazones" data-evento="baby-shower confirmacion bautizo primera-comunion" data-precio="90" data-precio-bazar="80"
          data-nombre="Tazón de Whinnie de Poo"
          data-imagenes='["imagenes/whinnie-tazon1.webp","imagenes/whinnie-tazon2.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2400,7 +2545,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$90 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$80 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="4" data-forma="humana" data-evento="confirmacion baby-shower bautizo primera-comunion" data-precio="50"
+    <div class="card-dinamica" data-num="4" data-forma="humana" data-evento="confirmacion baby-shower bautizo primera-comunion" data-precio="50" data-precio-bazar="45"
          data-nombre="Tazón de Osito"
          data-imagenes='["imagenes/tazon-de-osito1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2424,7 +2569,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$50 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$45 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="5" data-forma="humana" data-evento="confirmacion baby-shower bautizo primera-comunion" data-precio="50"
+    <div class="card-dinamica" data-num="5" data-forma="humana" data-evento="confirmacion baby-shower bautizo primera-comunion" data-precio="50" data-precio-bazar="45"
          data-nombre="Tazón de Cerdito"
          data-imagenes='["imagenes/tazon-cerdito1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2448,7 +2593,7 @@
     </div>
 
 
-    <div class="card-dinamica" data-num="6" data-forma="humana" data-evento="baby-shower bautizo primera-comunion" data-precio="35"
+    <div class="card-dinamica" data-num="6" data-forma="humana" data-evento="baby-shower bautizo primera-comunion" data-precio="35" data-precio-bazar="30"
          data-nombre="Vela Stich"
          data-imagenes='["imagenes/stich-solo1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2471,7 +2616,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$35 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$30 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="7" data-forma="humana" data-evento="baby-shower bautizo primera-comunion" data-precio="50"
+    <div class="card-dinamica" data-num="7" data-forma="humana" data-evento="baby-shower bautizo primera-comunion" data-precio="50" data-precio-bazar="45"
          data-nombre="Tazón Marino con Tortuga y Plantas"
          data-imagenes='["imagenes/tazon-tortuga-flores1.webp","imagenes/tazon-tortuga-flores2.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2495,7 +2640,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$50 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$45 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="8" data-forma="humana" data-evento="boda" data-precio="30"
+    <div class="card-dinamica" data-num="8" data-forma="humana" data-evento="boda" data-precio="30" data-precio-bazar="25"
          data-nombre="Vela de Mini Osito con Mini Base"
          data-imagenes='["imagenes/mini-osito1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2518,7 +2663,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$30 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$25 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="9" data-forma="humana" data-evento="boda" data-precio="50"
+    <div class="card-dinamica" data-num="9" data-forma="humana" data-evento="boda" data-precio="50" data-precio-bazar="45"
          data-nombre="Vela De Concha Decorada"
          data-imagenes='["imagenes/concha1.webp","imagenes/concha2.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2542,7 +2687,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$50 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$45 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="10" data-forma="humana" data-evento="boda" data-precio="60"
+    <div class="card-dinamica" data-num="10" data-forma="humana" data-evento="boda" data-precio="60" data-precio-bazar="55"
          data-nombre="Tazón Marino con Sirena"
          data-imagenes='["imagenes/tazon-marino-con-sirena1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2568,7 +2713,7 @@
     </div>
 
 
-    <div class="card-dinamica" data-num="11" data-forma="humana" data-evento="boda" data-precio="60"
+    <div class="card-dinamica" data-num="11" data-forma="humana" data-evento="boda" data-precio="60" data-precio-bazar="55"
          data-nombre="Tazón de Conejo con Flores"
          data-imagenes='["imagenes/tazon-conejo-con-flores1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2592,7 +2737,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$60 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$55 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="12" data-forma="humana" data-evento="boda" data-precio="50"
+    <div class="card-dinamica" data-num="12" data-forma="humana" data-evento="boda" data-precio="50" data-precio-bazar="45"
          data-nombre="Tazón Safari"
          data-imagenes='["imagenes/tazon-safari1.webp","imagenes/tazon-safari2.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2617,7 +2762,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$50 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$45 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="13" data-forma="humana" data-evento="boda" data-precio="50"
+    <div class="card-dinamica" data-num="13" data-forma="humana" data-evento="boda" data-precio="50" data-precio-bazar="45"
          data-nombre="Tazón con Ángel y Flores"
          data-imagenes='["imagenes/tazon-angel-flores1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2641,7 +2786,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$50 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$45 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="14" data-forma="humana" data-evento="boda" data-precio="50"
+    <div class="card-dinamica" data-num="14" data-forma="humana" data-evento="boda" data-precio="50" data-precio-bazar="45"
          data-nombre="Tazón de Osito con globo"
          data-imagenes='["imagenes/tazon-de-osito2.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2665,7 +2810,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$50 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$45 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="15" data-forma="tazon" data-evento="baby-shower bautizo primera-comunion" data-precio="60"
+    <div class="card-dinamica" data-num="15" data-forma="tazon" data-evento="baby-shower bautizo primera-comunion" data-precio="60" data-precio-bazar="55"
          data-nombre="Tazón de Osito con Cruz"
          data-imagenes='["imagenes/tazon-de-osito-con-cruz1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2695,7 +2840,7 @@
     </div>
 
 
-    <div class="card-dinamica" data-num="16" data-forma="animales" data-evento="boda" data-precio="30"
+    <div class="card-dinamica" data-num="16" data-forma="animales" data-evento="boda" data-precio="30" data-precio-bazar="25"
          data-nombre="Animales Varios"
          data-imagenes='["imagenes/animales1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2718,7 +2863,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$30 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$25 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="17" data-forma="tazon" data-evento="boda" data-precio="50"
+    <div class="card-dinamica" data-num="17" data-forma="tazon" data-evento="boda" data-precio="50" data-precio-bazar="45"
          data-nombre="Tazon con Angel y Elefante"
          data-imagenes='["imagenes/tazzonangelyelefante1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2743,7 +2888,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$50 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$45 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="18" data-forma="tazon" data-evento="boda" data-precio="65"
+    <div class="card-dinamica" data-num="18" data-forma="tazon" data-evento="boda" data-precio="65" data-precio-bazar="60"
          data-nombre="Tazon con Virgen y Plantas"
          data-imagenes='["imagenes/tazonconvirgencruzyflores1.webp","imagenes/tazonconvirgenyflores2.webp","imagenes/tazonconvirgenyflores3.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2768,7 +2913,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$65 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$60 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="19" data-forma="bouquet" data-evento="boda" data-precio="230"
+    <div class="card-dinamica" data-num="19" data-forma="bouquet" data-evento="boda" data-precio="230" data-precio-bazar="200"
          data-nombre="Bouquet en Caja"
          data-imagenes='["imagenes/bouquetegrandecajacarton1.webp","imagenes/bouquetegrandecajacarton2.webp","imagenes/bouquetegrandecajacarton3.webp","imagenes/bouquetegrandecajacarton4.webp","imagenes/bouquetegrandecajacarton5.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2793,7 +2938,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$230 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$200 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="20" data-forma="base" data-evento="boda" data-precio="100"
+    <div class="card-dinamica" data-num="20" data-forma="base" data-evento="boda" data-precio="100" data-precio-bazar="90"
          data-nombre="Base de Yeso + Cruz + Manos Rezando + Decoracion"
          data-imagenes='["imagenes/basedeyesocruzmanosrezandodecoracion1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2819,7 +2964,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$100 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$90 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="21" data-forma="humana" data-evento="boda" data-precio="50"
+    <div class="card-dinamica" data-num="21" data-forma="humana" data-evento="boda" data-precio="50" data-precio-bazar="45"
          data-nombre="Sagrada Familia"
          data-imagenes='["imagenes/sagrada-familia1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2841,7 +2986,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$50 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$45 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="22" data-forma="bouquet" data-evento="boda" data-precio="120"
+    <div class="card-dinamica" data-num="22" data-forma="bouquet" data-evento="boda" data-precio="120" data-precio-bazar="100"
          data-nombre="Bouquete Mediano Con Virgen pintada de Dorado y Etiqueta"
          data-imagenes='["imagenes/bouquetemedianoconvirgenyetiqueta1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2867,7 +3012,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$120 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$100 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="23" data-forma="tazon" data-evento="boda" data-precio="60"
+    <div class="card-dinamica" data-num="23" data-forma="tazon" data-evento="boda" data-precio="60" data-precio-bazar="50"
          data-nombre="Tazon con Virgen y Decoraciones"
          data-imagenes='["imagenes/tazonconvirgencruzyflores1.webp","imagenes/manoscorazon1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2893,7 +3038,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$60 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="24" data-forma="humana" data-evento="boda" data-precio="75"
+    <div class="card-dinamica" data-num="24" data-forma="humana" data-evento="boda" data-precio="75" data-precio-bazar="70"
          data-nombre="Manos con Corazon"
          data-imagenes='["imagenes/manoscorazon1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2916,7 +3061,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$75 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$70 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="25" data-forma="tarro" data-evento="boda" data-precio="35"
+    <div class="card-dinamica" data-num="25" data-forma="tarro" data-evento="boda" data-precio="35" data-precio-bazar="30"
          data-nombre="Vela de Mini Tarro de Cervesa"
          data-imagenes='["imagenes/tarrocerbesamini1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2940,7 +3085,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$35 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$30 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="26" data-forma="tazon" data-evento="boda" data-precio="50"
+    <div class="card-dinamica" data-num="26" data-forma="tazon" data-evento="boda" data-precio="50" data-precio-bazar="45"
          data-nombre="Tazon con Flor Decorada"
          data-imagenes='["imagenes/tazonflordecorada1.webp","imagenes/tazonflordecorada2.webp","imagenes/tazonflordecorada3.webp","imagenes/tazonflordecorada4.webp","imagenes/tazonflordecorada5.webp","imagenes/tazonflordecorada6.webp","imagenes/tazonflordecorada7.webp","imagenes/tazonflordecorada8.webp","imagenes/tazonflordecorada9.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2963,7 +3108,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$50 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$45 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="27" data-forma="tazon" data-evento="boda" data-precio="50"
+    <div class="card-dinamica" data-num="27" data-forma="tazon" data-evento="boda" data-precio="50" data-precio-bazar="45"
          data-nombre="Tazon de Coca Cola con Flor"
          data-imagenes='["imagenes/tazoncocacolaflor1.webp","imagenes/tazoncocacolaflor2.webp","imagenes/tazoncocacolaflor3.webp","imagenes/tazoncocacolaflor4.webp","imagenes/tazoncocacolaflor5.webp","imagenes/tazoncocacolaflor6.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -2987,7 +3132,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$50 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$45 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="28" data-forma="base" data-evento="boda" data-precio="150"
+    <div class="card-dinamica" data-num="28" data-forma="base" data-evento="boda" data-precio="150" data-precio-bazar="130"
          data-nombre="Base de Yeso + Whinnie Poo + Decoraciones"
          data-imagenes='["imagenes/basedeyesowhinnieydecoraciones.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3012,7 +3157,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$150 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$130 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="29" data-forma="tazon" data-evento="confirmacion baby-shower bautizo primera-comunion aniversario-luctuoso fin-novenario despedida-soltero" data-precio="55"
+    <div class="card-dinamica" data-num="29" data-forma="tazon" data-evento="confirmacion baby-shower bautizo primera-comunion aniversario-luctuoso fin-novenario despedida-soltero" data-precio="55" data-precio-bazar="50"
          data-nombre="Tazon con Cruz Dorada, Suculentas y Cactus"
          data-imagenes='["imagenes/tazonconcruzydeco1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3043,7 +3188,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$55 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="30" data-forma="cruz" data-evento="boda" data-precio="60"
+    <div class="card-dinamica" data-num="30" data-forma="cruz" data-evento="boda" data-precio="60" data-precio-bazar="55"
          data-nombre="Cruz con Figura Religiosa"
          data-imagenes='["imagenes/cruzconfigurareligiosa1.webp","imagenes/cruzreligiosa1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3069,7 +3214,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$60 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$55 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="31" data-forma="humana" data-evento="boda" data-precio="75"
+    <div class="card-dinamica" data-num="31" data-forma="humana" data-evento="boda" data-precio="75" data-precio-bazar="70"
          data-nombre="Cirio con Figura Religiosa"
          data-imagenes='["imagenes/cirioconfigurareligiosa1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3094,7 +3239,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$75 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$70 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="32" data-forma="humana" data-evento="boda" data-precio="55"
+    <div class="card-dinamica" data-num="32" data-forma="humana" data-evento="boda" data-precio="55" data-precio-bazar="50"
          data-nombre="Tazon con Medallon y Decoraciones"
          data-imagenes='["imagenes/tazonmedallondoradoydeco1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3119,7 +3264,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$55 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="33" data-forma="humana" data-evento="boda" data-precio="50"
+    <div class="card-dinamica" data-num="33" data-forma="humana" data-evento="boda" data-precio="50" data-precio-bazar="60"
          data-nombre="Enfermera"
          data-imagenes='["imagenes/enfermera1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3144,7 +3289,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$65 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$60 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="34" data-forma="humana" data-evento="boda" data-precio="60"
+    <div class="card-dinamica" data-num="34" data-forma="humana" data-evento="boda" data-precio="60" data-precio-bazar="55"
          data-nombre="Tazon con Virgen"
          data-imagenes='["imagenes/tazonvirgen1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3169,7 +3314,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$60 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$55 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="36" data-forma="humana" data-evento="boda" data-precio="50"
+    <div class="card-dinamica" data-num="36" data-forma="humana" data-evento="boda" data-precio="50" data-precio-bazar="50"
          data-nombre="Tazon con Virgen"
          data-imagenes='["imagenes/tazonvirgen2.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3192,7 +3337,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$50 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="37" data-forma="humana" data-evento="boda" data-precio="100"
+    <div class="card-dinamica" data-num="37" data-forma="humana" data-evento="boda" data-precio="100" data-precio-bazar="50"
          data-nombre="Cirio Alto con Acabado Antiguo, Detalles Floreados y Etiqueta Enmarcada"
          data-imagenes='["imagenes/cirioaltoacabadoantiguodetallesetiqueta.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3215,7 +3360,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$100 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="38" data-forma="humana" data-evento="boda" data-precio="75"
+    <div class="card-dinamica" data-num="38" data-forma="humana" data-evento="boda" data-precio="75" data-precio-bazar="50"
          data-nombre="Tazon con Virgen"
          data-imagenes='["imagenes/tazonvirgen3.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3238,7 +3383,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$75 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="39" data-forma="humana" data-evento="boda" data-precio="75"
+    <div class="card-dinamica" data-num="39" data-forma="humana" data-evento="boda" data-precio="75" data-precio-bazar="50"
          data-nombre="Vela Cuadrada con Figura Religiosa"
          data-imagenes='["imagenes/velacuadradafigurareligiosa.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3261,7 +3406,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$75 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="40" data-forma="humana" data-evento="boda" data-precio="40"
+    <div class="card-dinamica" data-num="40" data-forma="humana" data-evento="boda" data-precio="40" data-precio-bazar="50"
          data-nombre="Cirio Con Foto"
          data-imagenes='["imagenes/cirioconfoto.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3284,7 +3429,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$40 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="41" data-forma="humana" data-evento="boda" data-precio="25"
+    <div class="card-dinamica" data-num="41" data-forma="humana" data-evento="boda" data-precio="25" data-precio-bazar="50"
          data-nombre="Manos Rezando con Laca Dorada"
          data-imagenes='["imagenes/manosrezandodoradas.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3307,7 +3452,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$25 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="42" data-forma="humana" data-evento="boda" data-precio="20"
+    <div class="card-dinamica" data-num="42" data-forma="humana" data-evento="boda" data-precio="20" data-precio-bazar="50"
          data-nombre="Rosas de Colores"
          data-imagenes='["imagenes/rosasdecolores.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3330,18 +3475,18 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$20 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="43" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Flores Variadas"
-         data-imagenes='["imagenes/floresvariadas1.webp"]'>
+    <div class="card-dinamica" data-num="43" data-forma="animal" data-evento="bautizo" data-evento="baby-shower" data-precio="50" data-precio-bazar="45"
+         data-nombre="Oso Mediano"
+         data-imagenes='["imagenes/osomediano1-1.webp" , "imagenes/osomediano1-2.webp"]'>
         <div class="img-contenedor-dinamico">
-            <img src="imagenes/floresvariadas1.webp" alt="Flores Variadas" style="width: 100%; height: 100%; object-fit: cover;">
+            <img src="imagenes/osomediano1.webp" alt="Oso Mediano" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
         <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
+            <div style="display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 6px;">
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Oso</span>
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Animales</span>
             </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Flores Variadas</h3>
+            <h3 style="font-size: 28px; margin: 5px 0;">Oso Mediano</h3>
         </div>
         <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
             <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
@@ -3350,21 +3495,22 @@
                 <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
             </div>
         </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
+        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$50 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$45 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="44" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 44"
+    <div class="card-dinamica" data-num="44" data-forma="humana" data-evento="boda" data-precio="20" data-precio-bazar="15"
+         data-nombre="Búho"
          data-imagenes='["imagenes/producto44-1.webp"]'>
         <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto44-1.webp" alt="Producto 44" style="width: 100%; height: 100%; object-fit: cover;">
+            <img src="imagenes/buhochico1.webp" alt="Búho" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
         <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
+            <div style="display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 6px;">
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Búho</span>
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Animales</span>
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Nocturnos</span>
             </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 44</h3>
+            <h3 style="font-size: 28px; margin: 5px 0;">Búho</h3>
         </div>
         <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
             <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
@@ -3373,21 +3519,22 @@
                 <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
             </div>
         </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
+        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$20 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$15 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="45" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 45"
+    <div class="card-dinamica" data-num="45" data-forma="humana" data-evento="boda" data-precio="120" data-precio-bazar="100"
+         data-nombre="Búhos de las Tres Virtudes"
          data-imagenes='["imagenes/producto45-1.webp"]'>
         <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto45-1.webp" alt="Producto 45" style="width: 100%; height: 100%; object-fit: cover;">
+            <img src="imagenes/buhos3virtudes1.webp" alt="Búhos de las Tres Virtudes" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
         <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
+            <div style="display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 6px;">
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Búhos</span>
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Animales</span>
+                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Nocturnos</span>
             </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 45</h3>
+            <h3 style="font-size: 28px; margin: 5px 0;">Búhos de las Tres Virtudes</h3>
         </div>
         <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
             <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
@@ -3396,21 +3543,21 @@
                 <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
             </div>
         </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
+        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$120 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$100 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="46" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 46"
-         data-imagenes='["imagenes/producto46-1.webp"]'>
+    <div class="card-dinamica" data-num="46" data-forma="humana" data-evento="boda" data-precio="250" data-precio-bazar="50"
+         data-nombre="Dinosaurios"
+         data-imagenes='["imagenes/dinosauriomediano0.webp","imagenes/dinosauriomediano0-1.webp","imagenes/dinosauriomediano1.webp","imagenes/dinosauriomediano1-1.webp","imagenes/dinosauriomediano1-2.webp","imagenes/dinosauriomediano1-3.webp","imagenes/dinosauriomediano1-5.webp","imagenes/dinosauriomediano1-6.webp","imagenes/dinosauriomediano1-7.webp","imagenes/dinosauriomediano1-4.webp"]'>
         <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto46-1.webp" alt="Producto 46" style="width: 100%; height: 100%; object-fit: cover;">
+            <img src="imagenes/dinosauriomediano0.webp" alt="Dinosaurios" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
         <div style="margin-top: 10px; flex-grow: 1;">
             <div style="display:none;">
                 <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
                 <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
             </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 46</h3>
+            <h3 style="font-size: 28px; margin: 5px 0;">Dinosaurios</h3>
         </div>
         <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
             <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
@@ -3422,7 +3569,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="47" data-forma="humana" data-evento="boda" data-precio="250"
+    <div class="card-dinamica" data-num="47" data-forma="humana" data-evento="boda" data-precio="250" data-precio-bazar="50"
          data-nombre="Producto 47"
          data-imagenes='["imagenes/producto47-1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3445,7 +3592,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="48" data-forma="humana" data-evento="boda" data-precio="250"
+    <div class="card-dinamica" data-num="48" data-forma="humana" data-evento="boda" data-precio="250" data-precio-bazar="50"
          data-nombre="Producto 48"
          data-imagenes='["imagenes/producto48-1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3468,7 +3615,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="49" data-forma="humana" data-evento="boda" data-precio="250"
+    <div class="card-dinamica" data-num="49" data-forma="humana" data-evento="boda" data-precio="250" data-precio-bazar="50"
          data-nombre="Producto 49"
          data-imagenes='["imagenes/producto49-1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3491,7 +3638,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="50" data-forma="humana" data-evento="boda" data-precio="250"
+    <div class="card-dinamica" data-num="50" data-forma="humana" data-evento="boda" data-precio="250" data-precio-bazar="50"
          data-nombre="Producto 50"
          data-imagenes='["imagenes/producto50-1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3514,7 +3661,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="51" data-forma="humana" data-evento="boda" data-precio="250"
+    <div class="card-dinamica" data-num="51" data-forma="humana" data-evento="boda" data-precio="250" data-precio-bazar="50"
          data-nombre="Producto 51"
          data-imagenes='["imagenes/producto51-1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3537,7 +3684,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="52" data-forma="humana" data-evento="boda" data-precio="250"
+    <div class="card-dinamica" data-num="52" data-forma="humana" data-evento="boda" data-precio="250" data-precio-bazar="50"
          data-nombre="Producto 52"
          data-imagenes='["imagenes/producto52-1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3560,7 +3707,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="53" data-forma="humana" data-evento="boda" data-precio="250"
+    <div class="card-dinamica" data-num="53" data-forma="humana" data-evento="boda" data-precio="250" data-precio-bazar="50"
          data-nombre="Producto 53"
          data-imagenes='["imagenes/producto53-1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3583,7 +3730,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="54" data-forma="humana" data-evento="boda" data-precio="250"
+    <div class="card-dinamica" data-num="54" data-forma="humana" data-evento="boda" data-precio="250" data-precio-bazar="50"
          data-nombre="Producto 54"
          data-imagenes='["imagenes/producto54-1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3606,7 +3753,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="55" data-forma="humana" data-evento="boda" data-precio="250"
+    <div class="card-dinamica" data-num="55" data-forma="humana" data-evento="boda" data-precio="250" data-precio-bazar="50"
          data-nombre="Producto 55"
          data-imagenes='["imagenes/producto55-1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3629,7 +3776,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="56" data-forma="humana" data-evento="boda" data-precio="250"
+    <div class="card-dinamica" data-num="56" data-forma="humana" data-evento="boda" data-precio="250" data-precio-bazar="50"
          data-nombre="Producto 56"
          data-imagenes='["imagenes/producto56-1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3652,7 +3799,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="57" data-forma="humana" data-evento="boda" data-precio="250"
+    <div class="card-dinamica" data-num="57" data-forma="humana" data-evento="boda" data-precio="250" data-precio-bazar="50"
          data-nombre="Producto 57"
          data-imagenes='["imagenes/producto57-1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3675,7 +3822,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="58" data-forma="humana" data-evento="boda" data-precio="250"
+    <div class="card-dinamica" data-num="58" data-forma="humana" data-evento="boda" data-precio="250" data-precio-bazar="50"
          data-nombre="Producto 58"
          data-imagenes='["imagenes/producto58-1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3698,7 +3845,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="59" data-forma="humana" data-evento="boda" data-precio="250"
+    <div class="card-dinamica" data-num="59" data-forma="humana" data-evento="boda" data-precio="250" data-precio-bazar="50"
          data-nombre="Producto 59"
          data-imagenes='["imagenes/producto59-1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3721,7 +3868,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="60" data-forma="humana" data-evento="boda" data-precio="250"
+    <div class="card-dinamica" data-num="60" data-forma="humana" data-evento="boda" data-precio="250" data-precio-bazar="50"
          data-nombre="Producto 60"
          data-imagenes='["imagenes/producto60-1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3744,7 +3891,7 @@
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
 
-    <div class="card-dinamica" data-num="61" data-forma="humana" data-evento="boda" data-precio="250"
+    <div class="card-dinamica" data-num="61" data-forma="humana" data-evento="boda" data-precio="250" data-precio-bazar="50"
          data-nombre="Producto 61"
          data-imagenes='["imagenes/producto61-1.webp"]'>
         <div class="img-contenedor-dinamico">
@@ -3766,1247 +3913,6 @@
         </div>
         <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
     </div>
-
-    <div class="card-dinamica" data-num="62" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 62"
-         data-imagenes='["imagenes/producto62-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto62-1.webp" alt="Producto 62" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 62</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="63" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 63"
-         data-imagenes='["imagenes/producto63-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto63-1.webp" alt="Producto 63" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 63</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="64" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 64"
-         data-imagenes='["imagenes/producto64-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto64-1.webp" alt="Producto 64" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 64</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="65" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 65"
-         data-imagenes='["imagenes/producto65-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto65-1.webp" alt="Producto 65" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 65</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="66" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 66"
-         data-imagenes='["imagenes/producto66-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto66-1.webp" alt="Producto 66" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 66</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="67" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 67"
-         data-imagenes='["imagenes/producto67-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto67-1.webp" alt="Producto 67" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 67</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="68" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 68"
-         data-imagenes='["imagenes/producto68-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto68-1.webp" alt="Producto 68" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 68</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="69" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 69"
-         data-imagenes='["imagenes/producto69-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto69-1.webp" alt="Producto 69" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 69</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="70" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 70"
-         data-imagenes='["imagenes/producto70-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto70-1.webp" alt="Producto 70" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 70</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="71" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 71"
-         data-imagenes='["imagenes/producto71-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto71-1.webp" alt="Producto 71" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 71</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="72" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 72"
-         data-imagenes='["imagenes/producto72-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto72-1.webp" alt="Producto 72" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 72</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="73" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 73"
-         data-imagenes='["imagenes/producto73-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto73-1.webp" alt="Producto 73" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 73</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="74" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 74"
-         data-imagenes='["imagenes/producto74-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto74-1.webp" alt="Producto 74" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 74</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="75" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 75"
-         data-imagenes='["imagenes/producto75-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto75-1.webp" alt="Producto 75" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 75</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="76" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 76"
-         data-imagenes='["imagenes/producto76-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto76-1.webp" alt="Producto 76" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 76</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="77" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 77"
-         data-imagenes='["imagenes/producto77-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto77-1.webp" alt="Producto 77" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 77</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="78" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 78"
-         data-imagenes='["imagenes/producto78-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto78-1.webp" alt="Producto 78" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 78</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="79" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 79"
-         data-imagenes='["imagenes/producto79-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto79-1.webp" alt="Producto 79" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 79</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="80" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 80"
-         data-imagenes='["imagenes/producto80-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto80-1.webp" alt="Producto 80" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 80</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="81" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 81"
-         data-imagenes='["imagenes/producto81-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto81-1.webp" alt="Producto 81" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 81</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="82" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 82"
-         data-imagenes='["imagenes/producto82-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto82-1.webp" alt="Producto 82" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 82</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="83" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 83"
-         data-imagenes='["imagenes/producto83-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto83-1.webp" alt="Producto 83" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 83</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="84" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 84"
-         data-imagenes='["imagenes/producto84-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto84-1.webp" alt="Producto 84" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 84</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="85" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 85"
-         data-imagenes='["imagenes/producto85-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto85-1.webp" alt="Producto 85" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 85</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="86" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 86"
-         data-imagenes='["imagenes/producto86-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto86-1.webp" alt="Producto 86" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 86</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="87" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 87"
-         data-imagenes='["imagenes/producto87-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto87-1.webp" alt="Producto 87" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 87</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="88" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 88"
-         data-imagenes='["imagenes/producto88-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto88-1.webp" alt="Producto 88" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 88</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="89" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 89"
-         data-imagenes='["imagenes/producto89-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto89-1.webp" alt="Producto 89" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 89</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="90" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 90"
-         data-imagenes='["imagenes/producto90-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto90-1.webp" alt="Producto 90" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 90</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="91" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 91"
-         data-imagenes='["imagenes/producto91-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto91-1.webp" alt="Producto 91" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 91</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="92" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 92"
-         data-imagenes='["imagenes/producto92-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto92-1.webp" alt="Producto 92" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 92</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="93" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 93"
-         data-imagenes='["imagenes/producto93-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto93-1.webp" alt="Producto 93" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 93</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="94" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 94"
-         data-imagenes='["imagenes/producto94-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto94-1.webp" alt="Producto 94" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 94</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="95" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 95"
-         data-imagenes='["imagenes/producto95-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto95-1.webp" alt="Producto 95" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 95</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="96" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 96"
-         data-imagenes='["imagenes/producto96-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto96-1.webp" alt="Producto 96" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 96</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="97" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 97"
-         data-imagenes='["imagenes/producto97-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto97-1.webp" alt="Producto 97" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 97</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="98" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 98"
-         data-imagenes='["imagenes/producto98-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto98-1.webp" alt="Producto 98" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 98</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="99" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 99"
-         data-imagenes='["imagenes/producto99-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto99-1.webp" alt="Producto 99" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 99</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="100" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 100"
-         data-imagenes='["imagenes/producto100-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto100-1.webp" alt="Producto 100" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 100</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="101" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 101"
-         data-imagenes='["imagenes/producto101-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto101-1.webp" alt="Producto 101" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 101</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="102" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 102"
-         data-imagenes='["imagenes/producto102-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto102-1.webp" alt="Producto 102" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 102</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="103" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 103"
-         data-imagenes='["imagenes/producto103-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto103-1.webp" alt="Producto 103" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 103</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="104" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 104"
-         data-imagenes='["imagenes/producto104-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto104-1.webp" alt="Producto 104" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 104</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="105" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 105"
-         data-imagenes='["imagenes/producto105-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto105-1.webp" alt="Producto 105" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 105</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="106" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 106"
-         data-imagenes='["imagenes/producto106-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto106-1.webp" alt="Producto 106" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 106</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="107" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 107"
-         data-imagenes='["imagenes/producto107-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto107-1.webp" alt="Producto 107" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 107</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="108" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 108"
-         data-imagenes='["imagenes/producto108-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto108-1.webp" alt="Producto 108" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 108</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="109" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 109"
-         data-imagenes='["imagenes/producto109-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto109-1.webp" alt="Producto 109" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 109</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="110" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 110"
-         data-imagenes='["imagenes/producto110-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto110-1.webp" alt="Producto 110" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 110</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="111" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 111"
-         data-imagenes='["imagenes/producto111-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto111-1.webp" alt="Producto 111" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 111</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="112" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 112"
-         data-imagenes='["imagenes/producto112-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto112-1.webp" alt="Producto 112" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 112</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="113" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 113"
-         data-imagenes='["imagenes/producto113-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto113-1.webp" alt="Producto 113" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 113</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="114" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 114"
-         data-imagenes='["imagenes/producto114-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto114-1.webp" alt="Producto 114" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 114</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-        <div class="card-precios-bloque"><div class="card-precio-normal"><span class="card-precio-etiqueta">Precio</span><span class="card-precio-valor">$250 MXN</span></div><div class="card-precio-mayoreo-bloque visible"><span class="card-precio-mayoreo-etiqueta">Precio Bazar</span><span class="card-precio-mayoreo-badge">$50 MXN</span></div></div>
-    </div>
-
-    <div class="card-dinamica" data-num="115" data-forma="humana" data-evento="boda" data-precio="250"
-         data-nombre="Producto 115"
-         data-imagenes='["imagenes/producto115-1.webp"]'>
-        <div class="img-contenedor-dinamico">
-            <img src="imagenes/producto115-1.webp" alt="Producto 115" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <div style="margin-top: 10px; flex-grow: 1;">
-            <div style="display:none;">
-                <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 10px;">F. Humana</span>
-                <span style="background: #e0f7fa; padding: 2px 6px; border-radius: 4px; font-size: 10px;">Boda</span>
-            </div>
-            <h3 style="font-size: 28px; margin: 5px 0;">Producto 115</h3>
-        </div>
-        <div style="font-size: 11px; border-top: 1px solid #eee; padding-top: 6px;">
-            <div style="display: flex; gap: 5px; margin-top: 3px; justify-content: center;">
-                <div class="recuadro-item" title="Cirio Base" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-cirio-base.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Etiqueta Personalizada" onclick="window.location.href='#seccion-aditivos';" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; cursor: pointer;"><img src="imagenes/aditivo-etiqueta.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-                <div class="recuadro-item" title="Medalla" style="width: 32px; height: 32px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;"><img src="imagenes/aditivo-medalla.webp" style="width:100%; height:100%; object-fit:cover;"></div>
-            </div>
-        </div>
-    </div></div>
 </div><!-- /container principal -->
 
 <!-- Controles de paginación inferiores -->
@@ -5851,70 +4757,69 @@
         }
     }
 
-    // ===== FILTROS DE ARREGLOS =====
-    let modoFiltroArreglos = 'todo'; // 'todo' | 'nombre' | 'evento'
-    let eventoArregloActivo = 'todos';
-    let busquedaArreglosTexto = '';
+    // ===== FILTROS DE ARREGLOS (estilo yesos: Forma / Tamaño / Precio) =====
+    let modoFiltroArreglos = 'forma';   // 'forma' | 'tamano'
+    let formaArreglosActiva = 'todos';
+    let tamanoArreglosActivo = 'todos';
+    let tipoPrecioArreglos = 'original'; // 'original' | 'bazar'
 
-    function filtroArreglos(tipo) {
-        modoFiltroArreglos = tipo;
-        // Actualizar botones
-        ['btnArreglosTodo','btnArreglosNombre','btnArreglosEvento'].forEach(id => {
-            document.getElementById(id).classList.remove('activo');
-        });
-        document.getElementById('btnArreglos' + tipo.charAt(0).toUpperCase() + tipo.slice(1)).classList.add('activo');
+    function cambiarModoFiltroArreglos(modo) {
+        modoFiltroArreglos = modo;
+        document.getElementById('btn-arreglos-modo-forma').classList.toggle('activo', modo === 'forma');
+        document.getElementById('btn-arreglos-modo-tamano').classList.toggle('activo', modo === 'tamano');
+        document.getElementById('panel-arreglos-forma').style.display = modo === 'forma' ? '' : 'none';
+        document.getElementById('panel-arreglos-tamano').style.display = modo === 'tamano' ? '' : 'none';
 
-        // Mostrar/ocultar sub-paneles
-        const buscador = document.getElementById('busquedaArreglos');
-        const subfiltros = document.getElementById('subfiltrosEvento');
-        buscador.classList.toggle('visible', tipo === 'nombre');
-        subfiltros.classList.toggle('visible', tipo === 'evento');
-
-        // Si cambia a "todo", limpiar filtros activos
-        if (tipo === 'todo') {
-            busquedaArreglosTexto = '';
-            document.getElementById('inputBusquedaArreglos').value = '';
-            eventoArregloActivo = 'todos';
-            document.querySelectorAll('.btn-subfiltro-evento').forEach(b => b.classList.remove('activo'));
-            document.querySelector('.btn-subfiltro-evento[data-evento-arreglo="todos"]').classList.add('activo');
+        if (modo === 'forma') {
+            tamanoArreglosActivo = 'todos';
+        } else {
+            formaArreglosActiva = 'todos';
+            document.querySelectorAll('#panel-arreglos-tamano .btn-filtro').forEach(b => b.classList.remove('activo'));
+            document.getElementById('btn-arreglos-tam-todos').classList.add('activo');
         }
         aplicarFiltrosArreglos();
     }
 
-    function filtrarArreglosPorEvento(btn, evento) {
-        eventoArregloActivo = evento;
-        document.querySelectorAll('.btn-subfiltro-evento').forEach(b => b.classList.remove('activo'));
+    function filtrarFormaArreglos(btn, forma) {
+        formaArreglosActiva = forma;
+        document.querySelectorAll('#menu-formas-arreglos .btn-filtro').forEach(b => b.classList.remove('activo'));
         btn.classList.add('activo');
         aplicarFiltrosArreglos();
     }
 
-    function aplicarFiltroArreglosNombre(valor) {
-        busquedaArreglosTexto = valor.trim().toLowerCase();
+    function filtrarTamanoArreglos(btn, tam) {
+        tamanoArreglosActivo = tam;
+        document.querySelectorAll('#panel-arreglos-tamano .btn-filtro').forEach(b => b.classList.remove('activo'));
+        btn.classList.add('activo');
         aplicarFiltrosArreglos();
     }
 
-    function limpiarBusquedaArreglos() {
-        document.getElementById('inputBusquedaArreglos').value = '';
-        busquedaArreglosTexto = '';
+    function cambiarTipoPrecioArreglos(tipo) {
+        tipoPrecioArreglos = tipo;
+        document.getElementById('btn-arreglos-precio-original').classList.toggle('activo', tipo === 'original');
+        document.getElementById('btn-arreglos-precio-bazar').classList.toggle('activo', tipo === 'bazar');
         aplicarFiltrosArreglos();
     }
 
     function aplicarFiltrosArreglos() {
-        // Por ahora aplica a las mismas cards — cuando añadas el atributo data-evento-arreglo lo usará
         document.querySelectorAll('.card-dinamica').forEach(card => {
             let visible = true;
-            // Filtro por nombre
-            if (busquedaArreglosTexto) {
-                const nombre = (card.getAttribute('data-nombre') || '').toLowerCase();
-                visible = nombre.includes(busquedaArreglosTexto);
+
+            // Filtro por forma (usa data-forma)
+            if (modoFiltroArreglos === 'forma' && formaArreglosActiva !== 'todos') {
+                const formaCard = (card.getAttribute('data-forma') || '').toLowerCase();
+                visible = formaCard === formaArreglosActiva;
             }
-            // Filtro por evento de arreglo
-            if (eventoArregloActivo !== 'todos') {
-                const eventoCard = (card.getAttribute('data-evento-arreglo') || '').toLowerCase();
-                visible = visible && eventoCard === eventoArregloActivo;
+
+            // Filtro por tamaño (usa data-tamano si existe, si no muestra todo)
+            if (modoFiltroArreglos === 'tamano' && tamanoArreglosActivo !== 'todos') {
+                const tamCard = (card.getAttribute('data-tamano') || '').toLowerCase();
+                visible = tamCard === tamanoArreglosActivo;
             }
+
             card.classList.toggle('oculto', !visible);
         });
+        if (typeof window.actualizarPaginacion === 'function') window.actualizarPaginacion();
     }
 
     // ===== FILTROS TODOS LOS PRODUCTOS =====
@@ -5935,6 +4840,18 @@
         aplicarFiltrosTodos();
     }
 
+    let tipoPrecioActual = 'original'; // 'original' | 'bazar'
+
+    function cambiarTipoPrecio(tipo) {
+        tipoPrecioActual = tipo;
+        document.getElementById('btn-precio-original').classList.toggle('activo', tipo === 'original');
+        document.getElementById('btn-precio-bazar').classList.toggle('activo', tipo === 'bazar');
+        // Actualizar etiqueta del slider según tipo
+        const label = document.getElementById('labelTipoPrecio');
+        if (label) label.textContent = tipo === 'bazar' ? 'Precio Bazar Máximo:' : 'Precio Máximo:';
+        aplicarFiltrosTodos();
+    }
+
     function aplicarFiltrosTodos() {
         const formaActiva  = document.querySelector('#filtro-formas .btn-filtro.activo')?.dataset.forma || 'todos';
         const eventoActivo = document.querySelector('#filtro-eventos .btn-filtro.activo')?.dataset.evento || 'todos';
@@ -5944,8 +4861,15 @@
         document.querySelectorAll('.card-dinamica').forEach(card => {
             const formaCard  = card.dataset.forma || '';
             const eventoCard = card.dataset.evento || '';
-            const precioCard = parseInt(card.dataset.precio || '0');
             const nombreCard = (card.getAttribute('data-nombre') || '').toLowerCase();
+
+            // Seleccionar precio según tipo activo
+            let precioCard;
+            if (tipoPrecioActual === 'bazar') {
+                precioCard = parseInt(card.dataset.precioBazar || card.dataset.precio || '0');
+            } else {
+                precioCard = parseInt(card.dataset.precio || '0');
+            }
 
             const okForma   = formaActiva  === 'todos' || formaCard  === formaActiva;
             const okEvento  = eventoActivo === 'todos' || eventoCard === eventoActivo;
