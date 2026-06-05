@@ -1337,17 +1337,25 @@ if (document.readyState === 'loading') {
             const formaCard  = (card.dataset.forma  || '').toLowerCase();
             const eventoCard = (card.dataset.evento || '').toLowerCase();
             const nombreCard = (card.getAttribute('data-nombre') || '').toLowerCase();
+            const tipoCard   = (card.getAttribute('data-tipo') || '').toLowerCase();
 
             const okNombre = !textoBusq || nombreCard.includes(textoBusq);
             const okForma  = formaActiva  === 'todos' || formaCard === formaActiva;
             const okEvento = eventoActivo === 'todos' || eventoCard.split(' ').includes(eventoActivo);
 
             if (panel === 'decoraciones') {
-                const tipoCard = (card.getAttribute('data-tipo') || '').toLowerCase();
-                card.classList.toggle('oculto', !(tipoCard === 'decoracion' && okNombre));
+                // Acepta tipo = 'decoracion', 'aditamento', 'decoraciones', 'aditamentos', o combinaciones
+                const esDecOAdit = tipoCard === 'decoracion' || tipoCard === 'decoraciones'
+                                || tipoCard === 'aditamento' || tipoCard === 'aditamentos';
+                card.classList.toggle('oculto', !(esDecOAdit && okNombre));
             } else if (panel === 'etiquetas') {
-                card.classList.toggle('oculto', !(okNombre && okEvento));
+                const esEtiqueta = tipoCard === 'etiqueta' || tipoCard === 'etiquetas';
+                card.classList.toggle('oculto', !(esEtiqueta && okNombre && okEvento));
+            } else if (panel === 'arreglos') {
+                const esArreglo = tipoCard === 'arreglo' || tipoCard === 'arreglos';
+                card.classList.toggle('oculto', !(esArreglo && okNombre && okForma && okEvento));
             } else {
+                // panel === 'todos': muestra todo sin filtro de tipo
                 card.classList.toggle('oculto', !(okNombre && okForma && okEvento));
             }
         });
@@ -1424,6 +1432,13 @@ if (document.readyState === 'loading') {
     function aplicarFiltrosArreglos() {
         document.querySelectorAll('.card-dinamica').forEach(card => {
             let visible = true;
+
+            // Solo mostrar tarjetas de tipo arreglo/arreglos
+            const tipoCard = (card.getAttribute('data-tipo') || '').toLowerCase();
+            if (tipoCard !== 'arreglo' && tipoCard !== 'arreglos') {
+                card.classList.add('oculto');
+                return;
+            }
 
             // Filtro por forma (usa data-forma)
             if (modoFiltroArreglos === 'forma' && formaArreglosActiva !== 'todos') {
