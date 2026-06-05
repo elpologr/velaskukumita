@@ -650,10 +650,16 @@ if (document.readyState === 'loading') {
             }
 
             // Indicador visual: resaltar encabezados de filtros activos
-            document.querySelector('#filtro-formas').closest('.filtro-bloque')
-                .querySelector('label').style.color = formaActiva !== 'todos' ? '#8c7565' : '';
-            document.querySelector('#filtro-eventos').closest('.filtro-bloque')
-                .querySelector('label').style.color = eventoActivo !== 'todos' ? '#4b6b94' : '';
+            var _elFormas = document.querySelector('#filtro-formas');
+            if (_elFormas && _elFormas.closest('.filtro-bloque')) {
+                var _lbFormas = _elFormas.closest('.filtro-bloque').querySelector('label');
+                if (_lbFormas) _lbFormas.style.color = formaActiva !== 'todos' ? '#8c7565' : '';
+            }
+            var _elEventos = document.querySelector('#filtro-eventos');
+            if (_elEventos && _elEventos.closest('.filtro-bloque')) {
+                var _lbEventos = _elEventos.closest('.filtro-bloque').querySelector('label');
+                if (_lbEventos) _lbEventos.style.color = eventoActivo !== 'todos' ? '#4b6b94' : '';
+            }
         }
 
         // Filtro de FORMA — selección exclusiva dentro del grupo
@@ -676,11 +682,13 @@ if (document.readyState === 'loading') {
             });
         });
 
-        sliderPrecio.addEventListener('input', (e) => {
-            precioMaximoActivo = parseInt(e.target.value);
-            txtPrecioMax.textContent = `$${precioMaximoActivo} MXN`;
-            aplicarFiltros();
-        });
+        if (sliderPrecio) {
+            sliderPrecio.addEventListener('input', (e) => {
+                precioMaximoActivo = parseInt(e.target.value);
+                if (txtPrecioMax) txtPrecioMax.textContent = `$${precioMaximoActivo} MXN`;
+                aplicarFiltros();
+            });
+        }
     
 
 
@@ -1488,7 +1496,8 @@ if (document.readyState === 'loading') {
     function aplicarFiltrosTodos() {
         const formaActiva  = document.querySelector('#filtro-formas .btn-filtro.activo')?.dataset.forma || 'todos';
         const eventoActivo = document.querySelector('#filtro-eventos .btn-filtro.activo')?.dataset.evento || 'todos';
-        const precioMax    = parseInt(document.getElementById('filtroPrecio').value);
+        const _sliderEl = document.getElementById('filtroPrecio');
+        const precioMax    = _sliderEl ? parseInt(_sliderEl.value) : 99999;
         const textoBusq    = (document.getElementById('inputBusquedaTodos').value || '').trim().toLowerCase();
 
         document.querySelectorAll('.card-dinamica').forEach(card => {
@@ -2074,7 +2083,8 @@ function activarPill(cual) {
         var el = document.getElementById(id);
         if (el) el.classList.remove('activo');
     });
-    Object.values(_pillPanels).forEach(function(id) {
+    // FIX: filtrar nulls para evitar getElementById(null) que rompe el script
+    Object.values(_pillPanels).filter(Boolean).forEach(function(id) {
         var el = document.getElementById(id);
         if (el) el.classList.remove('activo');
     });
@@ -2082,7 +2092,8 @@ function activarPill(cual) {
     // Activar el seleccionado
     var btnEl = document.getElementById(_pillBtns[cual]);
     if (btnEl) btnEl.classList.add('activo');
-    var panelEl = document.getElementById(_pillPanels[cual]);
+    var panelId = _pillPanels[cual];
+    var panelEl = panelId ? document.getElementById(panelId) : null;
     if (panelEl) panelEl.classList.add('activo');
 
     // Mostrar/ocultar catálogo de productos
@@ -3258,8 +3269,9 @@ function irAZonaInteractiva() {
 }
 
 // Cerrar modal de cantidad al hacer clic en el fondo
-document.getElementById('modalCantidad').addEventListener('click', function(e) {
-    if (e.target === this) cerrarModalCantidad();
+_ready(function() {
+    var _mc = document.getElementById('modalCantidad');
+    if (_mc) _mc.addEventListener('click', function(e) { if (e.target === this) cerrarModalCantidad(); });
 });
 
 // Agregar botón de carrito en el drawer (junto a favoritos)
@@ -3337,6 +3349,7 @@ function compartirEnInstagram() {
 }
 
 // Cerrar al hacer clic en el fondo
-document.getElementById('submenuCompartir').addEventListener('click', function(e) {
-    if (e.target === this) cerrarSubmenuCompartir();
+_ready(function() {
+    var _sc = document.getElementById('submenuCompartir');
+    if (_sc) _sc.addEventListener('click', function(e) { if (e.target === this) cerrarSubmenuCompartir(); });
 });
