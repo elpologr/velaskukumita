@@ -869,8 +869,7 @@ if (document.readyState === 'loading') {
         }
 
         // ── Decoraciones y Aditamentos: lee columnas SubImagen1-8 desde data-sub-imagenes ──
-        // Cada entrada es una URL. El código busca automáticamente el producto que tenga
-        // esa URL como imagen principal y abre su modal al hacer clic.
+        // Cada entrada puede ser: URL de imagen, o nombre exacto/parcial del producto relacionado.
         const aditivosScroll = document.getElementById('modalAditivosScroll');
         const aditivosZona   = document.getElementById('modalAditivosZona');
         aditivosScroll.innerHTML = '';
@@ -878,34 +877,61 @@ if (document.readyState === 'loading') {
         let subImagenes = [];
         try { subImagenes = JSON.parse(card.getAttribute('data-sub-imagenes') || '[]'); } catch(e) {}
 
+        // Helper: normaliza texto quitando tildes, espacios extra y pasando a minúsculas
+        function _normTexto(s) {
+            return (s || '').trim().toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/\s+/g, ' ');
+        }
+
         if (subImagenes.length > 0) {
-            // Construir índice URL→card y Nombre→card para búsqueda rápida
-            // Soporta tanto URLs de imagen como nombres de producto en las columnas K-R
-            const urlACard = {};
-            const nombreACard = {};
+            // Construir índice URL→card, NombreExacto→card y NombreNorm→card
+            const urlACard    = {};
+            const nombreACard = {};   // clave: nombre normalizado
             document.querySelectorAll('.card-dinamica').forEach(function(c) {
                 try {
                     const imgs = JSON.parse(c.getAttribute('data-imagenes') || '[]');
                     imgs.forEach(function(u) { if (u) urlACard[u.trim()] = c; });
                 } catch(e) {}
-                const nombre = (c.getAttribute('data-nombre') || '').trim().toLowerCase();
-                if (nombre) nombreACard[nombre] = c;
+                const n = _normTexto(c.getAttribute('data-nombre') || '');
+                if (n) nombreACard[n] = c;
             });
+
+            // Búsqueda de card por nombre: exacta → normalizada → parcial
+            function buscarCardPorNombre(entrada) {
+                const norm = _normTexto(entrada);
+                if (nombreACard[norm]) return nombreACard[norm];
+                // Búsqueda parcial: la entrada está contenida en algún nombre, o viceversa
+                const claves = Object.keys(nombreACard);
+                for (let k = 0; k < claves.length; k++) {
+                    if (claves[k].includes(norm) || norm.includes(claves[k])) {
+                        return nombreACard[claves[k]];
+                    }
+                }
+                return null;
+            }
 
             function esURL(s) {
                 return /^https?:\/\//i.test(s) || /^\//.test(s) || /\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(s);
             }
 
+            console.log('[Aditamentos] SubImagenes de "' + nombre + '":', subImagenes);
+            console.log('[Aditamentos] Cards disponibles:', Object.keys(nombreACard));
+
             subImagenes.forEach(function(entrada) {
-                entrada = entrada.trim();
+                entrada = (entrada || '').trim();
+                if (!entrada) return;
+
                 let cardRelacionada = null;
                 let srcImagen = '';
 
                 if (esURL(entrada)) {
+                    // Es URL directa de imagen
                     cardRelacionada = urlACard[entrada] || null;
                     srcImagen = entrada;
                 } else {
-                    cardRelacionada = nombreACard[entrada.toLowerCase()] || null;
+                    // Es nombre de producto
+                    cardRelacionada = buscarCardPorNombre(entrada);
                     if (cardRelacionada) {
                         try {
                             const imgs = JSON.parse(cardRelacionada.getAttribute('data-imagenes') || '[]');
@@ -914,56 +940,79 @@ if (document.readyState === 'loading') {
                     }
                 }
 
-                const url = srcImagen;
-                const nombreRel = cardRelacionada ? (cardRelacionada.getAttribute('data-nombre') || '') : '';
+                console.log('[Aditamentos] Entrada:', entrada,
+                    '| Card encontrada:', cardRelacionada ? cardRelacionada.getAttribute('data-nombre') : 'NO ENCONTRADA',
+                    '| Imagen:', srcImagen || 'SIN IMAGEN');
 
+                // Si no hay imagen NI card, no mostrar nada
+                if (!srcImagen && !cardRelacionada) return;
+
+                const nombreRel = cardRelacionada ? (cardRelacionada.getAttribute('data-nombre') || entrada) : entrada;
+
+                // Contenedor del ítem
                 const item = document.createElement('div');
-                item.style.cssText = 'flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:5px;' +
+                item.className = 'aditivo-item';
+                item.style.cssText = 'flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:6px;' +
                     (cardRelacionada ? ' cursor:pointer;' : '');
 
-                // Imagen con efecto hover si tiene producto relacionado
+                // Marco de imagen
                 const wrap = document.createElement('div');
-                wrap.style.cssText = 'position:relative; width:100px; height:100px; border-radius:10px; overflow:hidden;' +
-                    ' border:2px solid #f0eae4; transition:border-color 0.2s, transform 0.15s;';
+                wrap.style.cssText = 'position:relative; width:90px; height:90px; border-radius:12px; overflow:hidden;' +
+                    ' border:2px solid #f0eae4; transition:border-color 0.2s, transform 0.18s, box-shadow 0.18s;' +
+                    ' box-shadow:0 2px 8px rgba(0,0,0,0.07);';
                 if (cardRelacionada) {
-                    wrap.onmouseover = function() { this.style.borderColor='#c9a98a'; this.style.transform='translateY(-2px)'; };
-                    wrap.onmouseout  = function() { this.style.borderColor='#f0eae4'; this.style.transform='translateY(0)'; };
+                    wrap.style.borderColor = '#e8ddd5';
+                    wrap.onmouseover = function() {
+                        this.style.borderColor = '#c9a98a';
+                        this.style.transform = 'translateY(-3px)';
+                        this.style.boxShadow = '0 6px 18px rgba(140,117,101,0.22)';
+                    };
+                    wrap.onmouseout = function() {
+                        this.style.borderColor = '#e8ddd5';
+                        this.style.transform = 'translateY(0)';
+                        this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.07)';
+                    };
                 }
 
-                if (!url && !cardRelacionada) return;
+                if (srcImagen) {
+                    const imgEl = document.createElement('img');
+                    imgEl.src = srcImagen;
+                    imgEl.alt = nombreRel;
+                    imgEl.style.cssText = 'width:100%; height:100%; object-fit:cover; display:block;';
+                    imgEl.onerror = function() {
+                        // Placeholder si la imagen falla
+                        wrap.innerHTML = '<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f9f5f2;gap:4px;">' +
+                            '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#c9b8a8" stroke-width="1.5">' +
+                            '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>' +
+                            '<path d="m21 15-5-5L5 21"/></svg>' +
+                            '<span style="font-size:9px;color:#c9b8a8;text-align:center;padding:0 4px;">' + nombreRel + '</span></div>';
+                    };
+                    wrap.appendChild(imgEl);
+                } else {
+                    // Sin imagen: mostrar placeholder con nombre
+                    wrap.innerHTML = '<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f9f5f2;gap:4px;">' +
+                        '<span style="font-size:22px;">🕯️</span>' +
+                        '<span style="font-size:9px;color:#a89080;text-align:center;padding:0 6px;line-height:1.3;">' + nombreRel + '</span></div>';
+                }
 
-                const imgEl = document.createElement('img');
-                imgEl.src = url;
-                imgEl.alt = nombreRel || 'Decoración';
-                imgEl.style.cssText = 'width:100%; height:100%; object-fit:cover; display:block;';
-                imgEl.onerror = function() {
-                    wrap.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f9f5f2;">' +
-                        '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c9b8a8" stroke-width="1.5">' +
-                        '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>' +
-                        '<path d="m21 15-5-5L5 21"/></svg></div>';
-                };
-
-                // Ícono lupa si tiene producto relacionado
+                // Ícono de lupa si es clickeable
                 if (cardRelacionada) {
                     const lupa = document.createElement('div');
                     lupa.style.cssText = 'position:absolute; bottom:4px; right:4px; width:20px; height:20px;' +
-                        ' border-radius:50%; background:rgba(0,0,0,0.42); display:flex; align-items:center;' +
-                        ' justify-content:center; font-size:10px; pointer-events:none;';
+                        ' border-radius:50%; background:rgba(54,42,34,0.55); display:flex; align-items:center;' +
+                        ' justify-content:center; font-size:10px; pointer-events:none; backdrop-filter:blur(2px);';
                     lupa.textContent = '🔍';
                     wrap.appendChild(lupa);
                 }
 
-                wrap.appendChild(imgEl);
                 item.appendChild(wrap);
 
-                // Nombre del producto relacionado como etiqueta
-                if (nombreRel) {
-                    const label = document.createElement('span');
-                    label.textContent = nombreRel;
-                    label.style.cssText = 'font-size:10px; color:#8a7a70; text-align:center;' +
-                        ' max-width:100px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;';
-                    item.appendChild(label);
-                }
+                // Etiqueta de nombre debajo
+                const label = document.createElement('span');
+                label.textContent = nombreRel;
+                label.style.cssText = 'font-size:10px; font-weight:600; color:#8a7a70; text-align:center;' +
+                    ' max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height:1.3;';
+                item.appendChild(label);
 
                 // Clic → abrir modal del producto relacionado
                 if (cardRelacionada) {
@@ -974,7 +1023,9 @@ if (document.readyState === 'loading') {
 
                 aditivosScroll.appendChild(item);
             });
-            aditivosZona.style.display = '';
+
+            // Mostrar la zona solo si se agregaron ítems reales
+            aditivosZona.style.display = aditivosScroll.children.length > 0 ? '' : 'none';
         } else {
             aditivosZona.style.display = 'none';
         }

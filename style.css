@@ -1852,16 +1852,10 @@
             font-weight: 700; cursor: pointer; border: none;
             transition: all 0.18s; font-family: inherit;
         }
-        .panel-nombre-btn.cancelar {
-            background: #f0e8e0; color: #8c7565;
-        }
+        .panel-nombre-btn.cancelar { background: #f0e8e0; color: #8c7565; }
         .panel-nombre-btn.cancelar:hover { background: #e5ddd5; }
-        .panel-nombre-btn.guardar {
-            background: #362a22; color: #fff;
-        }
+        .panel-nombre-btn.guardar { background: #362a22; color: #fff; }
         .panel-nombre-btn.guardar:hover { background: #5c4d43; }
-
-        /* Modo oscuro — panel nombre */
         body.modo-oscuro .panel-editar-nombre-inner { background: #2a2218; border-color: #4a3a2e; }
         body.modo-oscuro .panel-nombre-label { color: #a89080; }
         body.modo-oscuro .panel-nombre-input { background: #1e1812; border-color: #4a3a2e; color: #e0d5cc; }
