@@ -230,8 +230,10 @@ function csvAProductos(filas) {
         // A=0 nombre, B=1 precio, C=2 precioBazar, D=3 descripcion,
         // E=4 imagen, F=5 etiquetaPrincipal, G=6 subEtiqueta, H=7 etiquetaEvento
 
-        // Imágenes: usar la imagen principal como única imagen
-        var imagenesExtra = get(4) ? [get(4)] : [];
+        // Imágenes: columna E puede tener varias URLs separadas por coma
+        var imagenesExtra = get(4)
+            ? get(4).split(',').map(function(s) { return s.trim(); }).filter(Boolean)
+            : [];
 
         productos.push({
             id:           i,
@@ -239,7 +241,7 @@ function csvAProductos(filas) {
             precioNormal: parseFloat(get(1)) || 0,
             precioBazar:  parseFloat(get(2)) || 0,
             descripcion:  get(3),
-            imagen:       get(4),
+            imagen:       imagenesExtra[0] || '',
             imagenes:     imagenesExtra,
             forma:        '',
             tipo:         get(5).toLowerCase() || 'arreglo',
