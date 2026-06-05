@@ -916,6 +916,9 @@ if (document.readyState === 'loading') {
 
         if (history.state && history.state.modalAbierto) return;
         history.pushState({ modalAbierto: true, kukumitaModal: 'producto' }, '');
+
+        // Inyectar etiquetas principales y de evento
+        setTimeout(function() { inyectarEtiquetasModal(card); }, 0);
     }
 
     function cerrarModalProducto() {
@@ -2722,17 +2725,9 @@ function actualizarFlechasCarrusel(tipo) {
     btnNext.style.display = 'flex';
 }
 
-// ── Patch abrirModalProducto para incluir etiquetas principales ──
-(function() {
-    var _orig = window.abrirModalProducto;
-    if (typeof _orig !== 'function') return;
-    window.abrirModalProducto = function(card) {
-        _orig(card);
-        // Inyectar bloque de etiqueta principal + sub-etiquetas al final de tagsInline
-        // (después de que el original ya llenó los tags de evento)
-        setTimeout(function() { inyectarEtiquetasModal(card); }, 0);
-    };
-})();
+// ── Patch abrirModalProducto — YA NO NECESARIO ──
+// inyectarEtiquetasModal(card) ahora se llama directamente
+// al final de abrirModalProducto con setTimeout(..., 0).
 
 // ── Inicializar al cargar ─────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
