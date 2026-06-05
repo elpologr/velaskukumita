@@ -879,17 +879,46 @@ if (document.readyState === 'loading') {
         try { subImagenes = JSON.parse(card.getAttribute('data-sub-imagenes') || '[]'); } catch(e) {}
 
         if (subImagenes.length > 0) {
-            // Construir índice URL→card para búsqueda rápida
+            // Construir índice URL→card y Nombre→card para búsqueda rápida
+            // Soporta tanto URLs de imagen como nombres de producto en las columnas K-R
             const urlACard = {};
+            const nombreACard = {};
             document.querySelectorAll('.card-dinamica').forEach(function(c) {
                 try {
                     const imgs = JSON.parse(c.getAttribute('data-imagenes') || '[]');
                     imgs.forEach(function(u) { if (u) urlACard[u.trim()] = c; });
                 } catch(e) {}
+                const nombre = (c.getAttribute('data-nombre') || '').trim().toLowerCase();
+                if (nombre) nombreACard[nombre] = c;
             });
 
-            subImagenes.forEach(function(url) {
-                const cardRelacionada = urlACard[url.trim()] || null;
+            // Detecta si una cadena es una URL o un nombre de producto
+            function esURL(s) {
+                return /^https?:\/\//i.test(s) || /^\//.test(s) || /\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(s);
+            }
+
+            subImagenes.forEach(function(entrada) {
+                entrada = entrada.trim();
+                let cardRelacionada = null;
+                let srcImagen = '';
+
+                if (esURL(entrada)) {
+                    // Caso original: la celda contiene una URL de imagen
+                    cardRelacionada = urlACard[entrada] || null;
+                    srcImagen = entrada;
+                } else {
+                    // Caso nuevo: la celda contiene el nombre del producto
+                    cardRelacionada = nombreACard[entrada.toLowerCase()] || null;
+                    if (cardRelacionada) {
+                        // Usar la imagen principal del producto relacionado
+                        try {
+                            const imgs = JSON.parse(cardRelacionada.getAttribute('data-imagenes') || '[]');
+                            srcImagen = imgs[0] || '';
+                        } catch(e) {}
+                    }
+                }
+
+                const url = srcImagen; // alias para compatibilidad con el resto del bloque
                 const nombreRel = cardRelacionada ? (cardRelacionada.getAttribute('data-nombre') || '') : '';
 
                 const item = document.createElement('div');
@@ -904,6 +933,9 @@ if (document.readyState === 'loading') {
                     wrap.onmouseover = function() { this.style.borderColor='#c9a98a'; this.style.transform='translateY(-2px)'; };
                     wrap.onmouseout  = function() { this.style.borderColor='#f0eae4'; this.style.transform='translateY(0)'; };
                 }
+
+                // Si no hay imagen y no hay producto relacionado, saltar esta entrada
+                if (!url && !cardRelacionada) return;
 
                 const imgEl = document.createElement('img');
                 imgEl.src = url;
@@ -3412,11 +3444,15 @@ document.addEventListener('click', function(e) {
 });
 
 function irAZonaInteractiva() {
-    // Asegurarse de que el panel de Biografía esté activo
+    // Activa el panel de Biografía y lleva al inicio (no a la zona interactiva)
     if (typeof activarPill === 'function') activarPill('biografia');
     setTimeout(function() {
-        var zona = document.getElementById('zona-interactiva');
-        if (zona) zona.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        var panel = document.getElementById('panelPillBiografia');
+        if (panel) {
+            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     }, 120);
 }
 
@@ -3505,3 +3541,278 @@ _ready(function() {
     var _sc = document.getElementById('submenuCompartir');
     if (_sc) _sc.addEventListener('click', function(e) { if (e.target === this) cerrarSubmenuCompartir(); });
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// FIRESTORE — CUPONES POR USUARIO GOOGLE
+// Los cupones de cada usuario se guardan en Firestore bajo:
+//   usuarios/{uid}/cupones/{codigo}
+// Esto permite que persistan entre dispositivos y sesiones.
+// ══════════════════════════════════════════════════════════════════════
+
+var _db = null;
+
+// Inicializar Firestore cuando Firebase esté listo
+_ready(function() {
+    try {
+        if (typeof firebase !== 'undefined' && firebase.firestore) {
+            _db = firebase.firestore();
+        }
+    } catch(e) {
+        console.warn('Firestore no disponible:', e);
+    }
+});
+
+// Guardar un cupón en Firestore para el usuario actual
+function _guardarCuponFirestore(codigo, cupDef) {
+    if (!_db) return;
+    try {
+        var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+        if (!user) return;
+        _db.collection('usuarios').doc(user.uid)
+            .collection('cupones').doc(codigo.toUpperCase())
+            .set({
+                codigo:      codigo.toUpperCase(),
+                descuento:   cupDef.descuento,
+                tipo:        cupDef.tipo,
+                descripcion: cupDef.descripcion,
+                origen:      cupDef.origen || 'desconocido',
+                reclamado:   new Date().toISOString(),
+                usado:       false
+            }, { merge: true });
+    } catch(e) {
+        console.warn('Error guardando cupón en Firestore:', e);
+    }
+}
+
+// Cargar cupones del usuario desde Firestore y agregarlos a _cuponesAplicados
+function _cargarCuponesFirestore(uid) {
+    if (!_db || !uid) return;
+    _db.collection('usuarios').doc(uid)
+        .collection('cupones')
+        .where('usado', '==', false)
+        .get()
+        .then(function(snap) {
+            snap.forEach(function(doc) {
+                var d = doc.data();
+                // No duplicar si ya está en memoria
+                var yaEsta = _cuponesAplicados.some(function(c) { return c.codigo === d.codigo; });
+                if (!yaEsta) {
+                    _cuponesAplicados.push({
+                        codigo:      d.codigo,
+                        descuento:   d.descuento,
+                        tipo:        d.tipo,
+                        descripcion: d.descripcion
+                    });
+                }
+            });
+            renderizarCarrito();
+        })
+        .catch(function(e) { console.warn('Error cargando cupones:', e); });
+}
+
+// Marcar cupón como usado en Firestore (llamar al completar pedido)
+function _marcarCuponUsadoFirestore(codigo) {
+    if (!_db) return;
+    try {
+        var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+        if (!user) return;
+        _db.collection('usuarios').doc(user.uid)
+            .collection('cupones').doc(codigo.toUpperCase())
+            .update({ usado: true, usadoEn: new Date().toISOString() });
+    } catch(e) {}
+}
+
+// Guardar favoritos en Firestore
+function _guardarFavoritosFirestore(favs) {
+    if (!_db) return;
+    try {
+        var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+        if (!user) return;
+        _db.collection('usuarios').doc(user.uid)
+            .set({ favoritos: favs }, { merge: true });
+    } catch(e) {}
+}
+
+// Cargar favoritos desde Firestore
+function _cargarFavoritosFirestore(uid) {
+    if (!_db || !uid) return;
+    _db.collection('usuarios').doc(uid).get().then(function(doc) {
+        if (doc.exists) {
+            var d = doc.data();
+            if (d.favoritos && Array.isArray(d.favoritos)) {
+                // Merge con localStorage
+                var localFavs = [];
+                try { localFavs = JSON.parse(localStorage.getItem('velas-favoritos') || '[]'); } catch(e) {}
+                var merged = Array.from(new Set([...localFavs, ...d.favoritos]));
+                localStorage.setItem('velas-favoritos', JSON.stringify(merged));
+                if (typeof syncBotonesLike === 'function') syncBotonesLike();
+            }
+        }
+    }).catch(function(e) {});
+}
+
+// Hook: cuando el usuario inicia sesión, cargar sus datos de Firestore
+// Se engancha al onAuthStateChanged existente mediante un listener adicional
+(function() {
+    _ready(function() {
+        // Esperar a que Firebase esté listo
+        var _intentos = 0;
+        var _esperarAuth = setInterval(function() {
+            _intentos++;
+            if (typeof auth !== 'undefined' && auth.onAuthStateChanged) {
+                clearInterval(_esperarAuth);
+                auth.onAuthStateChanged(function(user) {
+                    if (user) {
+                        // Usuario inició sesión: cargar cupones y favoritos
+                        setTimeout(function() {
+                            _cargarCuponesFirestore(user.uid);
+                            _cargarFavoritosFirestore(user.uid);
+                        }, 500);
+                    } else {
+                        // Sin sesión: limpiar cupones de Firestore de la memoria
+                        // (mantener solo los locales ya reclamados en esta sesión)
+                    }
+                });
+            }
+            if (_intentos > 30) clearInterval(_esperarAuth);
+        }, 300);
+    });
+})();
+
+// Override de reclamarCuponZonaInteractiva para guardar también en Firestore
+(function() {
+    var _originalReclamar = window.reclamarCuponZonaInteractiva || reclamarCuponZonaInteractiva;
+    window.reclamarCuponZonaInteractiva = function() {
+        var codigo = 'ZONA15';
+        var btnEl = document.getElementById('btnReclamarCupon15');
+
+        if (_cuponEnCarritoActual(codigo)) {
+            mostrarToast('🎟️ El cupón ZONA15 ya está en tu carrito');
+            return;
+        }
+        if (_cuponYaUsado(codigo)) {
+            _bloquearBtnCupon15();
+            mostrarToast('⚠️ Este cupón ya fue reclamado anteriormente');
+            return;
+        }
+
+        var cupDef = _catalogoCupones[codigo];
+        _cuponesAplicados.push({ codigo: codigo, descuento: cupDef.descuento, descripcion: cupDef.descripcion, tipo: cupDef.tipo });
+        _marcarCuponUsado(codigo);
+
+        // Guardar en Firestore si hay sesión activa
+        _guardarCuponFirestore(codigo, cupDef);
+
+        if (btnEl) {
+            btnEl.disabled = true;
+            btnEl.style.background = 'linear-gradient(135deg,#4caf50,#2e7d32)';
+            btnEl.style.boxShadow = '0 4px 16px rgba(46,125,50,0.4)';
+            btnEl.innerHTML = '✅ Cupón guardado en tu carrito';
+        }
+
+        mostrarToast('🎉 ¡Cupón del 15% añadido! Ábrelo en el carrito.');
+        renderizarCarrito();
+
+        // Asegurarse de que la zona de cupones sea visible aunque el carrito esté vacío
+        var cuponesZona = document.getElementById('cartCuponesZona');
+        if (cuponesZona) cuponesZona.style.display = 'block';
+    };
+})();
+
+
+// ══════════════════════════════════════════════════════════════════════
+// CUPONES VISIBLES AUNQUE EL CARRITO ESTÉ VACÍO
+// Patch a renderizarCarrito: mostrar zona de cupones siempre que haya
+// cupones activos, incluso si el carrito no tiene productos todavía.
+// ══════════════════════════════════════════════════════════════════════
+(function() {
+    var _rrOrig = window.renderizarCarrito || (typeof renderizarCarrito !== 'undefined' ? renderizarCarrito : null);
+    if (!_rrOrig) return;
+    var _patchApplied = false;
+    function _aplicarPatch() {
+        if (_patchApplied) return;
+        _patchApplied = true;
+        var cuponesZona = document.getElementById('cartCuponesZona');
+        var cuponesLista = document.getElementById('cartCuponesLista');
+        if (!cuponesZona || !cuponesLista) return;
+        // Mostrar zona si hay cupones, independientemente del carrito
+        if (_cuponesAplicados && _cuponesAplicados.length > 0) {
+            cuponesZona.style.display = 'block';
+        }
+    }
+    // Observar cuando se abre el carrito
+    document.addEventListener('cartAbierto', _aplicarPatch);
+    // También hook directo: sobrescribir abrirPantallaCarrito para que llame al patch
+    var _abrirCartOrig = window.abrirPantallaCarrito;
+    window.abrirPantallaCarrito = function() {
+        if (typeof _abrirCartOrig === 'function') _abrirCartOrig.apply(this, arguments);
+        setTimeout(_aplicarPatch, 80);
+    };
+})();
+
+
+// ══════════════════════════════════════════════════════════════════════
+// WHATSAPP CARRITO — incluir cupones en el mensaje
+// ══════════════════════════════════════════════════════════════════════
+(function() {
+    // Override pedirCotizacionWA para incluir cupones activos
+    var _origWA = window.pedirCotizacionWA || pedirCotizacionWA;
+    window.pedirCotizacionWA = function() {
+        if (carrito.length === 0) { mostrarToast('Tu carrito está vacío'); return; }
+
+        var ahora = Date.now();
+        if (typeof _cotizacionUltimoEnvio !== 'undefined' && typeof _cotizacionCooldown !== 'undefined') {
+            if (ahora - _cotizacionUltimoEnvio < _cotizacionCooldown) {
+                var segsRestantes = Math.ceil((_cotizacionCooldown - (ahora - _cotizacionUltimoEnvio)) / 1000);
+                mostrarToast('⏳ Espera ' + segsRestantes + ' segundos antes de volver a enviar');
+                return;
+            }
+            _cotizacionUltimoEnvio = ahora;
+        }
+
+        var baseUrl = window.location.origin + window.location.pathname;
+        var params = carrito.map(function(item) {
+            return 'p=' + encodeURIComponent(item.nombre) + '&q=' + item.cantidad + '&pr=' + item.precio;
+        }).join('&');
+        var linkCarrito = baseUrl + '?' + params + '#carrito';
+
+        var total = carrito.reduce(function(sum, i){ return sum + (i.precio || 0) * i.cantidad; }, 0);
+        var descuento = (typeof calcularDescuentoCupones === 'function') ? calcularDescuentoCupones(carrito) : 0;
+
+        var lineas = ['Hola, me gustaría pedir una cotización de los siguientes productos de Velas Kukumita:\n'];
+        carrito.forEach(function(item, i) {
+            lineas.push((i+1) + '. *' + item.nombre + '*');
+            lineas.push('   Cantidad: ' + item.cantidad + ' piezas');
+            if (item.precio) lineas.push('   Precio unitario: $' + item.precio + ' MXN');
+            if (item.precio) lineas.push('   Subtotal: $' + (item.precio * item.cantidad).toFixed(0) + ' MXN');
+        });
+        if (total > 0) lineas.push('\n*Total estimado: $' + total.toFixed(0) + ' MXN*');
+
+        // Agregar cupones al mensaje
+        if (_cuponesAplicados && _cuponesAplicados.length > 0) {
+            lineas.push('\n🎟️ *Cupones aplicados:*');
+            _cuponesAplicados.forEach(function(c) {
+                var productoCupon = (c.productoIdx !== undefined && carrito[c.productoIdx])
+                    ? ' (en "' + carrito[c.productoIdx].nombre + '")'
+                    : '';
+                lineas.push('   • ' + c.codigo + ' — ' + c.descuento + (c.tipo === 'porcentaje' ? '%' : ' MXN') + productoCupon);
+            });
+            if (descuento > 0) lineas.push('   _Ahorro total: $' + descuento.toFixed(0) + ' MXN_');
+            var totalConDesc = Math.max(0, total - descuento);
+            if (totalConDesc > 0) lineas.push('*Total con descuento: $' + totalConDesc.toFixed(0) + ' MXN*');
+        }
+
+        lineas.push('\n🔗 Ver mi selección: ' + linkCarrito);
+
+        var mensaje = lineas.join('\n');
+        var btn = document.getElementById('btnPedirCotizacion');
+        if (btn) { btn.disabled = true; btn.textContent = '⏳ Enviando...'; }
+        setTimeout(function() {
+            window.open('https://wa.me/524431469161?text=' + encodeURIComponent(mensaje), '_blank');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg> Pedir Cotización por WhatsApp';
+            }
+        }, 800);
+    };
+})();
