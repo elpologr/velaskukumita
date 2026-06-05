@@ -1920,15 +1920,13 @@
         display: grid;
         grid-template-columns: repeat(3, 1fr); /* 3 Columnas en PC */
         gap: 15px;
-        padding: 20px;
-        max-width: 1400px;
+        padding: 20px 1rem;   /* Mismo padding lateral que el resto de secciones */
+        max-width: 1200px;    /* Igual que selector-modo-velas y panel-busqueda */
         margin: 0 auto;
         width: 100%;
         box-sizing: border-box;
         min-height: 60vh;
         align-content: start;
-        /* Evitar desbordamiento horizontal en cualquier pantalla */
-        max-width: 100%;
     }
 
     .card-dinamica {
@@ -2041,10 +2039,8 @@
         .grid-productos-inteligente {
             grid-template-columns: repeat(2, 1fr); /* Cambia a 2 columnas en celular */
             gap: 8px;
-            padding: 8px 4px; /* padding lateral mínimo para evitar desbordamiento */
-            width: 100%;
+            padding: 8px 1rem;  /* Mismo margen lateral que barra de búsqueda y filtros */
             box-sizing: border-box;
-            margin: 0 auto;
         }
         .img-contenedor-dinamico {
             height: 160px; /* Se acorta para pantallas táctiles */
@@ -2060,10 +2056,8 @@
         .grid-productos-inteligente {
             grid-template-columns: repeat(2, 1fr);
             gap: 6px;
-            padding: 6px 4px;
-            width: 100%;
+            padding: 6px 1rem;
             box-sizing: border-box;
-            margin: 0 auto;
         }
         .img-contenedor-dinamico {
             height: 130px;
