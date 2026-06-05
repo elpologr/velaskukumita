@@ -892,7 +892,6 @@ if (document.readyState === 'loading') {
                 if (nombre) nombreACard[nombre] = c;
             });
 
-            // Detecta si una cadena es una URL o un nombre de producto
             function esURL(s) {
                 return /^https?:\/\//i.test(s) || /^\//.test(s) || /\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(s);
             }
@@ -903,14 +902,11 @@ if (document.readyState === 'loading') {
                 let srcImagen = '';
 
                 if (esURL(entrada)) {
-                    // Caso original: la celda contiene una URL de imagen
                     cardRelacionada = urlACard[entrada] || null;
                     srcImagen = entrada;
                 } else {
-                    // Caso nuevo: la celda contiene el nombre del producto
                     cardRelacionada = nombreACard[entrada.toLowerCase()] || null;
                     if (cardRelacionada) {
-                        // Usar la imagen principal del producto relacionado
                         try {
                             const imgs = JSON.parse(cardRelacionada.getAttribute('data-imagenes') || '[]');
                             srcImagen = imgs[0] || '';
@@ -918,7 +914,7 @@ if (document.readyState === 'loading') {
                     }
                 }
 
-                const url = srcImagen; // alias para compatibilidad con el resto del bloque
+                const url = srcImagen;
                 const nombreRel = cardRelacionada ? (cardRelacionada.getAttribute('data-nombre') || '') : '';
 
                 const item = document.createElement('div');
@@ -934,7 +930,6 @@ if (document.readyState === 'loading') {
                     wrap.onmouseout  = function() { this.style.borderColor='#f0eae4'; this.style.transform='translateY(0)'; };
                 }
 
-                // Si no hay imagen y no hay producto relacionado, saltar esta entrada
                 if (!url && !cardRelacionada) return;
 
                 const imgEl = document.createElement('img');
@@ -3096,38 +3091,12 @@ function renderizarCarrito() {
         grid.appendChild(div);
     });
 
-    // ── Renderizar cupones aplicados ──
-    var cuponesZona = document.getElementById('cartCuponesZona');
-    var cuponesLista = document.getElementById('cartCuponesLista');
-    var cuponDesc = document.getElementById('cartCuponDesc');
-    if (cuponesZona) cuponesZona.style.display = carrito.length > 0 ? 'block' : 'none';
-    if (cuponesLista) {
-        cuponesLista.innerHTML = '';
-        if (_cuponesAplicados.length === 0) {
-            cuponesLista.innerHTML = '<p style="font-size:0.8rem;color:#b09080;margin:0;">No tienes cupones activos.</p>';
-        } else {
-            _cuponesAplicados.forEach(function(c) {
-                var productoInfo = c.productoIdx !== undefined && carrito[c.productoIdx]
-                    ? ('→ aplica a 1 pieza de "' + carrito[c.productoIdx].nombre + '"')
-                    : (c.productoIdx === undefined ? '→ selecciona un producto abajo' : '→ producto eliminado');
-                var el = document.createElement('div');
-                el.style.cssText = 'display:flex; align-items:flex-start; justify-content:space-between; background:#fff; border:1.5px solid #e8c89a; border-radius:10px; padding:8px 12px; gap:8px;';
-                el.innerHTML =
-                    '<div style="flex:1; min-width:0;">' +
-                    '<span style="font-size:0.85rem;font-weight:800;color:#362a22;">🎟️ ' + c.codigo + '</span>' +
-                    '<span style="font-size:0.75rem;color:#8c7565;display:block;margin-top:1px;">' + c.descripcion + ' — ' + c.descuento + (c.tipo==='porcentaje'?'% de descuento':' MXN') + ' en 1 pieza</span>' +
-                    '<span style="font-size:0.72rem;color:#a07850;display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + productoInfo + '</span>' +
-                    '</div>' +
-                    '<button onclick="quitarCupon(\'' + c.codigo + '\')" style="background:#f5e8e0;border:none;border-radius:50%;width:26px;height:26px;min-width:26px;font-size:12px;cursor:pointer;color:#8c7565;display:flex;align-items:center;justify-content:center;margin-top:2px;">✕</button>';
-                cuponesLista.appendChild(el);
-            });
-        }
-    }
+    // ── Cupones y total — delegado a _renderizarZonaCupones() ──
+    _renderizarZonaCupones();
 
     // ── Poblar selector de producto para cupón ──
     var selectorZona = document.getElementById('cartCuponSelectorZona');
-    var selectEl = document.getElementById('cartCuponProductoSelect');
-    var hayCuponSinAsignar = _cuponesAplicados.some(function(c) { return c.productoIdx === undefined; });
+    var selectEl     = document.getElementById('cartCuponProductoSelect');
     if (selectorZona) selectorZona.style.display = (_cuponesAplicados.length > 0 && carrito.length > 0) ? 'block' : 'none';
     if (selectEl) {
         selectEl.innerHTML = '<option value="">— Elige un producto —</option>';
@@ -3138,26 +3107,17 @@ function renderizarCarrito() {
             opt.textContent = item.nombre + ' (' + item.cantidad + ' pza' + (item.cantidad !== 1 ? 's' : '') + ' · ' + precioUnidad + ' c/u)';
             selectEl.appendChild(opt);
         });
-        // Restaurar selección previa
         var yaAsignado = _cuponesAplicados.find(function(c) { return c.productoIdx !== undefined; });
         if (yaAsignado) selectEl.value = yaAsignado.productoIdx;
-        selectEl.onchange = function() {
-            asignarCuponAProducto(parseInt(this.value));
-        };
+        selectEl.onchange = function() { asignarCuponAProducto(parseInt(this.value)); };
     }
 
-    // ── Total con cupones (solo aplica a 1 pieza del producto elegido) ──
+    // ── Total con descuento ──
     var descuentoTotal = calcularDescuentoCupones(carrito);
-    var hayDescuento = descuentoTotal > 0;
-    if (cuponDesc) {
-        cuponDesc.textContent = hayDescuento ? ('Ahorro: $' + descuentoTotal.toFixed(0) + ' MXN') : '';
-    }
-
-    var displayTotal = Math.max(0, total - descuentoTotal);
+    var hayDescuento   = descuentoTotal > 0;
+    var displayTotal   = Math.max(0, total - descuentoTotal);
     document.getElementById('cartTotalValor').textContent = displayTotal > 0 ? '$' + displayTotal.toFixed(0) + ' MXN' : 'Precio por cotizar';
-    if (hayDescuento) {
-        document.getElementById('cartTotalValor').title = 'Precio original: $' + total.toFixed(0) + ' MXN';
-    }
+    if (hayDescuento) document.getElementById('cartTotalValor').title = 'Precio original: $' + total.toFixed(0) + ' MXN';
 }
 
 function quitarDelCarrito(idx) {
@@ -3218,168 +3178,292 @@ function pedirCotizacionWA() {
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// SISTEMA DE CUPONES KUKUMITA
-// Restricciones: un uso por perfil (localStorage + fingerprint), validación
-// de código, descuento reflejado en el total del carrito.
+// SISTEMA DE CUPONES KUKUMITA v2
+// - Cupones activos + cupones usados (historial)
+// - Persistencia en Firestore por usuario Google
+// - Modal de detalle al tocar un cupón
+// - Visibles en el carrito aunque esté vacío
 // ══════════════════════════════════════════════════════════════════════
 
-var _cuponesAplicados = []; // [{codigo, descuento, descripcion, tipo}]
+var _cuponesAplicados = []; // [{codigo, descuento, descripcion, tipo, origen, fechaObtenido}]
+var _cuponesUsados    = []; // [{codigo, descuento, descripcion, tipo, origen, fechaObtenido, fechaUsado}]
 
-// Catálogo de cupones válidos (lado cliente — no contiene lógica de negocio crítica)
+// Catálogo de cupones válidos (lado cliente)
 var _catalogoCupones = {
-    'ZONA15': { descuento: 15, tipo: 'porcentaje', descripcion: '15% Zona Interactiva', origen: 'zona-interactiva' },
-    'BIENVENIDA10': { descuento: 10, tipo: 'porcentaje', descripcion: '10% Bienvenida', origen: 'manual' }
+    'ZONA15':        { descuento: 15, tipo: 'porcentaje', descripcion: '15% de descuento en 1 pieza', origen: 'Zona Interactiva — Biografía', icono: '🎉' },
+    'BIENVENIDA10':  { descuento: 10, tipo: 'porcentaje', descripcion: '10% de descuento en 1 pieza', origen: 'Bienvenida',                   icono: '🎁' }
 };
 
-// Genera un fingerprint ligero del dispositivo para anti-abuso
+// ── Fingerprint ligero para anti-abuso en dispositivo ──
 function _generarFingerprint() {
     var nav = window.navigator;
-    var parts = [
-        nav.language || '',
-        nav.platform || '',
-        String(window.screen.width) + 'x' + String(window.screen.height),
-        String(nav.hardwareConcurrency || 0),
-        Intl.DateTimeFormat().resolvedOptions().timeZone || ''
-    ];
-    var str = parts.join('|');
-    var hash = 0;
-    for (var i = 0; i < str.length; i++) {
-        hash = ((hash << 5) - hash) + str.charCodeAt(i);
-        hash |= 0;
-    }
+    var parts = [nav.language||'', nav.platform||'', window.screen.width+'x'+window.screen.height,
+                 String(nav.hardwareConcurrency||0), Intl.DateTimeFormat().resolvedOptions().timeZone||''];
+    var str = parts.join('|'), hash = 0;
+    for (var i = 0; i < str.length; i++) { hash = ((hash << 5) - hash) + str.charCodeAt(i); hash |= 0; }
     return 'fp_' + Math.abs(hash).toString(36);
 }
-
-function _getStorageKey(codigo) {
-    return 'kuku_cupon_' + codigo.toUpperCase() + '_' + _generarFingerprint();
-}
+function _getStorageKey(codigo)    { return 'kuku_cupon_'  + codigo.toUpperCase() + '_' + _generarFingerprint(); }
+function _getStorageKeyUsado(cod)  { return 'kuku_usado_'  + cod.toUpperCase()    + '_' + _generarFingerprint(); }
 
 function _cuponYaUsado(codigo) {
-    try {
-        var key = _getStorageKey(codigo);
-        var raw = localStorage.getItem(key);
-        if (!raw) return false;
-        var data = JSON.parse(raw);
-        // Verificar que el registro no sea antiguo (fraude por limpieza parcial)
-        if (!data.ts || !data.fp) return false;
-        return true;
-    } catch(e) { return false; }
+    try { var raw = localStorage.getItem(_getStorageKey(codigo)); if (!raw) return false; var d = JSON.parse(raw); return !!(d.ts && d.fp); } catch(e) { return false; }
 }
-
 function _marcarCuponUsado(codigo) {
-    try {
-        var key = _getStorageKey(codigo);
-        localStorage.setItem(key, JSON.stringify({
-            codigo: codigo.toUpperCase(),
-            fp: _generarFingerprint(),
-            ts: Date.now(),
-            ua: (window.navigator.userAgent || '').substring(0, 80)
-        }));
-    } catch(e) {}
+    try { localStorage.setItem(_getStorageKey(codigo), JSON.stringify({ codigo: codigo.toUpperCase(), fp: _generarFingerprint(), ts: Date.now(), ua: (navigator.userAgent||'').substring(0,80) })); } catch(e) {}
 }
-
 function _cuponEnCarritoActual(codigo) {
     return _cuponesAplicados.some(function(c) { return c.codigo === codigo.toUpperCase(); });
 }
 
+// ── Cargar historial de usados desde localStorage ──
+function _cargarHistorialUsados() {
+    try {
+        var raw = localStorage.getItem('kuku_cupones_usados');
+        if (raw) _cuponesUsados = JSON.parse(raw);
+    } catch(e) {}
+}
+function _guardarHistorialUsados() {
+    try { localStorage.setItem('kuku_cupones_usados', JSON.stringify(_cuponesUsados)); } catch(e) {}
+}
+function _moverCuponAUsados(codigo) {
+    var idx = _cuponesAplicados.findIndex(function(c){ return c.codigo === codigo; });
+    if (idx !== -1) {
+        var c = _cuponesAplicados.splice(idx, 1)[0];
+        c.fechaUsado = new Date().toLocaleDateString('es-MX', { year:'numeric', month:'long', day:'numeric' });
+        _cuponesUsados.unshift(c);
+        _guardarHistorialUsados();
+    }
+}
+
+// Inicializar historial al arrancar
+_ready(function() { _cargarHistorialUsados(); });
+
+// ── Modal de detalle de cupón ──
+(function() {
+    var _modal = null;
+    function _crearModal() {
+        if (_modal) return;
+        _modal = document.createElement('div');
+        _modal.id = 'modalDetalleCupon';
+        _modal.style.cssText = 'display:none;position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,0.55);backdrop-filter:blur(3px);align-items:center;justify-content:center;padding:20px;';
+        _modal.innerHTML =
+            '<div style="background:#fff;border-radius:20px;max-width:380px;width:100%;padding:28px 24px;box-shadow:0 16px 48px rgba(0,0,0,0.22);position:relative;animation:submenuFadeIn 0.2s ease;">' +
+            '<button onclick="cerrarDetalleCupon()" style="position:absolute;top:14px;right:14px;background:#f5ede8;border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;color:#8c7565;">✕</button>' +
+            '<div id="detalleCuponContenido"></div>' +
+            '</div>';
+        _modal.addEventListener('click', function(e){ if(e.target===_modal) cerrarDetalleCupon(); });
+        document.body.appendChild(_modal);
+    }
+    window.abrirDetalleCupon = function(codigo, esUsado) {
+        _crearModal();
+        var lista = esUsado ? _cuponesUsados : _cuponesAplicados;
+        var c = lista.find(function(x){ return x.codigo === codigo; });
+        if (!c) return;
+        var def = _catalogoCupones[c.codigo] || {};
+        var icono = def.icono || '🎟️';
+        var colorFondo = esUsado ? '#f5f5f5' : 'linear-gradient(135deg,#fdf3e7,#fae8d0)';
+        var colorBorde = esUsado ? '#ddd'    : '#e8c89a';
+        var html =
+            '<div style="text-align:center;margin-bottom:20px;">' +
+            '<div style="font-size:3rem;margin-bottom:8px;">' + icono + '</div>' +
+            '<h3 style="font-size:1.3rem;font-weight:900;color:#362a22;margin:0 0 4px;letter-spacing:1px;">' + c.codigo + '</h3>' +
+            '<span style="font-size:0.78rem;font-weight:700;color:' + (esUsado?'#999':'#8c7565') + ';text-transform:uppercase;letter-spacing:0.8px;">' +
+            (esUsado ? '✅ Cupón utilizado' : '✨ Cupón activo') + '</span>' +
+            '</div>' +
+            '<div style="background:' + colorFondo + ';border:2px solid ' + colorBorde + ';border-radius:14px;padding:16px 18px;margin-bottom:16px;">' +
+            '<p style="font-size:1.1rem;font-weight:900;color:#362a22;margin:0 0 6px;text-align:center;">' +
+            c.descuento + (c.tipo==='porcentaje'?'% de descuento':' MXN de descuento') + ' en 1 pieza' +
+            '</p>' +
+            '<p style="font-size:0.82rem;color:#8c7565;margin:0;text-align:center;">' + (c.descripcion||'') + '</p>' +
+            '</div>' +
+            '<div style="display:flex;flex-direction:column;gap:8px;">' +
+            '<div style="display:flex;gap:10px;align-items:flex-start;">' +
+            '<span style="font-size:1rem;flex-shrink:0;">📍</span>' +
+            '<div><p style="font-size:0.78rem;font-weight:700;color:#aaa;margin:0 0 2px;text-transform:uppercase;letter-spacing:0.6px;">Dónde lo obtuviste</p>' +
+            '<p style="font-size:0.88rem;color:#5c4d43;margin:0;font-weight:600;">' + (c.origen || def.origen || 'Desconocido') + '</p></div>' +
+            '</div>' +
+            (c.fechaObtenido ? '<div style="display:flex;gap:10px;align-items:flex-start;"><span style="font-size:1rem;flex-shrink:0;">📅</span><div><p style="font-size:0.78rem;font-weight:700;color:#aaa;margin:0 0 2px;text-transform:uppercase;letter-spacing:0.6px;">Fecha obtenido</p><p style="font-size:0.88rem;color:#5c4d43;margin:0;font-weight:600;">' + c.fechaObtenido + '</p></div></div>' : '') +
+            (esUsado && c.fechaUsado ? '<div style="display:flex;gap:10px;align-items:flex-start;"><span style="font-size:1rem;flex-shrink:0;">🗓️</span><div><p style="font-size:0.78rem;font-weight:700;color:#aaa;margin:0 0 2px;text-transform:uppercase;letter-spacing:0.6px;">Fecha utilizado</p><p style="font-size:0.88rem;color:#5c4d43;margin:0;font-weight:600;">' + c.fechaUsado + '</p></div></div>' : '') +
+            '</div>';
+        if (!esUsado) {
+            html += '<button onclick="cerrarDetalleCupon()" style="width:100%;margin-top:20px;background:linear-gradient(135deg,#8c7565,#5c4d43);color:white;border:none;border-radius:999px;padding:13px;font-size:0.95rem;font-weight:800;cursor:pointer;font-family:inherit;">Entendido ✓</button>';
+        } else {
+            html += '<div style="margin-top:18px;text-align:center;padding:10px 14px;background:#f9f5f2;border-radius:10px;"><p style="font-size:0.8rem;color:#9a8878;margin:0;font-style:italic;">Este cupón ya fue utilizado, pero lo guardamos como recuerdo 🕯️</p></div>' +
+                    '<button onclick="cerrarDetalleCupon()" style="width:100%;margin-top:14px;background:#e8ddd5;color:#5c4d43;border:none;border-radius:999px;padding:13px;font-size:0.95rem;font-weight:800;cursor:pointer;font-family:inherit;">Cerrar</button>';
+        }
+        document.getElementById('detalleCuponContenido').innerHTML = html;
+        _modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    };
+    window.cerrarDetalleCupon = function() {
+        if (_modal) _modal.style.display = 'none';
+        document.body.style.overflow = '';
+    };
+})();
+
+// ── Reclamar cupón de la Zona Interactiva ──
 function reclamarCuponZonaInteractiva() {
     var codigo = 'ZONA15';
-    var btnEl = document.getElementById('btnReclamarCupon15');
+    var btnEl  = document.getElementById('btnReclamarCupon15');
 
-    if (_cuponEnCarritoActual(codigo)) {
-        mostrarToast('🎟️ El cupón ZONA15 ya está en tu carrito');
-        return;
-    }
-    if (_cuponYaUsado(codigo)) {
-        _bloquearBtnCupon15();
-        mostrarToast('⚠️ Este cupón ya fue reclamado anteriormente');
-        return;
-    }
+    if (_cuponEnCarritoActual(codigo)) { mostrarToast('🎟️ El cupón ZONA15 ya está en tu carrito'); return; }
+    if (_cuponYaUsado(codigo)) { _bloquearBtnCupon15(); mostrarToast('⚠️ Este cupón ya fue reclamado anteriormente'); return; }
 
     var cupDef = _catalogoCupones[codigo];
-    _cuponesAplicados.push({ codigo: codigo, descuento: cupDef.descuento, descripcion: cupDef.descripcion, tipo: cupDef.tipo });
+    var fechaHoy = new Date().toLocaleDateString('es-MX', { year:'numeric', month:'long', day:'numeric' });
+    _cuponesAplicados.push({
+        codigo:        codigo,
+        descuento:     cupDef.descuento,
+        descripcion:   cupDef.descripcion,
+        tipo:          cupDef.tipo,
+        origen:        cupDef.origen,
+        fechaObtenido: fechaHoy
+    });
     _marcarCuponUsado(codigo);
 
-    // Actualizar UI del botón
+    // Guardar en Firestore si hay sesión
+    _guardarCuponFirestore(codigo, cupDef, fechaHoy);
+
     if (btnEl) {
         btnEl.disabled = true;
         btnEl.style.background = 'linear-gradient(135deg,#4caf50,#2e7d32)';
-        btnEl.style.boxShadow = '0 4px 16px rgba(46,125,50,0.4)';
+        btnEl.style.boxShadow   = '0 4px 16px rgba(46,125,50,0.4)';
         btnEl.innerHTML = '✅ Cupón guardado en tu carrito';
     }
-
     mostrarToast('🎉 ¡Cupón del 15% añadido! Ábrelo en el carrito.');
     renderizarCarrito();
 }
 
 function _bloquearBtnCupon15() {
-    var btnEl = document.getElementById('btnReclamarCupon15');
+    var btnEl    = document.getElementById('btnReclamarCupon15');
+    var estadoEl = document.getElementById('zonaCupon15Estado');
     if (btnEl) {
         btnEl.disabled = true;
         btnEl.style.background = 'linear-gradient(135deg,#bbb,#999)';
-        btnEl.style.boxShadow = 'none';
-        btnEl.style.cursor = 'default';
-        btnEl.innerHTML = '⛔ Ya has utilizado este cupón';
+        btnEl.style.boxShadow  = 'none';
+        btnEl.style.cursor     = 'default';
+        btnEl.innerHTML        = '⛔ Ya has utilizado este cupón';
     }
-    var estadoEl = document.getElementById('zonaCupon15Estado');
     if (estadoEl && !estadoEl.querySelector('.msg-cupon-usado')) {
         var msg = document.createElement('p');
         msg.className = 'msg-cupon-usado';
-        msg.style.cssText = 'font-size:0.82rem; color:#999; margin-top:10px; text-align:center;';
-        msg.textContent = 'Este cupón ya fue reclamado desde este dispositivo.';
+        msg.style.cssText = 'font-size:0.78rem;color:#9a8878;margin-top:10px;font-style:italic;';
+        msg.textContent   = 'Este cupón ya fue reclamado desde este dispositivo.';
         estadoEl.appendChild(msg);
     }
 }
 
-// Inicializar estado del cupón al cargar
+// Al cargar la página, revisar si el cupón ya fue usado y bloquear botón
 _ready(function() {
-    if (_cuponYaUsado('ZONA15')) _bloquearBtnCupon15();
+    if (_cuponYaUsado('ZONA15')) {
+        setTimeout(_bloquearBtnCupon15, 400);
+    }
 });
 
+// ── Aplicar cupón manual (por código) ──
 function aplicarCuponManual() {
-    var input = document.getElementById('inputCuponManual');
-    if (!input) return;
-    var codigo = (input.value || '').trim().toUpperCase();
-    if (!codigo) { mostrarToast('✏️ Ingresa un código de cupón'); return; }
+    var inputEl = document.getElementById('inputCuponManual');
+    if (!inputEl) return;
+    var codigo  = (inputEl.value || '').trim().toUpperCase();
+    if (!codigo) { mostrarToast('Escribe un código de cupón'); return; }
 
-    var cupDef = _catalogoCupones[codigo];
-    if (!cupDef) { mostrarToast('❌ Código inválido: ' + codigo); return; }
-    if (_cuponEnCarritoActual(codigo)) { mostrarToast('🎟️ Este cupón ya está aplicado'); return; }
-    if (_cuponYaUsado(codigo)) { mostrarToast('⚠️ Este cupón ya fue utilizado en este dispositivo'); return; }
+    var def = _catalogoCupones[codigo];
+    if (!def) { mostrarToast('❌ Código no válido o no reconocido'); return; }
+    if (_cuponEnCarritoActual(codigo)) { mostrarToast('🎟️ Ese cupón ya está aplicado'); return; }
+    if (_cuponYaUsado(codigo)) { mostrarToast('⚠️ Este cupón ya fue usado anteriormente'); return; }
 
-    _cuponesAplicados.push({ codigo: codigo, descuento: cupDef.descuento, descripcion: cupDef.descripcion, tipo: cupDef.tipo });
+    var fechaHoy = new Date().toLocaleDateString('es-MX', { year:'numeric', month:'long', day:'numeric' });
+    _cuponesAplicados.push({
+        codigo:        codigo,
+        descuento:     def.descuento,
+        descripcion:   def.descripcion,
+        tipo:          def.tipo,
+        origen:        def.origen || 'Código manual',
+        fechaObtenido: fechaHoy
+    });
     _marcarCuponUsado(codigo);
-    input.value = '';
-    mostrarToast('✅ Cupón ' + codigo + ' aplicado — ' + cupDef.descuento + (cupDef.tipo === 'porcentaje' ? '%' : ' MXN') + ' de descuento');
+    _guardarCuponFirestore(codigo, def, fechaHoy);
+    inputEl.value = '';
+    mostrarToast('✅ Cupón ' + codigo + ' aplicado');
     renderizarCarrito();
 }
 
 function quitarCupon(codigo) {
     _cuponesAplicados = _cuponesAplicados.filter(function(c) { return c.codigo !== codigo; });
-    mostrarToast('🗑️ Cupón eliminado');
     renderizarCarrito();
 }
 
-// Calcula el descuento total en MXN teniendo en cuenta que
-// cada cupón aplica únicamente a UNA pieza del producto asignado.
-function calcularDescuentoCupones(carritoItems) {
-    var totalDescuento = 0;
-    _cuponesAplicados.forEach(function(c) {
-        if (c.productoIdx === undefined || !carritoItems[c.productoIdx]) return;
-        var precioUnidad = carritoItems[c.productoIdx].precio || 0;
-        if (!precioUnidad) return;
-        if (c.tipo === 'porcentaje') {
-            totalDescuento += precioUnidad * (c.descuento / 100);
-        } else {
-            totalDescuento += Math.min(c.descuento, precioUnidad);
-        }
-    });
-    return totalDescuento;
-}
+// ── Renderizar cupones en el carrito (activos + historial usados) ──
+// Este bloque reemplaza la lógica de renderizarCarrito relacionada con cupones.
+// Se llama desde renderizarCarrito() al final del bloque de cupones.
+function _renderizarZonaCupones() {
+    var cuponesZona  = document.getElementById('cartCuponesZona');
+    var cuponesLista = document.getElementById('cartCuponesLista');
+    var cuponDesc    = document.getElementById('cartCuponDesc');
+    if (!cuponesZona || !cuponesLista) return;
 
-// Compatibilidad con llamadas antiguas
-function calcularTotalConCupones(subtotal) {
-    return subtotal - calcularDescuentoCupones(carrito);
+    // Mostrar la zona si hay cupones activos O si hay historial de usados
+    var hayAlgo = _cuponesAplicados.length > 0 || _cuponesUsados.length > 0;
+    cuponesZona.style.display = hayAlgo ? 'block' : 'none';
+
+    cuponesLista.innerHTML = '';
+
+    // ── Cupones activos ──
+    if (_cuponesAplicados.length === 0) {
+        var p = document.createElement('p');
+        p.style.cssText = 'font-size:0.8rem;color:#b09080;margin:0 0 8px;';
+        p.textContent   = 'No tienes cupones activos.';
+        cuponesLista.appendChild(p);
+    } else {
+        _cuponesAplicados.forEach(function(c) {
+            var productoInfo = c.productoIdx !== undefined && carrito[c.productoIdx]
+                ? ('→ aplica a 1 pieza de "' + carrito[c.productoIdx].nombre + '"')
+                : (c.productoIdx === undefined ? '→ selecciona un producto abajo' : '→ producto eliminado');
+            var el = document.createElement('div');
+            el.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;background:#fff;border:1.5px solid #e8c89a;border-radius:10px;padding:8px 12px;gap:8px;cursor:pointer;transition:border-color 0.2s;';
+            el.onmouseover = function(){ this.style.borderColor='#c9a98a'; };
+            el.onmouseout  = function(){ this.style.borderColor='#e8c89a'; };
+            el.innerHTML =
+                '<div style="flex:1;min-width:0;" onclick="abrirDetalleCupon(\'' + c.codigo + '\',false)">' +
+                '<span style="font-size:0.85rem;font-weight:800;color:#362a22;">🎟️ ' + c.codigo + '</span>' +
+                '<span style="font-size:0.75rem;color:#8c7565;display:block;margin-top:1px;">' + c.descripcion + ' — ' + c.descuento + (c.tipo==='porcentaje'?'%':' MXN') + '</span>' +
+                '<span style="font-size:0.72rem;color:#a07850;display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + productoInfo + '</span>' +
+                '<span style="font-size:0.68rem;color:#c9a98a;display:block;margin-top:2px;">Toca para ver detalles →</span>' +
+                '</div>' +
+                '<button onclick="event.stopPropagation();quitarCupon(\'' + c.codigo + '\')" style="background:#f5e8e0;border:none;border-radius:50%;width:26px;height:26px;min-width:26px;font-size:12px;cursor:pointer;color:#8c7565;display:flex;align-items:center;justify-content:center;margin-top:2px;flex-shrink:0;">✕</button>';
+            cuponesLista.appendChild(el);
+        });
+    }
+
+    // ── Historial de cupones usados ──
+    if (_cuponesUsados.length > 0) {
+        var sep = document.createElement('div');
+        sep.style.cssText = 'margin:12px 0 8px;display:flex;align-items:center;gap:8px;';
+        sep.innerHTML = '<div style="flex:1;height:1px;background:#e8ddd5;"></div>' +
+            '<span style="font-size:0.72rem;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:0.7px;white-space:nowrap;">Cupones utilizados</span>' +
+            '<div style="flex:1;height:1px;background:#e8ddd5;"></div>';
+        cuponesLista.appendChild(sep);
+
+        _cuponesUsados.forEach(function(c) {
+            var el = document.createElement('div');
+            el.style.cssText = 'display:flex;align-items:center;justify-content:space-between;background:#fafafa;border:1.5px solid #eee;border-radius:10px;padding:8px 12px;gap:8px;cursor:pointer;opacity:0.72;transition:opacity 0.2s;';
+            el.onmouseover = function(){ this.style.opacity='1'; };
+            el.onmouseout  = function(){ this.style.opacity='0.72'; };
+            el.onclick = function(){ abrirDetalleCupon(c.codigo, true); };
+            el.innerHTML =
+                '<div style="flex:1;min-width:0;">' +
+                '<span style="font-size:0.83rem;font-weight:800;color:#999;">✅ ' + c.codigo + '</span>' +
+                '<span style="font-size:0.72rem;color:#bbb;display:block;margin-top:1px;">' + c.descripcion + '</span>' +
+                '<span style="font-size:0.68rem;color:#c9a98a;display:block;margin-top:2px;">Toca para ver detalles →</span>' +
+                '</div>';
+            cuponesLista.appendChild(el);
+        });
+    }
+
+    // Descuento total
+    var descuentoTotal = calcularDescuentoCupones(carrito);
+    if (cuponDesc) cuponDesc.textContent = descuentoTotal > 0 ? ('Ahorro: $' + descuentoTotal.toFixed(0) + ' MXN') : '';
 }
 
 function asignarCuponAProducto(idx) {
@@ -3444,7 +3528,7 @@ document.addEventListener('click', function(e) {
 });
 
 function irAZonaInteractiva() {
-    // Activa el panel de Biografía y lleva al inicio (no a la zona interactiva)
+    // Activa el panel de Biografía y lleva a su inicio (el cupón se descubre explorando)
     if (typeof activarPill === 'function') activarPill('biografia');
     setTimeout(function() {
         var panel = document.getElementById('panelPillBiografia');
@@ -3543,211 +3627,131 @@ _ready(function() {
 });
 
 // ══════════════════════════════════════════════════════════════════════
-// FIRESTORE — CUPONES POR USUARIO GOOGLE
-// Los cupones de cada usuario se guardan en Firestore bajo:
-//   usuarios/{uid}/cupones/{codigo}
-// Esto permite que persistan entre dispositivos y sesiones.
+// FIRESTORE — cupones y favoritos vinculados al usuario Google
+// Reglas necesarias en Firebase Console (Firestore Rules):
+//
+//   rules_version = '2';
+//   service cloud.firestore {
+//     match /databases/{database}/documents {
+//       match /productos/{document} {
+//         allow read: if true;
+//         allow write: if false;
+//       }
+//       // Cada usuario solo lee y escribe su propio perfil
+//       match /usuarios/{userId}/{document=**} {
+//         allow read, write: if request.auth != null && request.auth.uid == userId;
+//       }
+//     }
+//   }
+//
 // ══════════════════════════════════════════════════════════════════════
 
 var _db = null;
 
-// Inicializar Firestore cuando Firebase esté listo
 _ready(function() {
     try {
         if (typeof firebase !== 'undefined' && firebase.firestore) {
             _db = firebase.firestore();
         }
-    } catch(e) {
-        console.warn('Firestore no disponible:', e);
-    }
+    } catch(e) { console.warn('Firestore no disponible:', e); }
 });
 
-// Guardar un cupón en Firestore para el usuario actual
-function _guardarCuponFirestore(codigo, cupDef) {
+function _guardarCuponFirestore(codigo, cupDef, fechaObtenido) {
     if (!_db) return;
     try {
         var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
         if (!user) return;
         _db.collection('usuarios').doc(user.uid)
-            .collection('cupones').doc(codigo.toUpperCase())
-            .set({
-                codigo:      codigo.toUpperCase(),
-                descuento:   cupDef.descuento,
-                tipo:        cupDef.tipo,
-                descripcion: cupDef.descripcion,
-                origen:      cupDef.origen || 'desconocido',
-                reclamado:   new Date().toISOString(),
-                usado:       false
-            }, { merge: true });
-    } catch(e) {
-        console.warn('Error guardando cupón en Firestore:', e);
-    }
+           .collection('cupones').doc(codigo.toUpperCase())
+           .set({
+               codigo:        codigo.toUpperCase(),
+               descuento:     cupDef.descuento,
+               tipo:          cupDef.tipo,
+               descripcion:   cupDef.descripcion,
+               origen:        cupDef.origen || 'desconocido',
+               fechaObtenido: fechaObtenido || new Date().toISOString(),
+               usado:         false
+           }, { merge: true });
+    } catch(e) { console.warn('Error guardando cupón:', e); }
 }
 
-// Cargar cupones del usuario desde Firestore y agregarlos a _cuponesAplicados
 function _cargarCuponesFirestore(uid) {
     if (!_db || !uid) return;
-    _db.collection('usuarios').doc(uid)
-        .collection('cupones')
-        .where('usado', '==', false)
-        .get()
-        .then(function(snap) {
-            snap.forEach(function(doc) {
-                var d = doc.data();
-                // No duplicar si ya está en memoria
-                var yaEsta = _cuponesAplicados.some(function(c) { return c.codigo === d.codigo; });
-                if (!yaEsta) {
-                    _cuponesAplicados.push({
-                        codigo:      d.codigo,
-                        descuento:   d.descuento,
-                        tipo:        d.tipo,
-                        descripcion: d.descripcion
-                    });
-                }
-            });
-            renderizarCarrito();
-        })
-        .catch(function(e) { console.warn('Error cargando cupones:', e); });
+    _db.collection('usuarios').doc(uid).collection('cupones').get()
+       .then(function(snap) {
+           snap.forEach(function(doc) {
+               var d = doc.data();
+               if (d.usado) {
+                   // Agregar al historial de usados si no está ya
+                   var yaEsta = _cuponesUsados.some(function(c){ return c.codigo === d.codigo; });
+                   if (!yaEsta) {
+                       _cuponesUsados.push({
+                           codigo:        d.codigo,
+                           descuento:     d.descuento,
+                           tipo:          d.tipo,
+                           descripcion:   d.descripcion,
+                           origen:        d.origen,
+                           fechaObtenido: d.fechaObtenido,
+                           fechaUsado:    d.usadoEn || ''
+                       });
+                       _guardarHistorialUsados();
+                   }
+               } else {
+                   // Agregar a activos si no está ya
+                   var yaEstaA = _cuponesAplicados.some(function(c){ return c.codigo === d.codigo; });
+                   if (!yaEstaA) {
+                       _cuponesAplicados.push({
+                           codigo:        d.codigo,
+                           descuento:     d.descuento,
+                           tipo:          d.tipo,
+                           descripcion:   d.descripcion,
+                           origen:        d.origen,
+                           fechaObtenido: d.fechaObtenido
+                       });
+                   }
+               }
+           });
+           renderizarCarrito();
+       })
+       .catch(function(e){ console.warn('Error cargando cupones Firestore:', e); });
 }
 
-// Marcar cupón como usado en Firestore (llamar al completar pedido)
-function _marcarCuponUsadoFirestore(codigo) {
-    if (!_db) return;
-    try {
-        var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
-        if (!user) return;
-        _db.collection('usuarios').doc(user.uid)
-            .collection('cupones').doc(codigo.toUpperCase())
-            .update({ usado: true, usadoEn: new Date().toISOString() });
-    } catch(e) {}
-}
-
-// Guardar favoritos en Firestore
-function _guardarFavoritosFirestore(favs) {
-    if (!_db) return;
-    try {
-        var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
-        if (!user) return;
-        _db.collection('usuarios').doc(user.uid)
-            .set({ favoritos: favs }, { merge: true });
-    } catch(e) {}
-}
-
-// Cargar favoritos desde Firestore
 function _cargarFavoritosFirestore(uid) {
     if (!_db || !uid) return;
     _db.collection('usuarios').doc(uid).get().then(function(doc) {
         if (doc.exists) {
             var d = doc.data();
             if (d.favoritos && Array.isArray(d.favoritos)) {
-                // Merge con localStorage
                 var localFavs = [];
                 try { localFavs = JSON.parse(localStorage.getItem('velas-favoritos') || '[]'); } catch(e) {}
-                var merged = Array.from(new Set([...localFavs, ...d.favoritos]));
+                var merged = Array.from(new Set(localFavs.concat(d.favoritos)));
                 localStorage.setItem('velas-favoritos', JSON.stringify(merged));
                 if (typeof syncBotonesLike === 'function') syncBotonesLike();
             }
         }
-    }).catch(function(e) {});
+    }).catch(function(){});
 }
 
-// Hook: cuando el usuario inicia sesión, cargar sus datos de Firestore
-// Se engancha al onAuthStateChanged existente mediante un listener adicional
+// Hook al onAuthStateChanged existente: cargar datos cuando el usuario inicia sesión
 (function() {
     _ready(function() {
-        // Esperar a que Firebase esté listo
         var _intentos = 0;
-        var _esperarAuth = setInterval(function() {
+        var _esperar = setInterval(function() {
             _intentos++;
             if (typeof auth !== 'undefined' && auth.onAuthStateChanged) {
-                clearInterval(_esperarAuth);
+                clearInterval(_esperar);
                 auth.onAuthStateChanged(function(user) {
                     if (user) {
-                        // Usuario inició sesión: cargar cupones y favoritos
                         setTimeout(function() {
                             _cargarCuponesFirestore(user.uid);
                             _cargarFavoritosFirestore(user.uid);
-                        }, 500);
-                    } else {
-                        // Sin sesión: limpiar cupones de Firestore de la memoria
-                        // (mantener solo los locales ya reclamados en esta sesión)
+                        }, 600);
                     }
                 });
             }
-            if (_intentos > 30) clearInterval(_esperarAuth);
-        }, 300);
+            if (_intentos > 40) clearInterval(_esperar);
+        }, 250);
     });
-})();
-
-// Override de reclamarCuponZonaInteractiva para guardar también en Firestore
-(function() {
-    var _originalReclamar = window.reclamarCuponZonaInteractiva || reclamarCuponZonaInteractiva;
-    window.reclamarCuponZonaInteractiva = function() {
-        var codigo = 'ZONA15';
-        var btnEl = document.getElementById('btnReclamarCupon15');
-
-        if (_cuponEnCarritoActual(codigo)) {
-            mostrarToast('🎟️ El cupón ZONA15 ya está en tu carrito');
-            return;
-        }
-        if (_cuponYaUsado(codigo)) {
-            _bloquearBtnCupon15();
-            mostrarToast('⚠️ Este cupón ya fue reclamado anteriormente');
-            return;
-        }
-
-        var cupDef = _catalogoCupones[codigo];
-        _cuponesAplicados.push({ codigo: codigo, descuento: cupDef.descuento, descripcion: cupDef.descripcion, tipo: cupDef.tipo });
-        _marcarCuponUsado(codigo);
-
-        // Guardar en Firestore si hay sesión activa
-        _guardarCuponFirestore(codigo, cupDef);
-
-        if (btnEl) {
-            btnEl.disabled = true;
-            btnEl.style.background = 'linear-gradient(135deg,#4caf50,#2e7d32)';
-            btnEl.style.boxShadow = '0 4px 16px rgba(46,125,50,0.4)';
-            btnEl.innerHTML = '✅ Cupón guardado en tu carrito';
-        }
-
-        mostrarToast('🎉 ¡Cupón del 15% añadido! Ábrelo en el carrito.');
-        renderizarCarrito();
-
-        // Asegurarse de que la zona de cupones sea visible aunque el carrito esté vacío
-        var cuponesZona = document.getElementById('cartCuponesZona');
-        if (cuponesZona) cuponesZona.style.display = 'block';
-    };
-})();
-
-
-// ══════════════════════════════════════════════════════════════════════
-// CUPONES VISIBLES AUNQUE EL CARRITO ESTÉ VACÍO
-// Patch a renderizarCarrito: mostrar zona de cupones siempre que haya
-// cupones activos, incluso si el carrito no tiene productos todavía.
-// ══════════════════════════════════════════════════════════════════════
-(function() {
-    var _rrOrig = window.renderizarCarrito || (typeof renderizarCarrito !== 'undefined' ? renderizarCarrito : null);
-    if (!_rrOrig) return;
-    var _patchApplied = false;
-    function _aplicarPatch() {
-        if (_patchApplied) return;
-        _patchApplied = true;
-        var cuponesZona = document.getElementById('cartCuponesZona');
-        var cuponesLista = document.getElementById('cartCuponesLista');
-        if (!cuponesZona || !cuponesLista) return;
-        // Mostrar zona si hay cupones, independientemente del carrito
-        if (_cuponesAplicados && _cuponesAplicados.length > 0) {
-            cuponesZona.style.display = 'block';
-        }
-    }
-    // Observar cuando se abre el carrito
-    document.addEventListener('cartAbierto', _aplicarPatch);
-    // También hook directo: sobrescribir abrirPantallaCarrito para que llame al patch
-    var _abrirCartOrig = window.abrirPantallaCarrito;
-    window.abrirPantallaCarrito = function() {
-        if (typeof _abrirCartOrig === 'function') _abrirCartOrig.apply(this, arguments);
-        setTimeout(_aplicarPatch, 80);
-    };
 })();
 
 
@@ -3755,60 +3759,52 @@ function _cargarFavoritosFirestore(uid) {
 // WHATSAPP CARRITO — incluir cupones en el mensaje
 // ══════════════════════════════════════════════════════════════════════
 (function() {
-    // Override pedirCotizacionWA para incluir cupones activos
-    var _origWA = window.pedirCotizacionWA || pedirCotizacionWA;
+    var _origWA = window.pedirCotizacionWA;
     window.pedirCotizacionWA = function() {
         if (carrito.length === 0) { mostrarToast('Tu carrito está vacío'); return; }
 
         var ahora = Date.now();
         if (typeof _cotizacionUltimoEnvio !== 'undefined' && typeof _cotizacionCooldown !== 'undefined') {
             if (ahora - _cotizacionUltimoEnvio < _cotizacionCooldown) {
-                var segsRestantes = Math.ceil((_cotizacionCooldown - (ahora - _cotizacionUltimoEnvio)) / 1000);
-                mostrarToast('⏳ Espera ' + segsRestantes + ' segundos antes de volver a enviar');
+                var segs = Math.ceil((_cotizacionCooldown - (ahora - _cotizacionUltimoEnvio)) / 1000);
+                mostrarToast('⏳ Espera ' + segs + ' segundos antes de volver a enviar');
                 return;
             }
             _cotizacionUltimoEnvio = ahora;
         }
 
-        var baseUrl = window.location.origin + window.location.pathname;
-        var params = carrito.map(function(item) {
-            return 'p=' + encodeURIComponent(item.nombre) + '&q=' + item.cantidad + '&pr=' + item.precio;
-        }).join('&');
+        var baseUrl     = window.location.origin + window.location.pathname;
+        var params      = carrito.map(function(i){ return 'p='+encodeURIComponent(i.nombre)+'&q='+i.cantidad+'&pr='+i.precio; }).join('&');
         var linkCarrito = baseUrl + '?' + params + '#carrito';
-
-        var total = carrito.reduce(function(sum, i){ return sum + (i.precio || 0) * i.cantidad; }, 0);
-        var descuento = (typeof calcularDescuentoCupones === 'function') ? calcularDescuentoCupones(carrito) : 0;
+        var total       = carrito.reduce(function(s,i){ return s+(i.precio||0)*i.cantidad; }, 0);
+        var descuento   = (typeof calcularDescuentoCupones==='function') ? calcularDescuentoCupones(carrito) : 0;
 
         var lineas = ['Hola, me gustaría pedir una cotización de los siguientes productos de Velas Kukumita:\n'];
         carrito.forEach(function(item, i) {
-            lineas.push((i+1) + '. *' + item.nombre + '*');
-            lineas.push('   Cantidad: ' + item.cantidad + ' piezas');
-            if (item.precio) lineas.push('   Precio unitario: $' + item.precio + ' MXN');
-            if (item.precio) lineas.push('   Subtotal: $' + (item.precio * item.cantidad).toFixed(0) + ' MXN');
+            lineas.push((i+1)+'. *'+item.nombre+'*');
+            lineas.push('   Cantidad: '+item.cantidad+' piezas');
+            if (item.precio) lineas.push('   Precio unitario: $'+item.precio+' MXN');
+            if (item.precio) lineas.push('   Subtotal: $'+(item.precio*item.cantidad).toFixed(0)+' MXN');
         });
-        if (total > 0) lineas.push('\n*Total estimado: $' + total.toFixed(0) + ' MXN*');
+        if (total > 0) lineas.push('\n*Total estimado: $'+total.toFixed(0)+' MXN*');
 
-        // Agregar cupones al mensaje
         if (_cuponesAplicados && _cuponesAplicados.length > 0) {
             lineas.push('\n🎟️ *Cupones aplicados:*');
             _cuponesAplicados.forEach(function(c) {
-                var productoCupon = (c.productoIdx !== undefined && carrito[c.productoIdx])
-                    ? ' (en "' + carrito[c.productoIdx].nombre + '")'
-                    : '';
-                lineas.push('   • ' + c.codigo + ' — ' + c.descuento + (c.tipo === 'porcentaje' ? '%' : ' MXN') + productoCupon);
+                var prod = (c.productoIdx!==undefined && carrito[c.productoIdx]) ? ' (en "'+carrito[c.productoIdx].nombre+'")' : '';
+                lineas.push('   • '+c.codigo+' — '+c.descuento+(c.tipo==='porcentaje'?'%':' MXN')+prod);
             });
-            if (descuento > 0) lineas.push('   _Ahorro total: $' + descuento.toFixed(0) + ' MXN_');
-            var totalConDesc = Math.max(0, total - descuento);
-            if (totalConDesc > 0) lineas.push('*Total con descuento: $' + totalConDesc.toFixed(0) + ' MXN*');
+            if (descuento > 0) lineas.push('   _Ahorro: $'+descuento.toFixed(0)+' MXN_');
+            var conDesc = Math.max(0, total - descuento);
+            if (conDesc > 0) lineas.push('*Total con descuento: $'+conDesc.toFixed(0)+' MXN*');
         }
-
-        lineas.push('\n🔗 Ver mi selección: ' + linkCarrito);
+        lineas.push('\n🔗 Ver mi selección: '+linkCarrito);
 
         var mensaje = lineas.join('\n');
         var btn = document.getElementById('btnPedirCotizacion');
-        if (btn) { btn.disabled = true; btn.textContent = '⏳ Enviando...'; }
+        if (btn) { btn.disabled=true; btn.textContent='⏳ Enviando...'; }
         setTimeout(function() {
-            window.open('https://wa.me/524431469161?text=' + encodeURIComponent(mensaje), '_blank');
+            window.open('https://wa.me/524431469161?text='+encodeURIComponent(mensaje), '_blank');
             if (btn) {
                 btn.disabled = false;
                 btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg> Pedir Cotización por WhatsApp';
