@@ -12,137 +12,6 @@
 //   - Modo Oscuro, Píldoras, Carruseles, etc.
 // ============================================================
 
-
-// ══════════════════════════════════════════════════════════════════════════════
-// cargarCatalogo()
-// Lee productos en vivo desde Google Sheets (CSV) y los inyecta en el grid.
-// Columnas esperadas (fila 1 = encabezados):
-//   Nombre | Precio | Descripcion | Imagen | EtiquetaPrincipal | SubEtiquetas | EtiquetasEvento
-// ══════════════════════════════════════════════════════════════════════════════
-var CSV_URL = 'https://docs.google.com/spreadsheets/d/1jin2wMYingvbPD2csGxIbm5AhulfRvCRvIzAKJTUNMw/gviz/tq?tqx=out:csv';
-
-function cargarCatalogo() {
-    var grid = document.getElementById('gridProductos');
-    if (!grid) return;
-
-    // Estado de carga
-    grid.innerHTML =
-        '<div style="grid-column:1/-1; text-align:center; padding:60px 20px; color:#8c7565;">' +
-        '<div style="font-size:2.5rem; margin-bottom:14px;">⏳</div>' +
-        '<p style="font-size:1rem; font-weight:600;">Cargando catálogo…</p>' +
-        '</div>';
-
-    fetch(CSV_URL)
-        .then(function(res) {
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            return res.text();
-        })
-        .then(function(csvText) {
-            var filas = _parsearCSVCatalogo(csvText);
-            // Fila 0 = encabezados
-            var datos = filas.slice(1).filter(function(f) {
-                return f.length > 0 && (f[0] || '').trim() !== '';
-            });
-
-            if (datos.length === 0) {
-                _mostrarMensajeGrid('🕯️', 'El catálogo está vacío por el momento.', 'Pronto tendremos nuevos productos.');
-                return;
-            }
-
-            // Construir listaProductos globalmente (para favoritos, carrito, etc.)
-            listaProductos = datos.map(function(f, i) {
-                var get = function(idx) { return (f[idx] || '').trim(); };
-                var nombre      = get(0);  // Columna: Nombre
-                var precio      = parseFloat(get(1)) || 0; // Columna: Precio
-                var descripcion = get(2);  // Columna: Descripcion
-                // Columna: Imagen — puede traer varias URLs separadas por coma; toma la primera como portada
-                var imagenRaw   = get(3);
-                var imagenesArr = imagenRaw ? imagenRaw.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
-                var imagenPortada = imagenesArr[0] || '';
-                var etiquetaPrincipal = get(4); // Columna: EtiquetaPrincipal
-                var subEtiquetas      = get(5); // Columna: SubEtiquetas
-                var etiquetasEvento   = get(6); // Columna: EtiquetasEvento
-
-                return {
-                    id:           i + 1,
-                    nombre:       nombre,
-                    precioNormal: precio,
-                    precioBazar:  0,
-                    imagen:       imagenPortada,
-                    imagenes:     imagenesArr,
-                    forma:        etiquetaPrincipal.toLowerCase().replace(/\s+/g, '-') || '',
-                    eventos:      etiquetasEvento.toLowerCase().replace(/,\s*/g, ' ').replace(/\s+/g, ' ').trim(),
-                    tipo:         'arreglo',
-                    subtags:      subEtiquetas,
-                    descripcion:  descripcion,
-                    etiquetas:    etiquetasEvento ? etiquetasEvento.split(',').map(function(s){ return s.trim(); }) : [],
-                    aditivos:     []
-                };
-            });
-
-            // Renderizar tarjetas
-            renderizarCatalogoCompleto();
-
-            // Sincronizar botones like y carruseles tras cargar
-            if (typeof syncBotonesLike === 'function') syncBotonesLike();
-            if (typeof window.refrescarCarruseles === 'function') window.refrescarCarruseles();
-            if (typeof window.actualizarPaginacion === 'function') window.actualizarPaginacion();
-        })
-        .catch(function(err) {
-            console.error('cargarCatalogo() error:', err);
-            _mostrarMensajeGrid(
-                '⚠️',
-                'No se pudo cargar el catálogo.',
-                'Revisa que la hoja esté publicada como CSV en Google Sheets o verifica tu conexión.'
-            );
-        });
-}
-
-// Parser CSV robusto (maneja comas dentro de comillas)
-function _parsearCSVCatalogo(texto) {
-    var lineas = [];
-    var filaActual = [];
-    var campo = '';
-    var enComillas = false;
-    for (var i = 0; i < texto.length; i++) {
-        var c = texto[i];
-        if (c === '"') {
-            if (enComillas && texto[i + 1] === '"') { campo += '"'; i++; }
-            else enComillas = !enComillas;
-        } else if (c === ',' && !enComillas) {
-            filaActual.push(campo.trim()); campo = '';
-        } else if ((c === '\n' || c === '\r') && !enComillas) {
-            if (c === '\r' && texto[i + 1] === '\n') i++;
-            filaActual.push(campo.trim());
-            if (filaActual.some(function(x) { return x !== ''; })) lineas.push(filaActual);
-            filaActual = []; campo = '';
-        } else { campo += c; }
-    }
-    filaActual.push(campo.trim());
-    if (filaActual.some(function(x) { return x !== ''; })) lineas.push(filaActual);
-    return lineas;
-}
-
-// Mensaje elegante cuando el grid no tiene productos
-function _mostrarMensajeGrid(icono, titulo, subtitulo) {
-    var grid = document.getElementById('gridProductos');
-    if (!grid) return;
-    grid.innerHTML =
-        '<div style="grid-column:1/-1; text-align:center; padding:70px 24px;">' +
-        '<div style="font-size:3rem; margin-bottom:14px;">' + icono + '</div>' +
-        '<p style="font-size:1.05rem; font-weight:700; color:#5c4d43; margin-bottom:8px;">' + titulo + '</p>' +
-        '<p style="font-size:0.88rem; color:#9a8878;">' + subtitulo + '</p>' +
-        '</div>';
-}
-
-// Arrancar la carga al domReady
-document.addEventListener('DOMContentLoaded', function() {
-    cargarCatalogo();
-});
-
-
-/* ── JS original del proyecto ──────────────────────── */
-
 // ── DATOS DE VIDEOS POR RED SOCIAL ──
 // Reemplaza los IDs de YouTube/URLs con los tuyos reales
 var _videosRedes = {
@@ -564,7 +433,7 @@ function renderizarCatalogoCompleto() {
 // CARGA DESDE GOOGLE SHEETS (CSV público)
 // ══════════════════════════════════════════════════════════════════════════════
 function cargarDesdeGoogleSheets() {
-    var csvUrl = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/export?format=csv&gid=0';
+    var csvUrl = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv';
 
     mostrarEstadoCarga('Cargando catálogo desde Google Sheets…', false);
 
