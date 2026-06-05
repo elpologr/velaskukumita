@@ -836,8 +836,34 @@
     <div class="container">
 
         <!-- ===== TÍTULO FIJO PRODUCTOS ===== -->
-        <div style="text-align:center; padding: 48px 16px 36px;">
+        <div style="text-align:center; padding: 48px 16px 20px;">
             <h2 style="font-size: 3.6rem; font-weight: 900; color: #111; letter-spacing: 2px; margin: 0; font-family: 'Playfair Display', Georgia, serif; font-style: italic; line-height: 1.1;">Catálogo</h2>
+        </div>
+
+        <!-- ===== TEXTO INTERACTIVO YESOS KUKUMITA ===== -->
+        <div style="text-align:center; padding: 0 16px 28px; position:relative;">
+            <!-- Texto clickeable -->
+            <p id="textoYesosKukumita"
+               onclick="toggleSubmenuYesos()"
+               style="display:inline-block; font-size:0.88rem; color:#8c7565; cursor:pointer; margin:0; line-height:1.7; max-width:560px; border-bottom:1px dashed #c9a98a; padding-bottom:4px; transition:color 0.2s; user-select:none;"
+               onmouseover="this.style.color='#5c4d43'"
+               onmouseout="this.style.color='#8c7565'">
+                Productos hechos de cera desde la base hasta Las Mascotas Híper Realistas, aunque muchas veces nos preguntan si son jabones o esculturas, la verdad es que también manejamos Yeso. <span style="font-weight:700; color:#8c7565;">Presiona Aquí Para ver Nuestra Página de Yesos Kukumita ▾</span>
+            </p>
+
+            <!-- Submenú desplegable -->
+            <div id="submenuYesosKukumita"
+                 style="display:none; max-width:520px; margin:12px auto 0; background:#fff; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.13); border:1.5px solid #e8ddd5; padding:20px 22px 18px; text-align:left; animation:submenuFadeIn 0.22s ease;">
+                <p style="font-size:0.88rem; color:#5c4d43; line-height:1.75; margin:0 0 18px;">
+                    Productos hechos de cera desde la base hasta Las Mascotas Híper Realistas, aunque muchas veces nos preguntan si son jabones o esculturas, la verdad es que también manejamos Yeso.
+                </p>
+                <a href="https://elpologr.github.io/yesoskukumita/" target="_blank" rel="nofollow"
+                   style="display:flex; align-items:center; justify-content:center; gap:10px; background:linear-gradient(135deg,#8c7565,#5c4d43); color:white; text-decoration:none; border-radius:12px; padding:13px 20px; font-size:0.95rem; font-weight:800; font-family:inherit; box-shadow:0 4px 14px rgba(92,77,67,0.3); transition:all 0.22s;"
+                   onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 7px 22px rgba(92,77,67,0.4)';"
+                   onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 14px rgba(92,77,67,0.3)';">
+                    🪨 Visitar Página de Yesos Kukumita
+                </a>
+            </div>
         </div>
 
         <!-- ===== BOTONES DE MODO: PRODUCTOS / ARREGLOS / DECORACIONES / ETIQUETAS ===== -->
@@ -1533,5 +1559,25 @@
 
     <!-- JavaScript externo -->
     <script src="app.js"></script>
+
+    <!-- Función submenú Yesos Kukumita -->
+    <script>
+        function toggleSubmenuYesos() {
+            var sub = document.getElementById('submenuYesosKukumita');
+            if (sub.style.display === 'none' || sub.style.display === '') {
+                sub.style.display = 'block';
+            } else {
+                sub.style.display = 'none';
+            }
+        }
+        // Cerrar submenú al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            var trigger = document.getElementById('textoYesosKukumita');
+            var sub = document.getElementById('submenuYesosKukumita');
+            if (sub && trigger && !trigger.contains(e.target) && !sub.contains(e.target)) {
+                sub.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
