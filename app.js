@@ -241,9 +241,10 @@ function csvAProductos(filas) {
             : [];
 
         // Columna F: puede tener una o varias etiquetas separadas por | (ej: "arreglo|decoracion")
-        var _rawTipos = get(5);
+        // Se limpian comillas extra que Google Sheets agrega cuando hay validación de lista en la celda.
+        var _rawTipos = get(5).replace(/^"+|"+$/g, '').trim();
         var tiposArray = _rawTipos
-            ? _rawTipos.split('|').map(function(s) { return s.trim().toLowerCase(); }).filter(Boolean)
+            ? _rawTipos.split('|').map(function(s) { return s.trim().replace(/^"+|"+$/g, '').toLowerCase(); }).filter(Boolean)
             : ['arreglo'];
         // tipo principal = primer valor (compatibilidad con código existente)
         var tipoPrincipal = tiposArray[0] || 'arreglo';
@@ -497,6 +498,12 @@ if (document.readyState === 'loading') {
 
     function mostrarPagina(num) {
         paginaActual = num;
+        // Guardar página en el hash de la URL para que persista al recargar
+        var nuevoHash = (window.location.hash || '').replace(/#?pagina=\d+/, '').replace(/^#?&/, '').replace(/^#/, '') || '';
+        var hashFinal = (nuevoHash ? nuevoHash + '&' : '') + 'pagina=' + num;
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, '', '#' + hashFinal);
+        }
         var inicio = (num - 1) * POR_PAGINA;
         var fin = inicio + POR_PAGINA;
         // Quita paginacion-oculto a todas
@@ -565,33 +572,12 @@ if (document.readyState === 'loading') {
         });
     }
 
-    // ── Leer/guardar página en el hash de la URL (ej: #pagina=2) ──
-    function leerPaginaDesdeURL() {
-        var hash = window.location.hash || '';
-        var match = hash.match(/pagina=(\d+)/);
-        return match ? parseInt(match[1]) : 1;
-    }
-
-    function guardarPaginaEnURL(num) {
-        var hash = window.location.hash.replace(/#?pagina=\d+/, '').replace(/^#/, '') || '';
-        var nuevoHash = (hash ? hash + '&' : '') + 'pagina=' + num;
-        // replaceState para no crear entrada en historial al paginar
-        if (window.history && window.history.replaceState) {
-            window.history.replaceState(null, '', '#' + nuevoHash);
-        }
-    }
-
-    // Sobreescribir mostrarPagina para que persista la página en la URL
-    var _mostrarPaginaOriginal = mostrarPagina;
-    mostrarPagina = function(num) {
-        _mostrarPaginaOriginal(num);
-        guardarPaginaEnURL(num);
-    };
-
     function actualizarPaginacion() {
         tarjetasVisibles = obtenerTarjetasVisibles();
-        // Restaurar página desde URL si es válida; si no, ir a página 1
-        var paginaGuardada = leerPaginaDesdeURL();
+        // Restaurar página desde URL (#pagina=N) si es válida; si no, ir a 1
+        var hash = window.location.hash || '';
+        var match = hash.match(/pagina=(\d+)/);
+        var paginaGuardada = match ? parseInt(match[1]) : 1;
         var totalPags = Math.ceil(tarjetasVisibles.length / POR_PAGINA);
         var paginaInicial = (paginaGuardada > 1 && paginaGuardada <= totalPags) ? paginaGuardada : 1;
         mostrarPagina(paginaInicial);
@@ -1363,7 +1349,8 @@ if (document.readyState === 'loading') {
 
     // ── Helper: comprueba si una card tiene alguno de los tipos indicados ──
     function tieneTipo(card, ...buscar) {
-        const tipos = (card.getAttribute('data-tipos') || card.getAttribute('data-tipo') || '').toLowerCase().split('|');
+        const rawTipos = (card.getAttribute('data-tipos') || card.getAttribute('data-tipo') || '');
+        const tipos = rawTipos.toLowerCase().replace(/^"+|"+$/g, '').split('|').map(s => s.trim().replace(/^"+|"+$/g, '')).filter(Boolean);
         const variantes = {
             'producto':      ['producto','productos'],
             'arreglo':       ['arreglo','arreglos'],
@@ -2560,11 +2547,10 @@ var TIPO_INFO = {
 
 // ── Inyectar etiqueta principal (sobre el título) y sub-etiquetas (sobre evento) ──
 function inyectarEtiquetasModal(card) {
-    // 1. ETIQUETAS PRINCIPALES — lee data-tipos (puede ser más de una, separadas por |)
+    // 1. ETIQUETAS PRINCIPALES — lee data-tipos (puede haber varias separadas por |)
     var zonaPrincipal = document.getElementById('mpEtiquetaPrincipalZona');
     if (zonaPrincipal) {
         zonaPrincipal.innerHTML = '';
-        // Leer todos los tipos: data-tipos tiene prioridad sobre data-tipo
         var rawTipos = (card.getAttribute('data-tipos') || card.getAttribute('data-tipo') || '');
         var tipos = rawTipos.toLowerCase()
             .replace(/^"+|"+$/g, '')
@@ -2583,10 +2569,12 @@ function inyectarEtiquetasModal(card) {
                 hayEtiqueta = true;
             }
         });
-        zonaPrincipal.style.display = hayEtiqueta ? 'flex' : 'none';
         if (hayEtiqueta) {
+            zonaPrincipal.style.display = 'flex';
             zonaPrincipal.style.flexWrap = 'wrap';
             zonaPrincipal.style.gap = '6px';
+        } else {
+            zonaPrincipal.style.display = 'none';
         }
     }
 
