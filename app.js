@@ -241,10 +241,9 @@ function csvAProductos(filas) {
             : [];
 
         // Columna F: puede tener una o varias etiquetas separadas por | (ej: "arreglo|decoracion")
-        // Se limpian comillas extra que Google Sheets puede agregar cuando hay validación de lista.
-        var _rawTipos = get(5).replace(/^"+|"+$/g, '').trim();
+        var _rawTipos = get(5);
         var tiposArray = _rawTipos
-            ? _rawTipos.split('|').map(function(s) { return s.trim().replace(/^"+|"+$/g, '').toLowerCase(); }).filter(Boolean)
+            ? _rawTipos.split('|').map(function(s) { return s.trim().toLowerCase(); }).filter(Boolean)
             : ['arreglo'];
         // tipo principal = primer valor (compatibilidad con código existente)
         var tipoPrincipal = tiposArray[0] || 'arreglo';
@@ -566,10 +565,36 @@ if (document.readyState === 'loading') {
         });
     }
 
+    // ── Leer/guardar página en el hash de la URL (ej: #pagina=2) ──
+    function leerPaginaDesdeURL() {
+        var hash = window.location.hash || '';
+        var match = hash.match(/pagina=(\d+)/);
+        return match ? parseInt(match[1]) : 1;
+    }
+
+    function guardarPaginaEnURL(num) {
+        var hash = window.location.hash.replace(/#?pagina=\d+/, '').replace(/^#/, '') || '';
+        var nuevoHash = (hash ? hash + '&' : '') + 'pagina=' + num;
+        // replaceState para no crear entrada en historial al paginar
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, '', '#' + nuevoHash);
+        }
+    }
+
+    // Sobreescribir mostrarPagina para que persista la página en la URL
+    var _mostrarPaginaOriginal = mostrarPagina;
+    mostrarPagina = function(num) {
+        _mostrarPaginaOriginal(num);
+        guardarPaginaEnURL(num);
+    };
+
     function actualizarPaginacion() {
         tarjetasVisibles = obtenerTarjetasVisibles();
-        paginaActual = 1;
-        mostrarPagina(1);
+        // Restaurar página desde URL si es válida; si no, ir a página 1
+        var paginaGuardada = leerPaginaDesdeURL();
+        var totalPags = Math.ceil(tarjetasVisibles.length / POR_PAGINA);
+        var paginaInicial = (paginaGuardada > 1 && paginaGuardada <= totalPags) ? paginaGuardada : 1;
+        mostrarPagina(paginaInicial);
     }
 
     // Escuchar el evento de catálogo cargado (Google Sheets) en lugar de usar un timeout fijo
@@ -1338,8 +1363,7 @@ if (document.readyState === 'loading') {
 
     // ── Helper: comprueba si una card tiene alguno de los tipos indicados ──
     function tieneTipo(card, ...buscar) {
-        const rawTipos = (card.getAttribute('data-tipos') || card.getAttribute('data-tipo') || '');
-        const tipos = rawTipos.toLowerCase().replace(/^"+|"+$/g, '').split('|').map(s => s.trim().replace(/^"+|"+$/g, '')).filter(Boolean);
+        const tipos = (card.getAttribute('data-tipos') || card.getAttribute('data-tipo') || '').toLowerCase().split('|');
         const variantes = {
             'producto':      ['producto','productos'],
             'arreglo':       ['arreglo','arreglos'],
@@ -2522,27 +2546,47 @@ document.getElementById('modalBazar').addEventListener('click', function(e) {
 
 // Tipos → clase CSS y texto
 var TIPO_INFO = {
-    producto:   { cls: 'producto',   label: '📦 Producto' },
-    arreglo:    { cls: 'arreglo',    label: '🕯️ Arreglo' },
-    aditamento: { cls: 'aditamento', label: '✨ Aditamento' }
+    producto:     { cls: 'producto',   label: '📦 Producto' },
+    productos:    { cls: 'producto',   label: '📦 Producto' },
+    arreglo:      { cls: 'arreglo',    label: '🕯️ Arreglo' },
+    arreglos:     { cls: 'arreglo',    label: '🕯️ Arreglo' },
+    aditamento:   { cls: 'aditamento', label: '✨ Aditamento' },
+    aditamentos:  { cls: 'aditamento', label: '✨ Aditamento' },
+    decoracion:   { cls: 'decoracion', label: '🎀 Decoración' },
+    decoraciones: { cls: 'decoracion', label: '🎀 Decoración' },
+    etiqueta:     { cls: 'etiqueta',   label: '🏷️ Etiqueta' },
+    etiquetas:    { cls: 'etiqueta',   label: '🏷️ Etiqueta' }
 };
 
 // ── Inyectar etiqueta principal (sobre el título) y sub-etiquetas (sobre evento) ──
 function inyectarEtiquetasModal(card) {
-    // 1. ETIQUETA PRINCIPAL — va en la zona encima del título
+    // 1. ETIQUETAS PRINCIPALES — lee data-tipos (puede ser más de una, separadas por |)
     var zonaPrincipal = document.getElementById('mpEtiquetaPrincipalZona');
     if (zonaPrincipal) {
         zonaPrincipal.innerHTML = '';
-        var tipo = (card.getAttribute('data-tipo') || '').toLowerCase();
-        var info = TIPO_INFO[tipo];
-        if (info) {
-            var ePrincipal = document.createElement('span');
-            ePrincipal.className = 'mp-etiqueta-principal ' + info.cls;
-            ePrincipal.textContent = info.label;
-            zonaPrincipal.appendChild(ePrincipal);
-            zonaPrincipal.style.display = 'block';
-        } else {
-            zonaPrincipal.style.display = 'none';
+        // Leer todos los tipos: data-tipos tiene prioridad sobre data-tipo
+        var rawTipos = (card.getAttribute('data-tipos') || card.getAttribute('data-tipo') || '');
+        var tipos = rawTipos.toLowerCase()
+            .replace(/^"+|"+$/g, '')
+            .split('|')
+            .map(function(s) { return s.trim().replace(/^"+|"+$/g, ''); })
+            .filter(Boolean);
+
+        var hayEtiqueta = false;
+        tipos.forEach(function(tipo) {
+            var info = TIPO_INFO[tipo];
+            if (info) {
+                var ePrincipal = document.createElement('span');
+                ePrincipal.className = 'mp-etiqueta-principal ' + info.cls;
+                ePrincipal.textContent = info.label;
+                zonaPrincipal.appendChild(ePrincipal);
+                hayEtiqueta = true;
+            }
+        });
+        zonaPrincipal.style.display = hayEtiqueta ? 'flex' : 'none';
+        if (hayEtiqueta) {
+            zonaPrincipal.style.flexWrap = 'wrap';
+            zonaPrincipal.style.gap = '6px';
         }
     }
 
