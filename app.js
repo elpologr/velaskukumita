@@ -230,7 +230,7 @@ function csvAProductos(filas) {
         if (!get(0)) continue;
 
         // A=0 nombre, B=1 precio, C=2 precioBazar, D=3 descripcion,
-        // E=4 imagen, F=5 etiquetaPrincipal, G=6 subEtiqueta, H=7 etiquetaEvento
+        // E=4 imagen, F=5 etiquetaPrincipal (puede tener varias separadas por |), G=6 subEtiqueta, H=7 etiquetaEvento
         // I=8 alto, J=9 ancho
 
         // Imágenes: columna E puede tener varias URLs separadas por coma.
@@ -239,6 +239,14 @@ function csvAProductos(filas) {
         var imagenesExtra = _rawImg
             ? _rawImg.split(',').map(function(s) { return s.trim().replace(/^"+|"+$/g, ''); }).filter(Boolean)
             : [];
+
+        // Columna F: puede tener una o varias etiquetas separadas por | (ej: "arreglo|decoracion")
+        var _rawTipos = get(5);
+        var tiposArray = _rawTipos
+            ? _rawTipos.split('|').map(function(s) { return s.trim().toLowerCase(); }).filter(Boolean)
+            : ['arreglo'];
+        // tipo principal = primer valor (compatibilidad con código existente)
+        var tipoPrincipal = tiposArray[0] || 'arreglo';
 
         productos.push({
             id:           i,
@@ -249,12 +257,13 @@ function csvAProductos(filas) {
             imagen:       imagenesExtra[0] || '',
             imagenes:     imagenesExtra,
             forma:        '',
-            tipo:         get(5).toLowerCase() || 'arreglo',
+            tipo:         tipoPrincipal,
+            tipos:        tiposArray,
             subtags:      get(6) ? get(6).split(',').map(function(s){ return s.trim(); }).filter(Boolean).join('|') : '',
             eventos:      get(7)
                             ? get(7).split(',').map(function(s){ return s.trim().toLowerCase(); }).filter(Boolean).join(' ')
                             : '',
-            etiquetas:    get(5) ? [get(5).trim()] : [],
+            etiquetas:    tiposArray,
             aditivos:     [],
             alto:         get(8),
             ancho:        get(9)
@@ -297,6 +306,7 @@ function renderizarCatalogoCompleto() {
         card.setAttribute('data-precio',          String(p.precioNormal || ''));
         card.setAttribute('data-precio-bazar',    String(p.precioBazar  || ''));
         card.setAttribute('data-tipo',            p.tipo  || 'arreglo');
+        card.setAttribute('data-tipos',           (p.tipos || [p.tipo || 'arreglo']).join('|'));
         card.setAttribute('data-subtags',         p.subtags || '');
         card.setAttribute('data-nombre',          p.nombre);
         card.setAttribute('data-imagenes',        JSON.stringify(p.imagenes || []));
@@ -1246,16 +1256,21 @@ if (document.readyState === 'loading') {
             btnArreglos.classList.add('activo');
             panelArr.classList.add('visible');
             if (bloqueArr) bloqueArr.style.display = 'block';
+            aplicarFiltrosArreglos();
         } else if (modo === 'etiquetas') {
             btnEtiquetas.classList.add('activo');
             panelEtiq.classList.add('visible');
+            aplicarFiltrosUnificados('etiquetas');
         } else if (modo === 'decoraciones') {
             btnDecoraciones.classList.add('activo');
             panelDeco.classList.add('visible');
+            aplicarFiltrosUnificados('decoraciones');
         } else {
+            // 'todos' = Productos
             btnTodos.classList.add('activo');
             panelTod.classList.add('visible');
             if (bloqueTod) bloqueTod.style.display = 'block';
+            aplicarFiltrosUnificados('todos');
         }
     }
 
@@ -1320,6 +1335,21 @@ if (document.readyState === 'loading') {
         aplicarFiltrosUnificados(panel);
     }
 
+    // ── Helper: comprueba si una card tiene alguno de los tipos indicados ──
+    function tieneTipo(card, ...buscar) {
+        const tipos = (card.getAttribute('data-tipos') || card.getAttribute('data-tipo') || '').toLowerCase().split('|');
+        const variantes = {
+            'producto':      ['producto','productos'],
+            'arreglo':       ['arreglo','arreglos'],
+            'decoracion':    ['decoracion','decoraciones','aditamento','aditamentos'],
+            'etiqueta':      ['etiqueta','etiquetas']
+        };
+        return buscar.some(function(b) {
+            const lista = variantes[b] || [b];
+            return tipos.some(function(t) { return lista.includes(t); });
+        });
+    }
+
     function aplicarFiltrosUnificados(panel) {
         const inputMap = {
             arreglos:     'inputBusquedaArreglos',
@@ -1337,26 +1367,20 @@ if (document.readyState === 'loading') {
             const formaCard  = (card.dataset.forma  || '').toLowerCase();
             const eventoCard = (card.dataset.evento || '').toLowerCase();
             const nombreCard = (card.getAttribute('data-nombre') || '').toLowerCase();
-            const tipoCard   = (card.getAttribute('data-tipo') || '').toLowerCase();
 
             const okNombre = !textoBusq || nombreCard.includes(textoBusq);
             const okForma  = formaActiva  === 'todos' || formaCard === formaActiva;
             const okEvento = eventoActivo === 'todos' || eventoCard.split(' ').includes(eventoActivo);
 
             if (panel === 'decoraciones') {
-                // Acepta tipo = 'decoracion', 'aditamento', 'decoraciones', 'aditamentos', o combinaciones
-                const esDecOAdit = tipoCard === 'decoracion' || tipoCard === 'decoraciones'
-                                || tipoCard === 'aditamento' || tipoCard === 'aditamentos';
-                card.classList.toggle('oculto', !(esDecOAdit && okNombre));
+                card.classList.toggle('oculto', !(tieneTipo(card, 'decoracion') && okNombre));
             } else if (panel === 'etiquetas') {
-                const esEtiqueta = tipoCard === 'etiqueta' || tipoCard === 'etiquetas';
-                card.classList.toggle('oculto', !(esEtiqueta && okNombre && okEvento));
+                card.classList.toggle('oculto', !(tieneTipo(card, 'etiqueta') && okNombre && okEvento));
             } else if (panel === 'arreglos') {
-                const esArreglo = tipoCard === 'arreglo' || tipoCard === 'arreglos';
-                card.classList.toggle('oculto', !(esArreglo && okNombre && okForma && okEvento));
+                card.classList.toggle('oculto', !(tieneTipo(card, 'arreglo') && okNombre && okForma && okEvento));
             } else {
-                // panel === 'todos': muestra todo sin filtro de tipo
-                card.classList.toggle('oculto', !(okNombre && okForma && okEvento));
+                // panel === 'todos' (Productos): muestra solo los que tienen tipo 'producto'
+                card.classList.toggle('oculto', !(tieneTipo(card, 'producto') && okNombre && okForma && okEvento));
             }
         });
 
@@ -1433,9 +1457,8 @@ if (document.readyState === 'loading') {
         document.querySelectorAll('.card-dinamica').forEach(card => {
             let visible = true;
 
-            // Solo mostrar tarjetas de tipo arreglo/arreglos
-            const tipoCard = (card.getAttribute('data-tipo') || '').toLowerCase();
-            if (tipoCard !== 'arreglo' && tipoCard !== 'arreglos') {
+            // Solo mostrar tarjetas que tengan tipo arreglo
+            if (!tieneTipo(card, 'arreglo')) {
                 card.classList.add('oculto');
                 return;
             }
