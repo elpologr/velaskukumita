@@ -2914,7 +2914,7 @@ function renderizarCarrito() {
                     '<span style="font-size:0.75rem;color:#8c7565;display:block;margin-top:1px;">' + c.descripcion + ' — ' + c.descuento + (c.tipo==='porcentaje'?'% de descuento':' MXN') + ' en 1 pieza</span>' +
                     '<span style="font-size:0.72rem;color:#a07850;display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + productoInfo + '</span>' +
                     '</div>' +
-                    '<button onclick="quitarCupon('' + c.codigo + '')" style="background:#f5e8e0;border:none;border-radius:50%;width:26px;height:26px;min-width:26px;font-size:12px;cursor:pointer;color:#8c7565;display:flex;align-items:center;justify-content:center;margin-top:2px;">✕</button>';
+                    '<button onclick="quitarCupon(\'' + c.codigo + '\')" style="background:#f5e8e0;border:none;border-radius:50%;width:26px;height:26px;min-width:26px;font-size:12px;cursor:pointer;color:#8c7565;display:flex;align-items:center;justify-content:center;margin-top:2px;">✕</button>';
                 cuponesLista.appendChild(el);
             });
         }
@@ -3312,8 +3312,7 @@ function _copiarFallback(texto) {
 }
 
 function compartirEnWhatsApp() {
-    var texto = encodeURIComponent('🕯️ Mira este producto de Velas Kukumita: ' + _scNombreActual + '
-' + _scUrlActual);
+    var texto = encodeURIComponent('🕯️ Mira este producto de Velas Kukumita: ' + _scNombreActual + '\n' + _scUrlActual);
     window.open('https://wa.me/?text=' + texto, '_blank');
 }
 
