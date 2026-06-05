@@ -513,11 +513,12 @@ if (document.readyState === 'loading') {
     function renderControles() {
         const total = calcularTotalPaginas();
         const mostradas = tarjetasVisibles.slice((paginaActual-1)*POR_PAGINA, paginaActual*POR_PAGINA).length;
+        const hayTarjetas = document.querySelectorAll('#gridProductos .card-dinamica').length > 0;
         const infoTexto = tarjetasVisibles.length > 0
             ? "Mostrando " + ((paginaActual-1)*POR_PAGINA+1) + "\u2013" + ((paginaActual-1)*POR_PAGINA+mostradas) + " de " + tarjetasVisibles.length + " productos"
-            : 'Sin resultados';
+            : (hayTarjetas ? 'Sin resultados para ese filtro' : '');
 
-        ['pagInfoArriba'].forEach(function(id) {
+        ['pagInfoArriba', 'pagInfoAbajo'].forEach(function(id) {
             var el = document.getElementById(id);
             if (el) el.textContent = infoTexto;
         });
@@ -560,8 +561,19 @@ if (document.readyState === 'loading') {
         mostrarPagina(1);
     }
 
+    // Escuchar el evento de catálogo cargado (Google Sheets) en lugar de usar un timeout fijo
+    document.addEventListener('catalogoCargado', function() {
+        actualizarPaginacion();
+    });
+
+    // También respaldo con _ready por si el catálogo ya estaba listo al iniciar
     _ready(function() {
-        setTimeout(actualizarPaginacion, 150);
+        // Solo dispara si ya hay tarjetas en el grid (catálogo estático o carga muy rápida)
+        setTimeout(function() {
+            if (document.querySelectorAll('#gridProductos .card-dinamica').length > 0) {
+                actualizarPaginacion();
+            }
+        }, 300);
     });
 
     window.actualizarPaginacion = actualizarPaginacion;
