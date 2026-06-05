@@ -21,15 +21,6 @@ function _ready(fn) {
     }
 }
 
-// ── Helper: ejecuta fn cuando el DOM esté listo (funciona aunque DOMContentLoaded ya disparó) ──
-function _ready(fn) {
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', fn);
-    } else {
-        fn();
-    }
-}
-
 // ── DATOS DE VIDEOS POR RED SOCIAL ──
 // Reemplaza los IDs de YouTube/URLs con los tuyos reales
 var _videosRedes = {
@@ -175,14 +166,14 @@ function _resetBotonesRed() {
 var SHEET_ID = '1jin2wMYingvbPD2csGxIbm5AhulfRvCRvIzAKJTUNMw';
 // ──────────────────────────────────────────────────────────────────────────────
 // COLUMNAS ESPERADAS EN LA HOJA (fila 1 = encabezados, datos desde fila 2):
-//   A (0): nombre        — nombre del producto
-//   B (1): precioNormal  — precio original en MXN (número)
-//   C (2): precioBazar   — precio de bazar en MXN (número, opcional)
-//   D (3): descripcion   — texto de descripción del producto
-//   E (4): imagen        — URL de la imagen principal
-//   F (5): forma         — categoría/etiqueta principal (ej: cirio, tazon…)
-//   G (6): subtags       — sub-etiquetas separadas por | (ej: Cirio|Etiqueta)
-//   H (7): eventos       — eventos separados por espacio (ej: boda bautizo)
+//   A (0): nombre       — nombre del producto
+//   B (1): precioNormal — precio original en MXN
+//   C (2): precioBazar  — precio de bazar en MXN (opcional, dejar vacío si no aplica)
+//   D (3): descripcion  — texto de descripción del producto
+//   E (4): imagen       — URL de la imagen principal
+//   F (5): forma        — categoría principal (ej: cirio, tazon, personaje…)
+//   G (6): subtags      — sub-etiquetas SEPARADAS POR COMA (ej: Base, Stitch, Flores)
+//   H (7): eventos      — etiquetas de evento separadas por espacio (ej: boda bautizo)
 // ══════════════════════════════════════════════════════════════════════════════
 
 var listaProductos = [];
@@ -236,11 +227,16 @@ function csvAProductos(filas) {
         // Saltar filas sin nombre (columna A)
         if (!get(0)) continue;
 
-        // Imagen principal (col E = índice 4)
+        // ── Imagen principal (col E = índice 4) ──
         var imagenPrincipal = get(4);
-
-        // Para la galería usamos solo la imagen principal (una sola URL por producto)
         var imagenesExtra = imagenPrincipal ? [imagenPrincipal] : [];
+
+        // ── Sub-etiquetas (col G = índice 6): separadas por coma ──
+        // En Google Sheets escribe: Base, Stitch, Flores
+        var subtags = get(6)
+            ? get(6).split(',').map(function(s) { return s.trim(); }).filter(Boolean).join('|')
+            : '';
+        // Se guardan con | internamente para que el resto del sistema las maneje igual
 
         productos.push({
             id:           i,                              // id automático por posición
@@ -248,12 +244,12 @@ function csvAProductos(filas) {
             precioNormal: parseFloat(get(1)) || 0,        // B: precioNormal
             precioBazar:  parseFloat(get(2)) || 0,        // C: precioBazar
             descripcion:  get(3),                         // D: descripcion
-            imagen:       imagenPrincipal,                // E: imagen
+            imagen:       imagenPrincipal,                // E: imagen principal
             imagenes:     imagenesExtra,
-            forma:        get(5),                         // F: etiqueta principal / forma
-            subtags:      get(6),                         // G: sub-etiquetas
+            forma:        get(5),                         // F: forma / etiqueta principal
+            subtags:      subtags,                        // G: sub-etiquetas (coma en Sheets → | interno)
             eventos:      get(7),                         // H: etiquetas de evento
-            tipo:         'arreglo',                      // valor fijo por defecto
+            tipo:         'arreglo',
             etiquetas:    [],
             aditivos:     []
         });
