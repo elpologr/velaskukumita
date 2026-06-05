@@ -230,9 +230,11 @@ function csvAProductos(filas) {
         // A=0 nombre, B=1 precio, C=2 precioBazar, D=3 descripcion,
         // E=4 imagen, F=5 etiquetaPrincipal, G=6 subEtiqueta, H=7 etiquetaEvento
 
-        // Imágenes: columna E puede tener varias URLs separadas por coma
-        var imagenesExtra = get(4)
-            ? get(4).split(',').map(function(s) { return s.trim(); }).filter(Boolean)
+        // Imágenes: columna E puede tener varias URLs separadas por coma.
+        // Se limpian comillas extra que Google Sheets puede agregar al exportar CSV.
+        var _rawImg = get(4).replace(/^"+|"+$/g, '').trim();
+        var imagenesExtra = _rawImg
+            ? _rawImg.split(',').map(function(s) { return s.trim().replace(/^"+|"+$/g, ''); }).filter(Boolean)
             : [];
 
         productos.push({
@@ -245,7 +247,7 @@ function csvAProductos(filas) {
             imagenes:     imagenesExtra,
             forma:        '',
             tipo:         get(5).toLowerCase() || 'arreglo',
-            subtags:      get(6),
+            subtags:      get(6) ? get(6).split(',').map(function(s){ return s.trim(); }).filter(Boolean).join('|') : '',
             eventos:      get(7)
                             ? get(7).split(',').map(function(s){ return s.trim().toLowerCase(); }).filter(Boolean).join(' ')
                             : '',
