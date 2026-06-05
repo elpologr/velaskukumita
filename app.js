@@ -869,7 +869,6 @@ if (document.readyState === 'loading') {
         }
 
         // ── Decoraciones y Aditamentos: lee columnas SubImagen1-8 desde data-sub-imagenes ──
-        // Cada entrada puede ser: URL de imagen, o nombre exacto/parcial del producto relacionado.
         const aditivosScroll = document.getElementById('modalAditivosScroll');
         const aditivosZona   = document.getElementById('modalAditivosZona');
         aditivosScroll.innerHTML = '';
@@ -877,7 +876,6 @@ if (document.readyState === 'loading') {
         let subImagenes = [];
         try { subImagenes = JSON.parse(card.getAttribute('data-sub-imagenes') || '[]'); } catch(e) {}
 
-        // Helper: normaliza texto quitando tildes, espacios extra y pasando a minúsculas
         function _normTexto(s) {
             return (s || '').trim().toLowerCase()
                 .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -885,9 +883,8 @@ if (document.readyState === 'loading') {
         }
 
         if (subImagenes.length > 0) {
-            // Construir índice URL→card, NombreExacto→card y NombreNorm→card
             const urlACard    = {};
-            const nombreACard = {};   // clave: nombre normalizado
+            const nombreACard = {};
             document.querySelectorAll('.card-dinamica').forEach(function(c) {
                 try {
                     const imgs = JSON.parse(c.getAttribute('data-imagenes') || '[]');
@@ -897,11 +894,9 @@ if (document.readyState === 'loading') {
                 if (n) nombreACard[n] = c;
             });
 
-            // Búsqueda de card por nombre: exacta → normalizada → parcial
             function buscarCardPorNombre(entrada) {
                 const norm = _normTexto(entrada);
                 if (nombreACard[norm]) return nombreACard[norm];
-                // Búsqueda parcial: la entrada está contenida en algún nombre, o viceversa
                 const claves = Object.keys(nombreACard);
                 for (let k = 0; k < claves.length; k++) {
                     if (claves[k].includes(norm) || norm.includes(claves[k])) {
@@ -916,7 +911,6 @@ if (document.readyState === 'loading') {
             }
 
             console.log('[Aditamentos] SubImagenes de "' + nombre + '":', subImagenes);
-            console.log('[Aditamentos] Cards disponibles:', Object.keys(nombreACard));
 
             subImagenes.forEach(function(entrada) {
                 entrada = (entrada || '').trim();
@@ -926,11 +920,9 @@ if (document.readyState === 'loading') {
                 let srcImagen = '';
 
                 if (esURL(entrada)) {
-                    // Es URL directa de imagen
                     cardRelacionada = urlACard[entrada] || null;
                     srcImagen = entrada;
                 } else {
-                    // Es nombre de producto
                     cardRelacionada = buscarCardPorNombre(entrada);
                     if (cardRelacionada) {
                         try {
@@ -940,38 +932,20 @@ if (document.readyState === 'loading') {
                     }
                 }
 
-                console.log('[Aditamentos] Entrada:', entrada,
-                    '| Card encontrada:', cardRelacionada ? cardRelacionada.getAttribute('data-nombre') : 'NO ENCONTRADA',
-                    '| Imagen:', srcImagen || 'SIN IMAGEN');
-
-                // Si no hay imagen NI card, no mostrar nada
                 if (!srcImagen && !cardRelacionada) return;
 
                 const nombreRel = cardRelacionada ? (cardRelacionada.getAttribute('data-nombre') || entrada) : entrada;
-
-                // Contenedor del ítem
                 const item = document.createElement('div');
-                item.className = 'aditivo-item';
                 item.style.cssText = 'flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:6px;' +
                     (cardRelacionada ? ' cursor:pointer;' : '');
 
-                // Marco de imagen
                 const wrap = document.createElement('div');
                 wrap.style.cssText = 'position:relative; width:90px; height:90px; border-radius:12px; overflow:hidden;' +
-                    ' border:2px solid #f0eae4; transition:border-color 0.2s, transform 0.18s, box-shadow 0.18s;' +
+                    ' border:2px solid #e8ddd5; transition:border-color 0.2s, transform 0.18s, box-shadow 0.18s;' +
                     ' box-shadow:0 2px 8px rgba(0,0,0,0.07);';
                 if (cardRelacionada) {
-                    wrap.style.borderColor = '#e8ddd5';
-                    wrap.onmouseover = function() {
-                        this.style.borderColor = '#c9a98a';
-                        this.style.transform = 'translateY(-3px)';
-                        this.style.boxShadow = '0 6px 18px rgba(140,117,101,0.22)';
-                    };
-                    wrap.onmouseout = function() {
-                        this.style.borderColor = '#e8ddd5';
-                        this.style.transform = 'translateY(0)';
-                        this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.07)';
-                    };
+                    wrap.onmouseover = function() { this.style.borderColor='#c9a98a'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 18px rgba(140,117,101,0.22)'; };
+                    wrap.onmouseout  = function() { this.style.borderColor='#e8ddd5'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.07)'; };
                 }
 
                 if (srcImagen) {
@@ -980,41 +954,34 @@ if (document.readyState === 'loading') {
                     imgEl.alt = nombreRel;
                     imgEl.style.cssText = 'width:100%; height:100%; object-fit:cover; display:block;';
                     imgEl.onerror = function() {
-                        // Placeholder si la imagen falla
                         wrap.innerHTML = '<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f9f5f2;gap:4px;">' +
-                            '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#c9b8a8" stroke-width="1.5">' +
-                            '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>' +
-                            '<path d="m21 15-5-5L5 21"/></svg>' +
-                            '<span style="font-size:9px;color:#c9b8a8;text-align:center;padding:0 4px;">' + nombreRel + '</span></div>';
+                            '<span style="font-size:22px;">🕯️</span>' +
+                            '<span style="font-size:9px;color:#a89080;text-align:center;padding:0 6px;">' + nombreRel + '</span></div>';
                     };
                     wrap.appendChild(imgEl);
                 } else {
-                    // Sin imagen: mostrar placeholder con nombre
                     wrap.innerHTML = '<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f9f5f2;gap:4px;">' +
                         '<span style="font-size:22px;">🕯️</span>' +
-                        '<span style="font-size:9px;color:#a89080;text-align:center;padding:0 6px;line-height:1.3;">' + nombreRel + '</span></div>';
+                        '<span style="font-size:9px;color:#a89080;text-align:center;padding:0 6px;">' + nombreRel + '</span></div>';
                 }
 
-                // Ícono de lupa si es clickeable
                 if (cardRelacionada) {
                     const lupa = document.createElement('div');
                     lupa.style.cssText = 'position:absolute; bottom:4px; right:4px; width:20px; height:20px;' +
                         ' border-radius:50%; background:rgba(54,42,34,0.55); display:flex; align-items:center;' +
-                        ' justify-content:center; font-size:10px; pointer-events:none; backdrop-filter:blur(2px);';
+                        ' justify-content:center; font-size:10px; pointer-events:none;';
                     lupa.textContent = '🔍';
                     wrap.appendChild(lupa);
                 }
 
                 item.appendChild(wrap);
 
-                // Etiqueta de nombre debajo
                 const label = document.createElement('span');
                 label.textContent = nombreRel;
                 label.style.cssText = 'font-size:10px; font-weight:600; color:#8a7a70; text-align:center;' +
-                    ' max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height:1.3;';
+                    ' max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;';
                 item.appendChild(label);
 
-                // Clic → abrir modal del producto relacionado
                 if (cardRelacionada) {
                     item.addEventListener('click', function() {
                         setTimeout(function() { abrirModalProducto(cardRelacionada); }, 60);
@@ -1023,13 +990,10 @@ if (document.readyState === 'loading') {
 
                 aditivosScroll.appendChild(item);
             });
-
-            // Mostrar la zona solo si se agregaron ítems reales
             aditivosZona.style.display = aditivosScroll.children.length > 0 ? '' : 'none';
         } else {
             aditivosZona.style.display = 'none';
         }
-
         // Botón Favoritos modal
         const mpBtnFav = document.getElementById('mpBtnFavoritos');
         if (mpBtnFav) {
@@ -1816,6 +1780,9 @@ function abrirPantallaPerfil() {
     document.getElementById('pantallaUsuarioNombre').textContent =
         localStorage.getItem('velas-nombre-usuario') || 'Mi cuenta';
     document.getElementById('pantallaPerfil').classList.add('activo');
+    if (!history.state || !history.state.kukumitaModal) {
+        history.pushState({ kukumitaModal: 'perfil' }, '');
+    }
 }
 
 // ─── SISTEMA CENTRALIZADO DE MODALES CON HISTORIAL ───
@@ -1844,6 +1811,30 @@ function _cerrarModalConHistorial(cerrarFn) {
 
 // Escucha el botón "atrás" del dispositivo
 window.addEventListener('popstate', function(e) {
+    // Pantalla Perfil
+    var pantallaPerfil = document.getElementById('pantallaPerfil');
+    if (pantallaPerfil && pantallaPerfil.classList.contains('activo')) {
+        pantallaPerfil.classList.remove('activo');
+        _modalActivo = null;
+        return;
+    }
+    // Pantalla Carrito
+    var pantallaCarrito = document.getElementById('pantallaCarrito');
+    if (pantallaCarrito && pantallaCarrito.classList.contains('activa')) {
+        pantallaCarrito.classList.remove('activa');
+        document.body.style.overflow = '';
+        actualizarBurbuja();
+        _modalActivo = null;
+        return;
+    }
+    // Pantalla Favoritos
+    var pantallaFavoritos = document.getElementById('pantallaFavoritos');
+    if (pantallaFavoritos && pantallaFavoritos.classList.contains('activa')) {
+        pantallaFavoritos.classList.remove('activa');
+        document.body.style.overflow = '';
+        _modalActivo = null;
+        return;
+    }
     // Modal de producto (ya tenía su propio manejo, lo respetamos)
     var modalProd = document.getElementById('modalProducto');
     if (modalProd && modalProd.classList.contains('abierto')) {
@@ -1989,6 +1980,9 @@ async function copiarURL() {
 }
 function cerrarPantallaPerfil() {
     document.getElementById('pantallaPerfil').classList.remove('activo');
+    if (history.state && history.state.kukumitaModal === 'perfil') {
+        history.back();
+    }
 }
 
 // ═══ FOTO DE PERFIL ═══
@@ -1998,14 +1992,43 @@ function elegirFotoGaleria() {
 function aplicarFotoPerfil(event) {
     const archivo = event.target.files[0];
     if (!archivo) return;
+    const user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+
+    // Vista previa inmediata mientras sube
     const reader = new FileReader();
     reader.onload = e => {
         const src = e.target.result;
-        document.getElementById('drawerAvatar').src = src;
-        document.getElementById('pantallaAvatar').src = src;
-        localStorage.setItem('velas-foto-perfil', src);
+        const avatarDrawer = document.getElementById('drawerAvatar');
+        const avatarPantalla = document.getElementById('pantallaAvatar');
+        if (avatarDrawer) avatarDrawer.src = src;
+        if (avatarPantalla) avatarPantalla.src = src;
+        localStorage.setItem('velas-foto-perfil', src); // fallback local
     };
     reader.readAsDataURL(archivo);
+
+    // Subir a Firebase Storage si hay sesión
+    if (user && typeof firebase !== 'undefined' && firebase.storage) {
+        mostrarToast('⏳ Subiendo foto…');
+        const storage = firebase.storage();
+        const ref = storage.ref('fotos-perfil/' + user.uid + '/avatar.jpg');
+        ref.put(archivo).then(function() {
+            return ref.getDownloadURL();
+        }).then(function(url) {
+            return user.updateProfile({ photoURL: url }).then(function() {
+                localStorage.setItem('velas-foto-perfil', url);
+                const avatarDrawer = document.getElementById('drawerAvatar');
+                const avatarPantalla = document.getElementById('pantallaAvatar');
+                if (avatarDrawer) avatarDrawer.src = url;
+                if (avatarPantalla) avatarPantalla.src = url;
+                mostrarToast('✅ Foto de perfil actualizada');
+            });
+        }).catch(function(err) {
+            console.error('Error subiendo foto:', err);
+            mostrarToast('⚠️ Foto guardada solo en este dispositivo');
+        });
+    } else {
+        mostrarToast('✅ Foto actualizada en este dispositivo');
+    }
 }
 
 _ready(function() {
@@ -2301,6 +2324,9 @@ async function gestionarContrasena() {
 function aplicarFotoPerfil(event) {
     const archivo = event.target.files[0];
     if (!archivo) return;
+    const user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+
+    // Vista previa inmediata
     const reader = new FileReader();
     reader.onload = e => {
         const src = e.target.result;
@@ -2309,9 +2335,32 @@ function aplicarFotoPerfil(event) {
         if (avatarDrawer) avatarDrawer.src = src;
         if (avatarPantalla) avatarPantalla.src = src;
         localStorage.setItem('velas-foto-perfil', src);
-        mostrarToast('✅ Foto actualizada localmente');
     };
     reader.readAsDataURL(archivo);
+
+    // Subir a Firebase Storage si hay sesión
+    if (user && typeof firebase !== 'undefined' && firebase.storage) {
+        mostrarToast('⏳ Subiendo foto…');
+        const storage = firebase.storage();
+        const ref = storage.ref('fotos-perfil/' + user.uid + '/avatar.jpg');
+        ref.put(archivo).then(function() {
+            return ref.getDownloadURL();
+        }).then(function(url) {
+            return user.updateProfile({ photoURL: url }).then(function() {
+                localStorage.setItem('velas-foto-perfil', url);
+                const avatarDrawer = document.getElementById('drawerAvatar');
+                const avatarPantalla = document.getElementById('pantallaAvatar');
+                if (avatarDrawer) avatarDrawer.src = url;
+                if (avatarPantalla) avatarPantalla.src = url;
+                mostrarToast('✅ Foto de perfil actualizada');
+            });
+        }).catch(function(err) {
+            console.error('Error subiendo foto:', err);
+            mostrarToast('⚠️ Foto guardada solo en este dispositivo');
+        });
+    } else {
+        mostrarToast('✅ Foto actualizada en este dispositivo');
+    }
 }
 
 // ─── ABRIR PANTALLA PERFIL (override con datos reales) ───
@@ -2325,6 +2374,9 @@ function abrirPantallaPerfil() {
     if (avatarEl && foto) avatarEl.src = foto;
     if (nombreEl) nombreEl.textContent = nombre;
     document.getElementById('pantallaPerfil').classList.add('activo');
+    if (!history.state || !history.state.kukumitaModal) {
+        history.pushState({ kukumitaModal: 'perfil' }, '');
+    }
 }
 
 
@@ -2489,11 +2541,17 @@ function abrirPantallaFavoritos() {
     renderizarFavoritos();
     document.getElementById('pantallaFavoritos').classList.add('activa');
     document.body.style.overflow = 'hidden';
+    if (!history.state || !history.state.kukumitaModal) {
+        history.pushState({ kukumitaModal: 'favoritos' }, '');
+    }
 }
 
 function cerrarFavoritos() {
     document.getElementById('pantallaFavoritos').classList.remove('activa');
     document.body.style.overflow = '';
+    if (history.state && history.state.kukumitaModal === 'favoritos') {
+        history.back();
+    }
 }
 
 function renderizarFavoritos() {
@@ -3152,6 +3210,10 @@ function abrirPantallaCarrito() {
     // Ocultar burbuja mientras el carrito está abierto
     var burbuja = document.getElementById('burbujaCarrito');
     if (burbuja) burbuja.style.display = 'none';
+    // Registrar en historial para que el botón atrás lo cierre
+    if (!history.state || !history.state.kukumitaModal) {
+        history.pushState({ kukumitaModal: 'carrito' }, '');
+    }
 }
 
 function cerrarPantallaCarrito() {
@@ -3159,6 +3221,9 @@ function cerrarPantallaCarrito() {
     document.body.style.overflow = '';
     // Restaurar burbuja si hay productos
     actualizarBurbuja();
+    if (history.state && history.state.kukumitaModal === 'carrito') {
+        history.back();
+    }
 }
 
 function renderizarCarrito() {

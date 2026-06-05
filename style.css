@@ -1821,18 +1821,13 @@
             transition: max-height 0.35s cubic-bezier(.4,0,.2,1), opacity 0.25s ease, margin 0.3s ease;
             opacity: 0; margin-top: 0;
         }
-        .panel-editar-nombre.abierto {
-            max-height: 200px; opacity: 1; margin-top: 6px; margin-bottom: 4px;
-        }
+        .panel-editar-nombre.abierto { max-height: 200px; opacity: 1; margin-top: 6px; margin-bottom: 4px; }
         .panel-editar-nombre-inner {
             background: #fdfaf7; border: 1.5px solid #d4c5b8;
-            border-radius: 14px; padding: 18px 18px 14px; display: flex;
-            flex-direction: column; gap: 12px;
+            border-radius: 14px; padding: 18px 18px 14px;
+            display: flex; flex-direction: column; gap: 12px;
         }
-        .panel-nombre-label {
-            font-size: 12px; font-weight: 700; color: #8c7565;
-            letter-spacing: 0.04em; text-transform: uppercase;
-        }
+        .panel-nombre-label { font-size: 12px; font-weight: 700; color: #8c7565; letter-spacing: 0.04em; text-transform: uppercase; }
         .panel-nombre-input {
             width: 100%; padding: 11px 14px; font-size: 15px;
             border: 1.5px solid #d4c5b8; border-radius: 10px;
@@ -1840,18 +1835,9 @@
             transition: border-color 0.2s, box-shadow 0.2s;
             font-family: inherit; box-sizing: border-box;
         }
-        .panel-nombre-input:focus {
-            border-color: #8c7565;
-            box-shadow: 0 0 0 3px rgba(140,117,101,0.15);
-        }
-        .panel-nombre-acciones {
-            display: flex; gap: 8px; justify-content: flex-end;
-        }
-        .panel-nombre-btn {
-            padding: 9px 20px; border-radius: 10px; font-size: 14px;
-            font-weight: 700; cursor: pointer; border: none;
-            transition: all 0.18s; font-family: inherit;
-        }
+        .panel-nombre-input:focus { border-color: #8c7565; box-shadow: 0 0 0 3px rgba(140,117,101,0.15); }
+        .panel-nombre-acciones { display: flex; gap: 8px; justify-content: flex-end; }
+        .panel-nombre-btn { padding: 9px 20px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; transition: all 0.18s; font-family: inherit; }
         .panel-nombre-btn.cancelar { background: #f0e8e0; color: #8c7565; }
         .panel-nombre-btn.cancelar:hover { background: #e5ddd5; }
         .panel-nombre-btn.guardar { background: #362a22; color: #fff; }
