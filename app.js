@@ -21,6 +21,15 @@ function _ready(fn) {
     }
 }
 
+// ── Helper: ejecuta fn cuando el DOM esté listo (funciona aunque DOMContentLoaded ya disparó) ──
+function _ready(fn) {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', fn);
+    } else {
+        fn();
+    }
+}
+
 // ── DATOS DE VIDEOS POR RED SOCIAL ──
 // Reemplaza los IDs de YouTube/URLs con los tuyos reales
 var _videosRedes = {
@@ -166,24 +175,14 @@ function _resetBotonesRed() {
 var SHEET_ID = '1jin2wMYingvbPD2csGxIbm5AhulfRvCRvIzAKJTUNMw';
 // ──────────────────────────────────────────────────────────────────────────────
 // COLUMNAS ESPERADAS EN LA HOJA (fila 1 = encabezados, datos desde fila 2):
-//   A: id           — número único del producto (ej: 1, 2, 3…)
-//   B: nombre       — nombre del producto
-//   C: precioNormal — precio original en MXN (número)
-//   D: precioBazar  — precio de bazar en MXN (número, opcional)
-//   E: imagen       — URL o ruta de la imagen principal
-//   F: imagenes     — URLs adicionales separadas por | (ej: url1|url2|url3)
-//   G: forma        — categoría de forma (ej: cirio, tazon, personaje…)
-//   H: eventos      — eventos separados por espacio (ej: boda bautizo)
-//   I: tipo         — "arreglo" o "producto"
-//   J: subtags      — subtags separados por | (ej: Cirio|Etiqueta|Medallón)
-//   K: descripcion  — texto de descripción del producto
-//   L: etiquetas    — etiquetas separadas por coma (ej: cirio,etiqueta,medallon)
-//   M: aditivo1_titulo — título del primer aditivo
-//   N: aditivo1_imagen — imagen del primer aditivo
-//   O: aditivo2_titulo — título del segundo aditivo
-//   P: aditivo2_imagen — imagen del segundo aditivo
-//   Q: aditivo3_titulo — título del tercer aditivo
-//   R: aditivo3_imagen — imagen del tercer aditivo
+//   A (0): nombre        — nombre del producto
+//   B (1): precioNormal  — precio original en MXN (número)
+//   C (2): precioBazar   — precio de bazar en MXN (número, opcional)
+//   D (3): descripcion   — texto de descripción del producto
+//   E (4): imagen        — URL de la imagen principal
+//   F (5): forma         — categoría/etiqueta principal (ej: cirio, tazon…)
+//   G (6): subtags       — sub-etiquetas separadas por | (ej: Cirio|Etiqueta)
+//   H (7): eventos       — eventos separados por espacio (ej: boda bautizo)
 // ══════════════════════════════════════════════════════════════════════════════
 
 var listaProductos = [];
@@ -234,49 +233,29 @@ function csvAProductos(filas) {
         var f = filas[i];
         var get = function(idx) { return (f[idx] || '').trim(); };
 
-        // Saltar filas sin id o sin nombre
-        if (!get(0) || !get(1)) continue;
+        // Saltar filas sin nombre (columna A)
+        if (!get(0)) continue;
 
-        // Aditivos: columnas M–R (índices 12–17)
-        var aditivos = [];
-        for (var a = 0; a < 3; a++) {
-            var tit = get(12 + a * 2);
-            var img = get(13 + a * 2);
-            if (tit && img) {
-                var ad = { titulo: tit, imagen: img };
-                if (tit.toLowerCase().indexOf('etiqueta') !== -1) {
-                    ad.link = '#seccion-aditivos';
-                }
-                aditivos.push(ad);
-            }
-        }
+        // Imagen principal (col E = índice 4)
+        var imagenPrincipal = get(4);
 
-        // Imágenes adicionales (columna F separadas por |)
-        var imagenesExtra = get(5)
-            ? get(5).split('|').map(function(s) { return s.trim(); }).filter(Boolean)
-            : [];
-        // Si no hay imágenes extra, usar la imagen principal
-        if (imagenesExtra.length === 0 && get(4)) imagenesExtra = [get(4)];
-
-        // Etiquetas (columna L separadas por coma)
-        var etiquetas = get(11)
-            ? get(11).split(',').map(function(s) { return s.trim(); }).filter(Boolean)
-            : [];
+        // Para la galería usamos solo la imagen principal (una sola URL por producto)
+        var imagenesExtra = imagenPrincipal ? [imagenPrincipal] : [];
 
         productos.push({
-            id:           parseInt(get(0)) || i,
-            nombre:       get(1),
-            precioNormal: parseFloat(get(2)) || 0,
-            precioBazar:  parseFloat(get(3)) || 0,
-            imagen:       get(4),
+            id:           i,                              // id automático por posición
+            nombre:       get(0),                         // A: nombre
+            precioNormal: parseFloat(get(1)) || 0,        // B: precioNormal
+            precioBazar:  parseFloat(get(2)) || 0,        // C: precioBazar
+            descripcion:  get(3),                         // D: descripcion
+            imagen:       imagenPrincipal,                // E: imagen
             imagenes:     imagenesExtra,
-            forma:        get(6),
-            eventos:      get(7),
-            tipo:         get(8) || 'arreglo',
-            subtags:      get(9),
-            descripcion:  get(10),
-            etiquetas:    etiquetas,
-            aditivos:     aditivos
+            forma:        get(5),                         // F: etiqueta principal / forma
+            subtags:      get(6),                         // G: sub-etiquetas
+            eventos:      get(7),                         // H: etiquetas de evento
+            tipo:         'arreglo',                      // valor fijo por defecto
+            etiquetas:    [],
+            aditivos:     []
         });
     }
     return productos;
