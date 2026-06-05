@@ -240,12 +240,11 @@ function csvAProductos(filas) {
             ? _rawImg.split(',').map(function(s) { return s.trim().replace(/^"+|"+$/g, ''); }).filter(Boolean)
             : [];
 
-        // Columna F: puede tener una o varias etiquetas separadas por | o , 
-        // Google Sheets exporta múltiples valores de lista separados por coma.
+        // Columna F: puede tener una o varias etiquetas separadas por | (ej: "arreglo|decoracion")
         // Se limpian comillas extra que Google Sheets agrega cuando hay validación de lista en la celda.
         var _rawTipos = get(5).replace(/^"+|"+$/g, '').trim();
         var tiposArray = _rawTipos
-            ? _rawTipos.split(/[|,]/).map(function(s) { return s.trim().replace(/^"+|"+$/g, '').toLowerCase(); }).filter(Boolean)
+            ? _rawTipos.split('|').map(function(s) { return s.trim().replace(/^"+|"+$/g, '').toLowerCase(); }).filter(Boolean)
             : ['arreglo'];
         // tipo principal = primer valor (compatibilidad con código existente)
         var tipoPrincipal = tiposArray[0] || 'arreglo';
@@ -268,7 +267,18 @@ function csvAProductos(filas) {
             etiquetas:    tiposArray,
             aditivos:     [],
             alto:         get(8),
-            ancho:        get(9)
+            ancho:        get(9),
+            subImagenes:  (function() {
+                var arr = [];
+                for (var si = 10; si <= 17; si++) {
+                    var rawSI = (f[si] || '').trim().replace(/^"+|"+$/g, '').trim();
+                    if (rawSI) {
+                        var partes = rawSI.split('|');
+                        arr.push({ url: partes[0].trim(), nombre: (partes[1] || '').trim() });
+                    }
+                }
+                return arr;
+            })()
         });
     }
     return productos;
@@ -320,6 +330,7 @@ function renderizarCatalogoCompleto() {
         card.setAttribute('data-oferta-duracion', p.ofertaDuracion || '');
         card.setAttribute('data-mas-vendido',     String(p.masVendido || 0));
         card.setAttribute('data-mas-vendido-imagenes', JSON.stringify(p.masVendidoImagenes || []));
+        card.setAttribute('data-sub-imagenes', JSON.stringify(p.subImagenes || []));
         card.style.cursor = 'pointer';
 
         // ── Imagen principal ──
@@ -857,42 +868,76 @@ if (document.readyState === 'loading') {
             dimZona.style.display = 'none';
         }
 
-        // Aditivos — 100px, slots vacíos si no hay imagen
+        // Decoraciones y Aditamentos — lee data-sub-imagenes (columnas K-R del CSV)
+        // Cada entrada puede tener { url, nombre } donde nombre es el producto relacionado.
+        // Al hacer clic en la imagen, busca la card del producto por nombre y abre su modal.
         const aditivosScroll = document.getElementById('modalAditivosScroll');
         const aditivosZona   = document.getElementById('modalAditivosZona');
         aditivosScroll.innerHTML = '';
-        const recuadros = card.querySelectorAll('.recuadro-item:not(.recuadro-vacio)');
-        if (recuadros.length > 0) {
-            recuadros.forEach(rec => {
-                const img = rec.querySelector('img');
-                const titulo = rec.getAttribute('title') || '';
+
+        let subImagenes = [];
+        try {
+            const rawSI = card.getAttribute('data-sub-imagenes') || '[]';
+            subImagenes = JSON.parse(rawSI);
+        } catch(e) { subImagenes = []; }
+
+        if (subImagenes.length > 0) {
+            subImagenes.forEach(function(si) {
                 const item = document.createElement('div');
-                item.style.cssText = 'flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 6px;';
-                if (img && img.getAttribute('src')) {
-                    const imgEl = document.createElement('img');
-                    imgEl.src = img.getAttribute('src');
-                    imgEl.alt = titulo;
-                    imgEl.style.cssText = 'width: 100px; height: 100px; object-fit: cover; border-radius: 10px; border: 2px solid #f0eae4;';
-                    imgEl.onerror = function() {
-                        // Si la imagen falla, mostrar slot vacío
-                        imgEl.style.display = 'none';
-                        const ph = document.createElement('div');
-                        ph.style.cssText = 'width:100px;height:100px;border-radius:10px;border:1.5px dashed #d4c5b8;background:#f9f5f2;display:flex;flex-direction:column;align-items:center;justify-content:center;';
-                        ph.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c9b8a8" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>';
-                        item.insertBefore(ph, item.firstChild);
-                    };
-                    item.appendChild(imgEl);
-                } else {
-                    // Slot vacío
-                    const ph = document.createElement('div');
-                    ph.style.cssText = 'width:100px;height:100px;border-radius:10px;border:1.5px dashed #d4c5b8;background:#f9f5f2;display:flex;flex-direction:column;align-items:center;justify-content:center;';
-                    ph.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c9b8a8" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>';
-                    item.appendChild(ph);
+                item.style.cssText = 'flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer;';
+                item.title = si.nombre || '';
+
+                // Wrapper con efecto hover
+                const wrap = document.createElement('div');
+                wrap.style.cssText = 'position:relative; width:100px; height:100px; border-radius:10px; overflow:hidden; border:2px solid #f0eae4; transition:border-color 0.2s, transform 0.2s;';
+                wrap.onmouseover = function() { this.style.borderColor='#c9a98a'; this.style.transform='translateY(-2px)'; };
+                wrap.onmouseout  = function() { this.style.borderColor='#f0eae4'; this.style.transform='translateY(0)'; };
+
+                const imgEl = document.createElement('img');
+                imgEl.src = si.url;
+                imgEl.alt = si.nombre || 'Decoración';
+                imgEl.style.cssText = 'width:100%; height:100%; object-fit:cover; display:block;';
+                imgEl.onerror = function() {
+                    wrap.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f9f5f2;"><svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#c9b8a8\" stroke-width=\"1.5\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><circle cx=\"8.5\" cy=\"8.5\" r=\"1.5\"/><path d=\"m21 15-5-5L5 21\"/></svg></div>';
+                };
+
+                // Ícono de lupa pequeño sobre la imagen
+                const lupa = document.createElement('div');
+                lupa.style.cssText = 'position:absolute; bottom:4px; right:4px; width:22px; height:22px; border-radius:50%; background:rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; font-size:11px; color:white; pointer-events:none;';
+                lupa.textContent = '🔍';
+
+                wrap.appendChild(imgEl);
+                wrap.appendChild(lupa);
+                item.appendChild(wrap);
+
+                // Etiqueta con nombre del producto relacionado
+                if (si.nombre) {
+                    const label = document.createElement('span');
+                    label.textContent = si.nombre;
+                    label.style.cssText = 'font-size:10px; color:#8a7a70; text-align:center; max-width:100px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;';
+                    item.appendChild(label);
                 }
-                const label = document.createElement('span');
-                label.textContent = titulo;
-                label.style.cssText = 'font-size: 10px; color: #8a7a70; text-align: center; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;';
-                item.appendChild(label);
+
+                // Clic → buscar la card del producto por nombre y abrir su modal
+                item.addEventListener('click', function() {
+                    if (!si.nombre) return;
+                    const nombreBuscar = si.nombre.trim().toLowerCase();
+                    const cards = document.querySelectorAll('.card-dinamica');
+                    let cardTarget = null;
+                    cards.forEach(function(c) {
+                        if ((c.getAttribute('data-nombre') || '').trim().toLowerCase() === nombreBuscar) {
+                            cardTarget = c;
+                        }
+                    });
+                    if (cardTarget) {
+                        // Cerrar modal actual y abrir el del producto relacionado
+                        setTimeout(function() { abrirModalProducto(cardTarget); }, 80);
+                    } else {
+                        // Si no se encuentra, mostrar aviso
+                        mostrarToast('🔍 Producto "' + si.nombre + '" no encontrado en el catálogo visible.');
+                    }
+                });
+
                 aditivosScroll.appendChild(item);
             });
             aditivosZona.style.display = '';
@@ -1351,24 +1396,17 @@ if (document.readyState === 'loading') {
     // ── Helper: comprueba si una card tiene alguno de los tipos indicados ──
     function tieneTipo(card, ...buscar) {
         const rawTipos = (card.getAttribute('data-tipos') || card.getAttribute('data-tipo') || '');
-        // Soportar separadores | y , (Google Sheets puede exportar comas entre etiquetas múltiples)
-        const tipos = rawTipos.toLowerCase().replace(/^"+|"+$/g, '').split(/[|,]/).map(s => s.trim().replace(/^"+|"+$/g, '')).filter(Boolean);
+        const tipos = rawTipos.toLowerCase().replace(/^"+|"+$/g, '').split('|').map(s => s.trim().replace(/^"+|"+$/g, '')).filter(Boolean);
         const variantes = {
             'producto':      ['producto','productos'],
             'arreglo':       ['arreglo','arreglos'],
-            'decoracion':    ['decoracion','decoraciones','decoración','aditamento','aditamentos'],
+            'decoracion':    ['decoracion','decoraciones','aditamento','aditamentos'],
             'etiqueta':      ['etiqueta','etiquetas']
         };
-        const resultado = buscar.some(function(b) {
+        return buscar.some(function(b) {
             const lista = variantes[b] || [b];
             return tipos.some(function(t) { return lista.includes(t); });
         });
-        // Log de diagnóstico — muestra en consola los productos que NO pasan el filtro decoraciones
-        if (buscar.includes('decoracion') && !resultado) {
-            const nombre = card.getAttribute('data-nombre') || '?';
-            console.log('[FILTRO DECO] "' + nombre + '" NO pasó. data-tipos raw: "' + rawTipos + '" -> tipos parseados:', tipos);
-        }
-        return resultado;
     }
 
     function aplicarFiltrosUnificados(panel) {
