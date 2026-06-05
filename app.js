@@ -12,6 +12,15 @@
 //   - Modo Oscuro, Píldoras, Carruseles, etc.
 // ============================================================
 
+// ── Helper: ejecuta fn cuando el DOM esté listo (funciona aunque DOMContentLoaded ya disparó) ──
+function _ready(fn) {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', fn);
+    } else {
+        fn();
+    }
+}
+
 // ── DATOS DE VIDEOS POR RED SOCIAL ──
 // Reemplaza los IDs de YouTube/URLs con los tuyos reales
 var _videosRedes = {
@@ -568,7 +577,7 @@ if (document.readyState === 'loading') {
         mostrarPagina(1);
     }
 
-    window.addEventListener('DOMContentLoaded', function() {
+    _ready(function() {
         setTimeout(actualizarPaginacion, 150);
     });
 
@@ -1511,7 +1520,7 @@ if (document.readyState === 'loading') {
     }
 
     // Inicializar listeners de filtros de botones (forma / evento)
-    document.addEventListener('DOMContentLoaded', () => {
+    _ready(function() {
         document.querySelectorAll('#filtro-formas .btn-filtro').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('#filtro-formas .btn-filtro').forEach(b => b.classList.remove('activo'));
@@ -1700,7 +1709,7 @@ function abrirModalQR() {
 function cerrarModalQR() {
     document.getElementById('modalQR').classList.remove('abierto');
 }
-document.addEventListener('DOMContentLoaded', function() {
+_ready(function() {
     document.getElementById('modalQR').addEventListener('click', function(e) {
         if (e.target === this) cerrarModalQR();
     });
@@ -1773,7 +1782,7 @@ function aplicarFotoPerfil(event) {
     reader.readAsDataURL(archivo);
 }
 
-window.addEventListener('DOMContentLoaded', () => {
+_ready(function() {
     actualizarEstadoSesionDrawer();
 });
 
@@ -2118,7 +2127,7 @@ function _actualizarBotonesInicio(cual) {
 // Aplicar preferencia guardada (o productos por defecto)
 (function() {
     var pref = localStorage.getItem('kukumita-inicio') || 'productos';
-    document.addEventListener('DOMContentLoaded', function() {
+    _ready(function() {
         activarPill(pref);
         _actualizarBotonesInicio(pref);
     });
@@ -2260,7 +2269,7 @@ function syncBotonesLike() {
         if (like) { like.textContent = esFav ? '❤️' : '🤍'; like.classList.toggle('liked', esFav); }
     });
 }
-document.addEventListener('DOMContentLoaded', syncBotonesLike);
+_ready(syncBotonesLike);
 
 
 
@@ -3128,7 +3137,7 @@ function _bloquearBtnCupon15() {
 }
 
 // Inicializar estado del cupón al cargar
-document.addEventListener('DOMContentLoaded', function() {
+_ready(function() {
     if (_cuponYaUsado('ZONA15')) _bloquearBtnCupon15();
 });
 
@@ -3254,7 +3263,7 @@ document.getElementById('modalCantidad').addEventListener('click', function(e) {
 });
 
 // Agregar botón de carrito en el drawer (junto a favoritos)
-document.addEventListener('DOMContentLoaded', function() {
+_ready(function() {
     var favBtn = document.querySelector('[onclick="abrirPantallaFavoritos()"]');
     if (favBtn && favBtn.parentNode) {
         var cartDrawerBtn = document.createElement('button');
