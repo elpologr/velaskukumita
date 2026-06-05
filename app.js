@@ -2074,10 +2074,62 @@ async function iniciarSesionGoogle() {
         cerrarModalGoogle();
         cerrarDrawer();
     } catch (e) {
-        console.error(e);
-        mostrarToast('No se pudo iniciar sesión. Intenta de nuevo.');
+        console.error('[Auth Error]', e.code, e.message);
+
+        // Popup bloqueado o cerrado por el usuario → intentar con redirect
+        if (
+            e.code === 'auth/popup-blocked' ||
+            e.code === 'auth/popup-closed-by-user' ||
+            e.code === 'auth/cancelled-popup-request'
+        ) {
+            try {
+                mostrarToast('⏳ Redirigiendo para iniciar sesión…');
+                await auth.signInWithRedirect(providerGoogle);
+                // La página se recargará; el resultado se maneja en getRedirectResult abajo
+            } catch (e2) {
+                console.error('[Redirect fallback error]', e2.code, e2.message);
+                mostrarToast('No se pudo iniciar sesión. Intenta de nuevo.');
+            }
+            return;
+        }
+
+        // Dominio no autorizado en Firebase Console
+        if (e.code === 'auth/unauthorized-domain') {
+            mostrarToast('❌ Dominio no autorizado. Avisa al administrador.');
+            console.warn('Agrega este dominio en Firebase Console → Authentication → Settings → Authorized domains:', window.location.hostname);
+            return;
+        }
+
+        // Proveedor Google no habilitado
+        if (e.code === 'auth/operation-not-allowed') {
+            mostrarToast('❌ Inicio con Google no habilitado. Avisa al administrador.');
+            console.warn('Habilita el proveedor Google en Firebase Console → Authentication → Sign-in method.');
+            return;
+        }
+
+        // Red o configuración de Firebase incorrecta
+        if (e.code === 'auth/network-request-failed') {
+            mostrarToast('Sin conexión. Revisa tu internet e intenta de nuevo.');
+            return;
+        }
+
+        // Cualquier otro error: mostrar código para facilitar el diagnóstico
+        mostrarToast('Error al iniciar sesión (' + (e.code || 'desconocido') + ')');
     }
 }
+
+// ─── MANEJAR RESULTADO DE REDIRECT (para móvil / Safari) ───
+auth.getRedirectResult().then(result => {
+    if (result && result.user) {
+        cerrarModalGoogle();
+        if (typeof cerrarDrawer === 'function') cerrarDrawer();
+    }
+}).catch(e => {
+    if (e.code && e.code !== 'auth/no-auth-event') {
+        console.error('[Redirect result error]', e.code, e.message);
+        mostrarToast('Error al completar el inicio de sesión (' + e.code + ')');
+    }
+});
 
 // ─── CERRAR SESIÓN (override del anterior) ───
 function cerrarSesion() {
