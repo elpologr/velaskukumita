@@ -240,11 +240,12 @@ function csvAProductos(filas) {
             ? _rawImg.split(',').map(function(s) { return s.trim().replace(/^"+|"+$/g, ''); }).filter(Boolean)
             : [];
 
-        // Columna F: puede tener una o varias etiquetas separadas por | (ej: "arreglo|decoracion")
+        // Columna F: puede tener una o varias etiquetas separadas por | o , 
+        // Google Sheets exporta múltiples valores de lista separados por coma.
         // Se limpian comillas extra que Google Sheets agrega cuando hay validación de lista en la celda.
         var _rawTipos = get(5).replace(/^"+|"+$/g, '').trim();
         var tiposArray = _rawTipos
-            ? _rawTipos.split('|').map(function(s) { return s.trim().replace(/^"+|"+$/g, '').toLowerCase(); }).filter(Boolean)
+            ? _rawTipos.split(/[|,]/).map(function(s) { return s.trim().replace(/^"+|"+$/g, '').toLowerCase(); }).filter(Boolean)
             : ['arreglo'];
         // tipo principal = primer valor (compatibilidad con código existente)
         var tipoPrincipal = tiposArray[0] || 'arreglo';
@@ -1350,17 +1351,24 @@ if (document.readyState === 'loading') {
     // ── Helper: comprueba si una card tiene alguno de los tipos indicados ──
     function tieneTipo(card, ...buscar) {
         const rawTipos = (card.getAttribute('data-tipos') || card.getAttribute('data-tipo') || '');
-        const tipos = rawTipos.toLowerCase().replace(/^"+|"+$/g, '').split('|').map(s => s.trim().replace(/^"+|"+$/g, '')).filter(Boolean);
+        // Soportar separadores | y , (Google Sheets puede exportar comas entre etiquetas múltiples)
+        const tipos = rawTipos.toLowerCase().replace(/^"+|"+$/g, '').split(/[|,]/).map(s => s.trim().replace(/^"+|"+$/g, '')).filter(Boolean);
         const variantes = {
             'producto':      ['producto','productos'],
             'arreglo':       ['arreglo','arreglos'],
-            'decoracion':    ['decoracion','decoraciones','aditamento','aditamentos'],
+            'decoracion':    ['decoracion','decoraciones','decoración','aditamento','aditamentos'],
             'etiqueta':      ['etiqueta','etiquetas']
         };
-        return buscar.some(function(b) {
+        const resultado = buscar.some(function(b) {
             const lista = variantes[b] || [b];
             return tipos.some(function(t) { return lista.includes(t); });
         });
+        // Log de diagnóstico — muestra en consola los productos que NO pasan el filtro decoraciones
+        if (buscar.includes('decoracion') && !resultado) {
+            const nombre = card.getAttribute('data-nombre') || '?';
+            console.log('[FILTRO DECO] "' + nombre + '" NO pasó. data-tipos raw: "' + rawTipos + '" -> tipos parseados:', tipos);
+        }
+        return resultado;
     }
 
     function aplicarFiltrosUnificados(panel) {
