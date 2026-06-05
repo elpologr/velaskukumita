@@ -166,14 +166,24 @@ function _resetBotonesRed() {
 var SHEET_ID = '1jin2wMYingvbPD2csGxIbm5AhulfRvCRvIzAKJTUNMw';
 // ──────────────────────────────────────────────────────────────────────────────
 // COLUMNAS ESPERADAS EN LA HOJA (fila 1 = encabezados, datos desde fila 2):
-//   A (0): nombre       — nombre del producto
-//   B (1): precioNormal — precio original en MXN
-//   C (2): precioBazar  — precio de bazar en MXN (opcional, dejar vacío si no aplica)
-//   D (3): descripcion  — texto de descripción del producto
-//   E (4): imagen       — URL de la imagen principal
-//   F (5): forma        — categoría principal (ej: cirio, tazon, personaje…)
-//   G (6): subtags      — sub-etiquetas SEPARADAS POR COMA (ej: Base, Stitch, Flores)
-//   H (7): eventos      — etiquetas de evento separadas por espacio (ej: boda bautizo)
+//   A: id           — número único del producto (ej: 1, 2, 3…)
+//   B: nombre       — nombre del producto
+//   C: precioNormal — precio original en MXN (número)
+//   D: precioBazar  — precio de bazar en MXN (número, opcional)
+//   E: imagen       — URL o ruta de la imagen principal
+//   F: imagenes     — URLs adicionales separadas por | (ej: url1|url2|url3)
+//   G: forma        — categoría de forma (ej: cirio, tazon, personaje…)
+//   H: eventos      — eventos separados por espacio (ej: boda bautizo)
+//   I: tipo         — "arreglo" o "producto"
+//   J: subtags      — subtags separados por | (ej: Cirio|Etiqueta|Medallón)
+//   K: descripcion  — texto de descripción del producto
+//   L: etiquetas    — etiquetas separadas por coma (ej: cirio,etiqueta,medallon)
+//   M: aditivo1_titulo — título del primer aditivo
+//   N: aditivo1_imagen — imagen del primer aditivo
+//   O: aditivo2_titulo — título del segundo aditivo
+//   P: aditivo2_imagen — imagen del segundo aditivo
+//   Q: aditivo3_titulo — título del tercer aditivo
+//   R: aditivo3_imagen — imagen del tercer aditivo
 // ══════════════════════════════════════════════════════════════════════════════
 
 var listaProductos = [];
@@ -224,34 +234,51 @@ function csvAProductos(filas) {
         var f = filas[i];
         var get = function(idx) { return (f[idx] || '').trim(); };
 
-        // Saltar filas sin nombre (columna A)
-        if (!get(0)) continue;
+        // Saltar filas sin id o sin nombre
+        if (!get(0) || !get(1)) continue;
 
-        // ── Imagen principal (col E = índice 4) ──
-        var imagenPrincipal = get(4);
-        var imagenesExtra = imagenPrincipal ? [imagenPrincipal] : [];
+        // Aditivos: columnas M–R (índices 12–17)
+        var aditivos = [];
+        for (var a = 0; a < 3; a++) {
+            var tit = get(12 + a * 2);
+            var img = get(13 + a * 2);
+            if (tit && img) {
+                var ad = { titulo: tit, imagen: img };
+                if (tit.toLowerCase().indexOf('etiqueta') !== -1) {
+                    ad.link = '#seccion-aditivos';
+                }
+                aditivos.push(ad);
+            }
+        }
 
-        // ── Sub-etiquetas (col G = índice 6): separadas por coma ──
-        // En Google Sheets escribe: Base, Stitch, Flores
-        var subtags = get(6)
-            ? get(6).split(',').map(function(s) { return s.trim(); }).filter(Boolean).join('|')
-            : '';
-        // Se guardan con | internamente para que el resto del sistema las maneje igual
+        // Imágenes adicionales (columna F separadas por |)
+        var imagenesExtra = get(5)
+            ? get(5).split('|').map(function(s) { return s.trim(); }).filter(Boolean)
+            : [];
+        // Si no hay imágenes extra, usar la imagen principal
+        if (imagenesExtra.length === 0 && get(4)) imagenesExtra = [get(4)];
+
+        // Etiquetas (columna L separadas por coma)
+        var etiquetas = get(11)
+            ? get(11).split(',').map(function(s) { return s.trim(); }).filter(Boolean)
+            : [];
 
         productos.push({
-            id:           i,                              // id automático por posición
-            nombre:       get(0),                         // A: nombre
-            precioNormal: parseFloat(get(1)) || 0,        // B: precioNormal
-            precioBazar:  parseFloat(get(2)) || 0,        // C: precioBazar
-            descripcion:  get(3),                         // D: descripcion
-            imagen:       imagenPrincipal,                // E: imagen principal
+            id:           parseInt(get(0)) || i,
+            nombre:       get(1),
+            precioNormal: parseFloat(get(2)) || 0,
+            precioBazar:  parseFloat(get(3)) || 0,
+            imagen:       get(4),
             imagenes:     imagenesExtra,
-            forma:        get(5),                         // F: forma / etiqueta principal
-            subtags:      subtags,                        // G: sub-etiquetas (coma en Sheets → | interno)
-            eventos:      get(7),                         // H: etiquetas de evento
-            tipo:         'arreglo',
-            etiquetas:    [],
-            aditivos:     []
+            forma:        get(6),
+            eventos:      get(7)
+                            ? get(7).split(',').map(function(s){ return s.trim().toLowerCase(); }).filter(Boolean).join(' ')
+                            : '',
+            tipo:         get(8) || 'arreglo',
+            subtags:      get(9),
+            descripcion:  get(10),
+            etiquetas:    etiquetas,
+            aditivos:     aditivos
         });
     }
     return productos;
@@ -745,12 +772,31 @@ if (document.readyState === 'loading') {
         const eventoMap = {
             'bautizo': 'Bautizo', 'primera-comunion': 'Primera Comunión',
             'fin-novenario': 'Fin de Novenario', 'quince-anos': 'Quinceaños',
-            'boda': 'Boda', 'baby-shower': 'Baby Shower',
-            'aniversario-luctuoso': 'Aniversario Luctuoso', 'confirmacion': 'Confirmación',
-            'despedida-soltera': 'Despedida de Soltera', 'graduacion': 'Graduación',
-            'sin evento': ''
+            'quinceanos': 'Quinceaños', 'quinceanera': 'Quinceañera',
+            'boda': 'Boda', 'baby-shower': 'Baby Shower', 'babyshower': 'Baby Shower',
+            'aniversario-luctuoso': 'Aniversario Luctuoso', 'aniversario': 'Aniversario',
+            'confirmacion': 'Confirmación',
+            'despedida-soltera': 'Despedida de Soltera', 'despedida': 'Despedida de Soltera',
+            'graduacion': 'Graduación',
+            'primera-comunion': 'Primera Comunión', 'comunion': 'Primera Comunión',
+            'fin-novenario': 'Fin de Novenario', 'novenario': 'Fin de Novenario',
+            'sin evento': '', 'sin-evento': ''
         };
-        const eventoSlots = dataEvento.split(/\s+/).filter(e => e && e !== 'sin' && e !== 'evento' && eventoMap[e]);
+        // Normalizar: quitar acentos y convertir a minúsculas para comparar
+        function _normEvento(s) {
+            return s.toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/\s+/g, '-');
+        }
+        // Buscar en el mapa con y sin normalización
+        function _lookupEvento(slug) {
+            if (eventoMap[slug] !== undefined) return eventoMap[slug];
+            var norm = _normEvento(slug);
+            if (eventoMap[norm] !== undefined) return eventoMap[norm];
+            // Si no está en el mapa, mostrarlo tal como viene (con mayúscula inicial)
+            return slug.charAt(0).toUpperCase() + slug.slice(1);
+        }
+        const eventoSlots = dataEvento.split(/\s+/).filter(e => e && e !== 'sin' && e !== 'evento');
         if (eventoSlots.length > 0) {
             const labelEv = document.createElement('div');
             labelEv.textContent = 'Etiquetas de Evento';
@@ -760,7 +806,7 @@ if (document.readyState === 'loading') {
             rowEv.style.cssText = 'display: flex; flex-wrap: wrap; gap: 5px; width: 100%;';
             eventoSlots.forEach(slug => {
                 const span = document.createElement('span');
-                span.textContent = eventoMap[slug];
+                span.textContent = _lookupEvento(slug);
                 span.style.cssText = 'background: #e3edf7; color: #4b6b94; font-size: 11px; padding: 3px 9px; border-radius: 12px; font-weight: 600;';
                 rowEv.appendChild(span);
             });
@@ -1489,7 +1535,7 @@ if (document.readyState === 'loading') {
             }
 
             const okForma   = formaActiva  === 'todos' || formaCard  === formaActiva;
-            const okEvento  = eventoActivo === 'todos' || eventoCard === eventoActivo;
+            const okEvento  = eventoActivo === 'todos' || eventoCard.split(' ').includes(eventoActivo);
             const okPrecio  = precioCard   <= precioMax;
             const okNombre  = !textoBusq   || nombreCard.includes(textoBusq);
 
