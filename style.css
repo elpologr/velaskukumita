@@ -2598,8 +2598,6 @@ body.modo-oscuro .btn-google-auth:hover { background: #3a2e26; }
 .mp-etiqueta-principal.producto  { background: #e8e0d7; color: #705c4f; }
 .mp-etiqueta-principal.arreglo   { background: #e3edf7; color: #4b6b94; }
 .mp-etiqueta-principal.aditamento{ background: #f3e8ff; color: #6b3fa0; }
-.mp-etiqueta-principal.decoracion{ background: #fde8ef; color: #a0335a; }
-.mp-etiqueta-principal.etiqueta  { background: #e8f5e9; color: #2e7d32; }
 
 .mp-sub-etiqueta {
     display: inline-flex; align-items: center; gap: 5px;
@@ -2975,3 +2973,20 @@ body.modo-oscuro .cart-total-valor { color: #f0e8e0; }
 .sc-btn-whatsapp { background: linear-gradient(135deg, #25d366, #128c7e); }
 .sc-btn-facebook { background: linear-gradient(135deg, #1877f2, #0d5bba); }
 .sc-btn-instagram { background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+/* ── Botones corazón y carrito: tamaño reducido en móvil ── */
+@media (max-width: 768px) {
+    .btn-like {
+        width: 34px !important;
+        height: 34px !important;
+        font-size: 15px !important;
+        top: 6px !important;
+        right: 6px !important;
+    }
+    .btn-carrito-card {
+        width: 34px !important;
+        height: 34px !important;
+        font-size: 15px !important;
+        top: 6px !important;
+        right: 46px !important;
+    }
+}
