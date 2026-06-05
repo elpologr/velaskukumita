@@ -2194,18 +2194,32 @@ function actualizarPantallaPerfil() {
 }
 
 // ─── CAMBIAR NOMBRE DE USUARIO ───
-async function cambiarNombreUsuario() {
+function cambiarNombreUsuario() {
+    var panel = document.getElementById('panelEditarNombre');
+    if (!panel) return;
+    var abierto = panel.classList.toggle('abierto');
+    if (abierto) {
+        var user = auth.currentUser;
+        var input = document.getElementById('inputNuevoNombre');
+        if (input && user) input.value = user.displayName || '';
+        if (input) setTimeout(function(){ input.focus(); input.select(); }, 50);
+    }
+}
+
+async function guardarNuevoNombre() {
     const user = auth.currentUser;
     if (!user) return;
-    const nuevoNombre = prompt('Escribe tu nuevo nombre de usuario:', user.displayName || '');
-    if (!nuevoNombre || !nuevoNombre.trim()) return;
+    const input = document.getElementById('inputNuevoNombre');
+    const nuevoNombre = input ? input.value.trim() : '';
+    if (!nuevoNombre) { mostrarToast('Escribe un nombre válido'); return; }
     try {
-        await user.updateProfile({ displayName: nuevoNombre.trim() });
-        localStorage.setItem('velas-nombre-usuario', nuevoNombre.trim());
-        document.getElementById('pantallaUsuarioNombre').textContent = nuevoNombre.trim();
-        document.getElementById('drawerNombreUsuario').textContent = nuevoNombre.trim();
+        await user.updateProfile({ displayName: nuevoNombre });
+        localStorage.setItem('velas-nombre-usuario', nuevoNombre);
+        document.getElementById('pantallaUsuarioNombre').textContent = nuevoNombre;
+        document.getElementById('drawerNombreUsuario').textContent = nuevoNombre;
         const subNombre = document.getElementById('subNombreActual');
-        if (subNombre) subNombre.textContent = nuevoNombre.trim() + '  ·  ' + (user.email || '');
+        if (subNombre) subNombre.textContent = nuevoNombre + '  ·  ' + (user.email || '');
+        document.getElementById('panelEditarNombre').classList.remove('abierto');
         mostrarToast('✅ Nombre actualizado');
     } catch (e) {
         mostrarToast('Error al actualizar el nombre');
@@ -3084,11 +3098,16 @@ function abrirPantallaCarrito() {
     renderizarCarrito();
     document.getElementById('pantallaCarrito').classList.add('activa');
     document.body.style.overflow = 'hidden';
+    // Ocultar burbuja mientras el carrito está abierto
+    var burbuja = document.getElementById('burbujaCarrito');
+    if (burbuja) burbuja.style.display = 'none';
 }
 
 function cerrarPantallaCarrito() {
     document.getElementById('pantallaCarrito').classList.remove('activa');
     document.body.style.overflow = '';
+    // Restaurar burbuja si hay productos
+    actualizarBurbuja();
 }
 
 function renderizarCarrito() {

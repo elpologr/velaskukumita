@@ -1814,6 +1814,61 @@
         }
         .btn-cerrar-sesion-perfil:hover { background: #fde8e8; border-color: #c0392b; }
 
+        /* ── Panel inline editar nombre ── */
+        .panel-editar-nombre {
+            width: 100%; max-width: 380px;
+            max-height: 0; overflow: hidden;
+            transition: max-height 0.35s cubic-bezier(.4,0,.2,1), opacity 0.25s ease, margin 0.3s ease;
+            opacity: 0; margin-top: 0;
+        }
+        .panel-editar-nombre.abierto {
+            max-height: 200px; opacity: 1; margin-top: 6px; margin-bottom: 4px;
+        }
+        .panel-editar-nombre-inner {
+            background: #fdfaf7; border: 1.5px solid #d4c5b8;
+            border-radius: 14px; padding: 18px 18px 14px; display: flex;
+            flex-direction: column; gap: 12px;
+        }
+        .panel-nombre-label {
+            font-size: 12px; font-weight: 700; color: #8c7565;
+            letter-spacing: 0.04em; text-transform: uppercase;
+        }
+        .panel-nombre-input {
+            width: 100%; padding: 11px 14px; font-size: 15px;
+            border: 1.5px solid #d4c5b8; border-radius: 10px;
+            background: #fff; color: #362a22; outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: inherit; box-sizing: border-box;
+        }
+        .panel-nombre-input:focus {
+            border-color: #8c7565;
+            box-shadow: 0 0 0 3px rgba(140,117,101,0.15);
+        }
+        .panel-nombre-acciones {
+            display: flex; gap: 8px; justify-content: flex-end;
+        }
+        .panel-nombre-btn {
+            padding: 9px 20px; border-radius: 10px; font-size: 14px;
+            font-weight: 700; cursor: pointer; border: none;
+            transition: all 0.18s; font-family: inherit;
+        }
+        .panel-nombre-btn.cancelar {
+            background: #f0e8e0; color: #8c7565;
+        }
+        .panel-nombre-btn.cancelar:hover { background: #e5ddd5; }
+        .panel-nombre-btn.guardar {
+            background: #362a22; color: #fff;
+        }
+        .panel-nombre-btn.guardar:hover { background: #5c4d43; }
+
+        /* Modo oscuro — panel nombre */
+        body.modo-oscuro .panel-editar-nombre-inner { background: #2a2218; border-color: #4a3a2e; }
+        body.modo-oscuro .panel-nombre-label { color: #a89080; }
+        body.modo-oscuro .panel-nombre-input { background: #1e1812; border-color: #4a3a2e; color: #e0d5cc; }
+        body.modo-oscuro .panel-nombre-input:focus { border-color: #8c7565; box-shadow: 0 0 0 3px rgba(140,117,101,0.2); }
+        body.modo-oscuro .panel-nombre-btn.cancelar { background: #3a2e26; color: #a89080; }
+        body.modo-oscuro .panel-nombre-btn.guardar { background: #8c7565; color: #fff; }
+
         /* Modo oscuro — perfil */
         body.modo-oscuro .pantalla-perfil { background: #1a1410; }
         body.modo-oscuro .pantalla-perfil-header { border-color: #3a3028; }

@@ -48,6 +48,19 @@
                 </div>
             </button>
 
+            <!-- Panel inline editar nombre -->
+            <div id="panelEditarNombre" class="panel-editar-nombre">
+                <div class="panel-editar-nombre-inner">
+                    <label class="panel-nombre-label">Nuevo nombre de usuario</label>
+                    <input id="inputNuevoNombre" class="panel-nombre-input" type="text" placeholder="Tu nombre..." maxlength="40"
+                           onkeydown="if(event.key==='Enter') guardarNuevoNombre()">
+                    <div class="panel-nombre-acciones">
+                        <button class="panel-nombre-btn cancelar" onclick="document.getElementById('panelEditarNombre').classList.remove('abierto')">Cancelar</button>
+                        <button class="panel-nombre-btn guardar" onclick="guardarNuevoNombre()">Guardar</button>
+                    </div>
+                </div>
+            </div>
+
             <button class="btn-opcion-perfil" id="btnContrasena" onclick="gestionarContrasena()">
                 <span class="op-icono">🔒</span>
                 <div>
