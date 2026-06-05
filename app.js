@@ -174,6 +174,8 @@ var SHEET_ID = '1jin2wMYingvbPD2csGxIbm5AhulfRvCRvIzAKJTUNMw';
 //   F: etiquetaPrincipal — tipo de producto (ej: arreglo, producto…)
 //   G: subEtiqueta       — subtags separados por | (ej: Cirio|Etiqueta|Medallón)
 //   H: etiquetaEvento    — eventos separados por coma (ej: boda,bautizo)
+//   I: alto              — altura del producto (ej: 15 cm)
+//   J: ancho             — anchura del producto (ej: 8 cm)
 // ══════════════════════════════════════════════════════════════════════════════
 
 var listaProductos = [];
@@ -229,6 +231,7 @@ function csvAProductos(filas) {
 
         // A=0 nombre, B=1 precio, C=2 precioBazar, D=3 descripcion,
         // E=4 imagen, F=5 etiquetaPrincipal, G=6 subEtiqueta, H=7 etiquetaEvento
+        // I=8 alto, J=9 ancho
 
         // Imágenes: columna E puede tener varias URLs separadas por coma.
         // Se limpian comillas extra que Google Sheets puede agregar al exportar CSV.
@@ -252,7 +255,9 @@ function csvAProductos(filas) {
                             ? get(7).split(',').map(function(s){ return s.trim().toLowerCase(); }).filter(Boolean).join(' ')
                             : '',
             etiquetas:    get(5) ? [get(5).trim()] : [],
-            aditivos:     []
+            aditivos:     [],
+            alto:         get(8),
+            ancho:        get(9)
         });
     }
     return productos;
@@ -296,6 +301,8 @@ function renderizarCatalogoCompleto() {
         card.setAttribute('data-nombre',          p.nombre);
         card.setAttribute('data-imagenes',        JSON.stringify(p.imagenes || []));
         card.setAttribute('data-descripcion',     p.descripcion || '');
+        card.setAttribute('data-alto',             p.alto || '');
+        card.setAttribute('data-ancho',            p.ancho || '');
         card.setAttribute('data-oferta',          String(p.oferta || 0));
         card.setAttribute('data-oferta-desc',     p.ofertaDesc || '');
         card.setAttribute('data-oferta-duracion', p.ofertaDuracion || '');
@@ -675,6 +682,8 @@ if (document.readyState === 'loading') {
     function abrirModalProducto(card) {
         const nombre = card.getAttribute('data-nombre') || card.querySelector('h3')?.textContent || 'Producto';
         const descripcion = card.getAttribute('data-descripcion') || '';
+        const alto = card.getAttribute('data-alto') || '';
+        const ancho = card.getAttribute('data-ancho') || '';
         const imagenesJSON = card.getAttribute('data-imagenes');
         const precioNum = card.getAttribute('data-precio') || '';
         const precioBazar = card.getAttribute('data-precio-bazar') || '';
@@ -795,6 +804,22 @@ if (document.readyState === 'loading') {
             descZona.style.display = '';
         } else {
             descZona.style.display = 'none';
+        }
+
+        // Alto y Ancho
+        const dimZona   = document.getElementById('modalDimensionesZona');
+        const altoZona  = document.getElementById('modalAltoZona');
+        const altoTexto = document.getElementById('modalAltoTexto');
+        const anchoZona = document.getElementById('modalAnchoZona');
+        const anchoTexto= document.getElementById('modalAnchoTexto');
+        if (alto || ancho) {
+            if (alto) { altoTexto.textContent = alto; altoZona.style.display = 'block'; }
+            else       { altoZona.style.display = 'none'; }
+            if (ancho) { anchoTexto.textContent = ancho; anchoZona.style.display = 'block'; }
+            else        { anchoZona.style.display = 'none'; }
+            dimZona.style.display = 'block';
+        } else {
+            dimZona.style.display = 'none';
         }
 
         // Aditivos — 100px, slots vacíos si no hay imagen
