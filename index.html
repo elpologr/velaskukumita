@@ -3693,131 +3693,147 @@ function _resetBotonesRed() {
 
 <script>
 // ══════════════════════════════════════════════════════════════════════════════
-// DATOS DEL CATÁLOGO — Array centralizado de productos
-// Para agregar un producto: copia uno de los objetos y modifica sus propiedades.
+// CATÁLOGO DESDE GOOGLE SHEETS
+// ──────────────────────────────────────────────────────────────────────────────
+// Los productos se cargan automáticamente desde tu hoja de cálculo pública.
+// Para editar productos: abre el link de Google Sheets y modifica las filas.
+//
+// 🔧 CONFIGURACIÓN — cambia solo esta línea si mueves la hoja:
+var SHEET_ID = '1jin2wMYingvbPD2csGxIbm5AhulfRvCRvIzAKJTUNMw';
+// ──────────────────────────────────────────────────────────────────────────────
+// COLUMNAS ESPERADAS EN LA HOJA (fila 1 = encabezados, datos desde fila 2):
+//   A: id           — número único del producto (ej: 1, 2, 3…)
+//   B: nombre       — nombre del producto
+//   C: precioNormal — precio original en MXN (número)
+//   D: precioBazar  — precio de bazar en MXN (número, opcional)
+//   E: imagen       — URL o ruta de la imagen principal
+//   F: imagenes     — URLs adicionales separadas por | (ej: url1|url2|url3)
+//   G: forma        — categoría de forma (ej: cirio, tazon, personaje…)
+//   H: eventos      — eventos separados por espacio (ej: boda bautizo)
+//   I: tipo         — "arreglo" o "producto"
+//   J: subtags      — subtags separados por | (ej: Cirio|Etiqueta|Medallón)
+//   K: descripcion  — texto de descripción del producto
+//   L: etiquetas    — etiquetas separadas por coma (ej: cirio,etiqueta,medallon)
+//   M: aditivo1_titulo — título del primer aditivo
+//   N: aditivo1_imagen — imagen del primer aditivo
+//   O: aditivo2_titulo — título del segundo aditivo
+//   P: aditivo2_imagen — imagen del segundo aditivo
+//   Q: aditivo3_titulo — título del tercer aditivo
+//   R: aditivo3_imagen — imagen del tercer aditivo
 // ══════════════════════════════════════════════════════════════════════════════
-var listaProductos = [
-    {
-        id: 1,
-        nombre: "Cirio Con Etiqueta y Medallón",
-        precioNormal: 75,
-        precioBazar: 65,
-        imagen: "imagenes/cirio-con-etiqueta-y-medallon-1.webp",
-        imagenes: ["imagenes/cirio-con-etiqueta-y-medallon-1.webp"],
-        forma: "cirio",
-        eventos: "bautizo primera-comunion fin-novenario quince-anos boda baby-shower aniversario-luctuoso confirmacion despedida-soltera",
-        tipo: "arreglo",
-        subtags: "Cirio|Etiqueta|Medallón",
-        descripcion: "Precioso cirio artesanal ideal para ceremonias elegantes. Acabado firme de alta duración hecho a mano.",
-        aditivos: [
-            { titulo: "Cirio Base",             imagen: "imagenes/aditivo-cirio-base.webp" },
-            { titulo: "Etiqueta Personalizada", imagen: "imagenes/aditivo-etiqueta.webp",  link: "#seccion-aditivos" },
-            { titulo: "Medallita",              imagen: "imagenes/aditivo-medalla.webp" }
-        ],
-        etiquetas: ["cirio", "etiqueta", "medallon", "aromatica"]
-    },
-    {
-        id: 2,
-        nombre: "Tazón con Ángel y Decoración de Suculentas",
-        precioNormal: 50,
-        precioBazar: 45,
-        imagen: "imagenes/tazon-con-angel-y-plantas.webp",
-        imagenes: ["imagenes/tazon-con-angel-y-plantas.webp"],
-        forma: "tazon",
-        eventos: "bautizo primera-comunion aniversario-luctuoso fin-novenario",
-        tipo: "arreglo",
-        subtags: "Tazón|Ángel|Suculentas",
-        descripcion: "Hermoso tazón decorativo con detalles de ángel y plantas, ideal para recuerdos de bautizo o primera comunión.",
-        aditivos: [
-            { titulo: "Molde Oso",              imagen: "imagenes/aditivo-molde-oso.webp" },
-            { titulo: "Etiqueta Personalizada", imagen: "imagenes/aditivo-etiqueta.webp",  link: "#seccion-aditivos" },
-            { titulo: "Listón",                 imagen: "imagenes/aditivo-liston.webp" }
-        ],
-        etiquetas: ["tazon", "angel", "suculentas", "bautizo"]
-    },
-    {
-        id: 3,
-        nombre: "Tazón de Whinnie de Poo",
-        precioNormal: 90,
-        precioBazar: 80,
-        imagen: "imagenes/whinnie-tazon1.webp",
-        imagenes: ["imagenes/whinnie-tazon1.webp", "imagenes/whinnie-tazon2.webp"],
-        forma: "tazon",
-        eventos: "baby-shower confirmacion bautizo primera-comunion",
-        tipo: "arreglo",
-        subtags: "Tazón|Base|Winnie Poo|Abejas|Miel|Flores",
-        descripcion: "",
-        aditivos: [
-            { titulo: "Contenedor",             imagen: "imagenes/aditivo-tazon-vacio.webp" },
-            { titulo: "Etiqueta Personalizada", imagen: "imagenes/aditivo-etiqueta.webp",   link: "#seccion-aditivos" },
-            { titulo: "Esencia",                imagen: "imagenes/aditivo-esencia.webp" }
-        ],
-        etiquetas: ["tazon", "winnie", "personaje", "baby-shower"]
-    },
-    {
-        id: 4,
-        nombre: "Tazón de Osito",
-        precioNormal: 50,
-        precioBazar: 45,
-        imagen: "imagenes/tazon-de-osito1.webp",
-        imagenes: ["imagenes/tazon-de-osito1.webp"],
-        forma: "tazon",
-        eventos: "confirmacion baby-shower bautizo primera-comunion",
-        tipo: "arreglo",
-        subtags: "Tazón|Oso|Globos|Flores",
-        descripcion: "",
-        aditivos: [
-            { titulo: "Cirio Base",             imagen: "imagenes/aditivo-cirio-base.webp" },
-            { titulo: "Etiqueta Personalizada", imagen: "imagenes/aditivo-etiqueta.webp",  link: "#seccion-aditivos" },
-            { titulo: "Medalla",                imagen: "imagenes/aditivo-medalla.webp" }
-        ],
-        etiquetas: ["tazon", "oso", "bautizo", "baby-shower"]
-    },
-    {
-        id: 5,
-        nombre: "Tazón de Cerdito",
-        precioNormal: 50,
-        precioBazar: 45,
-        imagen: "imagenes/tazon-cerdito1.webp",
-        imagenes: ["imagenes/tazon-cerdito1.webp"],
-        forma: "tazon",
-        eventos: "confirmacion baby-shower bautizo primera-comunion",
-        tipo: "arreglo",
-        subtags: "Tazón|Cerdito|Flores",
-        descripcion: "",
-        aditivos: [
-            { titulo: "Cirio Base",             imagen: "imagenes/aditivo-cirio-base.webp" },
-            { titulo: "Etiqueta Personalizada", imagen: "imagenes/aditivo-etiqueta.webp",  link: "#seccion-aditivos" },
-            { titulo: "Medalla",                imagen: "imagenes/aditivo-medalla.webp" }
-        ],
-        etiquetas: ["tazon", "cerdito", "bautizo", "baby-shower"]
-    },
-    {
-        id: 6,
-        nombre: "Vela Stich",
-        precioNormal: 35,
-        precioBazar: 30,
-        imagen: "imagenes/stich-solo1.webp",
-        imagenes: ["imagenes/stich-solo1.webp"],
-        forma: "personaje",
-        eventos: "baby-shower bautizo primera-comunion",
-        tipo: "producto",
-        subtags: "Stich|Personajes|Disney",
-        descripcion: "",
-        aditivos: [
-            { titulo: "Cirio Base",             imagen: "imagenes/aditivo-cirio-base.webp" },
-            { titulo: "Etiqueta Personalizada", imagen: "imagenes/aditivo-etiqueta.webp",  link: "#seccion-aditivos" },
-            { titulo: "Medalla",                imagen: "imagenes/aditivo-medalla.webp" }
-        ],
-        etiquetas: ["stich", "personaje", "disney", "baby-shower"]
+
+var listaProductos = [];
+
+// ── Parser de CSV que maneja campos entre comillas con comas internas ──
+function parsearCSV(texto) {
+    var lineas = [];
+    var filaActual = [];
+    var campoActual = '';
+    var dentroDeComillas = false;
+
+    for (var i = 0; i < texto.length; i++) {
+        var c = texto[i];
+        if (c === '"') {
+            if (dentroDeComillas && texto[i + 1] === '"') {
+                campoActual += '"';
+                i++;
+            } else {
+                dentroDeComillas = !dentroDeComillas;
+            }
+        } else if (c === ',' && !dentroDeComillas) {
+            filaActual.push(campoActual.trim());
+            campoActual = '';
+        } else if ((c === '\n' || c === '\r') && !dentroDeComillas) {
+            if (c === '\r' && texto[i + 1] === '\n') i++;
+            filaActual.push(campoActual.trim());
+            if (filaActual.some(function(f) { return f !== ''; })) {
+                lineas.push(filaActual);
+            }
+            filaActual = [];
+            campoActual = '';
+        } else {
+            campoActual += c;
+        }
     }
-];
+    // Última celda
+    filaActual.push(campoActual.trim());
+    if (filaActual.some(function(f) { return f !== ''; })) lineas.push(filaActual);
+    return lineas;
+}
+
+// ── Convierte filas CSV en objetos de producto ──
+function csvAProductos(filas) {
+    if (filas.length < 2) return [];
+    // Omitir la fila de encabezados (fila 0)
+    var productos = [];
+    for (var i = 1; i < filas.length; i++) {
+        var f = filas[i];
+        var get = function(idx) { return (f[idx] || '').trim(); };
+
+        // Saltar filas sin id o sin nombre
+        if (!get(0) || !get(1)) continue;
+
+        // Aditivos: columnas M–R (índices 12–17)
+        var aditivos = [];
+        for (var a = 0; a < 3; a++) {
+            var tit = get(12 + a * 2);
+            var img = get(13 + a * 2);
+            if (tit && img) {
+                var ad = { titulo: tit, imagen: img };
+                if (tit.toLowerCase().indexOf('etiqueta') !== -1) {
+                    ad.link = '#seccion-aditivos';
+                }
+                aditivos.push(ad);
+            }
+        }
+
+        // Imágenes adicionales (columna F separadas por |)
+        var imagenesExtra = get(5)
+            ? get(5).split('|').map(function(s) { return s.trim(); }).filter(Boolean)
+            : [];
+        // Si no hay imágenes extra, usar la imagen principal
+        if (imagenesExtra.length === 0 && get(4)) imagenesExtra = [get(4)];
+
+        // Etiquetas (columna L separadas por coma)
+        var etiquetas = get(11)
+            ? get(11).split(',').map(function(s) { return s.trim(); }).filter(Boolean)
+            : [];
+
+        productos.push({
+            id:           parseInt(get(0)) || i,
+            nombre:       get(1),
+            precioNormal: parseFloat(get(2)) || 0,
+            precioBazar:  parseFloat(get(3)) || 0,
+            imagen:       get(4),
+            imagenes:     imagenesExtra,
+            forma:        get(6),
+            eventos:      get(7),
+            tipo:         get(8) || 'arreglo',
+            subtags:      get(9),
+            descripcion:  get(10),
+            etiquetas:    etiquetas,
+            aditivos:     aditivos
+        });
+    }
+    return productos;
+}
+
+// ── Mostrar estado de carga en el grid ──
+function mostrarEstadoCarga(mensaje, esError) {
+    var grid = document.getElementById('gridProductos');
+    if (!grid) return;
+    grid.innerHTML =
+        '<div style="grid-column:1/-1; text-align:center; padding:60px 20px; color:' +
+        (esError ? '#c0392b' : '#8c7565') + ';">' +
+        '<div style="font-size:2rem; margin-bottom:12px;">' + (esError ? '⚠️' : '⏳') + '</div>' +
+        '<p style="font-size:1rem; font-weight:600;">' + mensaje + '</p>' +
+        (esError ? '<p style="font-size:0.85rem; color:#999; margin-top:8px;">Revisa que la hoja esté publicada como CSV en Google Sheets.</p>' : '') +
+        '</div>';
+}
 
 // ══════════════════════════════════════════════════════════════════════════════
 // renderizarCatalogoCompleto()
 // Lee listaProductos y genera dinámicamente cada tarjeta .card-dinamica
-// con todos sus data-attributes, aditivos, precios y botones para que el
-// sistema de filtros, buscador, modal, favoritos y carrito funcionen igual.
 // ══════════════════════════════════════════════════════════════════════════════
 function renderizarCatalogoCompleto() {
     var grid = document.getElementById('gridProductos');
@@ -3958,12 +3974,51 @@ function renderizarCatalogoCompleto() {
     if (typeof syncBotonesLike === 'function') syncBotonesLike();
 }
 
-// Ejecutar ANTES de DOMContentLoaded para que los scripts posteriores
-// que procesan .card-dinamica ya encuentren las tarjetas en el DOM.
+// ══════════════════════════════════════════════════════════════════════════════
+// CARGA DESDE GOOGLE SHEETS (CSV público)
+// ══════════════════════════════════════════════════════════════════════════════
+function cargarDesdeGoogleSheets() {
+    var csvUrl = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/export?format=csv&gid=0';
+
+    mostrarEstadoCarga('Cargando catálogo desde Google Sheets…', false);
+
+    fetch(csvUrl)
+        .then(function(res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.text();
+        })
+        .then(function(texto) {
+            var filas = parsearCSV(texto);
+            var productos = csvAProductos(filas);
+
+            if (productos.length === 0) {
+                mostrarEstadoCarga('La hoja está vacía o no tiene el formato correcto.', true);
+                return;
+            }
+
+            listaProductos = productos;
+            renderizarCatalogoCompleto();
+
+            // Re-ejecutar los scripts que procesan las cards (subtags, aditivos, miniaturas, etc.)
+            if (typeof syncBotonesLike === 'function') syncBotonesLike();
+
+            // Disparar evento para que otros sistemas (paginación, filtros) se enteren
+            document.dispatchEvent(new CustomEvent('catalogoCargado'));
+        })
+        .catch(function(err) {
+            console.error('Error cargando Google Sheets:', err);
+            mostrarEstadoCarga(
+                'No se pudo cargar el catálogo. ¿La hoja está publicada como CSV?',
+                true
+            );
+        });
+}
+
+// Iniciar carga al cargar la página
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', renderizarCatalogoCompleto);
+    document.addEventListener('DOMContentLoaded', cargarDesdeGoogleSheets);
 } else {
-    renderizarCatalogoCompleto();
+    cargarDesdeGoogleSheets();
 }
 </script>
 
@@ -4435,18 +4490,11 @@ if (document.readyState === 'loading') {
             window.open('https://wa.me/524431469161?text=' + texto, '_blank');
         };
 
-        // Botón Compartir
-        document.getElementById('mpBtnCompartir').onclick = () => {
+        // Botón Compartir — abre submenu propio
+        document.getElementById('mpBtnCompartir').onclick = (e) => {
+            e.stopPropagation();
             const url = window.location.href.split('?')[0] + '?producto=' + encodeURIComponent(nombre);
-            if (navigator.share) {
-                navigator.share({ title: nombre, url: url }).catch(() => {});
-            } else if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(url).then(() => {
-                    mostrarToast('🔗 ¡Link copiado al portapapeles!');
-                }).catch(() => { prompt('Copia este enlace:', url); });
-            } else {
-                prompt('Copia este enlace:', url);
-            }
+            abrirSubmenuCompartir(url, nombre);
         };
 
         renderizarGaleria();
@@ -4579,66 +4627,7 @@ if (document.readyState === 'loading') {
         if (e.target === this) cerrarModalProducto();
     });
 
-    // Activar click en imagen de cada card
-    document.querySelectorAll('.card-dinamica').forEach(card => {
-        const imgContenedor = card.querySelector('.img-contenedor-dinamico');
-        if (imgContenedor) {
-            imgContenedor.style.cursor = 'pointer';
-            imgContenedor.addEventListener('click', () => abrirModalProducto(card));
-        }
-
-        // Hint "Toca para ver detalles"
-        const hint = document.createElement('div');
-        hint.className = 'card-hint-tap';
-        hint.textContent = 'Toca para ver detalles';
-        card.appendChild(hint);
-
-        // Mostrar sub-etiquetas debajo de la imagen desde data-subtags
-        const infoDiv = card.querySelector('.img-contenedor-dinamico');
-        if (infoDiv) {
-            const subtags = (card.getAttribute('data-subtags') || '').split('|').map(s => s.trim()).filter(Boolean);
-            if (subtags.length > 0) {
-                const tagsRow = document.createElement('div');
-                tagsRow.style.cssText = 'display: flex; flex-wrap: wrap; gap: 3px; padding: 5px 6px 2px 6px;';
-                subtags.slice(0, 5).forEach(tag => {
-                    const t = document.createElement('span');
-                    t.textContent = tag;
-                    t.style.cssText = 'font-size: 9px; padding: 2px 6px; border-radius: 10px; font-weight: 600; background: #e8e0d7; color: #705c4f;';
-                    tagsRow.appendChild(t);
-                });
-                infoDiv.insertAdjacentElement('afterend', tagsRow);
-            }
-        }
-    });
-
-    // ===== AGREGAR TÍTULO "ADITIVOS AÑADIDOS" Y COMPLETAR A 6 RECUADROS EN TODAS LAS CARDS =====
-    document.querySelectorAll('.card-dinamica').forEach(card => {
-        const primerRecuadro = card.querySelector('.recuadro-item');
-        if (primerRecuadro) {
-            const contenedorFlex = primerRecuadro.parentElement;
-            if (contenedorFlex && !contenedorFlex.previousElementSibling?.classList.contains('titulo-aditivos-card')) {
-                const titulo = document.createElement('div');
-                titulo.className = 'titulo-aditivos-card';
-                titulo.style.cssText = 'font-size: 9px; font-weight: bold; color: #8a7a70; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.4px;';
-                titulo.textContent = 'Decoraciones y Aditamentos';
-                contenedorFlex.parentElement.insertBefore(titulo, contenedorFlex);
-            }
-
-            // Completar hasta 3 recuadros con slots vacíos
-            const contenedorFlex2 = primerRecuadro.parentElement;
-            const recuadrosActuales = contenedorFlex2.querySelectorAll('.recuadro-item').length;
-            for (let i = recuadrosActuales; i < 3; i++) {
-                const vacio = document.createElement('div');
-                vacio.className = 'recuadro-item recuadro-vacio';
-                vacio.title = 'Espacio disponible';
-                vacio.style.cssText = 'width: 32px; height: 32px; border: 1px dashed #d4c5b8; border-radius: 4px; overflow: hidden; background: #f9f5f2; display: flex; align-items: center; justify-content: center; cursor: default;';
-                vacio.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c9b8a8" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-                contenedorFlex2.appendChild(vacio);
-            }
-        }
-    });
-
-    // ===== PLACEHOLDER PARA IMÁGENES NO ENCONTRADAS (técnica de universaldancers) =====
+    // ===== PLACEHOLDER PARA IMÁGENES NO ENCONTRADAS =====
     function mostrarPlaceholder(img) {
         const nombre = img.alt || 'Imagen próximamente';
         const contenedor = img.parentElement;
@@ -4657,83 +4646,82 @@ if (document.readyState === 'loading') {
         contenedor.appendChild(ph);
     }
 
-    // Aplicar onerror a todas las imágenes de producto automáticamente
-    document.querySelectorAll('.img-contenedor-dinamico img').forEach(img => {
-        img.onerror = function() { mostrarPlaceholder(this); };
-    });
-
-    // ===== GENERAR MINIATURAS DINÁMICAS DESDE data-imagenes (máx. 6) =====
-    // Estas son las fotos del PRODUCTO (galería). Separadas de los aditivos/ingredientes.
-    document.querySelectorAll('.card-dinamica').forEach(card => {
-        const imagenesJSON = card.getAttribute('data-imagenes');
-        let imagenes = [];
-        try { imagenes = imagenesJSON ? JSON.parse(imagenesJSON) : []; } catch(e) {}
-
-        // Buscar el contenedor de miniaturas (los divs de 28px existentes)
-        const contenedoresMinis = card.querySelectorAll('div[style*="display: flex; gap: 4px"]');
-        const contenedorMinis = contenedoresMinis[contenedoresMinis.length - 1];
-
-        if (!contenedorMinis) return;
-
-        // Agregar etiqueta "Fotos del Producto" antes del row de miniaturas
-        if (!contenedorMinis.previousElementSibling?.classList.contains('label-fotos-producto')) {
-            const labelFotos = document.createElement('div');
-            labelFotos.className = 'label-fotos-producto';
-            labelFotos.style.cssText = 'font-size: 9px; font-weight: bold; color: #8a7a70; text-transform: uppercase; margin-bottom: 2px; margin-top: 6px; letter-spacing: 0.4px;';
-            labelFotos.textContent = 'Fotos del Producto';
-            contenedorMinis.parentElement.insertBefore(labelFotos, contenedorMinis);
-        }
-
-        // Limpiar miniaturas hardcodeadas y generar desde data-imagenes (máx 6)
-        contenedorMinis.innerHTML = '';
-        const max = Math.min(imagenes.length, 6);
-        for (let i = 0; i < max; i++) {
-            const div = document.createElement('div');
-            div.style.cssText = 'width: 28px; height: 28px; border-radius: 4px; overflow: hidden; cursor: pointer; border: 1.5px solid transparent; transition: border-color 0.2s; flex-shrink: 0;';
-            div.title = 'Ver foto ' + (i + 1);
-            const img = document.createElement('img');
-            img.src = imagenes[i];
-            img.style.cssText = 'width:100%; height:100%; object-fit:cover;';
-            div.appendChild(img);
-            div.addEventListener('click', (e) => {
-                e.stopPropagation();
-                abrirModalProducto(card);
-                setTimeout(() => irASlide(i), 80);
-            });
-            div.addEventListener('mouseenter', () => div.style.borderColor = '#8c7565');
-            div.addEventListener('mouseleave', () => div.style.borderColor = 'transparent');
-            contenedorMinis.appendChild(div);
-        }
-
-        // Completar hasta 3 con slots vacíos visuales
-        for (let i = max; i < 3; i++) {
-            const div = document.createElement('div');
-            div.style.cssText = 'width: 28px; height: 28px; border-radius: 4px; overflow: hidden; border: 1px dashed #d4c5b8; background: #f9f5f2; display:flex;align-items:center;justify-content:center;flex-shrink:0;';
-            div.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#c9b8a8" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-            contenedorMinis.appendChild(div);
-        }
-
-        // Si no hay imágenes en data-imagenes, mostrar la imagen principal como primera miniatura
-        if (max === 0) {
-            const imgPrincipal = card.querySelector('.img-contenedor-dinamico img');
-            if (imgPrincipal) {
-                const first = contenedorMinis.firstElementChild;
-                const img = document.createElement('img');
-                img.src = imgPrincipal.getAttribute('src');
-                img.style.cssText = 'width:100%; height:100%; object-fit:cover;';
-                if (first) {
-                    first.innerHTML = '';
-                    first.style.border = '1.5px solid transparent';
-                    first.style.cursor = 'pointer';
-                    first.appendChild(img);
-                    first.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        abrirModalProducto(card);
-                    });
+    // ===== POST-PROCESADO DE CARDS (se ejecuta cada vez que el catálogo se renderiza) =====
+    function postProcesarCards() {
+        // Activar click en imagen de cada card
+        document.querySelectorAll('.card-dinamica').forEach(card => {
+            const imgContenedor = card.querySelector('.img-contenedor-dinamico');
+            if (imgContenedor) {
+                imgContenedor.style.cursor = 'pointer';
+                // Evitar duplicar listeners usando un flag
+                if (!imgContenedor._clickBound) {
+                    imgContenedor._clickBound = true;
+                    imgContenedor.addEventListener('click', () => abrirModalProducto(card));
                 }
             }
-        }
-    });
+
+            // Hint "Toca para ver detalles" (solo si no existe ya)
+            if (!card.querySelector('.card-hint-tap')) {
+                const hint = document.createElement('div');
+                hint.className = 'card-hint-tap';
+                hint.textContent = 'Toca para ver detalles';
+                card.appendChild(hint);
+            }
+
+            // Sub-etiquetas debajo de la imagen desde data-subtags
+            const infoDiv = card.querySelector('.img-contenedor-dinamico');
+            if (infoDiv && !card.querySelector('.subtags-row')) {
+                const subtags = (card.getAttribute('data-subtags') || '').split('|').map(s => s.trim()).filter(Boolean);
+                if (subtags.length > 0) {
+                    const tagsRow = document.createElement('div');
+                    tagsRow.className = 'subtags-row';
+                    tagsRow.style.cssText = 'display: flex; flex-wrap: wrap; gap: 3px; padding: 5px 6px 2px 6px;';
+                    subtags.slice(0, 5).forEach(tag => {
+                        const t = document.createElement('span');
+                        t.textContent = tag;
+                        t.style.cssText = 'font-size: 9px; padding: 2px 6px; border-radius: 10px; font-weight: 600; background: #e8e0d7; color: #705c4f;';
+                        tagsRow.appendChild(t);
+                    });
+                    infoDiv.insertAdjacentElement('afterend', tagsRow);
+                }
+            }
+        });
+
+        // Agregar título "Decoraciones y Aditamentos" y completar hasta 3 recuadros
+        document.querySelectorAll('.card-dinamica').forEach(card => {
+            const primerRecuadro = card.querySelector('.recuadro-item');
+            if (primerRecuadro) {
+                const contenedorFlex = primerRecuadro.parentElement;
+                if (contenedorFlex && !contenedorFlex.previousElementSibling?.classList.contains('titulo-aditivos-card')) {
+                    const titulo = document.createElement('div');
+                    titulo.className = 'titulo-aditivos-card';
+                    titulo.style.cssText = 'font-size: 9px; font-weight: bold; color: #8a7a70; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.4px;';
+                    titulo.textContent = 'Decoraciones y Aditamentos';
+                    contenedorFlex.parentElement.insertBefore(titulo, contenedorFlex);
+                }
+                const contenedorFlex2 = primerRecuadro.parentElement;
+                const recuadrosActuales = contenedorFlex2.querySelectorAll('.recuadro-item').length;
+                for (let i = recuadrosActuales; i < 3; i++) {
+                    const vacio = document.createElement('div');
+                    vacio.className = 'recuadro-item recuadro-vacio';
+                    vacio.title = 'Espacio disponible';
+                    vacio.style.cssText = 'width: 32px; height: 32px; border: 1px dashed #d4c5b8; border-radius: 4px; overflow: hidden; background: #f9f5f2; display: flex; align-items: center; justify-content: center; cursor: default;';
+                    vacio.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#c9b8a8" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+                    contenedorFlex2.appendChild(vacio);
+                }
+            }
+        });
+
+        // Aplicar onerror placeholder a imágenes de producto
+        document.querySelectorAll('.img-contenedor-dinamico img').forEach(img => {
+            img.onerror = function() { mostrarPlaceholder(this); };
+        });
+    }
+
+    // Ejecutar post-procesado cuando el catálogo asíncrono cargue
+    document.addEventListener('catalogoCargado', postProcesarCards);
+    // También ejecutar ahora por si ya hay cards en el DOM
+    postProcesarCards();
 
     // ===== FUNCIÓN PARA REDIRIGIR A PRODUCTO DESDE ZONA DE OFERTAS =====
     function irAProducto(numProducto) {
@@ -7512,6 +7500,237 @@ document.addEventListener('DOMContentLoaded', function() {
         cartDrawerBtn.addEventListener('mouseout', function(){ this.style.borderColor='#e8ddd5'; this.style.background='#fff'; });
         favBtn.parentNode.insertBefore(cartDrawerBtn, favBtn.nextSibling);
     }
+});
+</script>
+
+<!-- ══════════════════════════════════════════════════════
+     SUBMENU DE COMPARTIR PRODUCTO
+     ══════════════════════════════════════════════════════ -->
+<style>
+#submenuCompartir {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 30000;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    align-items: flex-end;
+    justify-content: center;
+}
+#submenuCompartir.abierto { display: flex; }
+.sc-caja {
+    background: #fff;
+    border-radius: 24px 24px 0 0;
+    width: 100%;
+    max-width: 480px;
+    padding: 0 0 32px;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.22);
+    animation: slideUpCart 0.3s cubic-bezier(.4,0,.2,1);
+}
+@media (min-width:540px) {
+    #submenuCompartir { align-items: center; }
+    .sc-caja { border-radius: 20px; margin-bottom: 0; }
+}
+.sc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid #f0eae4;
+}
+.sc-header h3 { font-size: 16px; font-weight: 800; color: #362a22; margin: 0; }
+.sc-cerrar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #f0eae4; border: none; font-size: 17px;
+    cursor: pointer; color: #5c4d43;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+}
+.sc-cerrar:hover { background: #d9cfc8; }
+.sc-link-zona {
+    margin: 16px 20px 0;
+    background: #f8f4f0;
+    border: 1.5px solid #e0d5cc;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    overflow: hidden;
+}
+.sc-link-texto {
+    font-size: 12px;
+    color: #5c4d43;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: monospace;
+}
+.sc-btn-copiar {
+    flex-shrink: 0;
+    background: #8c7565;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+.sc-btn-copiar:hover { background: #5c4d43; }
+.sc-separador {
+    text-align: center;
+    font-size: 11px;
+    color: #b0a090;
+    font-weight: 600;
+    margin: 18px 20px 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.sc-separador::before, .sc-separador::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e8ddd5;
+}
+.sc-redes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 20px;
+}
+.sc-btn-red {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    text-align: left;
+    transition: opacity 0.18s, transform 0.15s;
+    text-decoration: none;
+    color: white;
+}
+.sc-btn-red:hover { opacity: 0.88; transform: translateY(-1px); }
+.sc-btn-red .sc-red-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    background: rgba(255,255,255,0.2);
+    flex-shrink: 0;
+}
+.sc-btn-whatsapp { background: linear-gradient(135deg, #25d366, #128c7e); }
+.sc-btn-facebook { background: linear-gradient(135deg, #1877f2, #0d5bba); }
+.sc-btn-instagram { background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+</style>
+
+<div id="submenuCompartir">
+    <div class="sc-caja">
+        <div class="sc-header">
+            <h3>🔗 Compartir producto</h3>
+            <button class="sc-cerrar" onclick="cerrarSubmenuCompartir()">✕</button>
+        </div>
+
+        <!-- Link copiable -->
+        <div class="sc-link-zona">
+            <span class="sc-link-texto" id="scLinkTexto"></span>
+            <button class="sc-btn-copiar" onclick="copiarLinkProducto()">📋 Copiar</button>
+        </div>
+
+        <div class="sc-separador">Compartir en redes</div>
+
+        <!-- Botones de redes sociales -->
+        <div class="sc-redes">
+            <button class="sc-btn-red sc-btn-whatsapp" onclick="compartirEnWhatsApp()">
+                <span class="sc-red-icon">💬</span>
+                <span>Compartir por WhatsApp</span>
+            </button>
+            <button class="sc-btn-red sc-btn-facebook" onclick="compartirEnFacebook()">
+                <span class="sc-red-icon">📘</span>
+                <span>Compartir en Facebook</span>
+            </button>
+            <button class="sc-btn-red sc-btn-instagram" onclick="compartirEnInstagram()">
+                <span class="sc-red-icon">📸</span>
+                <span>Copiar link para Instagram</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// LÓGICA DEL SUBMENU DE COMPARTIR
+// ══════════════════════════════════════════════════════
+var _scUrlActual = '';
+var _scNombreActual = '';
+
+function abrirSubmenuCompartir(url, nombre) {
+    _scUrlActual = url;
+    _scNombreActual = nombre || 'Producto';
+    var linkEl = document.getElementById('scLinkTexto');
+    if (linkEl) linkEl.textContent = url;
+    document.getElementById('submenuCompartir').classList.add('abierto');
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarSubmenuCompartir() {
+    document.getElementById('submenuCompartir').classList.remove('abierto');
+    document.body.style.overflow = '';
+}
+
+function copiarLinkProducto() {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(_scUrlActual).then(function() {
+            mostrarToast('✅ ¡Link copiado al portapapeles!');
+        }).catch(function() {
+            _copiarFallback(_scUrlActual);
+        });
+    } else {
+        _copiarFallback(_scUrlActual);
+    }
+}
+
+function _copiarFallback(texto) {
+    var ta = document.createElement('textarea');
+    ta.value = texto;
+    ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); mostrarToast('✅ ¡Link copiado!'); } catch(e) {}
+    document.body.removeChild(ta);
+}
+
+function compartirEnWhatsApp() {
+    var texto = encodeURIComponent('🕯️ Mira este producto de Velas Kukumita: ' + _scNombreActual + '
+' + _scUrlActual);
+    window.open('https://wa.me/?text=' + texto, '_blank');
+}
+
+function compartirEnFacebook() {
+    var url = encodeURIComponent(_scUrlActual);
+    window.open('https://www.facebook.com/sharer/sharer.php?u=' + url, '_blank', 'width=600,height=400');
+}
+
+function compartirEnInstagram() {
+    // Instagram no tiene share URL directa, copiamos el link
+    copiarLinkProducto();
+    mostrarToast('📸 Link copiado — pégalo en tu historia de Instagram');
+}
+
+// Cerrar al hacer clic en el fondo
+document.getElementById('submenuCompartir').addEventListener('click', function(e) {
+    if (e.target === this) cerrarSubmenuCompartir();
 });
 </script>
 </body>
