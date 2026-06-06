@@ -84,7 +84,7 @@
 
         <!-- Cabecera -->
         <div class="drawer-header">
-            <span class="drawer-header-titulo">🕯️ Velas Kukumita</span>
+            <span class="drawer-header-titulo">🕯️ Velas Kukúmita</span>
             <button class="btn-cerrar-drawer" onclick="cerrarDrawer()">✕</button>
         </div>
 
@@ -252,14 +252,14 @@
                 onclick="event.stopPropagation(); toggleSubmenuPerfil('titulo')"
                 style="font-size:4rem; font-weight:900; color:#111; letter-spacing:3px; margin:0; font-family:'Playfair Display',Georgia,serif; font-style:italic; line-height:1.1; cursor:pointer; transition:color 0.2s; user-select:none; display:block;"
                 onmouseover="this.style.color='#8c7565'"
-                onmouseout="this.style.color='#111'">Velas Kukumita</h1>
+                onmouseout="this.style.color='#111'">Velas Kukúmita</h1>
             <!-- Submenú del título — aparece debajo, centrado -->
             <div id="submenuTitulo" style="display:none; position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%); background:#fff; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.18); border:1.5px solid #e8ddd5; min-width:280px; z-index:600; overflow:hidden; animation:submenuFadeIn 0.2s ease;">
                 <div style="padding:14px 18px 10px; border-bottom:1px solid #f0eae4;">
                     <p style="margin:0; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#aaa;">Nombre del negocio</p>
                 </div>
                 <div style="padding:18px 18px 14px;">
-                    <p style="font-family:'Playfair Display',Georgia,serif; font-style:italic; font-size:1.5rem; font-weight:900; color:#111; margin:0 0 16px; text-align:center; letter-spacing:2px;">Velas Kukumita</p>
+                    <p style="font-family:'Playfair Display',Georgia,serif; font-style:italic; font-size:1.5rem; font-weight:900; color:#111; margin:0 0 16px; text-align:center; letter-spacing:2px;">Velas Kukúmita</p>
                     <p style="font-size:0.82rem; color:#8c7565; margin:0 0 16px; text-align:center; line-height:1.6;">Fábrica artesanal de velas, fundada por Claudia Guzmán en el año 2000 en Morelia, Michoacán.</p>
                     <button onclick="irAZonaInteractiva(); cerrarSubmenus();"
                         style="width:100%; background:linear-gradient(135deg,#f5a623,#e8921a); color:white; border:none; border-radius:999px; padding:12px 20px; font-size:0.9rem; font-weight:800; cursor:pointer; font-family:inherit; transition:opacity 0.2s;"
@@ -955,27 +955,50 @@
             </div>
         </div>
 
-        <!-- ===== TEXTO INTERACTIVO YESOS KUKUMITA ===== -->
-        <div style="text-align:center; padding: 10px 16px 18px; position:relative;">
-            <p id="textoYesosKukumita"
-               onclick="toggleSubmenuYesos()"
-               style="display:inline-block; font-size:0.82rem; color:#8c7565; cursor:pointer; margin:0; line-height:1.65; max-width:560px; border-bottom:1px dashed #c9a98a; padding-bottom:3px; transition:color 0.2s; user-select:none;"
-               onmouseover="this.style.color='#5c4d43'"
-               onmouseout="this.style.color='#8c7565'">
-                Todos los productos de esta página son VELAS, así es, TODOS. <span style="font-weight:700;">Presiona Aquí Para ver Nuestra Página de Yesos Kukumita ▾</span>
+        <!-- ===== BLOQUE YESOS KUKUMITA ===== -->
+        <div style="text-align:center; padding: 10px 16px 20px; position:relative;">
+            <!-- Texto informativo simple, sin "presiona aquí" -->
+            <p style="font-size:0.82rem; color:#8c7565; margin:0 0 12px; line-height:1.65; max-width:560px; display:inline-block;">
+                Todos los productos de esta página son <strong style="color:#5c4d43;">VELAS</strong>, así es, TODOS.
             </p>
-            <!-- Submenú desplegable -->
+            <!-- Botón píldora "También vendemos Yeso" -->
+            <div>
+                <button id="btnYesosKukumita"
+                        onclick="toggleSubmenuYesos()"
+                        style="display:inline-flex; align-items:center; gap:8px; background:#fff; color:#5c4d43; border:2px solid #c9a98a; border-radius:999px; padding:9px 22px; font-size:0.84rem; font-weight:700; font-family:inherit; cursor:pointer; transition:all 0.22s; box-shadow:0 2px 8px rgba(140,117,101,0.12);"
+                        onmouseover="this.style.background='#fdf6f0'; this.style.borderColor='#8c7565';"
+                        onmouseout="this.style.background='#fff'; this.style.borderColor='#c9a98a';">
+                    🪨 También vendemos Yeso — presiona aquí para visitar la página ▾
+                </button>
+            </div>
+
+            <!-- Submenú desplegable con logo + texto + botón píldora -->
             <div id="submenuYesosKukumita"
-                 style="display:none; max-width:480px; margin:10px auto 0; background:#fff; border-radius:14px; box-shadow:0 8px 28px rgba(0,0,0,0.13); border:1.5px solid #e8ddd5; padding:18px 20px 16px; text-align:left; animation:submenuFadeIn 0.22s ease;">
-                <p style="font-size:0.85rem; color:#5c4d43; line-height:1.72; margin:0 0 14px;">
-                    Todos los productos de esta página son VELAS, así es, TODOS.
-                </p>
-                <a href="https://elpologr.github.io/yesoskukumita/" target="_blank" rel="nofollow"
-                   style="display:flex; align-items:center; justify-content:center; gap:10px; background:linear-gradient(135deg,#8c7565,#5c4d43); color:white; text-decoration:none; border-radius:12px; padding:12px 18px; font-size:0.9rem; font-weight:800; font-family:inherit; box-shadow:0 4px 12px rgba(92,77,67,0.28); transition:all 0.22s;"
-                   onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 7px 20px rgba(92,77,67,0.38)';"
-                   onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(92,77,67,0.28)';">
-                    🪨 Visitar Página de Yesos Kukumita
-                </a>
+                 style="display:none; max-width:420px; margin:12px auto 0; background:#fff; border-radius:18px; box-shadow:0 10px 32px rgba(0,0,0,0.14); border:1.5px solid #e8ddd5; overflow:hidden; animation:submenuFadeIn 0.22s ease; text-align:center;">
+                <!-- Logo -->
+                <div style="background:linear-gradient(135deg,#f5f0eb,#ede4db); padding:22px 20px 14px;">
+                    <img src="imagenes/logo-yesos-kukumita.webp" alt="Yesos Kukumita"
+                         style="width:110px; height:110px; border-radius:50%; object-fit:cover; box-shadow:0 4px 16px rgba(0,0,0,0.12); display:block; margin:0 auto 14px;"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <!-- Fallback si no existe la imagen -->
+                    <div style="display:none; width:110px; height:110px; border-radius:50%; background:#e8ddd5; align-items:center; justify-content:center; margin:0 auto 14px; font-size:2.8rem;">🪨</div>
+                    <!-- Texto fuerte -->
+                    <p style="font-size:1.05rem; font-weight:800; color:#362a22; line-height:1.6; margin:0 0 6px;">
+                        También vendemos Yeso
+                    </p>
+                    <p style="font-size:0.88rem; color:#5c4d43; font-weight:600; margin:0;">
+                        Presiona el siguiente botón para visitar la página de Yesos.
+                    </p>
+                </div>
+                <!-- Botón píldora dentro del submenú -->
+                <div style="padding:16px 20px 18px;">
+                    <a href="https://elpologr.github.io/yesoskukumita/" target="_blank" rel="nofollow"
+                       style="display:inline-flex; align-items:center; gap:9px; background:linear-gradient(135deg,#8c7565,#5c4d43); color:white; text-decoration:none; border-radius:999px; padding:12px 28px; font-size:0.95rem; font-weight:800; font-family:inherit; box-shadow:0 4px 14px rgba(92,77,67,0.3); transition:all 0.22s;"
+                       onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 7px 22px rgba(92,77,67,0.42)';"
+                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 14px rgba(92,77,67,0.3)';">
+                        🪨 Yesos Kukúmita
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -1570,7 +1593,7 @@
         }
         // Cerrar submenú al hacer clic fuera
         document.addEventListener('click', function(e) {
-            var trigger = document.getElementById('textoYesosKukumita');
+            var trigger = document.getElementById('btnYesosKukumita');
             var sub = document.getElementById('submenuYesosKukumita');
             if (sub && trigger && !trigger.contains(e.target) && !sub.contains(e.target)) {
                 sub.style.display = 'none';

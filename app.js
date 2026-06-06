@@ -1738,10 +1738,18 @@ function abrirDrawer() {
     if (!document.getElementById('drawerResultados').classList.contains('visible')) {
         mostrarSugerenciasDrawer();
     }
+    // Empujar entrada al historial para que el botón "atrás" lo cierre
+    history.pushState({ kukumitaModal: 'drawer' }, '');
 }
 function cerrarDrawer() {
-    document.getElementById('drawer').classList.remove('activo');
+    var drawer = document.getElementById('drawer');
+    if (!drawer || !drawer.classList.contains('activo')) return;
+    drawer.classList.remove('activo');
     document.getElementById('drawerOverlay').classList.remove('activo');
+    // Si el estado actual es el del drawer, regresamos en el historial
+    if (history.state && history.state.kukumitaModal === 'drawer') {
+        history.back();
+    }
 }
 function toggleSubpanelDrawer(id) {
     document.getElementById(id).classList.toggle('visible');
@@ -1812,6 +1820,13 @@ function _cerrarModalConHistorial(cerrarFn) {
 
 // Escucha el botón "atrás" del dispositivo
 window.addEventListener('popstate', function(e) {
+    // Drawer lateral
+    var drawer = document.getElementById('drawer');
+    if (drawer && drawer.classList.contains('activo')) {
+        drawer.classList.remove('activo');
+        document.getElementById('drawerOverlay').classList.remove('activo');
+        return;
+    }
     // Pantalla Perfil
     var pantallaPerfil = document.getElementById('pantallaPerfil');
     if (pantallaPerfil && pantallaPerfil.classList.contains('activo')) {
