@@ -243,7 +243,7 @@
     </div>
 
     <!-- ===== TÍTULO DE PÁGINA + BOTÓN BAZAR + BOTÓN TIENDA ===== -->
-    <div style="text-align:center; padding: 24px 16px 18px; background:#fff; border-bottom: 1px solid #eee;">
+    <div style="text-align:center; padding: 24px 16px 18px; background:#fff; border-bottom: 1px solid #eee; overflow:hidden; box-sizing:border-box; width:100%;">
         <!-- Wrapper del título con submenú posicionado -->
         <div style="position:relative; display:inline-block; margin-bottom:14px;">
             <h1 id="tituloVelasKukumita"
@@ -269,7 +269,7 @@
         </div>
 
         <!-- Botón píldora Yesos Kukumita — justo debajo del título, encima de los botones principales -->
-        <div style="margin-bottom:18px; position:relative; display:block;">
+        <div style="margin-bottom:18px; position:relative; display:block; overflow:hidden;">
             <button id="btnYesosKukumita"
                     onclick="toggleSubmenuYesos()"
                     style="display:inline-flex; align-items:center; gap:8px; background:#fff; color:#5c4d43; border:2px solid #c9a98a; border-radius:999px; padding:9px 22px; font-size:0.84rem; font-weight:700; font-family:inherit; cursor:pointer; transition:all 0.22s; box-shadow:0 2px 8px rgba(140,117,101,0.12);"
@@ -305,17 +305,17 @@
         </div>
 
         <!-- Botones en su propia línea, debajo del botón de Yesos -->
-        <div style="display:flex; flex-wrap:wrap; gap:14px; justify-content:center;">
+        <div style="display:flex; flex-wrap:wrap; gap:14px; justify-content:center; padding: 0 12px; box-sizing:border-box; width:100%;">
             <!-- Botón Búscanos en Tienda -->
             <a href="#" onclick="event.preventDefault(); abrirModalTienda()"
-               style="display:inline-flex; align-items:center; gap:14px; background:#5c4d43; color:white; text-decoration:none; border-radius:999px; padding:18px 40px; font-size:1.3rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(92,77,67,0.3); transition:all 0.25s; cursor:pointer; border:none; min-width:260px; justify-content:center;">
-                <span style="width:52px; height:52px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:1.8rem;">📍</span>
+               style="display:inline-flex; align-items:center; gap:10px; background:#5c4d43; color:white; text-decoration:none; border-radius:999px; padding:14px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(92,77,67,0.3); transition:all 0.25s; cursor:pointer; border:none; justify-content:center; flex:1; min-width:140px; max-width:300px;">
+                <span style="width:40px; height:40px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:1.4rem;">📍</span>
                 <span style="font-family:'Cormorant Garamond', Georgia, serif; font-style:italic; letter-spacing:1px;">Búscanos en Tienda</span>
             </a>
             <!-- Botón bazar grande tipo píldora con imagen opcional -->
             <a id="btnBazarPrincipal" href="#" onclick="event.preventDefault(); abrirModalBazar()"
-               style="display:inline-flex; align-items:center; gap:14px; background:#8c7565; color:white; text-decoration:none; border-radius:999px; padding:18px 40px; font-size:1.3rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(140,117,101,0.3); transition:all 0.25s; cursor:pointer; border:none; min-width:260px; justify-content:center;">
-                <span id="btnBazarImgWrap" style="width:52px; height:52px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:1.8rem;">🗓️</span>
+               style="display:inline-flex; align-items:center; gap:10px; background:#8c7565; color:white; text-decoration:none; border-radius:999px; padding:14px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(140,117,101,0.3); transition:all 0.25s; cursor:pointer; border:none; justify-content:center; flex:1; min-width:140px; max-width:300px;">
+                <span id="btnBazarImgWrap" style="width:40px; height:40px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:1.4rem;">🗓️</span>
                 <span style="font-family:'Cormorant Garamond', Georgia, serif; font-style:italic; letter-spacing:1px;">Búscanos en Bazar</span>
             </a>
         </div>
@@ -349,9 +349,21 @@
                     width="100%" height="230" style="border:none; display:block; pointer-events:none;"
                     loading="lazy" title="Ubicación Velas Kukumita">
                 </iframe>
-                <div style="background:#f5f0eb; padding:10px 14px; display:flex; align-items:center; gap:8px;">
-                    <span style="font-size:1.1rem;">📌</span>
-                    <span style="font-size:0.85rem; color:#5c4d43; font-weight:600;">Toca para abrir en Google Maps →</span>
+                <div style="background:linear-gradient(135deg,#e8f0fe 0%,#f1f8e9 40%,#fff8e1 70%,#fce4ec 100%); padding:11px 14px; display:flex; align-items:center; gap:10px; border-top:1px solid #dde8ff;">
+                    <!-- Logo oficial de Google Maps (SVG) -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 92.3 132.3" style="flex-shrink:0;">
+                        <path fill="#1a73e8" d="M60.2 2.2C55.8.8 51 0 46.1 0 32 0 19.3 6.4 10.6 16.5l21.8 18.3L60.2 2.2z"/>
+                        <path fill="#ea4335" d="M10.6 16.5C4 24.2 0 34.1 0 45c0 8.8 2.3 16.7 6.1 23.2l26.3-34.4-21.8-18.3z"/>
+                        <path fill="#4285f4" d="M46.2 28.5c9.1 0 16.5 7.4 16.5 16.5 0 4.1-1.5 7.8-4 10.7l.1-.1 23.1 9.8c3-5.9 4.7-12.7 4.7-19.9 0-14.9-7.1-28.1-18.1-36.3L60.2 2.2c-4.4-1.4-9.2-2.2-14.1-2.2C32 0 19.3 6.4 10.6 16.5l21.8 18.3c3.3-3.9 8.3-6.3 13.8-6.3z"/>
+                        <path fill="#fbbc04" d="M46.2 61.5c-9.1 0-16.5-7.4-16.5-16.5 0-3.4 1-6.5 2.7-9.2L10.6 16.5C4 24.2 0 34.1 0 45c0 8.8 2.3 16.7 6.1 23.2l26.3-34.4c3.3 5.8 9.6 9.7 16.7 9.7 4.1 0 7.9-1.3 11.1-3.4l-.1.1-23.1-9.8c3.1 6.4 9.6 10.8 17 10.8 0 0-4.2-24.6-4.2-24.6-.1-.5-.2-1-.2-1.6 0-9.1 7.4-16.5 16.5-16.5 4.1 0 7.8 1.5 10.7 4l18.3-21.8C70.8 7.1 59 1 46.2 1"/>
+                        <path fill="#34a853" d="M92.3 45c0 7.2-1.7 14-4.7 19.9l-26.4-11.2c2.5-2.9 4-6.6 4-10.7 0-9.1-7.4-16.5-16.5-16.5-7.4 0-13.7 4.8-15.9 11.4L6.1 68.2C12.7 79.7 24.5 87.8 38.2 89.8L46.1 132.3c0 0 46.2-49.2 46.2-87.3z"/>
+                        <path fill="#1a73e8" d="M38.2 89.8C24.5 87.8 12.7 79.7 6.1 68.2L32.4 33.8c2.2-6.6 8.5-11.4 15.9-11.4v-.1"/>
+                        <path fill="#ea4335" d="M46.1 132.3l-7.9-42.5C24.5 87.8 12.7 79.7 6.1 68.2L32.4 33.8"/>
+                    </svg>
+                    <div style="display:flex; flex-direction:column; gap:1px;">
+                        <span style="font-size:0.82rem; font-weight:800; color:#1a73e8; letter-spacing:0.2px; line-height:1.2;">Google Maps</span>
+                        <span style="font-size:0.75rem; color:#5c4d43; font-weight:500;">Toca para abrir la ubicación →</span>
+                    </div>
                 </div>
             </a>
             <!-- Info horarios -->
