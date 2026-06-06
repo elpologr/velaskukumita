@@ -252,8 +252,8 @@ function csvAProductos(filas) {
         productos.push({
             id:           i,
             nombre:       get(0),
-            precioNormal: parseFloat(get(1)) || 0,
-            precioBazar:  parseFloat(get(2)) || 0,
+            precioNormal: parseFloat(get(1).replace(/[^0-9.]/g, '')) || 0,
+            precioBazar:  parseFloat(get(2).replace(/[^0-9.]/g, '')) || 0,
             descripcion:  get(3),
             imagen:       imagenesExtra[0] || '',
             imagenes:     imagenesExtra,
@@ -315,8 +315,8 @@ function renderizarCatalogoCompleto() {
         card.setAttribute('data-idx',             String(p.id));
         card.setAttribute('data-forma',           p.forma || '');
         card.setAttribute('data-evento',          p.eventos || '');
-        card.setAttribute('data-precio',          String(p.precioNormal || ''));
-        card.setAttribute('data-precio-bazar',    String(p.precioBazar  || ''));
+        card.setAttribute('data-precio',          String(parseInt(p.precioNormal, 10) || ''));
+        card.setAttribute('data-precio-bazar',    String(parseInt(p.precioBazar,  10) || ''));
         card.setAttribute('data-tipo',            p.tipo  || 'arreglo');
         card.setAttribute('data-tipos',           (p.tipos || [p.tipo || 'arreglo']).join('|'));
         card.setAttribute('data-subtags',         p.subtags || '');
