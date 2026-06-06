@@ -37,27 +37,26 @@
             background-image: url('imagenes/banner-kukumita.webp');
             background-size: cover;
             background-position: center;
-            color: white;
-            text-align: center;
+            background-repeat: no-repeat;
             padding: 0;
             height: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
         }
 
-        header::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: rgba(60, 35, 20, 0.52);
-        }
-
-        header h1, header p {
-            position: relative;
-            z-index: 1;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.55);
+        /* En móvil: usa contain para que el banner completo sea visible sin recortes */
+        @media (max-width: 600px) {
+            header {
+                background-size: contain;
+                background-position: center center;
+                height: auto;
+                /* El padding-bottom define la altura proporcional al ancho de pantalla.
+                   Calcula: (alto_imagen / ancho_imagen) * 100 = %
+                   Ejemplos comunes:
+                     Banner 1200x400 (3:1)  → 33.33%
+                     Banner 1200x300 (4:1)  → 25%
+                     Banner 1200x500 (~2.4:1) → 41.67%
+                   Ajusta este valor según las dimensiones reales de tu banner-kukumita.webp */
+                padding-bottom: 33.33%;
+            }
         }
 
 
