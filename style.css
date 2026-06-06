@@ -1359,34 +1359,29 @@
             flex-wrap: wrap;
         }
         .btn-modo-velas {
-            background-color: #f7f2ee;
-            border: 1.5px solid #d9cfc8;
-            color: #7a6558;
-            font-size: 13px;
+            background-color: #f0eae4;
+            border: 2px solid #d4c5b8;
+            color: #5c4d43;
+            font-size: 15px;
             font-weight: 600;
-            border-radius: 30px;
+            border-radius: 20px;
             cursor: pointer;
-            transition: all 0.22s ease;
+            transition: all 0.25s;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 5px;
-            padding: 7px 18px;
+            padding: 10px 24px;
             white-space: nowrap;
-            letter-spacing: 0.2px;
-            box-shadow: 0 1px 3px rgba(140,117,101,0.08);
         }
         .btn-modo-velas.activo {
-            background: linear-gradient(135deg, #8c7565 0%, #5c4d43 100%);
-            border-color: transparent;
+            background-color: #8c7565;
+            border-color: #8c7565;
             color: white;
-            box-shadow: 0 3px 10px rgba(92,77,67,0.30);
         }
         .btn-modo-velas:hover:not(.activo) {
-            background-color: #ede5de;
-            border-color: #b8a898;
+            border-color: #8c7565;
             color: #4a3b32;
-            box-shadow: 0 2px 6px rgba(140,117,101,0.15);
         }
 
         /* ===== BARRA DE BÚSQUEDA UNIFICADA ===== */
@@ -2113,12 +2108,12 @@
             background: #f0eae4;
             border: 2px solid #d4c5b8;
             color: #5c4d43;
-            padding: 10px 24px;
-            font-size: 15px;
-            font-weight: 600;
-            border-radius: 20px;
+            padding: 9px 22px;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 999px;
             cursor: pointer;
-            transition: all 0.25s;
+            transition: all 0.22s;
             white-space: nowrap;
         }
         .pill-btn.activo {

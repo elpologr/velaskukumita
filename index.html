@@ -174,6 +174,14 @@
 
 
 
+    <!-- ===== BANNER PRINCIPAL ===== -->
+    <header>
+        <div style="position:relative; z-index:1; text-align:center; padding: 0 16px;">
+            <h1 style="font-family:'Playfair Display',Georgia,serif; font-style:italic; font-size:3.2rem; font-weight:900; color:#fff; margin:0 0 8px; text-shadow:0 2px 12px rgba(0,0,0,0.6); letter-spacing:2px;">Velas Kukúmita</h1>
+            <p style="font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:1.25rem; color:rgba(255,255,255,0.92); margin:0; text-shadow:0 1px 6px rgba(0,0,0,0.5); letter-spacing:1px;">Fábrica artesanal de velas — Morelia, Michoacán</p>
+        </div>
+    </header>
+
     <!-- ===== BANDA DE REDES SOCIALES ===== -->
     <div class="banda-redes">
         <a class="red-social wa" href="https://wa.me/524431469161" target="_blank" aria-label="WhatsApp">
@@ -242,7 +250,7 @@
     <!-- ===== TÍTULO DE PÁGINA + BOTÓN BAZAR + BOTÓN TIENDA ===== -->
     <div style="text-align:center; padding: 24px 16px 18px; background:#fff; border-bottom: 1px solid #eee;">
         <!-- Wrapper del título con submenú posicionado -->
-        <div style="position:relative; display:inline-block; margin-bottom:18px;">
+        <div style="position:relative; display:inline-block; margin-bottom:14px;">
             <h1 id="tituloVelasKukumita"
                 onclick="event.stopPropagation(); toggleSubmenuPerfil('titulo')"
                 style="font-size:4rem; font-weight:900; color:#111; letter-spacing:3px; margin:0; font-family:'Playfair Display',Georgia,serif; font-style:italic; line-height:1.1; cursor:pointer; transition:color 0.2s; user-select:none; display:block;"
@@ -264,25 +272,9 @@
                 </div>
             </div>
         </div>
-        <!-- Botones en su propia línea, siempre debajo del título -->
-        <div style="display:flex; flex-wrap:wrap; gap:14px; justify-content:center;">
-            <!-- Botón Búscanos en Tienda -->
-            <a href="#" onclick="event.preventDefault(); abrirModalTienda()"
-               style="display:inline-flex; align-items:center; gap:14px; background:#5c4d43; color:white; text-decoration:none; border-radius:999px; padding:18px 40px; font-size:1.3rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(92,77,67,0.3); transition:all 0.25s; cursor:pointer; border:none; min-width:260px; justify-content:center;">
-                <span style="width:52px; height:52px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:1.8rem;">📍</span>
-                <span style="font-family:'Cormorant Garamond', Georgia, serif; font-style:italic; letter-spacing:1px;">Búscanos en Tienda</span>
-            </a>
-            <!-- Botón bazar grande tipo píldora con imagen opcional -->
-            <a id="btnBazarPrincipal" href="#" onclick="event.preventDefault(); abrirModalBazar()"
-               style="display:inline-flex; align-items:center; gap:14px; background:#8c7565; color:white; text-decoration:none; border-radius:999px; padding:18px 40px; font-size:1.3rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(140,117,101,0.3); transition:all 0.25s; cursor:pointer; border:none; min-width:260px; justify-content:center;">
-                <span id="btnBazarImgWrap" style="width:52px; height:52px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:1.8rem;">🗓️</span>
-                <span style="font-family:'Cormorant Garamond', Georgia, serif; font-style:italic; letter-spacing:1px;">Búscanos en Bazar</span>
-            </a>
-        </div>
-        <p style="font-size:0.78rem; color:#aaa; margin:10px 0 0; letter-spacing:0.3px;">↓ Ver próximas fechas, ubicaciones y horarios</p>
 
-        <!-- Botón píldora Yesos Kukumita — debajo del título principal -->
-        <div style="margin-top:16px; position:relative; display:inline-block;">
+        <!-- Botón píldora Yesos Kukumita — justo debajo del título, encima de los botones principales -->
+        <div style="margin-bottom:18px; position:relative; display:inline-block;">
             <button id="btnYesosKukumita"
                     onclick="toggleSubmenuYesos()"
                     style="display:inline-flex; align-items:center; gap:8px; background:#fff; color:#5c4d43; border:2px solid #c9a98a; border-radius:999px; padding:9px 22px; font-size:0.84rem; font-weight:700; font-family:inherit; cursor:pointer; transition:all 0.22s; box-shadow:0 2px 8px rgba(140,117,101,0.12);"
@@ -316,6 +308,23 @@
                 </div>
             </div>
         </div>
+
+        <!-- Botones en su propia línea, debajo del botón de Yesos -->
+        <div style="display:flex; flex-wrap:wrap; gap:14px; justify-content:center;">
+            <!-- Botón Búscanos en Tienda -->
+            <a href="#" onclick="event.preventDefault(); abrirModalTienda()"
+               style="display:inline-flex; align-items:center; gap:14px; background:#5c4d43; color:white; text-decoration:none; border-radius:999px; padding:18px 40px; font-size:1.3rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(92,77,67,0.3); transition:all 0.25s; cursor:pointer; border:none; min-width:260px; justify-content:center;">
+                <span style="width:52px; height:52px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:1.8rem;">📍</span>
+                <span style="font-family:'Cormorant Garamond', Georgia, serif; font-style:italic; letter-spacing:1px;">Búscanos en Tienda</span>
+            </a>
+            <!-- Botón bazar grande tipo píldora con imagen opcional -->
+            <a id="btnBazarPrincipal" href="#" onclick="event.preventDefault(); abrirModalBazar()"
+               style="display:inline-flex; align-items:center; gap:14px; background:#8c7565; color:white; text-decoration:none; border-radius:999px; padding:18px 40px; font-size:1.3rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(140,117,101,0.3); transition:all 0.25s; cursor:pointer; border:none; min-width:260px; justify-content:center;">
+                <span id="btnBazarImgWrap" style="width:52px; height:52px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:1.8rem;">🗓️</span>
+                <span style="font-family:'Cormorant Garamond', Georgia, serif; font-style:italic; letter-spacing:1px;">Búscanos en Bazar</span>
+            </a>
+        </div>
+        <p style="font-size:0.78rem; color:#aaa; margin:10px 0 0; letter-spacing:0.3px;">↓ Ver próximas fechas, ubicaciones y horarios</p>
     </div>
 
     <!-- ===== MODAL UBER ENVÍOS ===== -->
