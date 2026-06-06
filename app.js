@@ -474,6 +474,13 @@ function cargarDesdeGoogleSheets() {
 
             // Disparar evento para que otros sistemas (paginación, filtros) se enteren
             document.dispatchEvent(new CustomEvent('catalogoCargado'));
+
+            // Log de diagnostico: precios y tipos de cada producto (visible en DevTools > Consola)
+            console.group('[Kukumita] Catalogo cargado — ' + listaProductos.length + ' productos');
+            listaProductos.forEach(function(p) {
+                console.log(p.nombre + ' | precio=$' + p.precioNormal + ' | precioBazar=$' + p.precioBazar + ' | tipos=[' + (p.tipos || [p.tipo]).join('|') + ']');
+            });
+            console.groupEnd();
         })
         .catch(function(err) {
             console.error('Error cargando Google Sheets:', err);
@@ -1664,20 +1671,9 @@ if (document.readyState === 'loading') {
     }
 
     function aplicarFiltrosPrecioExactoTodos() {
-        document.querySelectorAll('.card-dinamica').forEach(card => {
-            if (precioExactoTodosActivo === 'todos') {
-                card.classList.remove('oculto');
-                return;
-            }
-            let precioCard;
-            if (tipoPrecioActual === 'bazar') {
-                precioCard = String(parseInt(card.getAttribute('data-precio-bazar') || '0', 10));
-            } else {
-                precioCard = String(parseInt(card.getAttribute('data-precio') || '0', 10));
-            }
-            card.classList.toggle('oculto', precioCard !== precioExactoTodosActivo);
-        });
-        if (typeof window.actualizarPaginacion === 'function') window.actualizarPaginacion();
+        // Delegar siempre a aplicarFiltrosTodos para que se respeten TODOS los filtros activos
+        // (forma, evento, nombre, slider) ademas del precio exacto
+        aplicarFiltrosTodos();
     }
 
     function cambiarTipoPrecio(tipo) {
@@ -1707,21 +1703,29 @@ if (document.readyState === 'loading') {
             const eventoCard = card.dataset.evento || '';
             const nombreCard = (card.getAttribute('data-nombre') || '').toLowerCase();
 
-            // Seleccionar precio según tipo activo
+            // Seleccionar precio segun tipo activo
             let precioCard;
             if (tipoPrecioActual === 'bazar') {
-                precioCard = parseInt(card.dataset.precioBazar || card.dataset.precio || '0');
+                precioCard = parseInt(card.getAttribute('data-precio-bazar') || card.getAttribute('data-precio') || '0');
             } else {
-                precioCard = parseInt(card.dataset.precio || '0');
+                precioCard = parseInt(card.getAttribute('data-precio') || '0');
             }
 
             const okForma   = formaActiva  === 'todos' || formaCard  === formaActiva;
             const okEvento  = eventoActivo === 'todos' || eventoCard.split(' ').includes(eventoActivo);
-            const okPrecio  = precioCard   <= precioMax;
             const okNombre  = !textoBusq   || nombreCard.includes(textoBusq);
+
+            // Si hay precio exacto activo (boton $15/$20/etc), tiene prioridad sobre el slider
+            let okPrecio;
+            if (precioExactoTodosActivo !== 'todos') {
+                okPrecio = String(precioCard) === String(precioExactoTodosActivo);
+            } else {
+                okPrecio = precioCard <= precioMax;
+            }
 
             card.classList.toggle('oculto', !(okForma && okEvento && okPrecio && okNombre));
         });
+        if (typeof window.actualizarPaginacion === 'function') window.actualizarPaginacion();
     }
 
     // ===== SCROLL DE BARRA DE PRECIOS =====
