@@ -1783,16 +1783,7 @@ function cerrarSesion() {
 }
 
 // ═══ PANTALLA PERFIL COMPLETA ═══
-function abrirPantallaPerfil() {
-    const foto = localStorage.getItem('velas-foto-perfil');
-    if (foto) document.getElementById('pantallaAvatar').src = foto;
-    document.getElementById('pantallaUsuarioNombre').textContent =
-        localStorage.getItem('velas-nombre-usuario') || 'Mi cuenta';
-    document.getElementById('pantallaPerfil').classList.add('activo');
-    if (!history.state || !history.state.kukumitaModal) {
-        history.pushState({ kukumitaModal: 'perfil' }, '');
-    }
-}
+// abrirPantallaPerfil se define más adelante (versión completa con Firebase)
 
 // ─── SISTEMA CENTRALIZADO DE MODALES CON HISTORIAL ───
 // Registra qué modal está abierto para que el botón "atrás" lo cierre
@@ -1831,6 +1822,7 @@ window.addEventListener('popstate', function(e) {
     var pantallaPerfil = document.getElementById('pantallaPerfil');
     if (pantallaPerfil && pantallaPerfil.classList.contains('activo')) {
         pantallaPerfil.classList.remove('activo');
+        document.body.style.overflow = '';
         _modalActivo = null;
         return;
     }
@@ -1995,7 +1987,11 @@ async function copiarURL() {
     }
 }
 function cerrarPantallaPerfil() {
-    document.getElementById('pantallaPerfil').classList.remove('activo');
+    var pantalla = document.getElementById('pantallaPerfil');
+    if (!pantalla || !pantalla.classList.contains('activo')) return; // ya está cerrada
+    pantalla.classList.remove('activo');
+    document.body.style.overflow = '';
+    _modalActivo = null;
     if (history.state && history.state.kukumitaModal === 'perfil') {
         history.back();
     }
@@ -2390,6 +2386,8 @@ function abrirPantallaPerfil() {
     if (avatarEl && foto) avatarEl.src = foto;
     if (nombreEl) nombreEl.textContent = nombre;
     document.getElementById('pantallaPerfil').classList.add('activo');
+    document.body.style.overflow = 'hidden';
+    _modalActivo = 'perfil';
     if (!history.state || !history.state.kukumitaModal) {
         history.pushState({ kukumitaModal: 'perfil' }, '');
     }
