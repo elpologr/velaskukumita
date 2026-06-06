@@ -556,7 +556,14 @@ if (document.readyState === 'loading') {
             var cont = document.getElementById(id);
             if (!cont) return;
             cont.innerHTML = '';
-            if (total <= 1) return;
+            if (total <= 1) {
+                // Limpiar el hash de página para que no quede sucio al quitar filtros
+                if (window.history && window.history.replaceState) {
+                    var hashLimpio = (window.location.hash || '').replace(/#?pagina=\d+/, '').replace(/^#?&/, '').replace(/^#/, '');
+                    window.history.replaceState(null, '', hashLimpio ? '#' + hashLimpio : window.location.pathname);
+                }
+                return;
+            }
 
             var btnPrev = document.createElement('button');
             btnPrev.className = 'btn-pag';
@@ -1485,7 +1492,15 @@ if (document.readyState === 'loading') {
             } else if (panel === 'etiquetas') {
                 card.classList.toggle('oculto', !(tieneTipo(card, 'etiqueta') && okNombre && okEvento));
             } else if (panel === 'arreglos') {
-                card.classList.toggle('oculto', !(tieneTipo(card, 'arreglo') && okNombre && okForma && okEvento));
+                // Respetar también el filtro de precio activo en arreglos
+                let okPrecio = true;
+                if (precioArreglosActivo !== 'todos') {
+                    const pAttr = tipoPrecioArreglos === 'bazar'
+                        ? String(parseInt(card.getAttribute('data-precio-bazar') || '0', 10))
+                        : String(parseInt(card.getAttribute('data-precio') || '0', 10));
+                    okPrecio = pAttr === precioArreglosActivo;
+                }
+                card.classList.toggle('oculto', !(tieneTipo(card, 'arreglo') && okNombre && okForma && okEvento && okPrecio));
             } else {
                 // panel === 'todos' (Productos): muestra solo los que tienen tipo 'producto'
                 card.classList.toggle('oculto', !(tieneTipo(card, 'producto') && okNombre && okForma && okEvento));
@@ -1583,21 +1598,13 @@ if (document.readyState === 'loading') {
                 visible = tamCard === tamanoArreglosActivo;
             }
 
-            // Filtro por precio exacto según tipo seleccionado
+            // Filtro por precio exacto según tipo seleccionado — usa data-attributes directamente
             if (precioArreglosActivo !== 'todos') {
                 let precioCard;
                 if (tipoPrecioArreglos === 'bazar') {
-                    // Precio de bazar: leer del badge verde (texto blanco con recuadro verde)
-                    const badge = card.querySelector('.card-precio-mayoreo-badge');
-                    const textoMXN = badge ? badge.textContent.trim() : '';
-                    const matchNum = textoMXN.match(/\$?\s*(\d+)/);
-                    precioCard = matchNum ? String(parseInt(matchNum[1], 10)) : '';
+                    precioCard = String(parseInt(card.getAttribute('data-precio-bazar') || '0', 10));
                 } else {
-                    // Precio original: leer del texto negro a la izquierda
-                    const valorEl = card.querySelector('.card-precio-valor');
-                    const textoMXN = valorEl ? valorEl.textContent.trim() : '';
-                    const matchNum = textoMXN.match(/\$?\s*(\d+)/);
-                    precioCard = matchNum ? String(parseInt(matchNum[1], 10)) : (card.getAttribute('data-precio') || '');
+                    precioCard = String(parseInt(card.getAttribute('data-precio') || '0', 10));
                 }
                 if (precioCard !== precioArreglosActivo) visible = false;
             }
@@ -1644,15 +1651,9 @@ if (document.readyState === 'loading') {
             }
             let precioCard;
             if (tipoPrecioActual === 'bazar') {
-                const badge = card.querySelector('.card-precio-mayoreo-badge');
-                const txt = badge ? badge.textContent.trim() : '';
-                const m = txt.match(/\$?\s*(\d+)/);
-                precioCard = m ? String(parseInt(m[1], 10)) : (card.getAttribute('data-precio-bazar') || '');
+                precioCard = String(parseInt(card.getAttribute('data-precio-bazar') || '0', 10));
             } else {
-                const valorEl = card.querySelector('.card-precio-valor');
-                const txt = valorEl ? valorEl.textContent.trim() : '';
-                const m = txt.match(/\$?\s*(\d+)/);
-                precioCard = m ? String(parseInt(m[1], 10)) : (card.getAttribute('data-precio') || '');
+                precioCard = String(parseInt(card.getAttribute('data-precio') || '0', 10));
             }
             card.classList.toggle('oculto', precioCard !== precioExactoTodosActivo);
         });
