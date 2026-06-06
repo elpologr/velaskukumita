@@ -226,14 +226,9 @@
 
             </div>
             <!-- Submenú de imagen -->
-            <div id="submenuImagen" style="display:none; position:absolute; top:calc(100% + 12px); left:50%; transform:translateX(-50%); background:#fff; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.18); border:1.5px solid #e8ddd5; min-width:260px; z-index:500; overflow:hidden; animation:submenuFadeIn 0.2s ease;">
-                <div style="padding:14px 18px 10px; border-bottom:1px solid #f0eae4;">
-                    <p style="margin:0; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#aaa;">Imagen del perfil</p>
-                </div>
-                <div style="padding:14px 18px;">
-                    <div style="width:100%; aspect-ratio:1; border-radius:10px; overflow:hidden; margin-bottom:14px;">
-                        <img src="imagenes/logo-velas-kukumita.webp" alt="Velas Kukumita" style="width:100%; height:100%; object-fit:cover;">
-                    </div>
+            <div id="submenuImagen" style="display:none; position:absolute; top:calc(100% + 12px); left:50%; transform:translateX(-50%); background:#fff; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.18); border:1.5px solid #e8ddd5; min-width:240px; z-index:500; overflow:hidden; animation:submenuFadeIn 0.2s ease;">
+                <div style="padding:16px 18px 14px; text-align:center;">
+                    <p style="margin:0 0 14px; font-size:0.82rem; color:#8c7565; line-height:1.6;">Fábrica artesanal de velas — fundada en Morelia, Michoacán.</p>
                     <button onclick="irAZonaInteractiva(); cerrarSubmenus();"
                         style="width:100%; background:linear-gradient(135deg,#f5a623,#e8921a); color:white; border:none; border-radius:999px; padding:12px 20px; font-size:0.9rem; font-weight:800; cursor:pointer; font-family:inherit; transition:opacity 0.2s;"
                         onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
@@ -285,6 +280,42 @@
             </a>
         </div>
         <p style="font-size:0.78rem; color:#aaa; margin:10px 0 0; letter-spacing:0.3px;">↓ Ver próximas fechas, ubicaciones y horarios</p>
+
+        <!-- Botón píldora Yesos Kukumita — debajo del título principal -->
+        <div style="margin-top:16px; position:relative; display:inline-block;">
+            <button id="btnYesosKukumita"
+                    onclick="toggleSubmenuYesos()"
+                    style="display:inline-flex; align-items:center; gap:8px; background:#fff; color:#5c4d43; border:2px solid #c9a98a; border-radius:999px; padding:9px 22px; font-size:0.84rem; font-weight:700; font-family:inherit; cursor:pointer; transition:all 0.22s; box-shadow:0 2px 8px rgba(140,117,101,0.12);"
+                    onmouseover="this.style.background='#fdf6f0'; this.style.borderColor='#8c7565';"
+                    onmouseout="this.style.background='#fff'; this.style.borderColor='#c9a98a';">
+                🪨 También vendemos Yeso — presiona aquí para visitar la página ▾
+            </button>
+            <!-- Submenú desplegable con logo + texto + botón píldora -->
+            <div id="submenuYesosKukumita"
+                 style="display:none; max-width:420px; width:90vw; margin:10px auto 0; position:absolute; left:50%; transform:translateX(-50%); background:#fff; border-radius:18px; box-shadow:0 10px 32px rgba(0,0,0,0.14); border:1.5px solid #e8ddd5; overflow:hidden; animation:submenuFadeIn 0.22s ease; text-align:center; z-index:600;">
+                <!-- Logo -->
+                <div style="background:linear-gradient(135deg,#f5f0eb,#ede4db); padding:22px 20px 14px;">
+                    <img src="imagenes/logo-yesos-kukumita.webp" alt="Yesos Kukumita"
+                         style="width:110px; height:110px; border-radius:50%; object-fit:cover; box-shadow:0 4px 16px rgba(0,0,0,0.12); display:block; margin:0 auto 14px;"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div style="display:none; width:110px; height:110px; border-radius:50%; background:#e8ddd5; align-items:center; justify-content:center; margin:0 auto 14px; font-size:2.8rem;">🪨</div>
+                    <p style="font-size:1.05rem; font-weight:800; color:#362a22; line-height:1.6; margin:0 0 6px;">
+                        También vendemos Yeso
+                    </p>
+                    <p style="font-size:0.88rem; color:#5c4d43; font-weight:600; margin:0;">
+                        Presiona el siguiente botón para visitar la página de Yesos.
+                    </p>
+                </div>
+                <div style="padding:16px 20px 18px;">
+                    <a href="https://elpologr.github.io/yesoskukumita/" target="_blank" rel="nofollow"
+                       style="display:inline-flex; align-items:center; gap:9px; background:linear-gradient(135deg,#8c7565,#5c4d43); color:white; text-decoration:none; border-radius:999px; padding:12px 28px; font-size:0.95rem; font-weight:800; font-family:inherit; box-shadow:0 4px 14px rgba(92,77,67,0.3); transition:all 0.22s;"
+                       onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 7px 22px rgba(92,77,67,0.42)';"
+                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 14px rgba(92,77,67,0.3)';">
+                        🪨 Yesos Kukúmita
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- ===== MODAL UBER ENVÍOS ===== -->
@@ -955,53 +986,6 @@
             </div>
         </div>
 
-        <!-- ===== BLOQUE YESOS KUKUMITA ===== -->
-        <div style="text-align:center; padding: 10px 16px 20px; position:relative;">
-            <!-- Texto informativo simple, sin "presiona aquí" -->
-            <p style="font-size:0.82rem; color:#8c7565; margin:0 0 12px; line-height:1.65; max-width:560px; display:inline-block;">
-                Todos los productos de esta página son <strong style="color:#5c4d43;">VELAS</strong>, así es, TODOS.
-            </p>
-            <!-- Botón píldora "También vendemos Yeso" -->
-            <div>
-                <button id="btnYesosKukumita"
-                        onclick="toggleSubmenuYesos()"
-                        style="display:inline-flex; align-items:center; gap:8px; background:#fff; color:#5c4d43; border:2px solid #c9a98a; border-radius:999px; padding:9px 22px; font-size:0.84rem; font-weight:700; font-family:inherit; cursor:pointer; transition:all 0.22s; box-shadow:0 2px 8px rgba(140,117,101,0.12);"
-                        onmouseover="this.style.background='#fdf6f0'; this.style.borderColor='#8c7565';"
-                        onmouseout="this.style.background='#fff'; this.style.borderColor='#c9a98a';">
-                    🪨 También vendemos Yeso — presiona aquí para visitar la página ▾
-                </button>
-            </div>
-
-            <!-- Submenú desplegable con logo + texto + botón píldora -->
-            <div id="submenuYesosKukumita"
-                 style="display:none; max-width:420px; margin:12px auto 0; background:#fff; border-radius:18px; box-shadow:0 10px 32px rgba(0,0,0,0.14); border:1.5px solid #e8ddd5; overflow:hidden; animation:submenuFadeIn 0.22s ease; text-align:center;">
-                <!-- Logo -->
-                <div style="background:linear-gradient(135deg,#f5f0eb,#ede4db); padding:22px 20px 14px;">
-                    <img src="imagenes/logo-yesos-kukumita.webp" alt="Yesos Kukumita"
-                         style="width:110px; height:110px; border-radius:50%; object-fit:cover; box-shadow:0 4px 16px rgba(0,0,0,0.12); display:block; margin:0 auto 14px;"
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    <!-- Fallback si no existe la imagen -->
-                    <div style="display:none; width:110px; height:110px; border-radius:50%; background:#e8ddd5; align-items:center; justify-content:center; margin:0 auto 14px; font-size:2.8rem;">🪨</div>
-                    <!-- Texto fuerte -->
-                    <p style="font-size:1.05rem; font-weight:800; color:#362a22; line-height:1.6; margin:0 0 6px;">
-                        También vendemos Yeso
-                    </p>
-                    <p style="font-size:0.88rem; color:#5c4d43; font-weight:600; margin:0;">
-                        Presiona el siguiente botón para visitar la página de Yesos.
-                    </p>
-                </div>
-                <!-- Botón píldora dentro del submenú -->
-                <div style="padding:16px 20px 18px;">
-                    <a href="https://elpologr.github.io/yesoskukumita/" target="_blank" rel="nofollow"
-                       style="display:inline-flex; align-items:center; gap:9px; background:linear-gradient(135deg,#8c7565,#5c4d43); color:white; text-decoration:none; border-radius:999px; padding:12px 28px; font-size:0.95rem; font-weight:800; font-family:inherit; box-shadow:0 4px 14px rgba(92,77,67,0.3); transition:all 0.22s;"
-                       onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 7px 22px rgba(92,77,67,0.42)';"
-                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 14px rgba(92,77,67,0.3)';">
-                        🪨 Yesos Kukúmita
-                    </a>
-                </div>
-            </div>
-        </div>
-
         <!-- TODOS LOS PRODUCTOS -->
         <div class="panel-busqueda-unificado" id="panelTodos">
             <div class="barra-busqueda-unificada-wrap">
@@ -1160,6 +1144,13 @@
 <div class="container" style="padding-bottom:0;">
     <p class="pag-info" id="pagInfoArriba"></p>
     <div class="paginacion-wrapper" id="pagControlesArriba"></div>
+</div>
+
+<!-- Texto informativo: todos son VELAS -->
+<div style="text-align:center; padding:14px 16px 6px;">
+    <p style="font-size:1.64rem; color:#8c7565; margin:0; line-height:1.5; font-weight:500;">
+        <strong style="color:#5c4d43;">Todos</strong> los productos de esta página son <strong style="color:#5c4d43;">VELAS</strong>, así es, <strong style="color:#5c4d43;">TODOS</strong>.
+    </p>
 </div>
 
 <div style="width:100%; overflow:hidden; box-sizing:border-box;">
