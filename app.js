@@ -168,7 +168,7 @@ var SHEET_ID = '1jin2wMYingvbPD2csGxIbm5AhulfRvCRvIzAKJTUNMw';
 // COLUMNAS ESPERADAS EN LA HOJA (fila 1 = encabezados, datos desde fila 2):
 //   A: nombre            — nombre del producto
 //   B: precio            — precio original en MXN (número)
-//   C: precioBazar       — precio de bazar en MXN (número, opcional)
+//   C: precioBazar       — precio mayoreo en MXN (número, opcional)
 //   D: descripcion       — texto de descripción del producto
 //   E: imagen            — URL o ruta de la imagen principal
 //   F: etiquetaPrincipal — tipo de producto (ej: arreglo, producto…)
@@ -423,7 +423,7 @@ function renderizarCatalogoCompleto() {
             var precioBazarDiv = document.createElement('div');
             precioBazarDiv.className = 'card-precio-mayoreo-bloque visible';
             precioBazarDiv.innerHTML =
-                '<span class="card-precio-mayoreo-etiqueta">Precio Bazar</span>' +
+                '<span class="card-precio-mayoreo-etiqueta">Precio Mayoreo</span>' +
                 '<span class="card-precio-mayoreo-badge">$' + p.precioBazar + ' MXN</span>';
             preciosBloque.appendChild(precioBazarDiv);
         }
@@ -1682,7 +1682,7 @@ if (document.readyState === 'loading') {
         document.getElementById('btn-precio-bazar').classList.toggle('activo', tipo === 'bazar');
         // Actualizar etiqueta del slider según tipo
         const label = document.getElementById('labelTipoPrecio');
-        if (label) label.textContent = tipo === 'bazar' ? 'Precio Bazar Máximo:' : 'Precio Máximo:';
+        if (label) label.textContent = tipo === 'bazar' ? 'Precio Mayoreo Máximo:' : 'Precio Máximo:';
         // Resetear selección de precio exacto al cambiar tipo
         precioExactoTodosActivo = 'todos';
         const btnTd = document.querySelector('#lista-precios-todos .btn-precio-velas');
