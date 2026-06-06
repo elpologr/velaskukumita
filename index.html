@@ -1169,7 +1169,7 @@
     </p>
 </div>
 
-<div style="width:100%; overflow:hidden; box-sizing:border-box;">
+<div style="width:100%; max-width:100vw; overflow:hidden; box-sizing:border-box; margin:0; padding:0;">
 <div class="grid-productos-inteligente" id="gridProductos">
     <!-- Las tarjetas se inyectan dinámicamente por cargarDesdeGoogleSheets() -->
 </div><!-- /gridProductos -->
@@ -1587,6 +1587,47 @@
 
     <!-- JavaScript externo -->
     <script src="app.js"></script>
+
+    <!-- ── AUTO-FIX MÓVIL: detecta y elimina cualquier elemento que desborde el viewport ── -->
+    <script>
+    (function fixMobileOverflow() {
+        if (window.innerWidth >= 769) return; // Solo en móvil
+
+        function checkOverflow() {
+            var bodyWidth = document.body.scrollWidth;
+            var viewportWidth = window.innerWidth;
+            if (bodyWidth <= viewportWidth) return; // No hay desbordamiento
+
+            // Encuentra el(los) elemento(s) causantes
+            var all = document.querySelectorAll('*');
+            for (var i = 0; i < all.length; i++) {
+                var el = all[i];
+                var rect = el.getBoundingClientRect();
+                var style = window.getComputedStyle(el);
+                if (style.position === 'fixed' || style.position === 'absolute') continue;
+                if (rect.right > viewportWidth + 2) {
+                    // Este elemento se sale por la derecha
+                    el.style.maxWidth = '100vw';
+                    el.style.overflowX = 'hidden';
+                    el.style.boxSizing = 'border-box';
+                }
+            }
+        }
+
+        // Ejecutar después de que todo cargue
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(checkOverflow, 300);
+                setTimeout(checkOverflow, 1000);
+                setTimeout(checkOverflow, 2500);
+            });
+        } else {
+            setTimeout(checkOverflow, 300);
+            setTimeout(checkOverflow, 1000);
+            setTimeout(checkOverflow, 2500);
+        }
+    })();
+    </script>
 
     <!-- Función submenú Yesos Kukumita -->
     <script>

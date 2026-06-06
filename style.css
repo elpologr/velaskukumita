@@ -2085,13 +2085,18 @@
     /* 📱 RESPONSIVO: Ajuste automático para Celulares */
     @media (max-width: 768px) {
         .grid-productos-inteligente {
-            grid-template-columns: repeat(2, 1fr); /* Cambia a 2 columnas en celular */
-            gap: 8px;
-            padding: 8px 1rem;  /* Mismo margen lateral que barra de búsqueda y filtros */
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+            padding: 6px 4px;
+            margin: 0;
+            width: 100%;
+            max-width: 100%;
             box-sizing: border-box;
+            position: relative;
+            left: 0;
         }
         .img-contenedor-dinamico {
-            height: 160px; /* Se acorta para pantallas táctiles */
+            height: 160px;
         }
         .card-dinamica h3 {
             font-size: 13px !important;
@@ -2103,9 +2108,13 @@
     @media (max-width: 400px) {
         .grid-productos-inteligente {
             grid-template-columns: repeat(2, 1fr);
-            gap: 6px;
-            padding: 6px 1rem;
+            gap: 4px;
+            padding: 4px 2px;
+            margin: 0;
+            width: 100%;
+            max-width: 100%;
             box-sizing: border-box;
+            left: 0;
         }
         .img-contenedor-dinamico {
             height: 130px;
@@ -3047,4 +3056,73 @@ body.modo-oscuro .cart-total-valor { color: #f0e8e0; }
     max-width: 100vw;
     overflow-x: hidden;
     box-sizing: border-box;
+}
+
+/* ── CORRECCIÓN MÓVIL: fuerza el grid al borde izquierdo ── */
+@media (max-width: 768px) {
+    html, body {
+        overflow-x: hidden !important;
+        max-width: 100vw !important;
+        width: 100% !important;
+    }
+
+    #zona-catalogo,
+    #zona-catalogo .container,
+    #zona-catalogo > * {
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+    }
+
+    .grid-productos-inteligente {
+        width: 100% !important;
+        max-width: 100vw !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 4px !important;
+        padding-right: 4px !important;
+        box-sizing: border-box !important;
+        position: static !important;
+        left: auto !important;
+        transform: none !important;
+    }
+
+    /* Contenedor wrapper del grid */
+    #zona-catalogo > div[style*="overflow"] {
+        width: 100% !important;
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Botones de modo (Arreglos, Decoraciones…) — evita overflow */
+    .selector-modo-velas {
+        padding: 0 8px !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+    }
+
+    .btn-modo-velas {
+        font-size: 12px !important;
+        padding: 8px 12px !important;
+    }
+
+    /* Panel de búsqueda unificado */
+    .panel-busqueda-unificado {
+        padding: 0 8px !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+    }
+
+    /* Filtro de precio */
+    #bloqueFiltroPrecioArreglos,
+    #bloqueFiltroPrecioTodos,
+    #bloqueFiltroPrecioDecoraciones,
+    #bloqueFiltroPrecioEtiquetas {
+        margin-left: 8px !important;
+        margin-right: 8px !important;
+        box-sizing: border-box !important;
+    }
 }
