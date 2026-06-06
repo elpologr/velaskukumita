@@ -1809,9 +1809,9 @@ function abrirPantallaPerfil() {
     document.getElementById('pantallaUsuarioNombre').textContent =
         localStorage.getItem('velas-nombre-usuario') || 'Mi cuenta';
     document.getElementById('pantallaPerfil').classList.add('activo');
-    if (!history.state || !history.state.kukumitaModal) {
-        history.pushState({ kukumitaModal: 'perfil' }, '');
-    }
+    document.body.style.overflow = 'hidden';
+    _modalActivo = 'perfil';
+    history.pushState({ kukumitaModal: 'perfil' }, '');
 }
 
 // ─── SISTEMA CENTRALIZADO DE MODALES CON HISTORIAL ───
@@ -1859,8 +1859,8 @@ window.addEventListener('popstate', function(e) {
     if (pantallaCarrito && pantallaCarrito.classList.contains('activa')) {
         pantallaCarrito.classList.remove('activa');
         document.body.style.overflow = '';
-        actualizarBurbuja();
         _modalActivo = null;
+        actualizarBurbuja();
         return;
     }
     // Pantalla Favoritos
@@ -2410,9 +2410,9 @@ function abrirPantallaPerfil() {
     if (avatarEl && foto) avatarEl.src = foto;
     if (nombreEl) nombreEl.textContent = nombre;
     document.getElementById('pantallaPerfil').classList.add('activo');
-    if (!history.state || !history.state.kukumitaModal) {
-        history.pushState({ kukumitaModal: 'perfil' }, '');
-    }
+    document.body.style.overflow = 'hidden';
+    _modalActivo = 'perfil';
+    history.pushState({ kukumitaModal: 'perfil' }, '');
 }
 
 
@@ -2577,14 +2577,17 @@ function abrirPantallaFavoritos() {
     renderizarFavoritos();
     document.getElementById('pantallaFavoritos').classList.add('activa');
     document.body.style.overflow = 'hidden';
-    if (!history.state || !history.state.kukumitaModal) {
-        history.pushState({ kukumitaModal: 'favoritos' }, '');
-    }
+    _modalActivo = 'favoritos';
+    // Siempre empujar una entrada propia al historial
+    history.pushState({ kukumitaModal: 'favoritos' }, '');
 }
 
 function cerrarFavoritos() {
-    document.getElementById('pantallaFavoritos').classList.remove('activa');
+    var pantalla = document.getElementById('pantallaFavoritos');
+    if (!pantalla || !pantalla.classList.contains('activa')) return;
+    pantalla.classList.remove('activa');
     document.body.style.overflow = '';
+    _modalActivo = null;
     if (history.state && history.state.kukumitaModal === 'favoritos') {
         history.back();
     }
@@ -3243,18 +3246,20 @@ function abrirPantallaCarrito() {
     renderizarCarrito();
     document.getElementById('pantallaCarrito').classList.add('activa');
     document.body.style.overflow = 'hidden';
+    _modalActivo = 'carrito';
     // Ocultar burbuja mientras el carrito está abierto
     var burbuja = document.getElementById('burbujaCarrito');
     if (burbuja) burbuja.style.display = 'none';
-    // Registrar en historial para que el botón atrás lo cierre
-    if (!history.state || !history.state.kukumitaModal) {
-        history.pushState({ kukumitaModal: 'carrito' }, '');
-    }
+    // Siempre empujar una entrada propia al historial
+    history.pushState({ kukumitaModal: 'carrito' }, '');
 }
 
 function cerrarPantallaCarrito() {
-    document.getElementById('pantallaCarrito').classList.remove('activa');
+    var pantalla = document.getElementById('pantallaCarrito');
+    if (!pantalla || !pantalla.classList.contains('activa')) return;
+    pantalla.classList.remove('activa');
     document.body.style.overflow = '';
+    _modalActivo = null;
     // Restaurar burbuja si hay productos
     actualizarBurbuja();
     if (history.state && history.state.kukumitaModal === 'carrito') {
