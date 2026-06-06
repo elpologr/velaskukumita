@@ -1049,6 +1049,20 @@ if (document.readyState === 'loading') {
             if (caja) caja.scrollTop = 0;
         }, 30);
 
+        // Redirigir scroll del mouse al interior del modal aunque el cursor esté en el overlay
+        const _modalEl = document.getElementById('modalProducto');
+        function _redirigirScrollModal(e) {
+            const caja = _modalEl.querySelector('.modal-producto-caja');
+            if (!caja) return;
+            // Solo redirigir si el evento viene del overlay (no de dentro de la caja)
+            if (!caja.contains(e.target)) {
+                e.preventDefault();
+                caja.scrollTop += e.deltaY;
+            }
+        }
+        _modalEl._wheelHandler = _redirigirScrollModal;
+        _modalEl.addEventListener('wheel', _redirigirScrollModal, { passive: false });
+
         if (history.state && history.state.modalAbierto) return;
         history.pushState({ modalAbierto: true, kukumitaModal: 'producto' }, '');
 
@@ -1057,7 +1071,13 @@ if (document.readyState === 'loading') {
     }
 
     function cerrarModalProducto() {
-        document.getElementById('modalProducto').classList.remove('abierto');
+        const modalEl = document.getElementById('modalProducto');
+        modalEl.classList.remove('abierto');
+        // Limpiar el handler de scroll redirigido
+        if (modalEl._wheelHandler) {
+            modalEl.removeEventListener('wheel', modalEl._wheelHandler);
+            delete modalEl._wheelHandler;
+        }
         document.body.style.overflow = 'auto';
         _modalActivo = null;
         // If the history state was pushed for the modal, go back
@@ -1783,7 +1803,16 @@ function cerrarSesion() {
 }
 
 // ═══ PANTALLA PERFIL COMPLETA ═══
-// abrirPantallaPerfil se define más adelante (versión completa con Firebase)
+function abrirPantallaPerfil() {
+    const foto = localStorage.getItem('velas-foto-perfil');
+    if (foto) document.getElementById('pantallaAvatar').src = foto;
+    document.getElementById('pantallaUsuarioNombre').textContent =
+        localStorage.getItem('velas-nombre-usuario') || 'Mi cuenta';
+    document.getElementById('pantallaPerfil').classList.add('activo');
+    if (!history.state || !history.state.kukumitaModal) {
+        history.pushState({ kukumitaModal: 'perfil' }, '');
+    }
+}
 
 // ─── SISTEMA CENTRALIZADO DE MODALES CON HISTORIAL ───
 // Registra qué modal está abierto para que el botón "atrás" lo cierre
@@ -1822,7 +1851,6 @@ window.addEventListener('popstate', function(e) {
     var pantallaPerfil = document.getElementById('pantallaPerfil');
     if (pantallaPerfil && pantallaPerfil.classList.contains('activo')) {
         pantallaPerfil.classList.remove('activo');
-        document.body.style.overflow = '';
         _modalActivo = null;
         return;
     }
@@ -1987,11 +2015,7 @@ async function copiarURL() {
     }
 }
 function cerrarPantallaPerfil() {
-    var pantalla = document.getElementById('pantallaPerfil');
-    if (!pantalla || !pantalla.classList.contains('activo')) return; // ya está cerrada
-    pantalla.classList.remove('activo');
-    document.body.style.overflow = '';
-    _modalActivo = null;
+    document.getElementById('pantallaPerfil').classList.remove('activo');
     if (history.state && history.state.kukumitaModal === 'perfil') {
         history.back();
     }
@@ -2386,8 +2410,6 @@ function abrirPantallaPerfil() {
     if (avatarEl && foto) avatarEl.src = foto;
     if (nombreEl) nombreEl.textContent = nombre;
     document.getElementById('pantallaPerfil').classList.add('activo');
-    document.body.style.overflow = 'hidden';
-    _modalActivo = 'perfil';
     if (!history.state || !history.state.kukumitaModal) {
         history.pushState({ kukumitaModal: 'perfil' }, '');
     }
