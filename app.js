@@ -1874,6 +1874,15 @@ function _cerrarModalConHistorial(cerrarFn) {
 
 // Escucha el botón "atrás" del dispositivo
 window.addEventListener('popstate', function(e) {
+    // Modal de cantidad (debe cerrarse antes que cualquier otro)
+    var modalCantidad = document.getElementById('modalCantidad');
+    if (modalCantidad && modalCantidad.classList.contains('abierto')) {
+        modalCantidad.classList.remove('abierto');
+        document.body.style.overflow = '';
+        _modalActivo = null;
+        _mcCardActual = null;
+        return;
+    }
     // Drawer lateral
     var drawer = document.getElementById('drawer');
     if (drawer && drawer.classList.contains('activo')) {
@@ -1894,6 +1903,9 @@ window.addEventListener('popstate', function(e) {
         pantallaCarrito.classList.remove('activa');
         document.body.style.overflow = '';
         _modalActivo = null;
+        // Restaurar burbuja siempre visible al cerrar el carrito
+        var burbuja = document.getElementById('burbujaCarrito');
+        if (burbuja) { burbuja.style.removeProperty('display'); burbuja.classList.add('visible'); }
         actualizarBurbuja();
         return;
     }
@@ -3241,11 +3253,15 @@ function abrirModalCantidad(card) {
     actualizarBotonesMC();
     document.getElementById('modalCantidad').classList.add('abierto');
     document.body.style.overflow = 'hidden';
+    // Empujar estado para que popstate pueda cerrarlo limpiamente
+    history.pushState({ kukumitaModal: 'cantidad' }, '');
+    _modalActivo = 'cantidad';
 }
 
 function cerrarModalCantidad() {
     document.getElementById('modalCantidad').classList.remove('abierto');
     document.body.style.overflow = '';
+    _modalActivo = null;
     _mcCardActual = null;
 }
 
@@ -3342,7 +3358,8 @@ function cerrarPantallaCarrito() {
     _modalActivo = null;
     // Restaurar burbuja siempre visible
     var burbuja = document.getElementById('burbujaCarrito');
-    if (burbuja) burbuja.style.display = 'flex';
+    if (burbuja) { burbuja.style.removeProperty('display'); burbuja.classList.add('visible'); }
+    actualizarBurbuja();
     if (history.state && history.state.kukumitaModal === 'carrito') {
         history.back();
     }
