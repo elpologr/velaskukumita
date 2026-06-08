@@ -476,6 +476,11 @@ function cargarDesdeGoogleSheets() {
             // Disparar evento para que otros sistemas (paginación, filtros) se enteren
             document.dispatchEvent(new CustomEvent('catalogoCargado'));
 
+            // Iniciar en modo "Mostrar Todo" para que los filtros de precio funcionen de inmediato
+            if (typeof window.cambiarModoVelas === 'function') {
+                window.cambiarModoVelas('mostrar_todo');
+            }
+
             // Log de diagnostico: precios y tipos de cada producto (visible en DevTools > Consola)
             console.group('[Kukumita] Catalogo cargado — ' + listaProductos.length + ' productos');
             listaProductos.forEach(function(p) {
@@ -1374,82 +1379,6 @@ if (document.readyState === 'loading') {
     }
 
     // ===== CAMBIO DE MODO: ARREGLOS / TODOS LOS PRODUCTOS =====
-    // ── PRECIO GLOBAL: actúa sobre todos los tipos sin importar el tab activo ──
-    window._precioGlobalActivo = 'todos'; // precio seleccionado ('todos' o número como string)
-    window._tipoPrecioGlobal   = 'original'; // 'original' | 'bazar'
-
-    // Función central: filtra por precio en TODOS los tipos (ignora tab activo)
-    // Si además hay un tab activo (!=mostrar_todo), combina tipo+precio
-    window.aplicarFiltroPrecioGlobal = function aplicarFiltroPrecioGlobal() {
-        // Actualizar alias locales
-        const precio = window._precioGlobalActivo;
-        const tipo   = window._tipoPrecioGlobal;
-
-        // Detectar si el usuario YA eligió un tab después de elegir el precio
-        const tabActivo = (function() {
-            const btnActivo = document.querySelector('.btn-modo-velas.activo');
-            if (!btnActivo) return null;
-            const mapa = {
-                'btnModoTodosProductos': 'mostrar_todo',
-                'btnModoTodos':          'todos',
-                'btnModoArreglos':       'arreglos',
-                'btnModoDecoraciones':   'decoraciones',
-                'btnModoEtiquetas':      'etiquetas'
-            };
-            return mapa[btnActivo.id] || null;
-        })();
-
-        // Si NO hay tab activo o el tab es mostrar_todo → solo filtrar por precio sin tipo
-        const filtrarPorTipo = tabActivo && tabActivo !== 'mostrar_todo';
-
-        document.querySelectorAll('.card-dinamica').forEach(function(card) {
-            // ── Precio ──
-            let okPrecio = true;
-            if (precio !== 'todos') {
-                const precioNormalCard = String(parseInt(card.getAttribute('data-precio') || '0', 10));
-                const precioBazarCard  = String(parseInt(card.getAttribute('data-precio-bazar') || '0', 10));
-                let precioCard;
-                if (tipo === 'bazar') {
-                    precioCard = precioBazarCard !== '0' ? precioBazarCard : precioNormalCard;
-                } else {
-                    precioCard = precioNormalCard !== '0' ? precioNormalCard : precioBazarCard;
-                }
-                okPrecio = precioCard === String(precio);
-            }
-
-            // ── Tipo (solo si el usuario eligió tab después del precio) ──
-            let okTipo = true;
-            if (filtrarPorTipo) {
-                if      (tabActivo === 'arreglos')      okTipo = tieneTipo(card, 'arreglo');
-                else if (tabActivo === 'todos')          okTipo = tieneTipo(card, 'producto');
-                else if (tabActivo === 'etiquetas')      okTipo = tieneTipo(card, 'etiqueta');
-                else if (tabActivo === 'decoraciones')   okTipo = tieneTipo(card, 'decoracion');
-            }
-
-            card.classList.toggle('oculto', !(okPrecio && okTipo));
-        });
-
-        if (typeof window.actualizarPaginacion === 'function') window.actualizarPaginacion();
-    };
-
-    // Restaura el filtro por tipo del tab activo (cuando se limpia el filtro de precio)
-    function _restaurarFiltroTabActivo() {
-        var btnActivo = document.querySelector('.btn-modo-velas.activo');
-        if (!btnActivo) { aplicarFiltrosArreglos(); return; }
-        var mapa = {
-            'btnModoTodosProductos': 'mostrar_todo',
-            'btnModoTodos':          'todos',
-            'btnModoArreglos':       'arreglos',
-            'btnModoDecoraciones':   'decoraciones',
-            'btnModoEtiquetas':      'etiquetas'
-        };
-        var modo = mapa[btnActivo.id];
-        if (modo === 'arreglos')    aplicarFiltrosArreglos();
-        else if (modo)              aplicarFiltrosUnificados(modo === 'mostrar_todo' ? 'mostrar_todo' : modo === 'todos' ? 'todos' : modo);
-        else                        aplicarFiltrosArreglos();
-    }
-    window._restaurarFiltroTabActivo = _restaurarFiltroTabActivo;
-
     function cambiarModoVelas(modo) {
         const btnArreglos       = document.getElementById('btnModoArreglos');
         const btnEtiquetas      = document.getElementById('btnModoEtiquetas');
@@ -1476,56 +1405,26 @@ if (document.readyState === 'loading') {
             if (btnArreglos) btnArreglos.classList.add('activo');
             if (panelArr) panelArr.classList.add('visible');
             if (bloqueArr) bloqueArr.style.display = 'block';
-            // Si hay precio activo → combinar precio + tipo arreglo
-            if (window._precioGlobalActivo && window._precioGlobalActivo !== 'todos') {
-                window.window.aplicarFiltroPrecioGlobal();
-            } else {
-                aplicarFiltrosArreglos();
-            }
+            aplicarFiltrosArreglos();
         } else if (modo === 'etiquetas') {
             if (btnEtiquetas) btnEtiquetas.classList.add('activo');
             if (panelEtiq) panelEtiq.classList.add('visible');
-            if (window._precioGlobalActivo && window._precioGlobalActivo !== 'todos') {
-                window.window.aplicarFiltroPrecioGlobal();
-            } else {
-                aplicarFiltrosUnificados('etiquetas');
-            }
+            aplicarFiltrosUnificados('etiquetas');
         } else if (modo === 'decoraciones') {
             if (btnDecoraciones) btnDecoraciones.classList.add('activo');
             if (panelDeco) panelDeco.classList.add('visible');
-            if (window._precioGlobalActivo && window._precioGlobalActivo !== 'todos') {
-                window.window.aplicarFiltroPrecioGlobal();
-            } else {
-                aplicarFiltrosUnificados('decoraciones');
-            }
+            aplicarFiltrosUnificados('decoraciones');
         } else if (modo === 'mostrar_todo') {
             // Mostrar Todo: activa sólo el botón superior y muestra absolutamente todo
             if (btnTodosProductos) btnTodosProductos.classList.add('activo');
             if (panelTod) panelTod.classList.add('visible');
             if (bloqueTod) bloqueTod.style.display = 'block';
-            // Mostrar todo cancela el filtro de precio
-            window._precioGlobalActivo = 'todos';
-            precioArreglosActivo = 'todos';
-            precioExactoTodosActivo = 'todos';
-            // Resetear botones de precio
-            document.querySelectorAll('#lista-precios-arreglos .btn-precio-velas, #lista-precios-todos .btn-precio-velas').forEach(function(b) {
-                b.classList.remove('activo');
-            });
-            var primerBtnArr = document.querySelector('#lista-precios-arreglos .btn-precio-velas');
-            var primerBtnTod = document.querySelector('#lista-precios-todos .btn-precio-velas');
-            if (primerBtnArr) primerBtnArr.classList.add('activo');
-            if (primerBtnTod) primerBtnTod.classList.add('activo');
             aplicarFiltrosUnificados('mostrar_todo');
         } else {
             // 'todos' = 🛍️ Productos (solo tipo producto)
             if (btnTodos) btnTodos.classList.add('activo');
             if (panelTod) panelTod.classList.add('visible');
             if (bloqueTod) bloqueTod.style.display = 'block';
-            if (window._precioGlobalActivo && window._precioGlobalActivo !== 'todos') {
-                window.window.aplicarFiltroPrecioGlobal();
-            } else {
-                aplicarFiltrosUnificados('todos');
-            }
             aplicarFiltrosUnificados('todos');
         }
     }
@@ -1704,16 +1603,14 @@ if (document.readyState === 'loading') {
         aplicarFiltrosArreglos();
     }
 
-    let precioArreglosActivo = 'todos'; // precio exacto seleccionado (legacy, sincronizado con _precioGlobal)
+    let precioArreglosActivo = 'todos'; // precio exacto seleccionado
 
     function cambiarTipoPrecioArreglos(tipo) {
         tipoPrecioArreglos = tipo;
-        window._tipoPrecioGlobal = tipo; // sincronizar con global
         document.getElementById('btn-arreglos-precio-original').classList.toggle('activo', tipo === 'original');
         document.getElementById('btn-arreglos-precio-bazar').classList.toggle('activo', tipo === 'bazar');
         // Resetear selección de precio al cambiar tipo
         precioArreglosActivo = 'todos';
-        window._precioGlobalActivo = 'todos';
         document.querySelectorAll('#lista-precios-arreglos .btn-precio-velas').forEach(b => b.classList.remove('activo'));
         const btnTodos = document.querySelector('#lista-precios-arreglos .btn-precio-velas');
         if (btnTodos) btnTodos.classList.add('activo');
@@ -1721,37 +1618,13 @@ if (document.readyState === 'loading') {
     }
 
     function filtrarPrecioArreglos(btn, precio) {
-        // Sincronizar estado global
-        window._precioGlobalActivo = precio;
-        window._tipoPrecioGlobal   = tipoPrecioArreglos;
         precioArreglosActivo = precio;
-
-        // Marcar activo en ambas barras de precio
-        document.querySelectorAll('#lista-precios-arreglos .btn-precio-velas, #lista-precios-todos .btn-precio-velas').forEach(b => b.classList.remove('activo'));
+        document.querySelectorAll('#lista-precios-arreglos .btn-precio-velas').forEach(b => b.classList.remove('activo'));
         btn.classList.add('activo');
-        // Marcar equivalente en la otra barra si el precio es específico
-        if (precio !== 'todos') {
-            document.querySelectorAll('#lista-precios-todos .btn-precio-velas').forEach(function(b) {
-                var oc = b.getAttribute('onclick') || '';
-                if (oc.indexOf("'" + precio + "'") !== -1) b.classList.add('activo');
-            });
-        }
-
-        if (precio === 'todos') {
-            // Restaurar filtro normal del tab activo
-            _restaurarFiltroTabActivo();
-        } else {
-            // Filtrar globalmente: ignorar tab activo, mostrar todos los tipos con ese precio
-            window.window.aplicarFiltroPrecioGlobal();
-        }
+        aplicarFiltrosArreglos();
     }
 
     function aplicarFiltrosArreglos() {
-        // Si hay precio global activo, delegar al filtro global
-        if (window._precioGlobalActivo !== 'todos') {
-            window.aplicarFiltroPrecioGlobal();
-            return;
-        }
         document.querySelectorAll('.card-dinamica').forEach(card => {
             let visible = true;
 
@@ -1771,6 +1644,19 @@ if (document.readyState === 'loading') {
             if (modoFiltroArreglos === 'tamano' && tamanoArreglosActivo !== 'todos') {
                 const tamCard = (card.getAttribute('data-tamano') || '').toLowerCase();
                 visible = tamCard === tamanoArreglosActivo;
+            }
+
+            // Filtro por precio exacto según tipo seleccionado — usa data-attributes directamente
+            if (precioArreglosActivo !== 'todos') {
+                const precioNormalCard = String(parseInt(card.getAttribute('data-precio') || '0', 10));
+                const precioBazarCard  = String(parseInt(card.getAttribute('data-precio-bazar') || '0', 10));
+                let precioCard;
+                if (tipoPrecioArreglos === 'bazar') {
+                    precioCard = precioBazarCard !== '0' ? precioBazarCard : precioNormalCard;
+                } else {
+                    precioCard = precioNormalCard !== '0' ? precioNormalCard : precioBazarCard;
+                }
+                if (precioCard !== precioArreglosActivo) visible = false;
             }
 
             card.classList.toggle('oculto', !visible);
@@ -1814,43 +1700,27 @@ if (document.readyState === 'loading') {
     let precioExactoTodosActivo = 'todos'; // precio exacto seleccionado en panel "todos"
 
     function filtrarPrecioTodos(btn, precio) {
-        // Sincronizar estado global
         precioExactoTodosActivo = precio;
-        window._precioGlobalActivo = precio;
-        window._tipoPrecioGlobal   = tipoPrecioActual;
-
-        // Marcar activo en ambas barras
-        document.querySelectorAll('#lista-precios-todos .btn-precio-velas, #lista-precios-arreglos .btn-precio-velas').forEach(b => b.classList.remove('activo'));
+        document.querySelectorAll('#lista-precios-todos .btn-precio-velas').forEach(b => b.classList.remove('activo'));
         btn.classList.add('activo');
-        if (precio !== 'todos') {
-            document.querySelectorAll('#lista-precios-arreglos .btn-precio-velas').forEach(function(b) {
-                var oc = b.getAttribute('onclick') || '';
-                if (oc.indexOf("'" + precio + "'") !== -1) b.classList.add('activo');
-            });
-        }
-
-        if (precio === 'todos') {
-            _restaurarFiltroTabActivo();
-        } else {
-            // Filtrar globalmente: ignorar tab activo
-            window.window.aplicarFiltroPrecioGlobal();
-        }
+        aplicarFiltrosPrecioExactoTodos();
     }
 
     function aplicarFiltrosPrecioExactoTodos() {
+        // Delegar siempre a aplicarFiltrosTodos para que se respeten TODOS los filtros activos
+        // (forma, evento, nombre, slider) ademas del precio exacto
         aplicarFiltrosTodos();
     }
 
     function cambiarTipoPrecio(tipo) {
         tipoPrecioActual = tipo;
-        window._tipoPrecioGlobal = tipo;
         document.getElementById('btn-precio-original').classList.toggle('activo', tipo === 'original');
         document.getElementById('btn-precio-bazar').classList.toggle('activo', tipo === 'bazar');
+        // Actualizar etiqueta del slider según tipo
         const label = document.getElementById('labelTipoPrecio');
         if (label) label.textContent = tipo === 'bazar' ? 'Precio Mayoreo Máximo:' : 'Precio Máximo:';
         // Resetear selección de precio exacto al cambiar tipo
         precioExactoTodosActivo = 'todos';
-        window._precioGlobalActivo = 'todos';
         const btnTd = document.querySelector('#lista-precios-todos .btn-precio-velas');
         document.querySelectorAll('#lista-precios-todos .btn-precio-velas').forEach(b => b.classList.remove('activo'));
         if (btnTd) btnTd.classList.add('activo');
@@ -1858,11 +1728,6 @@ if (document.readyState === 'loading') {
     }
 
     function aplicarFiltrosTodos() {
-        // Si hay precio global activo, delegar al filtro global
-        if (window._precioGlobalActivo !== 'todos') {
-            window.aplicarFiltroPrecioGlobal();
-            return;
-        }
         const formaActiva  = document.querySelector('#filtro-formas .btn-filtro.activo')?.dataset.forma || 'todos';
         const eventoActivo = document.querySelector('#filtro-eventos .btn-filtro.activo')?.dataset.evento || 'todos';
         const _sliderEl = document.getElementById('filtroPrecio');
@@ -1874,6 +1739,7 @@ if (document.readyState === 'loading') {
             const eventoCard = card.dataset.evento || '';
             const nombreCard = (card.getAttribute('data-nombre') || '').toLowerCase();
 
+            // Seleccionar precio segun tipo activo
             let precioCard;
             if (tipoPrecioActual === 'bazar') {
                 precioCard = parseInt(card.getAttribute('data-precio-bazar') || card.getAttribute('data-precio') || '0');
@@ -1884,12 +1750,28 @@ if (document.readyState === 'loading') {
             const okForma   = formaActiva  === 'todos' || formaCard  === formaActiva;
             const okEvento  = eventoActivo === 'todos' || eventoCard.split(' ').includes(eventoActivo);
             const okNombre  = !textoBusq   || nombreCard.includes(textoBusq);
-            const okPrecio  = precioCard <= precioMax;
 
-            // Solo mostrar los que son tipo 'producto'
-            const okTipo = tieneTipo(card, 'producto');
+            // Si hay precio exacto activo (boton $15/$20/etc), tiene prioridad sobre el slider
+            let okPrecio;
+            if (precioExactoTodosActivo !== 'todos') {
+                const precioNormalCard = String(parseInt(card.getAttribute('data-precio') || '0'));
+                const precioBazarCard  = String(parseInt(card.getAttribute('data-precio-bazar') || '0'));
+                if (tipoPrecioActual === 'bazar') {
+                    // En modo mayoreo: primero bazar, si es 0 caer a precio normal
+                    okPrecio = precioBazarCard !== '0'
+                        ? precioBazarCard === String(precioExactoTodosActivo)
+                        : precioNormalCard === String(precioExactoTodosActivo);
+                } else {
+                    // En modo original: primero precio normal, si es 0 caer a precio bazar
+                    okPrecio = precioNormalCard !== '0'
+                        ? precioNormalCard === String(precioExactoTodosActivo)
+                        : precioBazarCard === String(precioExactoTodosActivo);
+                }
+            } else {
+                okPrecio = precioCard <= precioMax;
+            }
 
-            card.classList.toggle('oculto', !(okTipo && okForma && okEvento && okPrecio && okNombre));
+            card.classList.toggle('oculto', !(okForma && okEvento && okPrecio && okNombre));
         });
         if (typeof window.actualizarPaginacion === 'function') window.actualizarPaginacion();
     }
@@ -4365,7 +4247,7 @@ function _cargarFavoritosFirestore(uid) {
             if (typeof window.cambiarModoVelas === 'function') window.cambiarModoVelas(modo);
         } else {
             // Fallback: mostrar todo
-            if (typeof window.cambiarModoVelas === 'function') window.cambiarModoVelas('arreglos');
+            if (typeof window.cambiarModoVelas === 'function') window.cambiarModoVelas('mostrar_todo');
         }
     };
 
