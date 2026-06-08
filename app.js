@@ -3357,12 +3357,12 @@ function cerrarPantallaCarrito() {
     pantalla.classList.remove('activa');
     document.body.style.overflow = '';
     _modalActivo = null;
-    // Restaurar burbuja: quitar el inline display:none para que el CSS tome el control
     var burbuja = document.getElementById('burbujaCarrito');
     if (burbuja) { burbuja.style.removeProperty('display'); }
     actualizarBurbuja();
+    // Usar replaceState en vez de back() para no disparar popstate y romper el historial
     if (history.state && history.state.kukumitaModal === 'carrito') {
-        history.back();
+        history.replaceState(null, '');
     }
 }
 
