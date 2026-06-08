@@ -3240,3 +3240,13 @@ body.modo-oscuro .cart-total-valor { color: #f0e8e0; }
         box-sizing: border-box !important;
     }
 }
+
+/* ===== BARRA DE BÚSQUEDA GLOBAL ===== */
+#barraGlobal:focus-within {
+    border-color: #8c7565;
+    box-shadow: 0 2px 12px rgba(140,117,101,0.18);
+}
+#inputBusquedaGlobal::placeholder { color: #bba898; }
+body.busqueda-global-activa .selector-modo-velas-wrap { opacity: 0.5; pointer-events: none; }
+body.busqueda-global-activa #bloqueFiltroPrecioArreglos,
+body.busqueda-global-activa #bloqueFiltroPrecioTodos { opacity: 0.4; pointer-events: none; }
