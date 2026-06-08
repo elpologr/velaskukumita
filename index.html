@@ -247,7 +247,7 @@
     </div>
 
     <!-- ===== TÍTULO DE PÁGINA + BOTÓN BAZAR + BOTÓN TIENDA ===== -->
-    <div style="text-align:center; padding: 24px 16px 18px; background:#fff; border-bottom: 1px solid #eee; overflow:hidden; box-sizing:border-box; width:100%;">
+    <div style="text-align:center; padding: 24px 16px 18px; background:#fff; border-bottom: 1px solid #eee; box-sizing:border-box; width:100%; position:relative;">
         <!-- Wrapper del título con submenú posicionado -->
         <div style="position:relative; display:inline-block; margin-bottom:14px;">
             <h1 id="tituloVelasKukumita"
@@ -891,11 +891,12 @@
             <h2 style="font-size: 3.6rem; font-weight: 900; color: #111; letter-spacing: 2px; margin: 0; font-family: 'Playfair Display', Georgia, serif; font-style: italic; line-height: 1.1;">Catálogo</h2>
         </div>
 
-        <!-- ===== BOTONES DE MODO: PRODUCTOS / ARREGLOS / DECORACIONES / ETIQUETAS ===== -->
+        <!-- ===== BOTONES DE MODO: TODOS / PRODUCTOS / ARREGLOS / DECORACIONES / ETIQUETAS ===== -->
         <div class="selector-modo-velas">
+            <button class="btn-modo-velas" id="btnModoTodosProductos" onclick="cambiarModoVelas('todos')" style="font-size:0.78rem; line-height:1.25;">Todos los<br>Productos</button>
             <button class="btn-modo-velas" id="btnModoTodos" onclick="cambiarModoVelas('todos')">🛍️ Productos</button>
             <button class="btn-modo-velas activo" id="btnModoArreglos" onclick="cambiarModoVelas('arreglos')">🕯️ Arreglos</button>
-            <button class="btn-modo-velas" id="btnModoDecoraciones" onclick="cambiarModoVelas('decoraciones')">✨ Decoraciones y Aditamentos</button>
+            <button class="btn-modo-velas" id="btnModoDecoraciones" onclick="cambiarModoVelas('decoraciones')" style="font-size:0.78rem; line-height:1.25;">✨ Decoraciones<br>y Aditamentos</button>
             <button class="btn-modo-velas" id="btnModoEtiquetas" onclick="cambiarModoVelas('etiquetas')">🏷️ Etiquetas</button>
         </div>
 

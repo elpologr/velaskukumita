@@ -1375,45 +1375,52 @@ if (document.readyState === 'loading') {
 
     // ===== CAMBIO DE MODO: ARREGLOS / TODOS LOS PRODUCTOS =====
     function cambiarModoVelas(modo) {
-        const btnArreglos    = document.getElementById('btnModoArreglos');
-        const btnEtiquetas   = document.getElementById('btnModoEtiquetas');
-        const btnDecoraciones= document.getElementById('btnModoDecoraciones');
-        const btnTodos       = document.getElementById('btnModoTodos');
-        const panelArr       = document.getElementById('panelArreglos');
-        const panelEtiq      = document.getElementById('panelEtiquetas');
-        const panelDeco      = document.getElementById('panelDecoraciones');
-        const panelTod       = document.getElementById('panelTodos');
-        const bloqueArr      = document.getElementById('bloqueFiltroPrecioArreglos');
-        const bloqueTod      = document.getElementById('bloqueFiltroPrecioTodos');
+        const btnArreglos       = document.getElementById('btnModoArreglos');
+        const btnEtiquetas      = document.getElementById('btnModoEtiquetas');
+        const btnDecoraciones   = document.getElementById('btnModoDecoraciones');
+        const btnTodos          = document.getElementById('btnModoTodos');
+        const btnTodosProductos = document.getElementById('btnModoTodosProductos');
+        const panelArr          = document.getElementById('panelArreglos');
+        const panelEtiq         = document.getElementById('panelEtiquetas');
+        const panelDeco         = document.getElementById('panelDecoraciones');
+        const panelTod          = document.getElementById('panelTodos');
+        const bloqueArr         = document.getElementById('bloqueFiltroPrecioArreglos');
+        const bloqueTod         = document.getElementById('bloqueFiltroPrecioTodos');
 
-        // Desactivar todos
-        [btnArreglos, btnEtiquetas, btnDecoraciones, btnTodos].forEach(b => b && b.classList.remove('activo'));
-        [panelArr, panelEtiq, panelDeco, panelTod].forEach(p => p && p.classList.remove('visible'));
+        // Desactivar todos los botones y paneles
+        [btnArreglos, btnEtiquetas, btnDecoraciones, btnTodos, btnTodosProductos]
+            .forEach(b => b && b.classList.remove('activo'));
+        [panelArr, panelEtiq, panelDeco, panelTod]
+            .forEach(p => p && p.classList.remove('visible'));
         // Ocultar ambos bloques de precio
         if (bloqueArr) bloqueArr.style.display = 'none';
         if (bloqueTod) bloqueTod.style.display = 'none';
 
         if (modo === 'arreglos') {
-            btnArreglos.classList.add('activo');
-            panelArr.classList.add('visible');
+            if (btnArreglos) btnArreglos.classList.add('activo');
+            if (panelArr) panelArr.classList.add('visible');
             if (bloqueArr) bloqueArr.style.display = 'block';
             aplicarFiltrosArreglos();
         } else if (modo === 'etiquetas') {
-            btnEtiquetas.classList.add('activo');
-            panelEtiq.classList.add('visible');
+            if (btnEtiquetas) btnEtiquetas.classList.add('activo');
+            if (panelEtiq) panelEtiq.classList.add('visible');
             aplicarFiltrosUnificados('etiquetas');
         } else if (modo === 'decoraciones') {
-            btnDecoraciones.classList.add('activo');
-            panelDeco.classList.add('visible');
+            if (btnDecoraciones) btnDecoraciones.classList.add('activo');
+            if (panelDeco) panelDeco.classList.add('visible');
             aplicarFiltrosUnificados('decoraciones');
         } else {
-            // 'todos' = Productos
-            btnTodos.classList.add('activo');
-            panelTod.classList.add('visible');
+            // 'todos' = Productos (ambos botones se marcan activos)
+            if (btnTodos) btnTodos.classList.add('activo');
+            if (btnTodosProductos) btnTodosProductos.classList.add('activo');
+            if (panelTod) panelTod.classList.add('visible');
             if (bloqueTod) bloqueTod.style.display = 'block';
             aplicarFiltrosUnificados('todos');
         }
     }
+
+    // Exponer funciones al scope global para que el HTML pueda llamarlas
+    window.cambiarModoVelas         = cambiarModoVelas;
 
     // ===== SISTEMA DE BÚSQUEDA UNIFICADA =====
 
@@ -1640,6 +1647,19 @@ if (document.readyState === 'loading') {
         });
         if (typeof window.actualizarPaginacion === 'function') window.actualizarPaginacion();
     }
+
+    // Exponer funciones de filtros al scope global
+    window.filtrarPrecioArreglos        = filtrarPrecioArreglos;
+    window.aplicarFiltrosArreglos       = aplicarFiltrosArreglos;
+    window.cambiarTipoPrecioArreglos    = cambiarTipoPrecioArreglos;
+    window.cambiarModoFiltroArreglos    = cambiarModoFiltroArreglos;
+    window.filtrarFormaArreglos         = filtrarFormaArreglos;
+    window.filtrarTamanoArreglos        = filtrarTamanoArreglos;
+    window.aplicarFiltrosUnificados     = aplicarFiltrosUnificados;
+    window.filtrarPorNombreUnificado    = filtrarPorNombreUnificado;
+    window.toggleDropdownFiltros        = toggleDropdownFiltros;
+    window.toggleGrupoFiltro            = toggleGrupoFiltro;
+    window.seleccionarTagFiltro         = seleccionarTagFiltro;
 
     // ===== FILTROS TODOS LOS PRODUCTOS =====
     function actualizarPrecio(val) {
