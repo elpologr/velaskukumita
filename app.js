@@ -240,11 +240,12 @@ function csvAProductos(filas) {
             ? _rawImg.split(',').map(function(s) { return s.trim().replace(/^"+|"+$/g, ''); }).filter(Boolean)
             : [];
 
-        // Columna F: puede tener una o varias etiquetas separadas por | (ej: "arreglo|decoracion")
+        // Columna F: puede tener una o varias etiquetas separadas por | o por , 
+        // (ej: "arreglo|decoracion" o "producto,decoracion,aditamento")
         // Se limpian comillas extra que Google Sheets agrega cuando hay validación de lista en la celda.
         var _rawTipos = get(5).replace(/^"+|"+$/g, '').trim();
         var tiposArray = _rawTipos
-            ? _rawTipos.split('|').map(function(s) { return s.trim().replace(/^"+|"+$/g, '').toLowerCase(); }).filter(Boolean)
+            ? _rawTipos.split(/[|,]/).map(function(s) { return s.trim().replace(/^"+|"+$/g, '').toLowerCase(); }).filter(Boolean)
             : ['arreglo'];
         // tipo principal = primer valor (compatibilidad con código existente)
         var tipoPrincipal = tiposArray[0] || 'arreglo';
@@ -1492,7 +1493,7 @@ if (document.readyState === 'loading') {
     // ── Helper: comprueba si una card tiene alguno de los tipos indicados ──
     function tieneTipo(card, ...buscar) {
         const rawTipos = (card.getAttribute('data-tipos') || card.getAttribute('data-tipo') || '');
-        const tipos = rawTipos.toLowerCase().replace(/^"+|"+$/g, '').split('|').map(s => s.trim().replace(/^"+|"+$/g, '')).filter(Boolean);
+        const tipos = rawTipos.toLowerCase().replace(/^"+|"+$/g, '').split(/[|,]/).map(s => s.trim().replace(/^"+|"+$/g, '')).filter(Boolean);
         const variantes = {
             'producto':      ['producto','productos'],
             'arreglo':       ['arreglo','arreglos'],
