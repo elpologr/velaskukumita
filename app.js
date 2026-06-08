@@ -1086,11 +1086,10 @@ if (document.readyState === 'loading') {
             modalEl.removeEventListener('wheel', modalEl._wheelHandler);
             delete modalEl._wheelHandler;
         }
-        document.body.style.overflow = 'auto';
+        document.body.style.overflow = '';
         _modalActivo = null;
-        // If the history state was pushed for the modal, go back
         if (history.state && history.state.modalAbierto) {
-            history.back();
+            history.replaceState(null, '');
         }
     }
 
@@ -3214,12 +3213,9 @@ window.refrescarCarruseles = function() {
 // ══════════════════════════════════════════════
 // SISTEMA DE CARRITO KUKUMITA
 // ══════════════════════════════════════════════
-// ── Carrito: persistencia en localStorage ──
 var carrito = (function() {
-    try {
-        var g = localStorage.getItem('kukumita-carrito');
-        return g ? JSON.parse(g) : [];
-    } catch(e) { return []; }
+    try { var g = localStorage.getItem('kukumita-carrito'); return g ? JSON.parse(g) : []; }
+    catch(e) { return []; }
 })();
 function _guardarCarrito() {
     try { localStorage.setItem('kukumita-carrito', JSON.stringify(carrito)); } catch(e) {}
@@ -3262,9 +3258,7 @@ function abrirModalCantidad(card) {
     actualizarBotonesMC();
     document.getElementById('modalCantidad').classList.add('abierto');
     document.body.style.overflow = 'hidden';
-    if (!_modalActivo) {
-        history.pushState({ kukumitaModal: 'cantidad' }, '');
-    }
+    history.pushState({ kukumitaModal: 'cantidad' }, '');
     _modalActivo = 'cantidad';
 }
 
@@ -3273,7 +3267,6 @@ function cerrarModalCantidad() {
     document.body.style.overflow = '';
     _modalActivo = null;
     _mcCardActual = null;
-    // Consumir el pushState de 'cantidad' sin disparar popstate
     if (history.state && history.state.kukumitaModal === 'cantidad') {
         history.replaceState(null, '');
     }
@@ -3371,11 +3364,9 @@ function cerrarPantallaCarrito() {
     pantalla.classList.remove('activa');
     document.body.style.overflow = '';
     _modalActivo = null;
-    // Restaurar burbuja: quitar el inline display:none para que el CSS tome el control
     var burbuja = document.getElementById('burbujaCarrito');
     if (burbuja) { burbuja.style.removeProperty('display'); }
     actualizarBurbuja();
-    // replaceState en vez de back() — no dispara popstate, no rompe el historial
     if (history.state && history.state.kukumitaModal === 'carrito') {
         history.replaceState(null, '');
     }
@@ -3888,7 +3879,6 @@ function irAZonaInteractiva() {
 _ready(function() {
     var _mc = document.getElementById('modalCantidad');
     if (_mc) _mc.addEventListener('click', function(e) { if (e.target === this) cerrarModalCantidad(); });
-    // Mostrar badge si hay productos guardados al cargar la página
     actualizarBurbuja();
 });
 
