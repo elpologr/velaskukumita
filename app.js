@@ -316,7 +316,7 @@ function renderizarCatalogoCompleto() {
         card.setAttribute('data-idx',             String(p.id));
         card.setAttribute('data-forma',           p.forma || '');
         card.setAttribute('data-evento',          p.eventos || '');
-        card.setAttribute('data-precio',          String(parseInt(p.precioNormal, 10) || ''));
+        card.setAttribute('data-precio',          String(parseInt(p.precioNormal, 10) || 0));
         card.setAttribute('data-precio-bazar',    String(parseInt(p.precioBazar,  10) || ''));
         card.setAttribute('data-tipo',            p.tipo  || 'arreglo');
         card.setAttribute('data-tipos',           (p.tipos || [p.tipo || 'arreglo']).join('|'));
@@ -1643,11 +1643,13 @@ if (document.readyState === 'loading') {
 
             // Filtro por precio exacto según tipo seleccionado — usa data-attributes directamente
             if (precioArreglosActivo !== 'todos') {
+                const precioNormalCard = String(parseInt(card.getAttribute('data-precio') || '0', 10));
+                const precioBazarCard  = String(parseInt(card.getAttribute('data-precio-bazar') || '0', 10));
                 let precioCard;
                 if (tipoPrecioArreglos === 'bazar') {
-                    precioCard = String(parseInt(card.getAttribute('data-precio-bazar') || '0', 10));
+                    precioCard = precioBazarCard !== '0' ? precioBazarCard : precioNormalCard;
                 } else {
-                    precioCard = String(parseInt(card.getAttribute('data-precio') || '0', 10));
+                    precioCard = precioNormalCard !== '0' ? precioNormalCard : precioBazarCard;
                 }
                 if (precioCard !== precioArreglosActivo) visible = false;
             }
@@ -1747,7 +1749,19 @@ if (document.readyState === 'loading') {
             // Si hay precio exacto activo (boton $15/$20/etc), tiene prioridad sobre el slider
             let okPrecio;
             if (precioExactoTodosActivo !== 'todos') {
-                okPrecio = String(precioCard) === String(precioExactoTodosActivo);
+                const precioNormalCard = String(parseInt(card.getAttribute('data-precio') || '0'));
+                const precioBazarCard  = String(parseInt(card.getAttribute('data-precio-bazar') || '0'));
+                if (tipoPrecioActual === 'bazar') {
+                    // En modo mayoreo: primero bazar, si es 0 caer a precio normal
+                    okPrecio = precioBazarCard !== '0'
+                        ? precioBazarCard === String(precioExactoTodosActivo)
+                        : precioNormalCard === String(precioExactoTodosActivo);
+                } else {
+                    // En modo original: primero precio normal, si es 0 caer a precio bazar
+                    okPrecio = precioNormalCard !== '0'
+                        ? precioNormalCard === String(precioExactoTodosActivo)
+                        : precioBazarCard === String(precioExactoTodosActivo);
+                }
             } else {
                 okPrecio = precioCard <= precioMax;
             }
