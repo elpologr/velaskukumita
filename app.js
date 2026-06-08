@@ -2581,7 +2581,39 @@ function _syncTodo(idx, esFav) {
     if (panel && panel.classList.contains('activa')) renderizarFavoritos();
 }
 
+// ── Modal de login requerido para favoritos ──
+function _mostrarModalLoginFavoritos() {
+    // Si ya existe el modal, solo mostrarlo
+    var m = document.getElementById('modalLoginFavoritos');
+    if (!m) {
+        m = document.createElement('div');
+        m.id = 'modalLoginFavoritos';
+        m.style.cssText = 'position:fixed;inset:0;z-index:9800;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+        m.innerHTML = [
+            '<div style="background:#fff;border-radius:20px;max-width:340px;width:100%;padding:32px 24px 24px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.25);position:relative;">',
+            '<div style="font-size:2.8rem;margin-bottom:10px;">❤️</div>',
+            '<h3 style="margin:0 0 8px;font-size:1.15rem;font-weight:800;color:#362a22;">Inicia sesión para guardar favoritos</h3>',
+            '<p style="font-size:0.88rem;color:#8c7565;margin:0 0 22px;line-height:1.6;">Para guardar productos en tu lista de favoritos necesitas tener una cuenta.</p>',
+            '<button onclick="cerrarDrawer();document.getElementById(\'modalLoginFavoritos\').remove();iniciarSesionGoogle();" ',
+            'style="width:100%;background:linear-gradient(135deg,#f5a623,#e8921a);color:#fff;border:none;border-radius:999px;padding:13px 20px;font-size:0.95rem;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:10px;transition:opacity .2s;" ',
+            'onmouseover="this.style.opacity=\'0.88\'" onmouseout="this.style.opacity=\'1\'">',
+            '🔑 Iniciar sesión / Registrarse</button>',
+            '<button onclick="document.getElementById(\'modalLoginFavoritos\').remove()" ',
+            'style="width:100%;background:transparent;color:#8c7565;border:2px solid #e8ddd5;border-radius:999px;padding:11px 20px;font-size:0.88rem;font-weight:700;cursor:pointer;font-family:inherit;transition:border-color .2s;" ',
+            'onmouseover="this.style.borderColor=\'#8c7565\'" onmouseout="this.style.borderColor=\'#e8ddd5\'">',
+            'Continuar sin cuenta</button>',
+            '</div>'
+        ].join('');
+        // Cerrar al hacer clic en el fondo
+        m.addEventListener('click', function(e){ if(e.target===m) m.remove(); });
+        document.body.appendChild(m);
+    } else {
+        m.style.display = 'flex';
+    }
+}
+
 function toggleFavoritoCard(card) {
+    if (!estaEnSesion()) { _mostrarModalLoginFavoritos(); return; }
     var idx = card ? parseInt(card.getAttribute('data-idx')) : NaN;
     if (isNaN(idx)) return;
     var pos = favoritos.indexOf(idx);
@@ -2593,6 +2625,7 @@ function toggleFavoritoCard(card) {
 }
 
 function toggleLike(productoIdx, btn) {
+    if (!estaEnSesion()) { _mostrarModalLoginFavoritos(); return; }
     var idx = parseInt(productoIdx);
     if (isNaN(idx)) return;
     var pos = favoritos.indexOf(idx);
@@ -2605,7 +2638,7 @@ function toggleLike(productoIdx, btn) {
 
 function abrirPantallaFavoritos() {
     var overlay = document.getElementById('drawerOverlay');
-    var drawer = document.getElementById('drawerLateral');
+    var drawer = document.getElementById('drawer') || document.getElementById('drawerLateral');
     if (overlay) overlay.style.display = 'none';
     if (drawer) drawer.classList.remove('abierto');
     renderizarFavoritos();
@@ -3277,6 +3310,7 @@ function actualizarBurbuja() {
 
 // ── Pantalla de carrito ──
 function abrirPantallaCarrito() {
+    cerrarDrawer(); // cerrar drawer si estaba abierto
     renderizarCarrito();
     document.getElementById('pantallaCarrito').classList.add('activa');
     document.body.style.overflow = 'hidden';
@@ -3810,12 +3844,24 @@ _ready(function() {
 
 // Agregar botón de carrito en el drawer (junto a favoritos)
 _ready(function() {
-    var favBtn = document.querySelector('[onclick="abrirPantallaFavoritos()"]');
+    // Buscar el botón de favoritos de forma más robusta
+    var favBtn = document.querySelector('[onclick*="abrirPantallaFavoritos"]') ||
+                 document.querySelector('button[onclick*="Favoritos"]');
+    if (!favBtn) {
+        // Fallback: buscar por contenido de texto
+        var allBtns = document.querySelectorAll('#drawer button, #drawer a');
+        for (var i = 0; i < allBtns.length; i++) {
+            if (allBtns[i].textContent.indexOf('Favoritos') !== -1) { favBtn = allBtns[i]; break; }
+        }
+    }
     if (favBtn && favBtn.parentNode) {
+        // Evitar duplicado
+        if (document.getElementById('drawerCartBtn')) return;
         var cartDrawerBtn = document.createElement('button');
-        cartDrawerBtn.setAttribute('onclick', 'cerrarDrawer(); abrirPantallaCarrito();');
-        cartDrawerBtn.style.cssText = favBtn.style.cssText + ' margin-top:8px;';
+        cartDrawerBtn.id = 'drawerCartBtn';
+        cartDrawerBtn.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;text-decoration:none;border:1.5px solid #e8ddd5;background:#fff;transition:all 0.2s;width:100%;cursor:pointer;margin-top:8px;font-family:inherit;';
         cartDrawerBtn.innerHTML = '<div style="width:44px;height:44px;border-radius:8px;overflow:hidden;flex-shrink:0;background:#f0f0ea;display:flex;align-items:center;justify-content:center;font-size:22px;">🛒</div><div style="flex:1;min-width:0;text-align:left;"><p style="font-size:13px;font-weight:700;color:#4a3b32;margin:0 0 2px 0;">Mi Carrito</p><p style="font-size:11px;color:#8c7565;margin:0;">Ver productos seleccionados →</p></div>';
+        cartDrawerBtn.addEventListener('click', function() { cerrarDrawer(); abrirPantallaCarrito(); });
         cartDrawerBtn.addEventListener('mouseover', function(){ this.style.borderColor='#8c7565'; this.style.background='#fdf6f0'; });
         cartDrawerBtn.addEventListener('mouseout', function(){ this.style.borderColor='#e8ddd5'; this.style.background='#fff'; });
         favBtn.parentNode.insertBefore(cartDrawerBtn, favBtn.nextSibling);
