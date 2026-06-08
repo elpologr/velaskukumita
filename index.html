@@ -16,6 +16,133 @@
 
     <!-- Estilos externos -->
     <link rel="stylesheet" href="style.css">
+
+    <!-- Estilos botones de modo catálogo -->
+    <style>
+    /* ── Wrapper que apila fila superior + fila de 4 ── */
+    .selector-modo-velas-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px 14px;
+    }
+
+    /* ── Fila superior: Mostrar Todo ── */
+    .selector-modo-fila-top {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    /* ── Fila de los 4 botones de categoría ── */
+    .selector-modo-velas {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+    }
+
+    /* ── Base del botón ── */
+    .btn-modo-velas {
+        padding: 9px 16px;
+        border-radius: 999px;
+        border: none;
+        font-size: 0.84rem;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        transition: background 0.18s, color 0.18s, transform 0.12s, box-shadow 0.18s;
+        white-space: nowrap;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.10);
+    }
+    .btn-modo-velas:active {
+        transform: scale(0.96);
+    }
+
+    /* ── Mostrar Todo: negro / gris al presionar ── */
+    .btn-modo-mostrar-todo {
+        background: #1a1a1a;
+        color: #fff;
+        min-width: 160px;
+        font-size: 0.9rem;
+        padding: 10px 32px;
+    }
+    .btn-modo-mostrar-todo:hover {
+        background: #333;
+    }
+    .btn-modo-mostrar-todo.activo {
+        background: #666;
+        color: #fff;
+    }
+
+    /* ── Productos: azul / azul oscuro activo ── */
+    .btn-modo-productos {
+        background: #4a90d9;
+        color: #fff;
+    }
+    .btn-modo-productos:hover {
+        background: #3a7bc8;
+    }
+    .btn-modo-productos.activo {
+        background: #1d5fa8;
+        color: #fff;
+        box-shadow: 0 3px 10px rgba(29,95,168,0.35);
+    }
+
+    /* ── Arreglos: azul claro / azul claro más oscuro activo ── */
+    .btn-modo-arreglos {
+        background: #b3d4f5;
+        color: #1a4a7a;
+    }
+    .btn-modo-arreglos:hover {
+        background: #93bfe8;
+    }
+    .btn-modo-arreglos.activo {
+        background: #6aaee0;
+        color: #fff;
+        box-shadow: 0 3px 10px rgba(74,144,217,0.35);
+    }
+
+    /* ── Decoraciones y Aditamentos: rosa pastel / rosa más oscuro activo ── */
+    .btn-modo-decoraciones {
+        background: #ffc8d8;
+        color: #8b2040;
+        text-align: center;
+    }
+    .btn-modo-decoraciones:hover {
+        background: #ffaac0;
+    }
+    .btn-modo-decoraciones.activo {
+        background: #e8607a;
+        color: #fff;
+        box-shadow: 0 3px 10px rgba(232,96,122,0.35);
+    }
+
+    /* ── Etiquetas: rojo / rojo claro activo ── */
+    .btn-modo-etiquetas {
+        background: #e03030;
+        color: #fff;
+    }
+    .btn-modo-etiquetas:hover {
+        background: #c52020;
+    }
+    .btn-modo-etiquetas.activo {
+        background: #ff6b6b;
+        color: #fff;
+        box-shadow: 0 3px 10px rgba(224,48,48,0.35);
+    }
+
+    /* ── Modo oscuro ── */
+    .modo-oscuro .btn-modo-mostrar-todo          { background: #e0e0e0; color: #111; }
+    .modo-oscuro .btn-modo-mostrar-todo.activo   { background: #999; color: #111; }
+    .modo-oscuro .btn-modo-productos             { background: #4a90d9; color: #fff; }
+    .modo-oscuro .btn-modo-arreglos              { background: #3a6a99; color: #cde; }
+    .modo-oscuro .btn-modo-arreglos.activo       { background: #6aaee0; color: #fff; }
+    .modo-oscuro .btn-modo-decoraciones          { background: #7a2a3a; color: #ffc8d8; }
+    .modo-oscuro .btn-modo-decoraciones.activo   { background: #e8607a; color: #fff; }
+    </style>
 </head>
 <body>
 
@@ -891,13 +1018,19 @@
             <h2 style="font-size: 3.6rem; font-weight: 900; color: #111; letter-spacing: 2px; margin: 0; font-family: 'Playfair Display', Georgia, serif; font-style: italic; line-height: 1.1;">Catálogo</h2>
         </div>
 
-        <!-- ===== BOTONES DE MODO: TODOS / PRODUCTOS / ARREGLOS / DECORACIONES / ETIQUETAS ===== -->
-        <div class="selector-modo-velas">
-            <button class="btn-modo-velas" id="btnModoTodosProductos" onclick="cambiarModoVelas('todos')" style="font-size:0.78rem; line-height:1.25;">Todos los<br>Productos</button>
-            <button class="btn-modo-velas" id="btnModoTodos" onclick="cambiarModoVelas('todos')">🛍️ Productos</button>
-            <button class="btn-modo-velas activo" id="btnModoArreglos" onclick="cambiarModoVelas('arreglos')">🕯️ Arreglos</button>
-            <button class="btn-modo-velas" id="btnModoDecoraciones" onclick="cambiarModoVelas('decoraciones')" style="font-size:0.78rem; line-height:1.25;">✨ Decoraciones<br>y Aditamentos</button>
-            <button class="btn-modo-velas" id="btnModoEtiquetas" onclick="cambiarModoVelas('etiquetas')">🏷️ Etiquetas</button>
+        <!-- ===== BOTONES DE MODO: MOSTRAR TODO + PRODUCTOS / ARREGLOS / DECORACIONES / ETIQUETAS ===== -->
+        <div class="selector-modo-velas-wrap">
+            <!-- Fila superior: Mostrar Todo -->
+            <div class="selector-modo-fila-top">
+                <button class="btn-modo-velas btn-modo-mostrar-todo" id="btnModoTodosProductos" onclick="cambiarModoVelas('mostrar_todo')">Mostrar Todo</button>
+            </div>
+            <!-- Fila inferior: los 4 botones de categoría -->
+            <div class="selector-modo-velas" id="selectorModoVelas">
+                <button class="btn-modo-velas btn-modo-productos" id="btnModoTodos" onclick="cambiarModoVelas('todos')">🛍️ Productos</button>
+                <button class="btn-modo-velas btn-modo-arreglos activo" id="btnModoArreglos" onclick="cambiarModoVelas('arreglos')">🕯️ Arreglos</button>
+                <button class="btn-modo-velas btn-modo-decoraciones" id="btnModoDecoraciones" onclick="cambiarModoVelas('decoraciones')" style="line-height:1.25;">✨ Decoraciones<br>y Aditamentos</button>
+                <button class="btn-modo-velas btn-modo-etiquetas" id="btnModoEtiquetas" onclick="cambiarModoVelas('etiquetas')">🏷️ Etiquetas</button>
+            </div>
         </div>
 
         <!-- ===== PANEL FILTROS UNIFICADO ===== -->

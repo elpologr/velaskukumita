@@ -1409,10 +1409,15 @@ if (document.readyState === 'loading') {
             if (btnDecoraciones) btnDecoraciones.classList.add('activo');
             if (panelDeco) panelDeco.classList.add('visible');
             aplicarFiltrosUnificados('decoraciones');
-        } else {
-            // 'todos' = Productos (ambos botones se marcan activos)
-            if (btnTodos) btnTodos.classList.add('activo');
+        } else if (modo === 'mostrar_todo') {
+            // Mostrar Todo: activa sólo el botón superior y muestra absolutamente todo
             if (btnTodosProductos) btnTodosProductos.classList.add('activo');
+            if (panelTod) panelTod.classList.add('visible');
+            if (bloqueTod) bloqueTod.style.display = 'block';
+            aplicarFiltrosUnificados('mostrar_todo');
+        } else {
+            // 'todos' = 🛍️ Productos (solo tipo producto)
+            if (btnTodos) btnTodos.classList.add('activo');
             if (panelTod) panelTod.classList.add('visible');
             if (bloqueTod) bloqueTod.style.display = 'block';
             aplicarFiltrosUnificados('todos');
@@ -1428,6 +1433,7 @@ if (document.readyState === 'loading') {
     const filtrosUnificados = {
         arreglos:     { forma: 'todos', evento: 'todos' },
         todos:        { forma: 'todos', evento: 'todos' },
+        mostrar_todo: {},
         etiquetas:    { evento: 'todos' },
         decoraciones: {}
     };
@@ -1535,8 +1541,11 @@ if (document.readyState === 'loading') {
                     okPrecio = pAttr === precioArreglosActivo;
                 }
                 card.classList.toggle('oculto', !(tieneTipo(card, 'arreglo') && okNombre && okForma && okEvento && okPrecio));
+            } else if (panel === 'mostrar_todo') {
+                // Mostrar Todo: muestra absolutamente todos los productos sin filtro de tipo
+                card.classList.toggle('oculto', !okNombre);
             } else {
-                // panel === 'todos' (Productos): muestra solo los que tienen tipo 'producto'
+                // panel === 'todos' (🛍️ Productos): muestra solo los que tienen tipo 'producto'
                 card.classList.toggle('oculto', !(tieneTipo(card, 'producto') && okNombre && okForma && okEvento));
             }
         });
