@@ -3345,10 +3345,18 @@ function abrirPantallaCarrito() {
     if (drawer && drawer.classList.contains('activo')) {
         drawer.classList.remove('activo');
         if (overlay) overlay.classList.remove('activo');
+        // Limpiar el estado del drawer del historial para que no interfiera
+        if (history.state && history.state.kukumitaModal === 'drawer') {
+            history.replaceState(null, '');
+        }
     }
+    // Limpiar cualquier estado de modal anterior que pudiera haber quedado colgado
+    _modalActivo = null;
     renderizarCarrito();
     var pantalla = document.getElementById('pantallaCarrito');
     if (!pantalla) return;
+    // Si ya estaba abierta no hacer doble pushState
+    if (pantalla.classList.contains('activa')) return;
     pantalla.classList.add('activa');
     document.body.style.overflow = 'hidden';
     _modalActivo = 'carrito';
