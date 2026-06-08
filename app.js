@@ -3352,7 +3352,7 @@ function abrirPantallaCarrito() {
     }
     // Limpiar cualquier estado de modal anterior que pudiera haber quedado colgado
     _modalActivo = null;
-    renderizarCarrito();
+    try { renderizarCarrito(); } catch(e) { console.error('[Kukumita] Error en renderizarCarrito:', e); }
     var pantalla = document.getElementById('pantallaCarrito');
     if (!pantalla) return;
     // Si ya estaba abierta no hacer doble pushState
@@ -3378,6 +3378,25 @@ function cerrarPantallaCarrito() {
     if (history.state && history.state.kukumitaModal === 'carrito') {
         history.replaceState(null, '');
     }
+}
+
+// ── Calcula el total de descuento de los cupones aplicados sobre el carrito ──
+function calcularDescuentoCupones(carritoItems) {
+    var total = 0;
+    _cuponesAplicados.forEach(function(c) {
+        var precioBase = 0;
+        if (c.productoIdx !== undefined && carritoItems[c.productoIdx]) {
+            precioBase = carritoItems[c.productoIdx].precio || 0;
+        } else if (carritoItems.length > 0) {
+            precioBase = carritoItems[0].precio || 0;
+        }
+        if (c.tipo === 'porcentaje') {
+            total += precioBase * (c.descuento / 100);
+        } else {
+            total += Math.min(c.descuento, precioBase);
+        }
+    });
+    return total;
 }
 
 function renderizarCarrito() {
