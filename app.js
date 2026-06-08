@@ -476,10 +476,10 @@ function cargarDesdeGoogleSheets() {
             // Disparar evento para que otros sistemas (paginación, filtros) se enteren
             document.dispatchEvent(new CustomEvent('catalogoCargado'));
 
-            // Iniciar en modo "Mostrar Todo" para que los filtros de precio funcionen de inmediato
-            if (typeof window.cambiarModoVelas === 'function') {
-                window.cambiarModoVelas('mostrar_todo');
-            }
+            // Iniciar siempre en modo "Mostrar Todo" para que filtros de precio funcionen de inmediato
+            setTimeout(function() {
+                if (typeof window.cambiarModoVelas === 'function') window.cambiarModoVelas('mostrar_todo');
+            }, 0);
 
             // Log de diagnostico: precios y tipos de cada producto (visible en DevTools > Consola)
             console.group('[Kukumita] Catalogo cargado — ' + listaProductos.length + ' productos');
@@ -1621,7 +1621,32 @@ if (document.readyState === 'loading') {
         precioArreglosActivo = precio;
         document.querySelectorAll('#lista-precios-arreglos .btn-precio-velas').forEach(b => b.classList.remove('activo'));
         btn.classList.add('activo');
-        aplicarFiltrosArreglos();
+
+        // Si el modo activo es "mostrar_todo", filtrar por precio en TODOS los tipos
+        var btnModoActivo = document.querySelector('.btn-modo-velas.activo');
+        var modoActivo = btnModoActivo ? btnModoActivo.id : '';
+        if (modoActivo === 'btnModoTodosProductos' || !btnModoActivo) {
+            aplicarFiltroPrecioSobreTodo(precio, tipoPrecioArreglos);
+        } else {
+            aplicarFiltrosArreglos();
+        }
+    }
+
+    // Filtra por precio exacto sobre TODOS los tipos (sin restricción de tipo)
+    function aplicarFiltroPrecioSobreTodo(precio, tipoPrecio) {
+        document.querySelectorAll('.card-dinamica').forEach(function(card) {
+            if (precio === 'todos') {
+                card.classList.remove('oculto');
+            } else {
+                var precioNormal = String(parseInt(card.getAttribute('data-precio') || '0', 10));
+                var precioBazar  = String(parseInt(card.getAttribute('data-precio-bazar') || '0', 10));
+                var precioCard   = tipoPrecio === 'bazar'
+                    ? (precioBazar !== '0' ? precioBazar : precioNormal)
+                    : (precioNormal !== '0' ? precioNormal : precioBazar);
+                card.classList.toggle('oculto', precioCard !== String(precio));
+            }
+        });
+        if (typeof window.actualizarPaginacion === 'function') window.actualizarPaginacion();
     }
 
     function aplicarFiltrosArreglos() {
@@ -4247,7 +4272,7 @@ function _cargarFavoritosFirestore(uid) {
             if (typeof window.cambiarModoVelas === 'function') window.cambiarModoVelas(modo);
         } else {
             // Fallback: mostrar todo
-            if (typeof window.cambiarModoVelas === 'function') window.cambiarModoVelas('mostrar_todo');
+            if (typeof window.cambiarModoVelas === 'function') window.cambiarModoVelas('arreglos');
         }
     };
 
