@@ -1801,7 +1801,7 @@ function cerrarDrawer() {
     document.getElementById('drawerOverlay').classList.remove('activo');
     // Si el estado actual es el del drawer, regresamos en el historial
     if (history.state && history.state.kukumitaModal === 'drawer') {
-        history.back();
+        history.replaceState(null, '');
     }
 }
 function toggleSubpanelDrawer(id) {
@@ -1867,7 +1867,7 @@ function _cerrarModalConHistorial(cerrarFn) {
     cerrarFn();
     // Si el estado del historial fue empujado por este modal, retrocedemos
     if (history.state && history.state.kukumitaModal) {
-        history.back();
+        history.replaceState(null, '');
     }
 }
 
@@ -1977,7 +1977,7 @@ function cerrarModalUber() {
     document.body.style.overflow = '';
     _modalActivo = null;
     if (history.state && history.state.kukumitaModal === 'uber') {
-        history.back();
+        history.replaceState(null, '');
     }
 }
 
@@ -1993,7 +1993,7 @@ function cerrarModalTienda() {
     document.body.style.overflow = '';
     _modalActivo = null;
     if (history.state && history.state.kukumitaModal === 'tienda') {
-        history.back();
+        history.replaceState(null, '');
     }
 }
 
@@ -2062,7 +2062,7 @@ async function copiarURL() {
 function cerrarPantallaPerfil() {
     document.getElementById('pantallaPerfil').classList.remove('activo');
     if (history.state && history.state.kukumitaModal === 'perfil') {
-        history.back();
+        history.replaceState(null, '');
     }
 }
 
@@ -2667,7 +2667,7 @@ function cerrarFavoritos() {
     document.body.style.overflow = '';
     _modalActivo = null;
     if (history.state && history.state.kukumitaModal === 'favoritos') {
-        history.back();
+        history.replaceState(null, '');
     }
 }
 
