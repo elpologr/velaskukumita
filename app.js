@@ -1874,7 +1874,7 @@ function _cerrarModalConHistorial(cerrarFn) {
 
 // Escucha el botón "atrás" del dispositivo
 window.addEventListener('popstate', function(e) {
-    // Modal de cantidad (debe cerrarse antes que cualquier otro)
+    // Modal de cantidad — debe revisarse primero
     var modalCantidad = document.getElementById('modalCantidad');
     if (modalCantidad && modalCantidad.classList.contains('abierto')) {
         modalCantidad.classList.remove('abierto');
@@ -1903,9 +1903,9 @@ window.addEventListener('popstate', function(e) {
         pantallaCarrito.classList.remove('activa');
         document.body.style.overflow = '';
         _modalActivo = null;
-        // Restaurar burbuja siempre visible al cerrar el carrito
-        var burbuja = document.getElementById('burbujaCarrito');
-        if (burbuja) { burbuja.style.removeProperty('display'); burbuja.classList.add('visible'); }
+        // Restaurar burbuja al cerrar con botón atrás
+        var burbujaBack = document.getElementById('burbujaCarrito');
+        if (burbujaBack) { burbujaBack.style.removeProperty('display'); }
         actualizarBurbuja();
         return;
     }
@@ -3253,8 +3253,9 @@ function abrirModalCantidad(card) {
     actualizarBotonesMC();
     document.getElementById('modalCantidad').classList.add('abierto');
     document.body.style.overflow = 'hidden';
-    // Empujar estado para que popstate pueda cerrarlo limpiamente
-    history.pushState({ kukumitaModal: 'cantidad' }, '');
+    if (!_modalActivo) {
+        history.pushState({ kukumitaModal: 'cantidad' }, '');
+    }
     _modalActivo = 'cantidad';
 }
 
@@ -3356,9 +3357,9 @@ function cerrarPantallaCarrito() {
     pantalla.classList.remove('activa');
     document.body.style.overflow = '';
     _modalActivo = null;
-    // Restaurar burbuja siempre visible
+    // Restaurar burbuja: quitar el inline display:none para que el CSS tome el control
     var burbuja = document.getElementById('burbujaCarrito');
-    if (burbuja) { burbuja.style.removeProperty('display'); burbuja.classList.add('visible'); }
+    if (burbuja) { burbuja.style.removeProperty('display'); }
     actualizarBurbuja();
     if (history.state && history.state.kukumitaModal === 'carrito') {
         history.back();
