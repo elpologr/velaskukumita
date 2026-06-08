@@ -2904,9 +2904,9 @@ body.modo-oscuro .cart-total-valor { color: #f0e8e0; }
 .cart-btn-cotizar:hover { background: #1ebe5d; }
 .cart-btn-cotizar:disabled { opacity: 0.5; cursor: default; }
 
-/* ── Burbuja flotante de carrito ── */
+/* ── Burbuja flotante de carrito — siempre visible ── */
 #burbujaCarrito {
-    display: none; position: fixed; bottom: 24px; right: 20px;
+    display: flex; position: fixed; bottom: 24px; right: 20px;
     z-index: 9000; cursor: pointer;
     filter: drop-shadow(0 4px 14px rgba(54,42,34,0.35));
     animation: burbuja-aparece 0.4s cubic-bezier(.34,1.56,.64,1) both;
