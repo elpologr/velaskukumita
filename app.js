@@ -3214,7 +3214,17 @@ window.refrescarCarruseles = function() {
 // ══════════════════════════════════════════════
 // SISTEMA DE CARRITO KUKUMITA
 // ══════════════════════════════════════════════
-var carrito = []; // [{card, nombre, precio, img, cantidad}]
+// ── Carrito: persistencia en localStorage ──
+var carrito = [];
+function _guardarCarrito() {
+    try { localStorage.setItem('kukumita-carrito', JSON.stringify(carrito)); } catch(e) {}
+}
+(function() {
+    try {
+        var guardado = localStorage.getItem('kukumita-carrito');
+        if (guardado) carrito = JSON.parse(guardado);
+    } catch(e) { carrito = []; }
+})();
 var _mcCardActual = null;
 var _mcCantidadActual = 1;
 var _CARRITO_MAX_PRODUCTOS = 20;
@@ -3305,6 +3315,7 @@ function confirmarAgregarCarrito() {
     }
 
     actualizarBurbuja();
+    _guardarCarrito();
     cerrarModalCantidad();
 }
 
@@ -3360,7 +3371,7 @@ function cerrarPantallaCarrito() {
     var burbuja = document.getElementById('burbujaCarrito');
     if (burbuja) { burbuja.style.removeProperty('display'); }
     actualizarBurbuja();
-    // Usar replaceState en vez de back() para no disparar popstate y romper el historial
+    // replaceState en vez de back() para NO disparar popstate y romper el historial
     if (history.state && history.state.kukumitaModal === 'carrito') {
         history.replaceState(null, '');
     }
@@ -3449,6 +3460,7 @@ function renderizarCarrito() {
 
 function quitarDelCarrito(idx) {
     carrito.splice(idx, 1);
+    _guardarCarrito();
     actualizarBurbuja();
     renderizarCarrito();
 }
@@ -3457,6 +3469,7 @@ function cambiarCantidadCarrito(idx, delta) {
     if (!carrito[idx]) return;
     var nueva = Math.max(1, Math.min(_CARRITO_MAX_PIEZAS, carrito[idx].cantidad + delta));
     carrito[idx].cantidad = nueva;
+    _guardarCarrito();
     renderizarCarrito();
 }
 
@@ -3871,6 +3884,8 @@ function irAZonaInteractiva() {
 _ready(function() {
     var _mc = document.getElementById('modalCantidad');
     if (_mc) _mc.addEventListener('click', function(e) { if (e.target === this) cerrarModalCantidad(); });
+    // Mostrar badge si hay productos guardados del carrito anterior
+    actualizarBurbuja();
 });
 
 // ══════════════════════════════════════════════════════
