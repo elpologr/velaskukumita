@@ -2583,51 +2583,33 @@ function _syncTodo(idx, esFav) {
 
 // ── Modal de login requerido para favoritos ──
 function _mostrarModalLoginFavoritos() {
+    // Si ya existe el modal, solo mostrarlo
     var m = document.getElementById('modalLoginFavoritos');
-    if (m) { m.style.display = 'flex'; return; }
-    m = document.createElement('div');
-    m.id = 'modalLoginFavoritos';
-    m.style.cssText = 'position:fixed;inset:0;z-index:9800;background:rgba(0,0,0,0.65);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
-
-    var caja = document.createElement('div');
-    caja.style.cssText = 'background:#fff;border-radius:24px;max-width:340px;width:100%;padding:36px 24px 28px;text-align:center;box-shadow:0 16px 48px rgba(0,0,0,0.28);position:relative;';
-    caja.innerHTML = [
-        // Ícono corazón
-        '<div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#ffe0e0,#ffc5c5);display:flex;align-items:center;justify-content:center;font-size:2.4rem;margin:0 auto 16px;">❤️</div>',
-        '<h3 style="margin:0 0 8px;font-size:1.2rem;font-weight:800;color:#362a22;line-height:1.3;">Inicia sesión para guardar favoritos</h3>',
-        '<p style="font-size:0.875rem;color:#8c7565;margin:0 0 24px;line-height:1.65;">Crea una cuenta o inicia sesión con Google para guardar y ver tus productos favoritos desde cualquier dispositivo.</p>',
-
-        // Botón Google
-        '<button id="btnLoginGoogle" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#3c4043;border:2px solid #dadce0;border-radius:999px;padding:12px 20px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;transition:box-shadow .2s,border-color .2s;box-shadow:0 1px 3px rgba(0,0,0,0.08);">',
-        '<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.5 33.8 30 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.2 0 6.1 1.2 8.4 3.1l6-6C34.9 5.3 29.8 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.9 0 20.4-7.9 20.4-21 0-1.4-.1-2.7-.3-4z"/><path fill="#34A853" d="M6.3 14.7l7 5.1C15 16.1 19.2 13 24 13c3.2 0 6.1 1.2 8.4 3.1l6-6C34.9 5.3 29.8 3 24 3c-7.9 0-14.7 4.4-18.3 11.1z" opacity=".0"/><path fill="#FBBC05" d="M24 45c5.8 0 11-2 14.8-5.3l-6.8-5.6C29.8 35.9 27 37 24 37c-6 0-10.5-3.2-11.8-7.5l-7 5.4C8.5 41 15.7 45 24 45z" opacity=".0"/><path fill="#EA4335" d="M44.5 20H24v8.5h11.8C34.5 33.8 30 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.2 0 6.1 1.2 8.4 3.1l6-6C34.9 5.3 29.8 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.9 0 20.4-7.9 20.4-21 0-1.4-.1-2.7-.3-4z" opacity=".0"/><path fill="#4285F4" d="M24 13c3.2 0 6.1 1.2 8.4 3.1l6-6C34.9 5.3 29.8 3 24 3 15.7 3 8.5 7 5.3 13.1l7 5.4C13.8 14.7 18.5 13 24 13z" opacity=".0"/></svg>',
-        'Continuar con Google</button>',
-
-        // Botón cancelar
-        '<button id="btnLoginCancelar" style="width:100%;background:transparent;color:#8c7565;border:2px solid #e8ddd5;border-radius:999px;padding:11px 20px;font-size:0.875rem;font-weight:700;cursor:pointer;font-family:inherit;transition:border-color .2s;">',
-        'Continuar sin cuenta</button>'
-    ].join('');
-
-    m.appendChild(caja);
-
-    // Eventos
-    caja.querySelector('#btnLoginGoogle').addEventListener('click', function() {
-        m.remove();
-        iniciarSesionGoogle();
-    });
-    caja.querySelector('#btnLoginGoogle').addEventListener('mouseover', function() {
-        this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.18)';
-        this.style.borderColor = '#a0a0a0';
-    });
-    caja.querySelector('#btnLoginGoogle').addEventListener('mouseout', function() {
-        this.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
-        this.style.borderColor = '#dadce0';
-    });
-    caja.querySelector('#btnLoginCancelar').addEventListener('click', function() { m.remove(); });
-    caja.querySelector('#btnLoginCancelar').addEventListener('mouseover', function() { this.style.borderColor='#8c7565'; });
-    caja.querySelector('#btnLoginCancelar').addEventListener('mouseout', function() { this.style.borderColor='#e8ddd5'; });
-    m.addEventListener('click', function(e) { if (e.target === m) m.remove(); });
-
-    document.body.appendChild(m);
+    if (!m) {
+        m = document.createElement('div');
+        m.id = 'modalLoginFavoritos';
+        m.style.cssText = 'position:fixed;inset:0;z-index:9800;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+        m.innerHTML = [
+            '<div style="background:#fff;border-radius:20px;max-width:340px;width:100%;padding:32px 24px 24px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.25);position:relative;">',
+            '<div style="font-size:2.8rem;margin-bottom:10px;">❤️</div>',
+            '<h3 style="margin:0 0 8px;font-size:1.15rem;font-weight:800;color:#362a22;">Inicia sesión para guardar favoritos</h3>',
+            '<p style="font-size:0.88rem;color:#8c7565;margin:0 0 22px;line-height:1.6;">Para guardar productos en tu lista de favoritos necesitas tener una cuenta.</p>',
+            '<button onclick="cerrarDrawer();document.getElementById(\'modalLoginFavoritos\').remove();iniciarSesionGoogle();" ',
+            'style="width:100%;background:linear-gradient(135deg,#f5a623,#e8921a);color:#fff;border:none;border-radius:999px;padding:13px 20px;font-size:0.95rem;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:10px;transition:opacity .2s;" ',
+            'onmouseover="this.style.opacity=\'0.88\'" onmouseout="this.style.opacity=\'1\'">',
+            '🔑 Iniciar sesión / Registrarse</button>',
+            '<button onclick="document.getElementById(\'modalLoginFavoritos\').remove()" ',
+            'style="width:100%;background:transparent;color:#8c7565;border:2px solid #e8ddd5;border-radius:999px;padding:11px 20px;font-size:0.88rem;font-weight:700;cursor:pointer;font-family:inherit;transition:border-color .2s;" ',
+            'onmouseover="this.style.borderColor=\'#8c7565\'" onmouseout="this.style.borderColor=\'#e8ddd5\'">',
+            'Continuar sin cuenta</button>',
+            '</div>'
+        ].join('');
+        // Cerrar al hacer clic en el fondo
+        m.addEventListener('click', function(e){ if(e.target===m) m.remove(); });
+        document.body.appendChild(m);
+    } else {
+        m.style.display = 'flex';
+    }
 }
 
 function toggleFavoritoCard(card) {
@@ -3312,29 +3294,34 @@ function confirmarAgregarCarrito() {
 // ── Burbuja flotante ──
 function actualizarBurbuja() {
     var total = carrito.length;
+    var burbuja = document.getElementById('burbujaCarrito');
     var badge = document.getElementById('burbujaBadge');
-    if (!badge) return;
+    if (!burbuja || !badge) return;
+
+    // Badge: muestra el número solo cuando hay productos
     if (total > 0) {
         badge.textContent = total;
         badge.style.display = 'flex';
-        // Re-animar el badge
         badge.style.animation = 'none';
-        badge.offsetWidth; // reflow
+        badge.offsetWidth; // reflow para reiniciar animación
         badge.style.animation = 'badge-pop 0.35s cubic-bezier(.34,1.56,.64,1) both';
     } else {
         badge.style.display = 'none';
     }
-    // La burbuja siempre permanece visible (el CSS ya la muestra por defecto)
+    // La burbuja SIEMPRE es visible (nunca se oculta aquí)
+    burbuja.style.removeProperty('display');
+    burbuja.classList.add('visible');
 }
 
 // ── Pantalla de carrito ──
 function abrirPantallaCarrito() {
-    // Cerrar drawer directamente sin history.back() para evitar interferencia
+    // Cerrar drawer sin usar cerrarDrawer() para evitar conflicto de history.back()
     var drawer = document.getElementById('drawer');
     var overlay = document.getElementById('drawerOverlay');
-    if (drawer) drawer.classList.remove('activo');
-    if (overlay) overlay.classList.remove('activo');
-
+    if (drawer && drawer.classList.contains('activo')) {
+        drawer.classList.remove('activo');
+        if (overlay) overlay.classList.remove('activo');
+    }
     renderizarCarrito();
     var pantalla = document.getElementById('pantallaCarrito');
     if (!pantalla) return;
@@ -3867,10 +3854,6 @@ _ready(function() {
     var _mc = document.getElementById('modalCantidad');
     if (_mc) _mc.addEventListener('click', function(e) { if (e.target === this) cerrarModalCantidad(); });
 });
-
-// El botón de carrito en el drawer ya está en el HTML directamente.
-
-
 
 // ══════════════════════════════════════════════════════
 // LÓGICA DEL SUBMENU DE COMPARTIR
