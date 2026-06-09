@@ -966,15 +966,22 @@ if (document.readyState === 'loading') {
         // La etiqueta PRINCIPAL se inyecta por inyectarEtiquetasModal()
         const tagsInline = document.getElementById('modalTagsInline');
         tagsInline.innerHTML = '';
+        tagsInline.style.display = 'none'; // colapsadas por defecto
 
         // Limpiar también zona etiqueta principal
         const zonaPrincipal = document.getElementById('mpEtiquetaPrincipalZona');
         if (zonaPrincipal) { zonaPrincipal.innerHTML = ''; zonaPrincipal.style.display = 'none'; }
 
+        // Ocultar botón toggle hasta saber si hay sub-etiquetas
+        const btnToggleSub = document.getElementById('mpBtnMostrarSubetiquetas');
+        if (btnToggleSub) btnToggleSub.style.display = 'none';
+
         // — Sub-etiquetas (desde data-subtags: cirio, tazón, stich, etc.) —
         const dataForma = card.getAttribute('data-forma') || '';
         const subtags = (card.getAttribute('data-subtags') || '').split('|').map(s => s.trim()).filter(Boolean);
+        let haySubetiquetas = false;
         if (subtags.length > 0) {
+            haySubetiquetas = true;
             const rowForma = document.createElement('div');
             rowForma.style.cssText = 'display: flex; flex-wrap: wrap; gap: 5px; width: 100%; margin-bottom: 6px;';
             const labelFm = document.createElement('div');
@@ -1021,6 +1028,7 @@ if (document.readyState === 'loading') {
         }
         const eventoSlots = dataEvento.split(/\s+/).filter(e => e && e !== 'sin' && e !== 'evento');
         if (eventoSlots.length > 0) {
+            haySubetiquetas = true;
             const labelEv = document.createElement('div');
             labelEv.textContent = 'Etiquetas de Evento';
             labelEv.style.cssText = 'font-size: 10px; font-weight: 700; color: #4b6b94; text-transform: uppercase; letter-spacing: 0.5px; width: 100%; margin-bottom: 4px;';
@@ -1035,6 +1043,9 @@ if (document.readyState === 'loading') {
             });
             tagsInline.appendChild(rowEv);
         }
+
+        // Mostrar botón toggle solo si hay algo que desplegar
+        if (btnToggleSub) btnToggleSub.style.display = haySubetiquetas ? 'inline-block' : 'none';
 
         // Descripción
         const descTexto = document.getElementById('modalDescripcionTexto');
@@ -1073,8 +1084,6 @@ if (document.readyState === 'loading') {
                 existenciaZona.style.display = 'none';
             }
         }
-
-        // ── Decoraciones y Aditamentos: lee columnas SubImagen1-8 desde data-sub-imagenes ──
         const aditivosScroll = document.getElementById('modalAditivosScroll');
         const aditivosZona   = document.getElementById('modalAditivosZona');
         aditivosScroll.innerHTML = '';
@@ -1295,6 +1304,11 @@ if (document.readyState === 'loading') {
         }
         // Restaurar meta OG genéricos
         document.dispatchEvent(new CustomEvent('modalProductoCerrado'));
+        // Resetear sub-etiquetas a estado colapsado para el próximo producto
+        var tagsInline = document.getElementById('modalTagsInline');
+        var btnToggle  = document.getElementById('mpBtnMostrarSubetiquetas');
+        if (tagsInline) tagsInline.style.display = 'none';
+        if (btnToggle)  btnToggle.textContent = 'Ver sub-etiquetas ▾';
     }
 
     function renderizarGaleria() {
@@ -3223,6 +3237,16 @@ var TIPO_INFO = {
 };
 
 // ── Inyectar etiqueta principal (sobre el título) y sub-etiquetas (sobre evento) ──
+// ── Toggle sub-etiquetas en el modal de producto ──────────────────────────────
+function toggleSubetiquetasModal() {
+    var zona = document.getElementById('modalTagsInline');
+    var btn  = document.getElementById('mpBtnMostrarSubetiquetas');
+    if (!zona || !btn) return;
+    var abierto = zona.style.display !== 'none';
+    zona.style.display = abierto ? 'none' : 'block';
+    btn.textContent = abierto ? 'Ver sub-etiquetas ▾' : 'Ocultar sub-etiquetas ▴';
+}
+
 function inyectarEtiquetasModal(card) {
     // 1. ETIQUETAS PRINCIPALES — lee data-tipos (puede haber varias separadas por |)
     var zonaPrincipal = document.getElementById('mpEtiquetaPrincipalZona');

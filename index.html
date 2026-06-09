@@ -721,7 +721,7 @@
             <h2 style="text-align:center; font-size:2.6rem; font-weight:800; color:#362a22; letter-spacing:2px; margin:0 0 14px 0; font-family:'Playfair Display', Georgia, serif; font-style:italic; line-height:1.2;">Nuestras otras redes sociales</h2>
 
             <p style="color:#5c4d43; line-height:1.75; font-size:0.93rem; margin-bottom:24px; text-align:center;">
-                Revisa nuestros videos en YouTube, o los de Facebook o Instagram, que son muy diferentes.<br>
+                Revisa nuestros videos en YouTube.<br>
                 <span style="color:#8c7565; font-weight:600;">Filtra aquí por red social.</span>
             </p>
 
@@ -731,21 +731,6 @@
                    style="display:inline-flex; align-items:center; gap:9px; background:#ffd6d6; color:#b30000; border:2px solid #ffaaaa; border-radius:999px; padding:11px 22px; font-size:0.92rem; font-weight:700; font-family:inherit; cursor:pointer; transition:all 0.22s;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="#b30000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                     YouTube
-                </button>
-                <button onclick="filtrarVideosRed('facebook')" id="btnRedFB"
-                   style="display:inline-flex; align-items:center; gap:9px; background:#d6e4ff; color:#1040a0; border:2px solid #aac4ff; border-radius:999px; padding:11px 22px; font-size:0.92rem; font-weight:700; font-family:inherit; cursor:pointer; transition:all 0.22s;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#1040a0"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                    Facebook
-                </button>
-                <button onclick="filtrarVideosRed('instagram')" id="btnRedIG"
-                   style="display:inline-flex; align-items:center; gap:9px; background:#ffe0ec; color:#8b1a3a; border:2px solid #ffb3ce; border-radius:999px; padding:11px 22px; font-size:0.92rem; font-weight:700; font-family:inherit; cursor:pointer; transition:all 0.22s;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#8b1a3a"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
-                    Instagram
-                </button>
-                <button onclick="filtrarVideosRed('tiktok')" id="btnRedTT"
-                   style="display:inline-flex; align-items:center; gap:9px; background:#e0e0e0; color:#333; border:2px solid #c0c0c0; border-radius:999px; padding:11px 22px; font-size:0.92rem; font-weight:700; font-family:inherit; cursor:pointer; transition:all 0.22s;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#333"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z"/></svg>
-                    TikTok
                 </button>
             </div>
 
@@ -1379,26 +1364,31 @@
         <!-- ── INFO DEL PRODUCTO ── -->
         <div class="mp-info-zona">
 
-            <!-- 1. Etiqueta Principal (Producto / Arreglo / Aditamento) -->
-            <div id="mpEtiquetaPrincipalZona" style="margin-bottom:6px; display:none;">
-                <!-- se inyecta por JS -->
+            <!-- 1. Etiqueta Principal + botón "Mostrar sub-etiquetas" -->
+            <div style="display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+                <div id="mpEtiquetaPrincipalZona" style="display:none; flex-wrap:wrap; gap:6px; align-items:center;">
+                    <!-- etiquetas principales inyectadas por JS -->
+                </div>
+                <button id="mpBtnMostrarSubetiquetas" onclick="toggleSubetiquetasModal()" style="display:none; margin-left:6px; background:#f0ebe5; color:#705c4f; border:1.5px solid #d4c5b8; border-radius:999px; padding:3px 11px; font-size:10px; font-weight:700; font-family:inherit; cursor:pointer; white-space:nowrap; transition:background 0.18s;">
+                    Ver sub-etiquetas ▾
+                </button>
             </div>
+
+            <!-- Sub-etiquetas y etiquetas de evento (colapsadas por defecto) -->
+            <div id="modalTagsInline" style="display:none; margin-bottom:10px;"></div>
 
             <!-- 2. Título del producto -->
             <div class="mp-titulo-fila">
                 <h2 class="modal-prod-titulo" id="modalProdTitulo"></h2>
             </div>
 
-            <!-- 3. Sub-etiquetas (Oferta / Más vendido) + Etiquetas de evento -->
-            <div class="modal-tags-inline" id="modalTagsInline" style="margin-bottom:10px;"></div>
-
-            <!-- 4. Descripción (si existe) -->
+            <!-- 3. Descripción (si existe) -->
             <div id="modalDescripcionZona" style="display:none;">
                 <p class="modal-prod-descripcion" id="modalDescripcionTexto"></p>
             </div>
 
-            <!-- 4b. Alto y Ancho (si existen) -->
-            <div id="modalDimensionesZona" style="display:none; margin: 8px 0 10px 0;">
+            <!-- 4. Alto y Ancho (si existen) -->
+            <div id="modalDimensionesZona" style="display:none; margin: 8px 0 6px 0;">
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
                     <div id="modalAltoZona" style="display:none; background:#f5f0eb; border:1.5px solid #e0d5cc; border-radius:10px; padding:7px 14px; width:auto; min-width:0;">
                         <span style="font-size:10px; font-weight:700; color:#9a8878; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:2px; white-space:nowrap;">📏 Alto</span>
@@ -1411,18 +1401,26 @@
                 </div>
             </div>
 
-            <!-- 5. Nota mayoreo -->
-            <div class="mp-bloque-precios" id="mpBloquePrecios">
-                <p class="mp-mayoreo-texto">✨ <em>El precio de Mayoreo aplica por docenas.</em> A mayor cantidad, menor precio por pieza.</p>
+            <!-- 5. Stock / Existencia (inferior derecha, debajo de descripción) -->
+            <div id="modalExistenciaZona" style="display:none; text-align:right; margin: 4px 0 10px 0;">
+                <div style="display:inline-block; background:#eaf5ee; border:1.5px solid #b8dfc4; border-radius:10px; padding:7px 14px;">
+                    <span style="font-size:10px; font-weight:700; color:#3a7a52; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:2px; white-space:nowrap;">📦 Stock / Existencia</span>
+                    <span id="modalExistenciaTexto" style="font-size:0.95rem; font-weight:700; color:#1e5c38; white-space:nowrap;"></span>
+                </div>
             </div>
 
-            <!-- 6. Decoraciones y Aditamentos -->
+            <!-- 6. Nota mayoreo -->
+            <div class="mp-bloque-precios" id="mpBloquePrecios">
+                <p class="mp-mayoreo-texto" style="color:#1a1a1a;">✨ <em>El precio de Mayoreo aplica por docenas.</em> A mayor cantidad, menor precio por pieza.</p>
+            </div>
+
+            <!-- 7. Decoraciones y Aditamentos -->
             <div id="modalAditivosZona">
                 <div class="mp-aditivos-titulo">Decoraciones y Aditamentos</div>
                 <div id="modalAditivosScroll" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: thin; scrollbar-color: #d9cfc8 transparent;"></div>
             </div>
 
-            <!-- 7. Fila de precios: Original izquierda | Bazar derecha -->
+            <!-- 8. Fila de precios: Original izquierda | Bazar derecha -->
             <div id="mpPrecioFilaCompleta" style="display:none; padding: 10px 0 2px 0; border-top: 1px solid #f0eae4; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;">
                 <div id="mpPrecioOriginalFila" style="display:none; flex:1; min-width:100px;">
                     <span style="font-size:10px; font-weight:600; letter-spacing:0.4px; color:#9a8878; text-transform:uppercase; display:block; margin-bottom:4px;">Precio por pieza</span>
@@ -1434,13 +1432,13 @@
                 </div>
             </div>
 
-            <!-- 8a. Botones Favoritos / Carrito -->
+            <!-- 9a. Botones Favoritos / Carrito -->
             <div class="mp-botones-accion" style="margin-top:6px; margin-bottom:0;">
                 <button class="mp-btn-favoritos" id="mpBtnFavoritos">❤️ Favoritos</button>
                 <button class="mp-btn-carrito" id="mpBtnCarrito">🛒 Añadir al carrito</button>
             </div>
 
-            <!-- 8b. Botones de acción -->
+            <!-- 9b. Botones de acción -->
             <div class="mp-botones-accion">
                 <button class="mp-btn-wa" id="mpBtnWhatsapp">💬 WhatsApp</button>
                 <button class="mp-btn-compartir" id="mpBtnCompartir">🔗 Compartir</button>
