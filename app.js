@@ -493,6 +493,77 @@ function renderizarCatalogoCompleto() {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
+// OPEN GRAPH DINÁMICO — actualiza meta tags según el producto en la URL
+// ══════════════════════════════════════════════════════════════════════════════
+
+function _actualizarMetaOG(titulo, descripcion, imagen, url) {
+    function setMeta(id, valor) {
+        var el = document.getElementById(id);
+        if (el && valor) el.setAttribute('content', valor);
+    }
+    var urlFinal = url || window.location.href;
+    setMeta('og-url',         urlFinal);
+    setMeta('og-title',       titulo + ' — Velas Kukumita');
+    setMeta('og-description', descripcion || 'Descubre este producto en Velas Kukumita.');
+    setMeta('og-image',       imagen);
+    setMeta('tw-title',       titulo + ' — Velas Kukumita');
+    setMeta('tw-description', descripcion || 'Descubre este producto en Velas Kukumita.');
+    setMeta('tw-image',       imagen);
+    // Actualizar también el <title> de la página
+    document.title = titulo + ' — Velas Kukumita';
+}
+
+function _abrirProductoDesdeURL() {
+    var params = new URLSearchParams(window.location.search);
+    var nombreParam = params.get('producto');
+    if (!nombreParam) return;
+
+    var nombreBuscado = decodeURIComponent(nombreParam).trim().toLowerCase();
+
+    // Buscar la card que coincida con el nombre
+    var cardEncontrada = null;
+    document.querySelectorAll('.card-dinamica').forEach(function(card) {
+        var nombreCard = (card.getAttribute('data-nombre') || '').trim().toLowerCase();
+        if (nombreCard === nombreBuscado) cardEncontrada = card;
+    });
+
+    if (!cardEncontrada) return;
+
+    // Actualizar meta OG con los datos del producto
+    var nombre    = cardEncontrada.getAttribute('data-nombre') || '';
+    var desc      = cardEncontrada.getAttribute('data-descripcion') || '';
+    var imagenes  = [];
+    try { imagenes = JSON.parse(cardEncontrada.getAttribute('data-imagenes') || '[]'); } catch(e) {}
+    var imagen    = imagenes[0] || '';
+    var urlProd   = window.location.href.split('?')[0] + '?producto=' + encodeURIComponent(nombre);
+
+    _actualizarMetaOG(nombre, desc, imagen, urlProd);
+
+    // Abrir el modal del producto con un pequeño retraso para que la UI esté lista
+    setTimeout(function() {
+        if (typeof abrirModalProducto === 'function') abrirModalProducto(cardEncontrada);
+    }, 300);
+}
+
+// Restaurar meta OG genéricos al cerrar el modal
+(function() {
+    var _tituloOriginal    = document.title;
+    var _ogTitleOriginal   = 'Velas Kukumita — Arreglos y Productos Artesanales';
+    var _ogDescOriginal    = 'Descubre nuestros hermosos arreglos y productos artesanales de Velas Kukumita.';
+
+    document.addEventListener('modalProductoCerrado', function() {
+        document.title = _tituloOriginal;
+        function setMeta(id, val) { var el=document.getElementById(id); if(el) el.setAttribute('content',val); }
+        setMeta('og-title',       _ogTitleOriginal);
+        setMeta('og-description', _ogDescOriginal);
+        setMeta('og-image',       '');
+        setMeta('tw-title',       _ogTitleOriginal);
+        setMeta('tw-description', _ogDescOriginal);
+        setMeta('tw-image',       '');
+    });
+})();
+
 // CARGA DESDE GOOGLE SHEETS (CSV público)
 // ══════════════════════════════════════════════════════════════════════════════
 function cargarDesdeGoogleSheets() {
@@ -538,6 +609,9 @@ function cargarDesdeGoogleSheets() {
             if (typeof window.refrescarCarruseles === 'function') {
                 setTimeout(function() { window.refrescarCarruseles(); }, 50);
             }
+
+            // ── Leer ?producto= de la URL y abrir ese modal automáticamente ──
+            _abrirProductoDesdeURL();
 
             // Log de diagnostico: precios y tipos de cada producto (visible en DevTools > Consola)
             console.group('[Kukumita] Catalogo cargado — ' + listaProductos.length + ' productos');
@@ -1148,10 +1222,14 @@ if (document.readyState === 'loading') {
             window.open('https://wa.me/524431469161?text=' + texto, '_blank');
         };
 
-        // Botón Compartir — abre submenu propio
+        // Botón Compartir — actualiza OG y abre submenu
         document.getElementById('mpBtnCompartir').onclick = (e) => {
             e.stopPropagation();
             const url = window.location.href.split('?')[0] + '?producto=' + encodeURIComponent(nombre);
+            // Actualizar meta OG con este producto antes de compartir
+            if (typeof _actualizarMetaOG === 'function') {
+                _actualizarMetaOG(nombre, descripcion, galeriaImagenes[0] || '', url);
+            }
             abrirSubmenuCompartir(url, nombre);
         };
 
@@ -1199,6 +1277,8 @@ if (document.readyState === 'loading') {
         if (history.state && history.state.modalAbierto) {
             history.replaceState(null, '');
         }
+        // Restaurar meta OG genéricos
+        document.dispatchEvent(new CustomEvent('modalProductoCerrado'));
     }
 
     function renderizarGaleria() {
