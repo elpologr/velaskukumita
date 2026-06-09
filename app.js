@@ -2504,14 +2504,70 @@ function mostrarSugerenciasDrawer() {
     var prods = obtenerProductosDrawer().slice(0, 3);
     renderizarResultadosDrawer(prods, 'Productos destacados');
 }
-function ejecutarBusquedaDrawer() {
-    var query = document.getElementById('drawerInputBusqueda').value.trim().toLowerCase();
-    var prods = obtenerProductosDrawer();
-    if (!query) { mostrarSugerenciasDrawer(); return; }
-    var resultados = prods.filter(function(p) {
-        return p.nombre.toLowerCase().includes(query);
+function _normDrawer(str) {
+    return (str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+// Sinónimos para la búsqueda del drawer (misma tabla que coincideNombre)
+var _SINONIMOS_DRAWER = [
+    ['tazon','tason','tazones','tasones','bowl','tazón','tasón'],
+    ['virgen','virjen','birgen','birjen','virgin'],
+    ['elefante','elefantes'],
+    ['arreglo','arreglos'],
+    ['vela','velas'],
+    ['figura','figuras'],
+    ['flores','flor'],
+];
+function _expandirDrawer(palabra) {
+    for (var i = 0; i < _SINONIMOS_DRAWER.length; i++) {
+        if (_SINONIMOS_DRAWER[i].indexOf(palabra) !== -1) return _SINONIMOS_DRAWER[i];
+    }
+    return [palabra];
+}
+function _coincideDrawer(nombre, query, card) {
+    var texto = _normDrawer(nombre);
+    if (card) {
+        texto += ' ' + _normDrawer(card.getAttribute('data-tipos') || '');
+        texto += ' ' + _normDrawer(card.getAttribute('data-subtags') || '');
+    }
+    var palabras = _normDrawer(query).split(/\s+/).filter(function(p){ return p.length >= 2; });
+    if (!palabras.length) return true;
+    return palabras.every(function(p) {
+        return _expandirDrawer(p).some(function(v){ return texto.includes(v); });
     });
-    renderizarResultadosDrawer(resultados, 'Resultados para "' + query + '"');
+}
+
+function ejecutarBusquedaDrawer() {
+    var rawQuery = document.getElementById('drawerInputBusqueda').value.trim();
+    var query    = rawQuery.toLowerCase();
+    if (!query) { mostrarSugerenciasDrawer(); return; }
+
+    // Mostrar TODOS los resultados en el catálogo principal:
+    // 1. Cerrar drawer
+    cerrarDrawer();
+    // 2. Cambiar a modo "mostrar todo" para que no haya filtro de tipo
+    if (typeof window.cambiarModoVelas === 'function') window.cambiarModoVelas('mostrar_todo');
+    // 3. Filtrar todas las cards por query (con acento y sinónimos)
+    var cards = document.querySelectorAll('#gridProductos .card-dinamica');
+    var total = 0;
+    cards.forEach(function(card) {
+        var nombre = card.getAttribute('data-nombre') || '';
+        var match  = _coincideDrawer(nombre, query, card);
+        card.classList.toggle('oculto', !match);
+        card.classList.remove('paginacion-oculto');
+        if (match) total++;
+    });
+    // 4. Repaginar
+    if (typeof window.actualizarPaginacion === 'function') window.actualizarPaginacion();
+    // 5. Scroll al catálogo
+    var grid = document.getElementById('gridProductos');
+    if (grid) setTimeout(function(){ grid.scrollIntoView({ behavior:'smooth', block:'start' }); }, 100);
+    // 6. Toast informativo
+    if (typeof mostrarToast === 'function') {
+        mostrarToast(total > 0
+            ? '🔍 ' + total + ' resultado' + (total !== 1 ? 's' : '') + ' para "' + rawQuery + '"'
+            : '😕 Sin resultados para "' + rawQuery + '"');
+    }
 }
 function renderizarResultadosDrawer(lista, titulo) {
     var cont = document.getElementById('drawerResultados');
@@ -2829,20 +2885,8 @@ document.querySelectorAll('.card-dinamica').forEach(function(card) {
     tagDivs.forEach(function(div) { div.style.display = 'none'; });
 });
 
-// ═══ BÚSQUEDA EN DRAWER: si busca "vela" o "velas" → modo arreglos página 1 ═══
-const _origEjecutarBusqueda = ejecutarBusquedaDrawer;
-ejecutarBusquedaDrawer = function() {
-    var query = (document.getElementById('drawerInputBusqueda').value || '').trim().toLowerCase();
-    if (query === 'vela' || query === 'velas') {
-        cerrarDrawer();
-        if (typeof cambiarModoVelas === 'function') cambiarModoVelas('arreglos');
-        document.querySelectorAll('.card-dinamica').forEach(function(c) { c.classList.remove('oculto'); });
-        if (typeof window.actualizarPaginacion === 'function') window.actualizarPaginacion();
-        if (typeof mostrarToast === 'function') mostrarToast('🕯️ Mostrando todos los productos');
-        return;
-    }
-    _origEjecutarBusqueda();
-};
+// ═══ BÚSQUEDA EN DRAWER: wrapper legacy (ya no necesita caso especial, todo va al catálogo) ═══
+// Se conserva por compatibilidad pero la función ejecutarBusquedaDrawer ya maneja todo.
 
 
 
