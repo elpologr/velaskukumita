@@ -476,11 +476,6 @@ function cargarDesdeGoogleSheets() {
             // Disparar evento para que otros sistemas (paginación, filtros) se enteren
             document.dispatchEvent(new CustomEvent('catalogoCargado'));
 
-            // Iniciar siempre en modo "Mostrar Todo" para que filtros de precio funcionen de inmediato
-            setTimeout(function() {
-                if (typeof window.cambiarModoVelas === 'function') window.cambiarModoVelas('mostrar_todo');
-            }, 0);
-
             // Log de diagnostico: precios y tipos de cada producto (visible en DevTools > Consola)
             console.group('[Kukumita] Catalogo cargado — ' + listaProductos.length + ' productos');
             listaProductos.forEach(function(p) {
@@ -617,7 +612,13 @@ if (document.readyState === 'loading') {
 
     // Escuchar el evento de catálogo cargado (Google Sheets) en lugar de usar un timeout fijo
     document.addEventListener('catalogoCargado', function() {
-        actualizarPaginacion();
+        // Primero activar modo "Mostrar Todo" para que TODAS las cards queden visibles,
+        // luego la paginación las contará correctamente.
+        if (typeof window.cambiarModoVelas === 'function') {
+            window.cambiarModoVelas('mostrar_todo');
+        } else {
+            actualizarPaginacion();
+        }
     });
 
     // También respaldo con _ready por si el catálogo ya estaba listo al iniciar
@@ -1622,17 +1623,16 @@ if (document.readyState === 'loading') {
         document.querySelectorAll('#lista-precios-arreglos .btn-precio-velas').forEach(b => b.classList.remove('activo'));
         btn.classList.add('activo');
 
-        // Si el modo activo es "mostrar_todo", filtrar por precio en TODOS los tipos
+        // Si el modo activo es "Mostrar Todo", filtrar por precio sobre TODOS los tipos
         var btnModoActivo = document.querySelector('.btn-modo-velas.activo');
-        var modoActivo = btnModoActivo ? btnModoActivo.id : '';
-        if (modoActivo === 'btnModoTodosProductos' || !btnModoActivo) {
+        if (!btnModoActivo || btnModoActivo.id === 'btnModoTodosProductos') {
             aplicarFiltroPrecioSobreTodo(precio, tipoPrecioArreglos);
         } else {
             aplicarFiltrosArreglos();
         }
     }
 
-    // Filtra por precio exacto sobre TODOS los tipos (sin restricción de tipo)
+    // Filtra por precio exacto sobre TODOS los tipos sin restricción de categoría
     function aplicarFiltroPrecioSobreTodo(precio, tipoPrecio) {
         document.querySelectorAll('.card-dinamica').forEach(function(card) {
             if (precio === 'todos') {
