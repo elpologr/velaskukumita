@@ -1055,6 +1055,66 @@
             </div>
         </div>
 
+        <!-- ===== BUSCA POR EVENTO ===== -->
+        <div style="padding: 0 0 8px 0;">
+            <p style="text-align:center; font-size:1.1rem; font-weight:800; color:#5c4d43; margin:0 0 10px 0; letter-spacing:0.3px;">🎉 Busca por Evento</p>
+            <div style="position:relative; overflow:hidden;">
+                <!-- Gradiente derecho como señal de más contenido -->
+                <div id="eventoScrollGradient" style="position:absolute; right:0; top:0; bottom:0; width:80px; background:linear-gradient(to right, transparent, rgba(255,255,255,0.97)); pointer-events:none; z-index:2; transition:opacity 0.3s;"></div>
+                <div id="eventoCarrusel" style="display:flex; gap:9px; overflow-x:auto; padding:4px 12px 10px; scroll-snap-type:x mandatory; scrollbar-width:none; -ms-overflow-style:none;" onscroll="actualizarGradienteEvento(this)">
+                    <button class="btn-evento-carrusel" data-evento="todos" onclick="filtrarPorEventoCarrusel(this,'todos')" style="background:#1a1a1a; color:#fff; border-color:#1a1a1a;">Ver Todo</button>
+                    <button class="btn-evento-carrusel" data-evento="dia-de-muertos" onclick="filtrarPorEventoCarrusel(this,'dia-de-muertos')">💀 Día de Muertos</button>
+                    <button class="btn-evento-carrusel" data-evento="navidad" onclick="filtrarPorEventoCarrusel(this,'navidad')">🎄 Navidad</button>
+                    <button class="btn-evento-carrusel" data-evento="dia-de-las-madres" onclick="filtrarPorEventoCarrusel(this,'dia-de-las-madres')">🌹 Día de las Madres</button>
+                    <button class="btn-evento-carrusel" data-evento="dia-del-maestro" onclick="filtrarPorEventoCarrusel(this,'dia-del-maestro')">📚 Día del Maestro</button>
+                    <button class="btn-evento-carrusel" data-evento="dia-del-nino" onclick="filtrarPorEventoCarrusel(this,'dia-del-nino')">🧸 Día del Niño</button>
+                    <button class="btn-evento-carrusel" data-evento="dia-del-estudiante" onclick="filtrarPorEventoCarrusel(this,'dia-del-estudiante')">🎓 Día del Estudiante</button>
+                    <button class="btn-evento-carrusel" data-evento="boda" onclick="filtrarPorEventoCarrusel(this,'boda')">💍 Boda</button>
+                    <button class="btn-evento-carrusel" data-evento="baby-shower" onclick="filtrarPorEventoCarrusel(this,'baby-shower')">🍼 Baby Shower</button>
+                    <button class="btn-evento-carrusel" data-evento="bautizo" onclick="filtrarPorEventoCarrusel(this,'bautizo')">🕊️ Bautizo</button>
+                    <button class="btn-evento-carrusel" data-evento="primera-comunion" onclick="filtrarPorEventoCarrusel(this,'primera-comunion')">🙏 Primera Comunión</button>
+                    <button class="btn-evento-carrusel" data-evento="quince-anos" onclick="filtrarPorEventoCarrusel(this,'quince-anos')">👑 Quince Años</button>
+                    <button class="btn-evento-carrusel" data-evento="graduacion" onclick="filtrarPorEventoCarrusel(this,'graduacion')">🎓 Graduación</button>
+                    <button class="btn-evento-carrusel" data-evento="aniversario-luctuoso" onclick="filtrarPorEventoCarrusel(this,'aniversario-luctuoso')">🕯️ Aniv. Luctuoso</button>
+                    <button class="btn-evento-carrusel" data-evento="fin-novenario" onclick="filtrarPorEventoCarrusel(this,'fin-novenario')">🌿 Fin de Novenario</button>
+                    <button class="btn-evento-carrusel" data-evento="despedida-soltera" onclick="filtrarPorEventoCarrusel(this,'despedida-soltera')">🥂 Despedida Soltera</button>
+                </div>
+            </div>
+        </div>
+        <style>
+        .btn-evento-carrusel {
+            flex-shrink: 0;
+            scroll-snap-align: start;
+            padding: 13px 17px;
+            border-radius: 999px;
+            border: 2px solid #e0d5cc;
+            background: #fff;
+            color: #5c4d43;
+            font-size: 0.82rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.16s, color 0.16s, border-color 0.16s, box-shadow 0.16s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.07);
+        }
+        .btn-evento-carrusel:active { transform: scale(0.95); }
+        .btn-evento-carrusel.activo-evento {
+            background: #8c7565;
+            color: #fff;
+            border-color: #8c7565;
+            box-shadow: 0 3px 10px rgba(140,117,101,0.28);
+        }
+        .btn-evento-carrusel:hover:not(.activo-evento) {
+            background: #f0ebe5;
+            border-color: #8c7565;
+        }
+        #eventoCarrusel::-webkit-scrollbar { display: none; }
+        .modo-oscuro .btn-evento-carrusel { background:#2a2220; color:#d4c5b8; border-color:#4a3b32; }
+        .modo-oscuro .btn-evento-carrusel.activo-evento { background:#8c7565; color:#fff; border-color:#8c7565; }
+        .modo-oscuro #eventoScrollGradient { background: linear-gradient(to right, transparent, rgba(26,18,14,0.97)); }
+        </style>
+
         <!-- ===== PANEL FILTROS UNIFICADO ===== -->
 
         <!-- ARREGLOS -->

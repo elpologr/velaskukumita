@@ -168,7 +168,7 @@ var SHEET_ID = '1jin2wMYingvbPD2csGxIbm5AhulfRvCRvIzAKJTUNMw';
 // COLUMNAS ESPERADAS EN LA HOJA (fila 1 = encabezados, datos desde fila 2):
 //   A(0):  Nombre
 //   B(1):  precio
-//   C(2):  precio bazar
+//   C(2):  precio mayoreo
 //   D(3):  Descripcion
 //   E(4):  video youtube
 //   F(5):  Imagen
@@ -238,7 +238,7 @@ function csvAProductos(filas) {
         // Nuevo orden de columnas (Google Sheets):
         // A=0  nombre
         // B=1  precio
-        // C=2  precioBazar
+        // C=2  precioMayoreo (antes precioBazar)
         // D=3  descripcion
         // E=4  video youtube
         // F=5  Imagen (URL principal + extras separadas por coma)
@@ -4489,7 +4489,76 @@ function _cargarFavoritosFirestore(uid) {
 })();
 
 // ══════════════════════════════════════════════════════════════════
-// BÚSQUEDA GLOBAL — ignora tabs, filtros de precio y tipo
+// FILTRO RÁPIDO POR EVENTO (carrusel "Busca por Evento")
+// ══════════════════════════════════════════════════════════════════
+(function() {
+    // Normaliza slugs: quita acentos, espacios→guion, todo minúsculas
+    function _normSlug(s) {
+        return (s || '').toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9-]/g, '');
+    }
+
+    window.filtrarPorEventoCarrusel = function(btnPulsado, evento) {
+        // Marcar botón activo
+        document.querySelectorAll('.btn-evento-carrusel').forEach(function(b) {
+            b.classList.remove('activo-evento');
+        });
+        btnPulsado.classList.add('activo-evento');
+
+        // Activar modo "Mostrar Todo" para que todas las cards sean candidatas
+        if (typeof window.cambiarModoVelas === 'function') {
+            window.cambiarModoVelas('mostrar_todo');
+        }
+
+        if (evento === 'todos') {
+            // Sin filtro de evento adicional — el modo mostrar_todo ya muestra todo
+            return;
+        }
+
+        // Pequeño retardo para que cambiarModoVelas termine de mostrar las cards
+        setTimeout(function() {
+            var slugFiltro = _normSlug(evento);
+            var cards = document.querySelectorAll('#gridProductos .card-dinamica');
+            var hay = false;
+            cards.forEach(function(card) {
+                var dataEvento = (card.getAttribute('data-evento') || '').toLowerCase();
+                // data-evento puede ser multi-valor separado por espacios
+                var slugs = dataEvento.split(/\s+/).map(_normSlug).filter(Boolean);
+                var coincide = slugs.includes(slugFiltro);
+                card.classList.toggle('oculto', !coincide);
+                card.classList.remove('paginacion-oculto');
+                if (coincide) hay = true;
+            });
+
+            // Actualizar paginación
+            if (typeof window.actualizarPaginacion === 'function') {
+                window.actualizarPaginacion();
+            }
+        }, 60);
+    };
+
+    // Ocultar/mostrar gradiente según posición del scroll
+    window.actualizarGradienteEvento = function(el) {
+        var grad = document.getElementById('eventoScrollGradient');
+        if (!grad) return;
+        var maxScroll = el.scrollWidth - el.clientWidth;
+        grad.style.opacity = el.scrollLeft >= maxScroll - 8 ? '0' : '1';
+    };
+
+    // Limpiar filtro de evento cuando el usuario cambia de tab manualmente
+    _ready(function() {
+        document.querySelectorAll('.btn-modo-velas').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.btn-evento-carrusel').forEach(function(b) {
+                    b.classList.remove('activo-evento');
+                });
+            });
+        });
+    });
+})();
+
 // ══════════════════════════════════════════════════════════════════
 (function() {
     var _modoGuardado = null;
