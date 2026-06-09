@@ -1102,6 +1102,8 @@ if (document.readyState === 'loading') {
 
             function buscarCardPorNombre(entrada) {
                 const norm = _normTexto(entrada);
+                // No buscar coincidencias parciales con cadenas muy cortas (evita falsos positivos con números)
+                if (norm.length < 3) return null;
                 if (nombreACard[norm]) return nombreACard[norm];
                 const claves = Object.keys(nombreACard);
                 for (let k = 0; k < claves.length; k++) {
@@ -1121,6 +1123,11 @@ if (document.readyState === 'loading') {
             subImagenes.forEach(function(entrada) {
                 entrada = (entrada || '').trim();
                 if (!entrada) return;
+
+                // Descartar entradas que sean solo números (podrían ser datos de otra columna)
+                if (/^\d+$/.test(entrada)) return;
+                // Descartar entradas demasiado cortas que no sean URLs
+                if (entrada.length < 3 && !/^https?:\/\//i.test(entrada)) return;
 
                 let cardRelacionada = null;
                 let srcImagen = '';
