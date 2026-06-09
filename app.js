@@ -229,26 +229,55 @@ function csvAProductos(filas) {
         // Saltar filas sin nombre
         if (!get(0)) continue;
 
-        // A=0 nombre, B=1 precio, C=2 precioBazar, D=3 descripcion,
-        // E=4 imagen, F=5 etiquetaPrincipal (puede tener varias separadas por |), G=6 subEtiqueta, H=7 etiquetaEvento
-        // I=8 alto, J=9 ancho
+        // Nuevo orden de columnas (Google Sheets):
+        // A=0  nombre
+        // B=1  precio
+        // C=2  precioBazar
+        // D=3  descripcion
+        // E=4  Video youtube/facebook/instagram
+        // F=5  Imagen (URL principal + extras separadas por coma)
+        // G=6  EtiquetaPrincipal
+        // H=7  SubEtiqueta
+        // I=8  EtiquetaEvento
+        // J=9  en oferta  (si / vacío)
+        // K=10 mas vendido (si / vacío)
+        // L=11 Alto
+        // M=12 Ancho
+        // N=13 SubImagen1 … U=20 SubImagen8
+        // V=21 youtube img/vid
+        // W=22 facebook img/vid
+        // X=23 instagram img/vid
+        // Y=24 tiktok img/vid
 
-        // Imágenes: columna E puede tener varias URLs separadas por coma.
-        // Se limpian comillas extra que Google Sheets puede agregar al exportar CSV.
-        var _rawImg = get(4).replace(/^"+|"+$/g, '').trim();
+        // Video principal (E=4)
+        var videoPrincipal = get(4).replace(/^"+|"+$/g, '').trim();
+
+        // Imágenes: columna F=5
+        var _rawImg = get(5).replace(/^"+|"+$/g, '').trim();
         var imagenesExtra = _rawImg
             ? _rawImg.split(',').map(function(s) { return s.trim().replace(/^"+|"+$/g, ''); }).filter(Boolean)
             : [];
 
-        // Columna F: puede tener una o varias etiquetas separadas por | o por , 
-        // (ej: "arreglo|decoracion" o "producto,decoracion,aditamento")
-        // Se limpian comillas extra que Google Sheets agrega cuando hay validación de lista en la celda.
-        var _rawTipos = get(5).replace(/^"+|"+$/g, '').trim();
+        // EtiquetaPrincipal G=6
+        var _rawTipos = get(6).replace(/^"+|"+$/g, '').trim();
         var tiposArray = _rawTipos
             ? _rawTipos.split(/[|,]/).map(function(s) { return s.trim().replace(/^"+|"+$/g, '').toLowerCase(); }).filter(Boolean)
             : ['arreglo'];
-        // tipo principal = primer valor (compatibilidad con código existente)
         var tipoPrincipal = tiposArray[0] || 'arreglo';
+
+        // Oferta y Más Vendido (J=9, K=10)
+        var enOferta   = get(9).toLowerCase()  === 'si' ? 1 : 0;
+        var masVendido = get(10).toLowerCase() === 'si' ? 1 : 0;
+
+        // Redes sociales para sección biografía (V=21…Y=24)
+        function parsearRed(idx) {
+            var raw = get(idx).replace(/^"+|"+$/g, '').trim();
+            return raw ? raw.split(',').map(function(s){ return s.trim().replace(/^"+|"+$/g, ''); }).filter(Boolean) : [];
+        }
+        var redYoutube   = parsearRed(21);
+        var redFacebook  = parsearRed(22);
+        var redInstagram = parsearRed(23);
+        var redTiktok    = parsearRed(24);
 
         productos.push({
             id:           i,
@@ -256,25 +285,30 @@ function csvAProductos(filas) {
             precioNormal: parseFloat(get(1).replace(/[^0-9.]/g, '')) || 0,
             precioBazar:  parseFloat(get(2).replace(/[^0-9.]/g, '')) || 0,
             descripcion:  get(3),
+            video:        videoPrincipal,
             imagen:       imagenesExtra[0] || '',
             imagenes:     imagenesExtra,
             forma:        '',
             tipo:         tipoPrincipal,
             tipos:        tiposArray,
-            subtags:      get(6) ? get(6).split(',').map(function(s){ return s.trim(); }).filter(Boolean).join('|') : '',
-            eventos:      get(7)
-                            ? get(7).split(',').map(function(s){ return s.trim().toLowerCase(); }).filter(Boolean).join(' ')
+            subtags:      get(7) ? get(7).split(',').map(function(s){ return s.trim(); }).filter(Boolean).join('|') : '',
+            eventos:      get(8)
+                            ? get(8).split(',').map(function(s){ return s.trim().toLowerCase(); }).filter(Boolean).join(' ')
                             : '',
             etiquetas:    tiposArray,
             aditivos:     [],
-            alto:         get(8),
-            ancho:        get(9),
+            oferta:       enOferta,
+            masVendido:   masVendido,
+            alto:         get(11),
+            ancho:        get(12),
+            redYoutube:   redYoutube,
+            redFacebook:  redFacebook,
+            redInstagram: redInstagram,
+            redTiktok:    redTiktok,
             subImagenes:  (function() {
-                // Columnas K-R (índices 10-17): SubImagen1…SubImagen8
-                // Cada celda contiene la URL de la imagen del producto relacionado.
-                // Al abrir el modal, se busca automáticamente el producto que tenga esa URL.
+                // Columnas N-U (índices 13-20): SubImagen1…SubImagen8
                 var arr = [];
-                for (var si = 10; si <= 17; si++) {
+                for (var si = 13; si <= 20; si++) {
                     var rawSI = (f[si] || '').trim().replace(/^"+|"+$/g, '').trim();
                     if (rawSI) arr.push(rawSI);
                 }
@@ -326,12 +360,17 @@ function renderizarCatalogoCompleto() {
         card.setAttribute('data-descripcion',     p.descripcion || '');
         card.setAttribute('data-alto',             p.alto || '');
         card.setAttribute('data-ancho',            p.ancho || '');
+        card.setAttribute('data-video',           p.video || '');
         card.setAttribute('data-oferta',          String(p.oferta || 0));
         card.setAttribute('data-oferta-desc',     p.ofertaDesc || '');
         card.setAttribute('data-oferta-duracion', p.ofertaDuracion || '');
         card.setAttribute('data-mas-vendido',     String(p.masVendido || 0));
         card.setAttribute('data-mas-vendido-imagenes', JSON.stringify(p.masVendidoImagenes || []));
         card.setAttribute('data-sub-imagenes', JSON.stringify(p.subImagenes || []));
+        card.setAttribute('data-red-youtube',     JSON.stringify(p.redYoutube   || []));
+        card.setAttribute('data-red-facebook',    JSON.stringify(p.redFacebook  || []));
+        card.setAttribute('data-red-instagram',   JSON.stringify(p.redInstagram || []));
+        card.setAttribute('data-red-tiktok',      JSON.stringify(p.redTiktok    || []));
         card.style.cursor = 'pointer';
 
         // ── Imagen principal ──
@@ -742,8 +781,27 @@ if (document.readyState === 'loading') {
     
 
 
+    // ── Helper: convierte data-red-* (JSON array de URLs) a objetos para _videosRedes ──
+    function _parsearRedsCard(card, attr, tipo) {
+        var raw = card.getAttribute(attr) || '[]';
+        var urls;
+        try { urls = JSON.parse(raw); } catch(e) { urls = []; }
+        return urls.map(function(url, i) {
+            url = url.trim();
+            if (!url) return null;
+            if (tipo === 'youtube') {
+                // Extraer ID de YouTube desde URL completa o ID directo
+                var ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
+                var ytId = ytMatch ? ytMatch[1] : url;
+                return { tipo: 'youtube', id: ytId, titulo: 'Video ' + (i+1) };
+            }
+            return { tipo: tipo, url: url, titulo: tipo.charAt(0).toUpperCase()+tipo.slice(1)+' ' + (i+1) };
+        }).filter(Boolean);
+    }
+
     // ===== MODAL DE PRODUCTO (rediseñado) =====
     let galeriaImagenes = [];
+    let galeriaVideoPrincipal = '';   // URL/embed del video principal del producto
     let galeriaIndice = 0;
 
     function abrirModalProducto(card) {
@@ -755,6 +813,9 @@ if (document.readyState === 'loading') {
         const precioNum = card.getAttribute('data-precio') || '';
         const precioBazar = card.getAttribute('data-precio-bazar') || '';
 
+        // ── Video principal (si existe, va PRIMERO en la galería) ──
+        galeriaVideoPrincipal = (card.getAttribute('data-video') || '').trim();
+
         try {
             galeriaImagenes = imagenesJSON ? JSON.parse(imagenesJSON) : [];
         } catch(e) { galeriaImagenes = []; }
@@ -763,6 +824,12 @@ if (document.readyState === 'loading') {
             const imgPrincipal = card.querySelector('.img-contenedor-dinamico img');
             if (imgPrincipal) galeriaImagenes = [imgPrincipal.getAttribute('src')];
         }
+
+        // ── Poblar _videosRedes desde los atributos de la card ──
+        try { _videosRedes.youtube   = _parsearRedsCard(card, 'data-red-youtube',   'youtube');   } catch(e) {}
+        try { _videosRedes.facebook  = _parsearRedsCard(card, 'data-red-facebook',  'facebook');  } catch(e) {}
+        try { _videosRedes.instagram = _parsearRedsCard(card, 'data-red-instagram', 'instagram'); } catch(e) {}
+        try { _videosRedes.tiktok    = _parsearRedsCard(card, 'data-red-tiktok',    'tiktok');    } catch(e) {}
 
         galeriaIndice = 0;
         document.getElementById('modalProdTitulo').textContent = nombre;
@@ -1108,6 +1175,57 @@ if (document.readyState === 'loading') {
         // Limpiar listener anterior
         track._scrollHandler && track.removeEventListener('scroll', track._scrollHandler);
 
+        // ── Slide 0: Video principal (si existe) ──
+        let slideOffset = 0;
+        if (galeriaVideoPrincipal) {
+            const videoSlide = document.createElement('div');
+            videoSlide.className = 'modal-galeria-slide';
+            videoSlide.style.cssText = 'display:flex;align-items:center;justify-content:center;background:#000;';
+
+            // Detectar tipo de video y crear el embed adecuado
+            const vUrl = galeriaVideoPrincipal;
+            let embedEl;
+            const ytMatch = vUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
+            if (ytMatch) {
+                embedEl = document.createElement('iframe');
+                embedEl.src = 'https://www.youtube.com/embed/' + ytMatch[1] + '?rel=0';
+                embedEl.style.cssText = 'width:100%;height:100%;border:0;';
+                embedEl.setAttribute('allowfullscreen', '');
+                embedEl.setAttribute('allow', 'autoplay; encrypted-media');
+            } else if (/facebook\.com/i.test(vUrl)) {
+                embedEl = document.createElement('iframe');
+                embedEl.src = 'https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent(vUrl) + '&show_text=0&autoplay=0';
+                embedEl.style.cssText = 'width:100%;height:100%;border:0;overflow:hidden;';
+                embedEl.setAttribute('allowfullscreen', '');
+                embedEl.setAttribute('scrolling', 'no');
+            } else if (/instagram\.com/i.test(vUrl)) {
+                // Instagram no permite embed directo; mostrar botón externo
+                const igWrap = document.createElement('div');
+                igWrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;gap:12px;width:100%;height:100%;';
+                igWrap.innerHTML = '<span style="font-size:48px;">📸</span><span style="font-size:14px;text-align:center;">Video de Instagram</span>';
+                const igBtn = document.createElement('a');
+                igBtn.href = vUrl; igBtn.target = '_blank';
+                igBtn.style.cssText = 'background:#E1306C;color:#fff;padding:8px 18px;border-radius:20px;text-decoration:none;font-size:13px;font-weight:700;';
+                igBtn.textContent = 'Ver en Instagram';
+                igWrap.appendChild(igBtn);
+                embedEl = igWrap;
+            } else {
+                // Intentar como video HTML5
+                embedEl = document.createElement('video');
+                embedEl.src = vUrl;
+                embedEl.controls = true;
+                embedEl.style.cssText = 'width:100%;height:100%;';
+            }
+            videoSlide.appendChild(embedEl);
+            track.appendChild(videoSlide);
+
+            const dotV = document.createElement('div');
+            dotV.className = 'modal-dot activo';
+            dotV.onclick = () => irASlide(0);
+            dotsContainer.appendChild(dotV);
+            slideOffset = 1;
+        }
+
         galeriaImagenes.forEach((src, i) => {
             const slide = document.createElement('div');
             slide.className = 'modal-galeria-slide';
@@ -1121,12 +1239,14 @@ if (document.readyState === 'loading') {
             track.appendChild(slide);
 
             const dot = document.createElement('div');
-            dot.className = 'modal-dot' + (i === 0 ? ' activo' : '');
-            dot.onclick = () => irASlide(i);
+            const dotIdx = i + slideOffset;
+            dot.className = 'modal-dot' + (dotIdx === 0 ? ' activo' : '');
+            dot.onclick = () => irASlide(dotIdx);
             dotsContainer.appendChild(dot);
         });
 
-        dotsContainer.style.display = galeriaImagenes.length <= 1 ? 'none' : 'flex';
+        const totalSlides = galeriaImagenes.length + slideOffset;
+        dotsContainer.style.display = totalSlides <= 1 ? 'none' : 'flex';
 
         actualizarNavegacion();
 
@@ -1142,7 +1262,8 @@ if (document.readyState === 'loading') {
 
     function irASlide(indice) {
         const track = document.getElementById('modalGaleriaTrack');
-        galeriaIndice = Math.max(0, Math.min(indice, galeriaImagenes.length - 1));
+        const _totalSlides = galeriaImagenes.length + (galeriaVideoPrincipal ? 1 : 0);
+        galeriaIndice = Math.max(0, Math.min(indice, _totalSlides - 1));
         track.scrollTo({ left: galeriaIndice * track.offsetWidth, behavior: 'smooth' });
         actualizarNavegacion();
     }
@@ -1152,7 +1273,7 @@ if (document.readyState === 'loading') {
     }
 
     function actualizarNavegacion() {
-        const total = galeriaImagenes.length;
+        const total = galeriaImagenes.length + (galeriaVideoPrincipal ? 1 : 0);
         document.getElementById('btnGalPrev').classList.toggle('oculto-nav', galeriaIndice === 0);
         document.getElementById('btnGalNext').classList.toggle('oculto-nav', galeriaIndice >= total - 1);
         document.getElementById('modalContador').textContent = total > 1 ? `${galeriaIndice + 1} / ${total}` : '';
