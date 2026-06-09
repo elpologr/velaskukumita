@@ -1424,14 +1424,18 @@
         <!-- ── INFO DEL PRODUCTO ── -->
         <div class="mp-info-zona">
 
-            <!-- 1. Etiqueta Principal + botón "Mostrar sub-etiquetas" -->
-            <div style="display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
-                <div id="mpEtiquetaPrincipalZona" style="display:none; flex-wrap:wrap; gap:6px; align-items:center;">
+            <!-- 1. Etiqueta Principal + botón "Mostrar sub-etiquetas" + # fila Sheets -->
+            <div style="display:flex; align-items:center; flex-wrap:nowrap; gap:6px; margin-bottom:6px;">
+                <div id="mpEtiquetaPrincipalZona" style="display:none; flex-wrap:wrap; gap:6px; align-items:center; flex:1; min-width:0;">
                     <!-- etiquetas principales inyectadas por JS -->
                 </div>
-                <button id="mpBtnMostrarSubetiquetas" onclick="toggleSubetiquetasModal()" style="display:none; margin-left:6px; background:#f0ebe5; color:#705c4f; border:1.5px solid #d4c5b8; border-radius:999px; padding:3px 11px; font-size:10px; font-weight:700; font-family:inherit; cursor:pointer; white-space:nowrap; transition:background 0.18s;">
+                <button id="mpBtnMostrarSubetiquetas" onclick="toggleSubetiquetasModal()" style="display:none; flex-shrink:0; background:#f0ebe5; color:#705c4f; border:1.5px solid #d4c5b8; border-radius:999px; padding:3px 11px; font-size:10px; font-weight:700; font-family:inherit; cursor:pointer; white-space:nowrap; transition:background 0.18s;">
                     Ver sub-etiquetas ▾
                 </button>
+                <!-- Número de fila en Google Sheets — siempre visible, actualizado por JS -->
+                <span id="mpSheetRowBadge" title="Fila en Google Sheets"
+                      style="display:none; flex-shrink:0; margin-left:auto; font-size:10px; font-weight:800; color:#9a8878; background:#f5f0eb; border:1.5px solid #e0d5cc; border-radius:8px; padding:3px 8px; letter-spacing:0.3px; white-space:nowrap; cursor:default; user-select:none; line-height:1.4;">
+                </span>
             </div>
 
             <!-- Sub-etiquetas y etiquetas de evento (colapsadas por defecto) -->
