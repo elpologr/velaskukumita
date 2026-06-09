@@ -4779,20 +4779,18 @@ window.togglePanelEventos = function() {
 };
 
 // ══════════════════════════════════════════════════════════════════
-// REORDENAR DOM: panelArreglos justo arriba de la barra de paginación
-// (debajo de la barra de precios, encima de los controles de página)
+// REORDENAR DOM: panelArreglos justo debajo del bloqueFiltroPrecioArreglos
+// (debajo de la barra de precios Bazar / Precio Original)
 // Se ejecuta al inicio y al terminar de cargar el catálogo.
 // ══════════════════════════════════════════════════════════════════
 function _reordenarBuscadorArreglos() {
     var panel     = document.getElementById('panelArreglos');
-    var pagInfo   = document.getElementById('pagInfoArriba');
-    if (!panel || !pagInfo) return;
-    // El contenedor de paginación está envuelto en un div.container
-    var pagContenedor = pagInfo.closest('.container') || pagInfo.parentNode;
-    // Si el panel ya es el hermano anterior del contenedor de paginación, no hacer nada
-    if (pagContenedor.previousElementSibling === panel) return;
-    // Moverlo: insertarlo justo antes del contenedor de paginación
-    pagContenedor.parentNode.insertBefore(panel, pagContenedor);
+    var bloquePrecio = document.getElementById('bloqueFiltroPrecioArreglos');
+    if (!panel || !bloquePrecio) return;
+    // Si el panel ya es el hermano siguiente del bloque de precio, no hacer nada
+    if (bloquePrecio.nextElementSibling === panel) return;
+    // Moverlo: insertarlo justo después del bloque de filtro de precio
+    bloquePrecio.parentNode.insertBefore(panel, bloquePrecio.nextSibling);
 }
 
 _ready(_reordenarBuscadorArreglos);
