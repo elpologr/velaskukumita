@@ -4779,18 +4779,20 @@ window.togglePanelEventos = function() {
 };
 
 // ══════════════════════════════════════════════════════════════════
-// REORDENAR DOM: panelArreglos siempre después de bloqueFiltroPrecioArreglos
-// Esto se ejecuta tanto al inicio como cuando el catálogo termina de cargar,
-// para que el orden sea correcto sin importar cómo esté el HTML original.
+// REORDENAR DOM: panelArreglos justo arriba de la barra de paginación
+// (debajo de la barra de precios, encima de los controles de página)
+// Se ejecuta al inicio y al terminar de cargar el catálogo.
 // ══════════════════════════════════════════════════════════════════
 function _reordenarBuscadorArreglos() {
-    var panel  = document.getElementById('panelArreglos');
-    var bloque = document.getElementById('bloqueFiltroPrecioArreglos');
-    if (!panel || !bloque) return;
-    // Si el panel ya está después del bloque, no hacer nada
-    if (bloque.nextElementSibling === panel) return;
-    // Moverlo: insertarlo justo después del bloque de precios
-    bloque.parentNode.insertBefore(panel, bloque.nextSibling);
+    var panel     = document.getElementById('panelArreglos');
+    var pagInfo   = document.getElementById('pagInfoArriba');
+    if (!panel || !pagInfo) return;
+    // El contenedor de paginación está envuelto en un div.container
+    var pagContenedor = pagInfo.closest('.container') || pagInfo.parentNode;
+    // Si el panel ya es el hermano anterior del contenedor de paginación, no hacer nada
+    if (pagContenedor.previousElementSibling === panel) return;
+    // Moverlo: insertarlo justo antes del contenedor de paginación
+    pagContenedor.parentNode.insertBefore(panel, pagContenedor);
 }
 
 _ready(_reordenarBuscadorArreglos);
