@@ -1702,6 +1702,28 @@ if (document.readyState === 'loading') {
         'es','son','su','sus','al','lo','le','les','no','si'
     ]);
 
+    // Sinónimos y variantes ortográficas: cada grupo agrupa palabras equivalentes.
+    // Si el query contiene cualquiera de ellas, se buscan TODAS en el texto.
+    var SINONIMOS = [
+        ['tazon','tason','tazones','tasones','bowl','tazón','tasón'],
+        ['virgen','virjen','birgen','birjen','virgin'],
+        ['elefante','elefantes'],
+        ['arreglo','arreglos'],
+        ['vela','velas'],
+        ['figura','figuras'],
+        ['flores','flor'],
+    ];
+
+    // Dada una palabra normalizada, devuelve el grupo de variantes al que pertenece (o [la misma palabra])
+    function expandirVariantes(palabra) {
+        for (var i = 0; i < SINONIMOS.length; i++) {
+            if (SINONIMOS[i].indexOf(palabra) !== -1) {
+                return SINONIMOS[i];
+            }
+        }
+        return [palabra];
+    }
+
     // Divide el query en palabras significativas (sin stopwords, mínimo 2 chars)
     function palabrasBusqueda(query) {
         return normalizarTexto(query)
@@ -1710,13 +1732,28 @@ if (document.readyState === 'loading') {
     }
 
     // Devuelve true si TODAS las palabras significativas del query aparecen
-    // en alguna parte del nombre del producto (sin importar acentos ni mayúsculas)
-    function coincideNombre(nombreCard, query) {
+    // en alguna parte del texto (nombre + tipo + subtags del producto).
+    // Tolerancia: acepta variantes ortográficas y sinónimos definidos en SINONIMOS.
+    function coincideNombre(nombreCard, query, card) {
         if (!query || !query.trim()) return true;
-        var nombreNorm = normalizarTexto(nombreCard);
-        var palabras   = palabrasBusqueda(query);
+
+        // Construir texto completo del producto para buscar
+        var textoCompleto = normalizarTexto(nombreCard);
+        if (card) {
+            var tipos    = normalizarTexto(card.getAttribute('data-tipos')   || '');
+            var subtags  = normalizarTexto(card.getAttribute('data-subtags') || '');
+            var tipo     = normalizarTexto(card.getAttribute('data-tipo')    || '');
+            textoCompleto += ' ' + tipos + ' ' + subtags + ' ' + tipo;
+        }
+
+        var palabras = palabrasBusqueda(query);
         if (palabras.length === 0) return true; // solo stopwords → mostrar todo
-        return palabras.every(function(p) { return nombreNorm.includes(p); });
+
+        return palabras.every(function(p) {
+            var variantes = expandirVariantes(p);
+            // Coincide si alguna variante aparece como substring en el texto completo
+            return variantes.some(function(v) { return textoCompleto.includes(v); });
+        });
     }
     // ────────────────────────────────────────────────────────────────────────
 
@@ -1805,7 +1842,7 @@ if (document.readyState === 'loading') {
             const eventoCard = (card.dataset.evento || '').toLowerCase();
             const nombreCard = (card.getAttribute('data-nombre') || '').toLowerCase();
 
-            const okNombre = coincideNombre(nombreCard, textoBusq);
+            const okNombre = coincideNombre(nombreCard, textoBusq, card);
             const okForma  = formaActiva  === 'todos' || formaCard === formaActiva;
             const okEvento = eventoActivo === 'todos' || eventoCard.split(' ').includes(eventoActivo);
 
@@ -2050,7 +2087,7 @@ if (document.readyState === 'loading') {
 
             const okForma   = formaActiva  === 'todos' || formaCard  === formaActiva;
             const okEvento  = eventoActivo === 'todos' || eventoCard.split(' ').includes(eventoActivo);
-            const okNombre  = coincideNombre(nombreCard, textoBusq);
+            const okNombre  = coincideNombre(nombreCard, textoBusq, card);
 
             // Si hay precio exacto activo (boton $15/$20/etc), tiene prioridad sobre el slider
             let okPrecio;
@@ -4612,7 +4649,7 @@ function _cargarFavoritosFirestore(uid) {
         var total = 0;
         cards.forEach(function(card) {
             var nombre = (card.getAttribute('data-nombre') || '');
-            var match  = coincideNombre(nombre, query);
+            var match  = coincideNombre(nombre, query, card);
             card.classList.toggle('oculto', !match);
             card.classList.remove('paginacion-oculto');
             if (match) total++;
@@ -4682,3 +4719,15 @@ function _cargarFavoritosFirestore(uid) {
         }
     });
 })();
+
+// ══════════════════════════════════════════════════════════════════
+// PANEL BUSCA POR EVENTO — colapsar / expandir
+// ══════════════════════════════════════════════════════════════════
+window.togglePanelEventos = function() {
+    var panel = document.getElementById('panelEventoCarrusel');
+    var icono = document.getElementById('iconToggleEventos');
+    if (!panel) return;
+    var visible = panel.style.display !== 'none';
+    panel.style.display = visible ? 'none' : 'block';
+    if (icono) icono.textContent = visible ? '▼' : '▲';
+};
