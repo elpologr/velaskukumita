@@ -1656,6 +1656,39 @@ if (document.readyState === 'loading') {
         decoraciones: {}
     };
 
+    // ── Utilidades de búsqueda inteligente ──────────────────────────────────
+    // Quita acentos y pasa a minúsculas para comparar sin importar tildes ni mayúsculas
+    function normalizarTexto(str) {
+        return (str || '').toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+    }
+
+    // Palabras pequeñas que no deben usarse como criterio de búsqueda
+    var STOPWORDS = new Set([
+        'de','del','la','las','el','los','un','una','unos','unas',
+        'y','e','o','u','a','en','con','por','para','que','se',
+        'es','son','su','sus','al','lo','le','les','no','si'
+    ]);
+
+    // Divide el query en palabras significativas (sin stopwords, mínimo 2 chars)
+    function palabrasBusqueda(query) {
+        return normalizarTexto(query)
+            .split(/\s+/)
+            .filter(function(p) { return p.length >= 2 && !STOPWORDS.has(p); });
+    }
+
+    // Devuelve true si TODAS las palabras significativas del query aparecen
+    // en alguna parte del nombre del producto (sin importar acentos ni mayúsculas)
+    function coincideNombre(nombreCard, query) {
+        if (!query || !query.trim()) return true;
+        var nombreNorm = normalizarTexto(nombreCard);
+        var palabras   = palabrasBusqueda(query);
+        if (palabras.length === 0) return true; // solo stopwords → mostrar todo
+        return palabras.every(function(p) { return nombreNorm.includes(p); });
+    }
+    // ────────────────────────────────────────────────────────────────────────
+
     function filtrarPorNombreUnificado(panel, valor) {
         aplicarFiltrosUnificados(panel);
     }
@@ -1741,7 +1774,7 @@ if (document.readyState === 'loading') {
             const eventoCard = (card.dataset.evento || '').toLowerCase();
             const nombreCard = (card.getAttribute('data-nombre') || '').toLowerCase();
 
-            const okNombre = !textoBusq || nombreCard.includes(textoBusq);
+            const okNombre = coincideNombre(nombreCard, textoBusq);
             const okForma  = formaActiva  === 'todos' || formaCard === formaActiva;
             const okEvento = eventoActivo === 'todos' || eventoCard.split(' ').includes(eventoActivo);
 
@@ -1986,7 +2019,7 @@ if (document.readyState === 'loading') {
 
             const okForma   = formaActiva  === 'todos' || formaCard  === formaActiva;
             const okEvento  = eventoActivo === 'todos' || eventoCard.split(' ').includes(eventoActivo);
-            const okNombre  = !textoBusq   || nombreCard.includes(textoBusq);
+            const okNombre  = coincideNombre(nombreCard, textoBusq);
 
             // Si hay precio exacto activo (boton $15/$20/etc), tiene prioridad sobre el slider
             let okPrecio;
@@ -4441,8 +4474,8 @@ function _cargarFavoritosFirestore(uid) {
         var cards = document.querySelectorAll('#gridProductos .card-dinamica');
         var total = 0;
         cards.forEach(function(card) {
-            var nombre = (card.getAttribute('data-nombre') || '').toLowerCase();
-            var match  = nombre.includes(query);
+            var nombre = (card.getAttribute('data-nombre') || '');
+            var match  = coincideNombre(nombre, query);
             card.classList.toggle('oculto', !match);
             card.classList.remove('paginacion-oculto');
             if (match) total++;
