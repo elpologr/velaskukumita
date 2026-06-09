@@ -170,7 +170,7 @@ var SHEET_ID = '1jin2wMYingvbPD2csGxIbm5AhulfRvCRvIzAKJTUNMw';
 //   B(1):  precio
 //   C(2):  precio bazar
 //   D(3):  Descripcion
-//   E(4):  Video youtube/facebook/instagram
+//   E(4):  video youtube
 //   F(5):  Imagen
 //   G(6):  EtiquetaPrincipal
 //   H(7):  SubEtiqueta
@@ -179,11 +179,9 @@ var SHEET_ID = '1jin2wMYingvbPD2csGxIbm5AhulfRvCRvIzAKJTUNMw';
 //   K(10): mas vendido        (escribe "si" para activar)
 //   L(11): Alto
 //   M(12): Ancho
-//   N-U(13-20): SubImagen1…SubImagen8
-//   V(21): youtube img/vid
-//   W(22): facebook img/vid
-//   X(23): instagram img/vid
-//   Y(24): tiktok img/vid
+//   N(13): SubImagen          (URLs separadas por coma)
+//   O(14): youtube img/vid
+//   P(15): existencia         (número de piezas en stock)
 // ══════════════════════════════════════════════════════════════════════════════
 
 var listaProductos = [];
@@ -242,7 +240,7 @@ function csvAProductos(filas) {
         // B=1  precio
         // C=2  precioBazar
         // D=3  descripcion
-        // E=4  Video youtube/facebook/instagram
+        // E=4  video youtube
         // F=5  Imagen (URL principal + extras separadas por coma)
         // G=6  EtiquetaPrincipal
         // H=7  SubEtiqueta
@@ -251,11 +249,9 @@ function csvAProductos(filas) {
         // K=10 mas vendido (si / vacío)
         // L=11 Alto
         // M=12 Ancho
-        // N=13 SubImagen1 … U=20 SubImagen8
-        // V=21 youtube img/vid
-        // W=22 facebook img/vid
-        // X=23 instagram img/vid
-        // Y=24 tiktok img/vid
+        // N=13 SubImagen (URLs o nombres separados por coma)
+        // O=14 youtube img/vid
+        // P=15 existencia (número de piezas en stock)
 
         // Video principal (E=4)
         var videoPrincipal = get(4).replace(/^"+|"+$/g, '').trim();
@@ -277,15 +273,15 @@ function csvAProductos(filas) {
         var enOferta   = get(9).toLowerCase()  === 'si' ? 1 : 0;
         var masVendido = get(10).toLowerCase() === 'si' ? 1 : 0;
 
-        // Redes sociales para sección biografía (V=21…Y=24)
+        // Existencia (P=15)
+        var existencia = parseInt(get(15).replace(/[^0-9]/g, '')) || 0;
+
+        // YouTube img/vid (O=14)
         function parsearRed(idx) {
             var raw = get(idx).replace(/^"+|"+$/g, '').trim();
             return raw ? raw.split(',').map(function(s){ return s.trim().replace(/^"+|"+$/g, ''); }).filter(Boolean) : [];
         }
-        var redYoutube   = parsearRed(21);
-        var redFacebook  = parsearRed(22);
-        var redInstagram = parsearRed(23);
-        var redTiktok    = parsearRed(24);
+        var redYoutube = parsearRed(14);
 
         productos.push({
             id:           i,
@@ -309,18 +305,17 @@ function csvAProductos(filas) {
             masVendido:   masVendido,
             alto:         get(11),
             ancho:        get(12),
+            existencia:   existencia,
             redYoutube:   redYoutube,
-            redFacebook:  redFacebook,
-            redInstagram: redInstagram,
-            redTiktok:    redTiktok,
+            redFacebook:  [],
+            redInstagram: [],
+            redTiktok:    [],
             subImagenes:  (function() {
-                // Columnas N-U (índices 13-20): SubImagen1…SubImagen8
-                var arr = [];
-                for (var si = 13; si <= 20; si++) {
-                    var rawSI = (f[si] || '').trim().replace(/^"+|"+$/g, '').trim();
-                    if (rawSI) arr.push(rawSI);
-                }
-                return arr;
+                // Columna N (índice 13): SubImagen — valores separados por coma
+                var rawSub = (f[13] || '').trim().replace(/^"+|"+$/g, '').trim();
+                return rawSub
+                    ? rawSub.split(',').map(function(s){ return s.trim().replace(/^"+|"+$/g, ''); }).filter(Boolean)
+                    : [];
             })()
         });
     }
@@ -375,6 +370,7 @@ function renderizarCatalogoCompleto() {
         card.setAttribute('data-mas-vendido',     String(p.masVendido || 0));
         card.setAttribute('data-mas-vendido-imagenes', JSON.stringify(p.masVendidoImagenes || []));
         card.setAttribute('data-sub-imagenes', JSON.stringify(p.subImagenes || []));
+        card.setAttribute('data-existencia',   String(p.existencia || 0));
         card.setAttribute('data-red-youtube',     JSON.stringify(p.redYoutube   || []));
         card.setAttribute('data-red-facebook',    JSON.stringify(p.redFacebook  || []));
         card.setAttribute('data-red-instagram',   JSON.stringify(p.redInstagram || []));
@@ -918,6 +914,7 @@ if (document.readyState === 'loading') {
         const descripcion = card.getAttribute('data-descripcion') || '';
         const alto = card.getAttribute('data-alto') || '';
         const ancho = card.getAttribute('data-ancho') || '';
+        const existencia = parseInt(card.getAttribute('data-existencia') || '0') || 0;
         const imagenesJSON = card.getAttribute('data-imagenes');
         const precioNum = card.getAttribute('data-precio') || '';
         const precioBazar = card.getAttribute('data-precio-bazar') || '';
@@ -1063,6 +1060,18 @@ if (document.readyState === 'loading') {
             dimZona.style.display = 'block';
         } else {
             dimZona.style.display = 'none';
+        }
+
+        // ── Stock / Existencia ──
+        const existenciaZona  = document.getElementById('modalExistenciaZona');
+        const existenciaTexto = document.getElementById('modalExistenciaTexto');
+        if (existenciaZona && existenciaTexto) {
+            if (existencia > 0) {
+                existenciaTexto.textContent = existencia;
+                existenciaZona.style.display = 'block';
+            } else {
+                existenciaZona.style.display = 'none';
+            }
         }
 
         // ── Decoraciones y Aditamentos: lee columnas SubImagen1-8 desde data-sub-imagenes ──
