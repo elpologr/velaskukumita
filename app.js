@@ -1210,55 +1210,31 @@ if (document.readyState === 'loading') {
         // Limpiar listener anterior
         track._scrollHandler && track.removeEventListener('scroll', track._scrollHandler);
 
-        // ── Slide 0: Video principal (si existe) ──
+        // ── Slide 0: Video de YouTube (solo si el link es de YouTube) ──
         let slideOffset = 0;
         if (galeriaVideoPrincipal) {
-            const videoSlide = document.createElement('div');
-            videoSlide.className = 'modal-galeria-slide';
-            videoSlide.style.cssText = 'display:flex;align-items:center;justify-content:center;background:#000;';
-
-            // Detectar tipo de video y crear el embed adecuado
-            const vUrl = galeriaVideoPrincipal;
-            let embedEl;
-            const ytMatch = vUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
+            const ytMatch = galeriaVideoPrincipal.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
             if (ytMatch) {
-                embedEl = document.createElement('iframe');
-                embedEl.src = 'https://www.youtube.com/embed/' + ytMatch[1] + '?rel=0';
-                embedEl.style.cssText = 'width:100%;height:100%;border:0;';
-                embedEl.setAttribute('allowfullscreen', '');
-                embedEl.setAttribute('allow', 'autoplay; encrypted-media');
-            } else if (/facebook\.com/i.test(vUrl)) {
-                embedEl = document.createElement('iframe');
-                embedEl.src = 'https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent(vUrl) + '&show_text=0&autoplay=0';
-                embedEl.style.cssText = 'width:100%;height:100%;border:0;overflow:hidden;';
-                embedEl.setAttribute('allowfullscreen', '');
-                embedEl.setAttribute('scrolling', 'no');
-            } else if (/instagram\.com/i.test(vUrl)) {
-                // Instagram no permite embed directo; mostrar botón externo
-                const igWrap = document.createElement('div');
-                igWrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;gap:12px;width:100%;height:100%;';
-                igWrap.innerHTML = '<span style="font-size:48px;">📸</span><span style="font-size:14px;text-align:center;">Video de Instagram</span>';
-                const igBtn = document.createElement('a');
-                igBtn.href = vUrl; igBtn.target = '_blank';
-                igBtn.style.cssText = 'background:#E1306C;color:#fff;padding:8px 18px;border-radius:20px;text-decoration:none;font-size:13px;font-weight:700;';
-                igBtn.textContent = 'Ver en Instagram';
-                igWrap.appendChild(igBtn);
-                embedEl = igWrap;
-            } else {
-                // Intentar como video HTML5
-                embedEl = document.createElement('video');
-                embedEl.src = vUrl;
-                embedEl.controls = true;
-                embedEl.style.cssText = 'width:100%;height:100%;';
-            }
-            videoSlide.appendChild(embedEl);
-            track.appendChild(videoSlide);
+                const videoSlide = document.createElement('div');
+                videoSlide.className = 'modal-galeria-slide';
+                videoSlide.style.cssText = 'display:flex;align-items:center;justify-content:center;background:#000;';
 
-            const dotV = document.createElement('div');
-            dotV.className = 'modal-dot activo';
-            dotV.onclick = () => irASlide(0);
-            dotsContainer.appendChild(dotV);
-            slideOffset = 1;
+                const iframe = document.createElement('iframe');
+                iframe.src = 'https://www.youtube.com/embed/' + ytMatch[1] + '?rel=0';
+                iframe.style.cssText = 'width:100%;height:100%;border:0;';
+                iframe.setAttribute('allowfullscreen', '');
+                iframe.setAttribute('allow', 'autoplay; encrypted-media');
+
+                videoSlide.appendChild(iframe);
+                track.appendChild(videoSlide);
+
+                const dotV = document.createElement('div');
+                dotV.className = 'modal-dot activo';
+                dotV.onclick = () => irASlide(0);
+                dotsContainer.appendChild(dotV);
+                slideOffset = 1;
+            }
+            // Si el link no es de YouTube, se ignora y solo se muestran las imágenes
         }
 
         galeriaImagenes.forEach((src, i) => {
