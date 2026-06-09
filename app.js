@@ -753,10 +753,22 @@ if (document.readyState === 'loading') {
 
     // Escuchar el evento de catálogo cargado (Google Sheets) en lugar de usar un timeout fijo
     document.addEventListener('catalogoCargado', function() {
-        // Primero activar modo "Mostrar Todo" para que TODAS las cards queden visibles,
-        // luego la paginación las contará correctamente.
+        // Detectar el modo activo antes de que el catálogo cargara
+        var btnActivo = document.querySelector('.btn-modo-velas.activo');
+        var mapaIDs = {
+            'btnModoTodosProductos': 'mostrar_todo',
+            'btnModoTodos':          'todos',
+            'btnModoArreglos':       'arreglos',
+            'btnModoDecoraciones':   'decoraciones',
+            'btnModoEtiquetas':      'etiquetas'
+        };
+        var modoActual = btnActivo ? (mapaIDs[btnActivo.id] || 'arreglos') : 'arreglos';
+
         if (typeof window.cambiarModoVelas === 'function') {
+            // Pasar por mostrar_todo para que la paginacion cuente todas las cards...
             window.cambiarModoVelas('mostrar_todo');
+            // ...luego restaurar el modo activo de inmediato para mantener el layout correcto.
+            window.cambiarModoVelas(modoActual);
         } else {
             actualizarPaginacion();
         }
@@ -1648,10 +1660,6 @@ if (document.readyState === 'loading') {
         if (modo === 'arreglos') {
             if (btnArreglos) btnArreglos.classList.add('activo');
             if (bloqueArr) bloqueArr.style.display = 'block';
-            // Garantizar que la barra de búsqueda quede siempre justo después del bloque de precios
-            if (panelArr && bloqueArr && bloqueArr.nextElementSibling !== panelArr) {
-                bloqueArr.parentNode.insertBefore(panelArr, bloqueArr.nextSibling);
-            }
             if (panelArr) panelArr.classList.add('visible');
             aplicarFiltrosArreglos();
         } else if (modo === 'etiquetas') {
