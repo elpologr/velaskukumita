@@ -166,16 +166,24 @@ function _resetBotonesRed() {
 var SHEET_ID = '1jin2wMYingvbPD2csGxIbm5AhulfRvCRvIzAKJTUNMw';
 // ──────────────────────────────────────────────────────────────────────────────
 // COLUMNAS ESPERADAS EN LA HOJA (fila 1 = encabezados, datos desde fila 2):
-//   A: nombre            — nombre del producto
-//   B: precio            — precio original en MXN (número)
-//   C: precioBazar       — precio mayoreo en MXN (número, opcional)
-//   D: descripcion       — texto de descripción del producto
-//   E: imagen            — URL o ruta de la imagen principal
-//   F: etiquetaPrincipal — tipo de producto (ej: arreglo, producto…)
-//   G: subEtiqueta       — subtags separados por | (ej: Cirio|Etiqueta|Medallón)
-//   H: etiquetaEvento    — eventos separados por coma (ej: boda,bautizo)
-//   I: alto              — altura del producto (ej: 15 cm)
-//   J: ancho             — anchura del producto (ej: 8 cm)
+//   A(0):  Nombre
+//   B(1):  precio
+//   C(2):  precio bazar
+//   D(3):  Descripcion
+//   E(4):  Video youtube/facebook/instagram
+//   F(5):  Imagen
+//   G(6):  EtiquetaPrincipal
+//   H(7):  SubEtiqueta
+//   I(8):  EtiquetaEvento
+//   J(9):  en oferta          (escribe "si" para activar)
+//   K(10): mas vendido        (escribe "si" para activar)
+//   L(11): Alto
+//   M(12): Ancho
+//   N-U(13-20): SubImagen1…SubImagen8
+//   V(21): youtube img/vid
+//   W(22): facebook img/vid
+//   X(23): instagram img/vid
+//   Y(24): tiktok img/vid
 // ══════════════════════════════════════════════════════════════════════════════
 
 var listaProductos = [];
@@ -518,7 +526,14 @@ function cargarDesdeGoogleSheets() {
             // Log de diagnostico: precios y tipos de cada producto (visible en DevTools > Consola)
             console.group('[Kukumita] Catalogo cargado — ' + listaProductos.length + ' productos');
             listaProductos.forEach(function(p) {
-                console.log(p.nombre + ' | precio=$' + p.precioNormal + ' | precioBazar=$' + p.precioBazar + ' | tipos=[' + (p.tipos || [p.tipo]).join('|') + ']');
+                console.log(
+                    p.nombre +
+                    ' | precio=$' + p.precioNormal +
+                    ' | imagen=' + (p.imagen ? p.imagen.substring(0,40)+'…' : 'SIN IMAGEN') +
+                    ' | oferta=' + p.oferta +
+                    ' | masVendido=' + p.masVendido +
+                    ' | tipos=[' + (p.tipos || [p.tipo]).join('|') + ']'
+                );
             });
             console.groupEnd();
         })
