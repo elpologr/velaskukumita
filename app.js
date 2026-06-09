@@ -1647,8 +1647,12 @@ if (document.readyState === 'loading') {
 
         if (modo === 'arreglos') {
             if (btnArreglos) btnArreglos.classList.add('activo');
-            if (panelArr) panelArr.classList.add('visible');
             if (bloqueArr) bloqueArr.style.display = 'block';
+            // Garantizar que la barra de búsqueda quede siempre justo después del bloque de precios
+            if (panelArr && bloqueArr && bloqueArr.nextElementSibling !== panelArr) {
+                bloqueArr.parentNode.insertBefore(panelArr, bloqueArr.nextSibling);
+            }
+            if (panelArr) panelArr.classList.add('visible');
             aplicarFiltrosArreglos();
         } else if (modo === 'etiquetas') {
             if (btnEtiquetas) btnEtiquetas.classList.add('activo');
@@ -4779,19 +4783,4 @@ window.togglePanelEventos = function() {
 };
 
 // ══════════════════════════════════════════════════════════════════
-// REORDENAR DOM: panelArreglos justo debajo del bloqueFiltroPrecioArreglos
-// (debajo de la barra de precios Bazar / Precio Original)
-// Se ejecuta al inicio y al terminar de cargar el catálogo.
-// ══════════════════════════════════════════════════════════════════
-function _reordenarBuscadorArreglos() {
-    var panel     = document.getElementById('panelArreglos');
-    var bloquePrecio = document.getElementById('bloqueFiltroPrecioArreglos');
-    if (!panel || !bloquePrecio) return;
-    // Si el panel ya es el hermano siguiente del bloque de precio, no hacer nada
-    if (bloquePrecio.nextElementSibling === panel) return;
-    // Moverlo: insertarlo justo después del bloque de filtro de precio
-    bloquePrecio.parentNode.insertBefore(panel, bloquePrecio.nextSibling);
-}
-
-_ready(_reordenarBuscadorArreglos);
-document.addEventListener('catalogoCargado', _reordenarBuscadorArreglos);
+// _reordenarBuscadorArreglos eliminada — el orden se mantiene directamente en cambiarModoVelas.
