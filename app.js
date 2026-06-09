@@ -1846,10 +1846,13 @@ if (document.readyState === 'loading') {
             const okForma  = formaActiva  === 'todos' || formaCard === formaActiva;
             const okEvento = eventoActivo === 'todos' || eventoCard.split(' ').includes(eventoActivo);
 
-            if (panel === 'decoraciones') {
-                card.classList.toggle('oculto', !(tieneTipo(card, 'decoracion') && okNombre));
+            // Si hay texto de búsqueda activo, ignorar el filtro de tipo y buscar en TODOS los productos
+            if (textoBusq) {
+                card.classList.toggle('oculto', !okNombre);
+            } else if (panel === 'decoraciones') {
+                card.classList.toggle('oculto', !tieneTipo(card, 'decoracion'));
             } else if (panel === 'etiquetas') {
-                card.classList.toggle('oculto', !(tieneTipo(card, 'etiqueta') && okNombre && okEvento));
+                card.classList.toggle('oculto', !(tieneTipo(card, 'etiqueta') && okEvento));
             } else if (panel === 'arreglos') {
                 // Respetar también el filtro de precio activo en arreglos
                 let okPrecio = true;
@@ -1859,13 +1862,12 @@ if (document.readyState === 'loading') {
                         : String(parseInt(card.getAttribute('data-precio') || '0', 10));
                     okPrecio = pAttr === precioArreglosActivo;
                 }
-                card.classList.toggle('oculto', !(tieneTipo(card, 'arreglo') && okNombre && okForma && okEvento && okPrecio));
+                card.classList.toggle('oculto', !(tieneTipo(card, 'arreglo') && okForma && okEvento && okPrecio));
             } else if (panel === 'mostrar_todo') {
-                // Mostrar Todo: muestra absolutamente todos los productos sin filtro de tipo
-                card.classList.toggle('oculto', !okNombre);
+                card.classList.toggle('oculto', false); // sin texto: mostrar todo
             } else {
                 // panel === 'todos' (🛍️ Productos): muestra solo los que tienen tipo 'producto'
-                card.classList.toggle('oculto', !(tieneTipo(card, 'producto') && okNombre && okForma && okEvento));
+                card.classList.toggle('oculto', !(tieneTipo(card, 'producto') && okForma && okEvento));
             }
         });
 

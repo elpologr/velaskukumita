@@ -1133,54 +1133,6 @@
 
         <!-- ===== PANEL FILTROS UNIFICADO ===== -->
 
-        <!-- ARREGLOS -->
-        <div class="panel-busqueda-unificado visible" id="panelArreglos">
-            <div class="barra-busqueda-unificada-wrap">
-                <div class="barra-busqueda-unificada" id="barraBuscadorArreglos">
-                    <input type="text" id="inputBusquedaArreglos" class="bbu-input" placeholder="Buscar Arreglos…" oninput="filtrarPorNombreUnificado('arreglos', this.value)">
-                    <button class="bbu-btn-lupa" onclick="filtrarPorNombreUnificado('arreglos', document.getElementById('inputBusquedaArreglos').value)" title="Buscar">
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    </button>
-                    <button class="bbu-btn-flecha" id="btnFlechaArreglos" onclick="toggleDropdownFiltros('arreglos')" title="Filtros">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                    </button>
-                </div>
-                <div class="bbu-dropdown" id="dropdownArreglos">
-                    <div class="bbu-grupo">
-                        <button class="bbu-grupo-header" onclick="toggleGrupoFiltro('grupoFormaArreglos')">
-                            <span>🔷 Filtrar por Forma</span>
-                            <svg class="bbu-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                        </button>
-                        <div class="bbu-grupo-opciones" id="grupoFormaArreglos">
-                            <button class="bbu-tag activo" onclick="seleccionarTagFiltro(this,'arreglos','forma','todos')">Ver Todo</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','forma','animales')">🐾 Animales</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','forma','humana')">🧍 Forma Humana</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','forma','religioso')">✝️ Religioso</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','forma','objetos')">🕯️ Objetos</button>
-                        </div>
-                    </div>
-                    <div class="bbu-grupo">
-                        <button class="bbu-grupo-header" onclick="toggleGrupoFiltro('grupoEventoArreglos')">
-                            <span>🎉 Filtrar por Evento</span>
-                            <svg class="bbu-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                        </button>
-                        <div class="bbu-grupo-opciones" id="grupoEventoArreglos">
-                            <button class="bbu-tag activo" onclick="seleccionarTagFiltro(this,'arreglos','evento','todos')">Ver Todo</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','boda')">💍 Boda</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','baby-shower')">🍼 Baby Shower</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','bautizo')">🕊️ Bautizo</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','primera-comunion')">🙏 Primera Comunión</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','quince-anos')">👑 Quince Años</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','graduacion')">🎓 Graduación</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','aniversario-luctuoso')">🕯️ Aniversario Luctuoso</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','fin-novenario')">🌿 Fin de Novenario</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','despedida-soltera')">🥂 Despedida de Soltera</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- FILTRO DE PRECIO — ARREGLOS -->
         <div id="bloqueFiltroPrecioArreglos" style="display:block; background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin: 8px 0 14px 0; padding: 16px 14px 14px;">
             <p style="text-align:center; font-weight:700; color:#5c4d43; font-size:0.92rem; margin-bottom:10px; letter-spacing:0.3px;">Filtrar por</p>
@@ -1234,6 +1186,54 @@
                     <button class="btn-precio-velas" onclick="filtrarPrecioArreglos(this,'800')">$800</button>
                 </div>
                     <button class="btn-scroll-precios" onclick="scrollPrecios('lista-precios-arreglos', 200)" title="Ver más precios">›</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ARREGLOS — barra de búsqueda (debajo del filtro de precio) -->
+        <div class="panel-busqueda-unificado visible" id="panelArreglos">
+            <div class="barra-busqueda-unificada-wrap">
+                <div class="barra-busqueda-unificada" id="barraBuscadorArreglos">
+                    <input type="text" id="inputBusquedaArreglos" class="bbu-input" placeholder="Buscar productos…" oninput="filtrarPorNombreUnificado('arreglos', this.value)">
+                    <button class="bbu-btn-lupa" onclick="filtrarPorNombreUnificado('arreglos', document.getElementById('inputBusquedaArreglos').value)" title="Buscar">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </button>
+                    <button class="bbu-btn-flecha" id="btnFlechaArreglos" onclick="toggleDropdownFiltros('arreglos')" title="Filtros">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                </div>
+                <div class="bbu-dropdown" id="dropdownArreglos">
+                    <div class="bbu-grupo">
+                        <button class="bbu-grupo-header" onclick="toggleGrupoFiltro('grupoFormaArreglos')">
+                            <span>🔷 Filtrar por Forma</span>
+                            <svg class="bbu-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                        <div class="bbu-grupo-opciones" id="grupoFormaArreglos">
+                            <button class="bbu-tag activo" onclick="seleccionarTagFiltro(this,'arreglos','forma','todos')">Ver Todo</button>
+                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','forma','animales')">🐾 Animales</button>
+                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','forma','humana')">🧍 Forma Humana</button>
+                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','forma','religioso')">✝️ Religioso</button>
+                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','forma','objetos')">🕯️ Objetos</button>
+                        </div>
+                    </div>
+                    <div class="bbu-grupo">
+                        <button class="bbu-grupo-header" onclick="toggleGrupoFiltro('grupoEventoArreglos')">
+                            <span>🎉 Filtrar por Evento</span>
+                            <svg class="bbu-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                        <div class="bbu-grupo-opciones" id="grupoEventoArreglos">
+                            <button class="bbu-tag activo" onclick="seleccionarTagFiltro(this,'arreglos','evento','todos')">Ver Todo</button>
+                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','boda')">💍 Boda</button>
+                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','baby-shower')">🍼 Baby Shower</button>
+                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','bautizo')">🕊️ Bautizo</button>
+                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','primera-comunion')">🙏 Primera Comunión</button>
+                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','quince-anos')">👑 Quince Años</button>
+                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','graduacion')">🎓 Graduación</button>
+                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','aniversario-luctuoso')">🕯️ Aniversario Luctuoso</button>
+                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','fin-novenario')">🌿 Fin de Novenario</button>
+                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','despedida-soltera')">🥂 Despedida de Soltera</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
