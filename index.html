@@ -1044,12 +1044,12 @@
         <div class="selector-modo-velas-wrap">
             <!-- Fila superior: Mostrar Todo -->
             <div class="selector-modo-fila-top">
-                <button class="btn-modo-velas btn-modo-mostrar-todo" id="btnModoTodosProductos" onclick="cambiarModoVelas('mostrar_todo')">Mostrar Todo</button>
+                <button class="btn-modo-velas btn-modo-mostrar-todo activo" id="btnModoTodosProductos" onclick="cambiarModoVelas('mostrar_todo')">Mostrar Todo</button>
             </div>
             <!-- Fila inferior: los 4 botones de categoría -->
             <div class="selector-modo-velas" id="selectorModoVelas">
                 <button class="btn-modo-velas btn-modo-productos" id="btnModoTodos" onclick="cambiarModoVelas('todos')">🛍️ Productos</button>
-                <button class="btn-modo-velas btn-modo-arreglos activo" id="btnModoArreglos" onclick="cambiarModoVelas('arreglos')">🕯️ Arreglos</button>
+                <button class="btn-modo-velas btn-modo-arreglos" id="btnModoArreglos" onclick="cambiarModoVelas('arreglos')">🕯️ Arreglos</button>
                 <button class="btn-modo-velas btn-modo-decoraciones" id="btnModoDecoraciones" onclick="cambiarModoVelas('decoraciones')" style="line-height:1.25;">✨ Decoraciones<br>y Aditamentos</button>
                 <button class="btn-modo-velas btn-modo-etiquetas" id="btnModoEtiquetas" onclick="cambiarModoVelas('etiquetas')">🏷️ Etiquetas</button>
             </div>
@@ -1134,7 +1134,7 @@
         <!-- ===== PANEL FILTROS UNIFICADO ===== -->
 
         <!-- FILTRO DE PRECIO — ARREGLOS -->
-        <div id="bloqueFiltroPrecioArreglos" style="display:block; background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin: 8px 0 14px 0; padding: 16px 14px 14px;">
+        <div id="bloqueFiltroPrecioArreglos" style="display:none; background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin: 8px 0 14px 0; padding: 16px 14px 14px;">
             <p style="text-align:center; font-weight:700; color:#5c4d43; font-size:0.92rem; margin-bottom:10px; letter-spacing:0.3px;">Filtrar por</p>
             <div style="display:flex; justify-content:center; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
                 <button id="btn-arreglos-precio-original" class="btn-tipo-precio-velas activo" onclick="cambiarTipoPrecioArreglos('original')">💰 Precio Original</button>

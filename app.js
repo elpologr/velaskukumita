@@ -762,7 +762,7 @@ if (document.readyState === 'loading') {
             'btnModoDecoraciones':   'decoraciones',
             'btnModoEtiquetas':      'etiquetas'
         };
-        var modoActual = btnActivo ? (mapaIDs[btnActivo.id] || 'arreglos') : 'arreglos';
+        var modoActual = btnActivo ? (mapaIDs[btnActivo.id] || 'mostrar_todo') : 'mostrar_todo';
 
         if (typeof window.cambiarModoVelas === 'function') {
             // Pasar por mostrar_todo para que la paginacion cuente todas las cards...
@@ -4744,11 +4744,11 @@ function _cargarFavoritosFirestore(uid) {
                 'btnModoDecoraciones':   'decoraciones',
                 'btnModoEtiquetas':      'etiquetas'
             };
-            var modo = modos[btnActivo.id] || 'arreglos';
+            var modo = modos[btnActivo.id] || 'mostrar_todo';
             if (typeof window.cambiarModoVelas === 'function') window.cambiarModoVelas(modo);
         } else {
             // Fallback: mostrar todo
-            if (typeof window.cambiarModoVelas === 'function') window.cambiarModoVelas('arreglos');
+            if (typeof window.cambiarModoVelas === 'function') window.cambiarModoVelas('mostrar_todo');
         }
     };
 
