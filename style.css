@@ -2135,21 +2135,21 @@
             background: #f0eae4;
             border: 2px solid #d4c5b8;
             color: #5c4d43;
-            font-size: 14px;
+            font-size: 21px;
             font-weight: 700;
-            border-radius: 18px;
+            border-radius: 24px;
             cursor: pointer;
             transition: all 0.22s;
             white-space: nowrap;
-            /* Cuadrado: ancho actual mantenido, alto = ancho */
+            /* Cuadrado: 50% más grande que los 90px originales */
             display: inline-flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            width: 90px;
-            height: 90px;
-            padding: 8px 6px;
+            gap: 9px;
+            width: 135px;
+            height: 135px;
+            padding: 12px 9px;
             box-sizing: border-box;
             text-align: center;
             line-height: 1.2;
@@ -2157,22 +2157,22 @@
         }
         /* Imagen dentro del botón pill */
         .pill-btn-img {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
+            width: 57px;
+            height: 57px;
+            border-radius: 14px;
             object-fit: cover;
             display: block;
             flex-shrink: 0;
         }
         .pill-btn-label {
             display: block;
-            font-size: 12px;
+            font-size: 18px;
             font-weight: 700;
             line-height: 1.2;
         }
         /* Sin imagen: el emoji + texto se muestran normalmente */
         .pill-btn:not(:has(.pill-btn-img)) {
-            font-size: 13px;
+            font-size: 19px;
         }
         .pill-btn.activo {
             background: #8c7565;

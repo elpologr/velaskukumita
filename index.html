@@ -423,7 +423,7 @@
         </div>
 
         <!-- Botón píldora Yesos Kukumita — justo debajo del título, encima de los botones principales -->
-        <div style="margin-bottom:18px; position:relative; display:block; overflow:hidden;">
+        <div style="margin-bottom:18px; position:relative; display:block; overflow:visible;">
             <button id="btnYesosKukumita"
                     onclick="toggleSubmenuYesos()"
                     style="display:inline-flex; align-items:center; gap:8px; background:#fff; color:#5c4d43; border:2px solid #c9a98a; border-radius:999px; padding:9px 22px; font-size:0.84rem; font-weight:700; font-family:inherit; cursor:pointer; transition:all 0.22s; box-shadow:0 2px 8px rgba(140,117,101,0.12);"
@@ -562,19 +562,19 @@
     <!-- ===== BARRA DE PÍLDORAS: BIOGRAFÍA / OFERTAS / MÁS VENDIDOS ===== -->
     <div class="pill-nav-barra" id="pillNavBarra">
         <button class="pill-btn" id="pillBiografia" onclick="activarPill('biografia')">
-            <span style="font-size:1.5rem; line-height:1;">🕯️</span>
+            <span style="font-size:2.25rem; line-height:1;">🕯️</span>
             <span class="pill-btn-label">Biografía</span>
         </button>
         <button class="pill-btn" id="pillProductos" onclick="activarPill('productos')">
-            <span style="font-size:1.5rem; line-height:1;">🛍️</span>
+            <span style="font-size:2.25rem; line-height:1;">🛍️</span>
             <span class="pill-btn-label">Catálogo</span>
         </button>
         <button class="pill-btn" id="pillOfertas" onclick="activarPill('ofertas')">
-            <span style="font-size:1.5rem; line-height:1;">🏷️</span>
+            <span style="font-size:2.25rem; line-height:1;">🏷️</span>
             <span class="pill-btn-label">Ofertas</span>
         </button>
         <button class="pill-btn" id="pillMasVendidos" onclick="activarPill('masvendidos')">
-            <span style="font-size:1.5rem; line-height:1;">🏆</span>
+            <span style="font-size:2.25rem; line-height:1;">🏆</span>
             <span class="pill-btn-label">Más Vendidos</span>
         </button>
     </div>
@@ -1053,18 +1053,7 @@
             <h2 style="font-size: 3.6rem; font-weight: 900; color: #111; letter-spacing: 2px; margin: 0; font-family: 'Playfair Display', Georgia, serif; font-style: italic; line-height: 1.1;">Catálogo</h2>
         </div>
 
-        <!-- ===== BARRA DE BÚSQUEDA GLOBAL ===== -->
-        <div id="barraGlobalWrap" style="margin: 0 0 12px 0; padding: 0 2px;">
-            <div id="barraGlobal" style="display:flex; align-items:center; gap:8px; background:#fff; border:2px solid #e8ddd5; border-radius:14px; padding:10px 14px; box-shadow:0 2px 8px rgba(0,0,0,0.06); transition:border-color 0.2s;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8c7565" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" id="inputBusquedaGlobal" placeholder="🔍 Buscar en todos los productos…" autocomplete="off"
-                    style="flex:1; border:none; outline:none; font-size:0.95rem; color:#362a22; background:transparent; font-family:inherit;"
-                    oninput="busquedaGlobal(this.value)">
-                <button id="btnLimpiarGlobal" onclick="limpiarBusquedaGlobal()" title="Limpiar"
-                    style="display:none; background:none; border:none; cursor:pointer; color:#bbb; font-size:18px; line-height:1; padding:0 2px; flex-shrink:0;">✕</button>
-            </div>
-            <div id="resultadosGlobalInfo" style="display:none; font-size:0.8rem; color:#8c7565; text-align:center; margin-top:6px; font-weight:600;"></div>
-        </div>
+        <!-- Barra de búsqueda global eliminada (queda la de cada categoría) -->
 
         <!-- ===== BOTONES DE MODO: MOSTRAR TODO + PRODUCTOS / ARREGLOS / DECORACIONES / ETIQUETAS ===== -->
         <div class="selector-modo-velas-wrap">
