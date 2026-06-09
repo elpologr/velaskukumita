@@ -507,6 +507,17 @@ function cargarDesdeGoogleSheets() {
         })
         .then(function(texto) {
             var filas = parsearCSV(texto);
+
+            // ── DIAGNÓSTICO: imprime las primeras 3 filas del CSV en consola ──
+            console.group('[Kukumita] RAW CSV — primeras 3 filas');
+            for (var _di = 0; _di < Math.min(3, filas.length); _di++) {
+                console.log('Fila ' + _di + ' (' + filas[_di].length + ' columnas):');
+                filas[_di].forEach(function(val, idx) {
+                    if (val) console.log('  [' + idx + '] = ' + val.substring(0, 80));
+                });
+            }
+            console.groupEnd();
+
             var productos = csvAProductos(filas);
 
             if (productos.length === 0) {
@@ -522,6 +533,11 @@ function cargarDesdeGoogleSheets() {
 
             // Disparar evento para que otros sistemas (paginación, filtros) se enteren
             document.dispatchEvent(new CustomEvent('catalogoCargado'));
+
+            // Refrescar carruseles de ofertas/más vendidos con las nuevas cards
+            if (typeof window.refrescarCarruseles === 'function') {
+                setTimeout(function() { window.refrescarCarruseles(); }, 50);
+            }
 
             // Log de diagnostico: precios y tipos de cada producto (visible en DevTools > Consola)
             console.group('[Kukumita] Catalogo cargado — ' + listaProductos.length + ' productos');
@@ -691,8 +707,8 @@ if (document.readyState === 'loading') {
 
 
         // ===== BANNER: IMÁGENES ALEATORIAS DEL CATÁLOGO =====
-        (function() {
-            // Recopila todas las imágenes principales del catálogo junto con su número de producto
+        // Se ejecuta después de que el catálogo cargue para tener las cards disponibles
+        function _llenarBannerAleatorio() {
             const tarjetasCatalogo = document.querySelectorAll('.card-dinamica');
             const imagenesCatalogo = [];
 
@@ -704,15 +720,18 @@ if (document.readyState === 'loading') {
                 }
             });
 
+            if (imagenesCatalogo.length === 0) return;
+
             // Mezcla aleatoria (Fisher-Yates)
             for (let i = imagenesCatalogo.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [imagenesCatalogo[i], imagenesCatalogo[j]] = [imagenesCatalogo[j], imagenesCatalogo[i]];
             }
 
-            // Llena los 4 slots del banner
+            // Llena los slots del banner (limpiando primero)
             const slots = document.querySelectorAll('.banner-slot');
             slots.forEach((slot, index) => {
+                slot.innerHTML = '';
                 const item = imagenesCatalogo[index % imagenesCatalogo.length];
                 const img = document.createElement('img');
                 img.src = item.src;
@@ -725,17 +744,18 @@ if (document.readyState === 'loading') {
                 slot.appendChild(img);
                 slot.appendChild(num);
             });
-        })();
+        }
+        document.addEventListener('catalogoCargado', _llenarBannerAleatorio);
 
         const sliderPrecio = document.getElementById('filtroPrecio');
         const txtPrecioMax = document.getElementById('txtPrecioMax');
-        const tarjetas = document.querySelectorAll('.card-dinamica');
-
+        // tarjetas se obtiene dinámicamente para incluir las cargadas desde Google Sheets
         let formaActiva = 'todos';
         let eventoActivo = 'todos';
         let precioMaximoActivo = 500;
 
         function aplicarFiltros() {
+            const tarjetas = document.querySelectorAll('.card-dinamica');
             tarjetas.forEach(tarjeta => {
                 const fTarjeta = (tarjeta.getAttribute('data-forma') || '').trim().toLowerCase();
                 const eTarjeta = (tarjeta.getAttribute('data-evento') || '').trim().toLowerCase();
@@ -3365,11 +3385,14 @@ function actualizarFlechasCarrusel(tipo) {
 // al final de abrirModalProducto con setTimeout(..., 0).
 
 // ── Inicializar al cargar ─────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', function() {
+// ── Carruseles se construyen DESPUÉS de que el catálogo cargue ──
+document.addEventListener('catalogoCargado', function() {
     construirCarrusel('ofertas');
     construirCarrusel('masvendidos');
+});
 
-    // Escuchar scroll en tracks para actualizar flechas
+// Escuchar scroll en tracks (solo necesita DOM, no catálogo)
+document.addEventListener('DOMContentLoaded', function() {
     ['ofertas', 'masvendidos'].forEach(function(tipo) {
         var track = document.getElementById(tipo + '-carousel-track');
         if (track) {
@@ -3377,10 +3400,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-if (document.readyState !== 'loading') {
-    construirCarrusel('ofertas');
-    construirCarrusel('masvendidos');
-}
 
 // Exponer para poder refrescar desde fuera
 window.refrescarCarruseles = function() {
