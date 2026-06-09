@@ -3066,6 +3066,7 @@ function abrirModalBazar() {
     var modal = document.getElementById('modalBazar');
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+    if (typeof window._actualizarContadorBazar === 'function') window._actualizarContadorBazar();
 }
 function cerrarModalBazar() {
     var modal = document.getElementById('modalBazar');
@@ -4553,12 +4554,25 @@ function _cargarFavoritosFirestore(uid) {
         }, 60);
     };
 
-    // Ocultar/mostrar gradiente según posición del scroll
+    // Ocultar/mostrar gradientes y botones según posición del scroll
     window.actualizarGradienteEvento = function(el) {
-        var grad = document.getElementById('eventoScrollGradient');
-        if (!grad) return;
+        var gradR = document.getElementById('eventoScrollGradient');
+        var gradL = document.getElementById('eventoScrollGradientL');
+        var btnPrev = document.getElementById('btnEventoPrev');
+        var btnNext = document.getElementById('btnEventoNext');
         var maxScroll = el.scrollWidth - el.clientWidth;
-        grad.style.opacity = el.scrollLeft >= maxScroll - 8 ? '0' : '1';
+        var atEnd   = el.scrollLeft >= maxScroll - 8;
+        var atStart = el.scrollLeft <= 8;
+        if (gradR) gradR.style.opacity  = atEnd   ? '0' : '1';
+        if (gradL) gradL.style.opacity  = atStart ? '0' : '1';
+        if (btnPrev) btnPrev.style.opacity = atStart ? '0.35' : '1';
+        if (btnNext) btnNext.style.opacity = atEnd   ? '0.35' : '1';
+    };
+
+    window.scrollEventos = function(dir) {
+        var el = document.getElementById('eventoCarrusel');
+        if (!el) return;
+        el.scrollBy({ left: dir * 220, behavior: 'smooth' });
     };
 
     // Limpiar filtro de evento cuando el usuario cambia de tab manualmente

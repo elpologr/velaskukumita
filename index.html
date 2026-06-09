@@ -1058,9 +1058,16 @@
         <!-- ===== BUSCA POR EVENTO ===== -->
         <div style="padding: 0 0 8px 0;">
             <p style="text-align:center; font-size:1.1rem; font-weight:800; color:#5c4d43; margin:0 0 10px 0; letter-spacing:0.3px;">🎉 Busca por Evento</p>
-            <div style="position:relative; overflow:hidden;">
-                <!-- Gradiente derecho como señal de más contenido -->
-                <div id="eventoScrollGradient" style="position:absolute; right:0; top:0; bottom:0; width:80px; background:linear-gradient(to right, transparent, rgba(255,255,255,0.97)); pointer-events:none; z-index:2; transition:opacity 0.3s;"></div>
+            <div style="position:relative;">
+                <!-- Botón izquierdo (solo desktop) -->
+                <button id="btnEventoPrev" onclick="scrollEventos(-1)" style="display:none; position:absolute; left:-4px; top:50%; transform:translateY(-65%); z-index:4; width:30px; height:30px; border-radius:50%; background:#fff; border:1.5px solid #e0d5cc; box-shadow:0 2px 8px rgba(0,0,0,0.13); font-size:18px; cursor:pointer; align-items:center; justify-content:center; line-height:1; color:#5c4d43; padding:0;">‹</button>
+                <!-- Botón derecho (solo desktop) -->
+                <button id="btnEventoNext" onclick="scrollEventos(1)" style="display:none; position:absolute; right:-4px; top:50%; transform:translateY(-65%); z-index:4; width:30px; height:30px; border-radius:50%; background:#fff; border:1.5px solid #e0d5cc; box-shadow:0 2px 8px rgba(0,0,0,0.13); font-size:18px; cursor:pointer; align-items:center; justify-content:center; line-height:1; color:#5c4d43; padding:0;">›</button>
+                <div style="overflow:hidden; padding:0 2px;">
+                <!-- Gradiente derecho -->
+                <div id="eventoScrollGradient" style="position:absolute; right:0; top:0; bottom:0; width:60px; background:linear-gradient(to right, transparent, rgba(255,255,255,0.97)); pointer-events:none; z-index:2; transition:opacity 0.3s;"></div>
+                <!-- Gradiente izquierdo -->
+                <div id="eventoScrollGradientL" style="position:absolute; left:0; top:0; bottom:0; width:40px; background:linear-gradient(to left, transparent, rgba(255,255,255,0.97)); pointer-events:none; z-index:2; opacity:0; transition:opacity 0.3s;"></div>
                 <div id="eventoCarrusel" style="display:flex; gap:9px; overflow-x:auto; padding:4px 12px 10px; scroll-snap-type:x mandatory; scrollbar-width:none; -ms-overflow-style:none;" onscroll="actualizarGradienteEvento(this)">
                     <button class="btn-evento-carrusel" data-evento="todos" onclick="filtrarPorEventoCarrusel(this,'todos')" style="background:#1a1a1a; color:#fff; border-color:#1a1a1a;">Ver Todo</button>
                     <button class="btn-evento-carrusel" data-evento="dia-de-muertos" onclick="filtrarPorEventoCarrusel(this,'dia-de-muertos')">💀 Día de Muertos</button>
@@ -1079,7 +1086,8 @@
                     <button class="btn-evento-carrusel" data-evento="fin-novenario" onclick="filtrarPorEventoCarrusel(this,'fin-novenario')">🌿 Fin de Novenario</button>
                     <button class="btn-evento-carrusel" data-evento="despedida-soltera" onclick="filtrarPorEventoCarrusel(this,'despedida-soltera')">🥂 Despedida Soltera</button>
                 </div>
-            </div>
+                </div><!-- /overflow:hidden -->
+            </div><!-- /position:relative -->
         </div>
         <style>
         .btn-evento-carrusel {
@@ -1113,6 +1121,11 @@
         .modo-oscuro .btn-evento-carrusel { background:#2a2220; color:#d4c5b8; border-color:#4a3b32; }
         .modo-oscuro .btn-evento-carrusel.activo-evento { background:#8c7565; color:#fff; border-color:#8c7565; }
         .modo-oscuro #eventoScrollGradient { background: linear-gradient(to right, transparent, rgba(26,18,14,0.97)); }
+        .modo-oscuro #eventoScrollGradientL { background: linear-gradient(to left, transparent, rgba(26,18,14,0.97)); }
+        /* Botones flecha solo en desktop */
+        @media (hover: hover) and (pointer: fine) {
+            #btnEventoPrev, #btnEventoNext { display: flex !important; }
+        }
         </style>
 
         <!-- ===== PANEL FILTROS UNIFICADO ===== -->
@@ -1611,12 +1624,11 @@
         <div style="position:relative; width:100%; background:#1a1008; flex-shrink:0; overflow:hidden; border-radius:20px 20px 0 0;">
             <!-- Botón cerrar flotante -->
             <button onclick="cerrarModalBazar()" style="position:absolute; top:12px; right:12px; z-index:20; width:34px; height:34px; border-radius:50%; background:rgba(0,0,0,0.48); color:white; border:none; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
-            <!-- Imagen del bazar (puedes cambiar el src por una foto real del bazar) -->
-            <div style="width:100%; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#3d2b1f 0%,#6b4c37 50%,#3d2b1f 100%);">
-                <div style="text-align:center; padding:20px;">
-                    <div style="font-size:5rem; margin-bottom:12px;">🏪</div>
-                    <p style="color:rgba(255,255,255,0.7); font-size:1rem; font-style:italic; letter-spacing:2px; font-family:'Cormorant Garamond', Georgia, serif;">Velas Kukumita en Bazar</p>
-                </div>
+            <!-- Imagen bazar.webp -->
+            <div style="width:100%; max-height:280px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                <img src="imagenes/bazar.webp" alt="Velas Kukumita en Bazar"
+                     style="width:100%; height:280px; object-fit:cover; display:block;"
+                     onerror="this.parentElement.innerHTML='<div style=\'width:100%;height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#3d2b1f,#6b4c37);\'><div style=\'font-size:5rem;\'>🏪</div><p style=\'color:rgba(255,255,255,0.7);font-size:1rem;font-style:italic;letter-spacing:2px;font-family:Cormorant Garamond,Georgia,serif;margin-top:12px;\'>Velas Kukumita en Bazar</p></div>'">
             </div>
         </div>
 
@@ -1626,33 +1638,34 @@
             <!-- Título -->
             <h2 style="font-size:1.4rem; font-weight:800; color:#362a22; margin:0; font-family:'Playfair Display', Georgia, serif; font-style:italic; line-height:1.3;">📍 Próximas Fechas de Bazar</h2>
 
+            <!-- ── Contador regresivo ── -->
+            <div id="bazarCountdownZona" style="text-align:center; background:linear-gradient(135deg,#362a22,#5c4d43); border-radius:14px; padding:14px 18px;">
+                <p style="color:rgba(255,255,255,0.65); font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin:0 0 6px;">⏳ Cuenta regresiva</p>
+                <p id="bazarCountdownTexto" style="color:#fff; font-size:1.5rem; font-weight:900; margin:0; letter-spacing:0.5px; font-family:'Playfair Display',Georgia,serif;"></p>
+            </div>
+
             <!-- Aviso actual -->
             <div style="background:linear-gradient(135deg,#fdf6f0,#fdf0e8); border:1px solid #e8ddd5; border-radius:12px; padding:14px 16px;">
                 <p style="font-size:13px; color:#8a7a70; margin:0 0 10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">📣 Aviso Actual</p>
-                <p style="font-size:0.93rem; color:#5c4d43; line-height:1.7; margin:0 0 10px;">
+                <p style="font-size:0.93rem; color:#5c4d43; line-height:1.7; margin:0 0 12px;">
                     En este momento <strong>no nos encontramos en ningún bazar</strong>, pero estaremos vendiendo <strong style="color:#8c7565;">Yesos en Plaza del Carmen</strong> los días <strong>11, 12 y 13 de Junio</strong>:
                 </p>
-                <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:10px;">
-                    <div style="display:flex; align-items:center; gap:10px; background:#fff; border-radius:8px; padding:10px 12px; border:1px solid #e8ddd5;">
-                        <span style="font-size:1.4rem; flex-shrink:0;">🗓️</span>
-                        <div>
-                            <p style="margin:0; font-size:0.92rem; font-weight:700; color:#362a22;">Jueves 11 de Junio</p>
-                            <p style="margin:0; font-size:0.82rem; color:#8c7565;">8:30 am — 8:00 pm</p>
-                        </div>
+                <!-- Recuadros de días en FILA HORIZONTAL -->
+                <div style="display:flex; gap:8px; margin-bottom:12px; overflow-x:auto; scrollbar-width:none; padding-bottom:2px;">
+                    <div style="flex:1; min-width:100px; display:flex; flex-direction:column; align-items:center; gap:4px; background:#fff; border-radius:10px; padding:10px 8px; border:1px solid #e8ddd5; text-align:center;">
+                        <span style="font-size:1.5rem;">🗓️</span>
+                        <p style="margin:0; font-size:0.82rem; font-weight:800; color:#362a22; line-height:1.3;">Jueves<br>11 Jun</p>
+                        <p style="margin:0; font-size:0.75rem; color:#8c7565; line-height:1.4;">8:30 am<br>— 8:00 pm</p>
                     </div>
-                    <div style="display:flex; align-items:center; gap:10px; background:#fff; border-radius:8px; padding:10px 12px; border:1px solid #e8ddd5;">
-                        <span style="font-size:1.4rem; flex-shrink:0;">🗓️</span>
-                        <div>
-                            <p style="margin:0; font-size:0.92rem; font-weight:700; color:#362a22;">Viernes 12 de Junio</p>
-                            <p style="margin:0; font-size:0.82rem; color:#8c7565;">10:00 am — 8:00 pm</p>
-                        </div>
+                    <div style="flex:1; min-width:100px; display:flex; flex-direction:column; align-items:center; gap:4px; background:#fff; border-radius:10px; padding:10px 8px; border:1px solid #e8ddd5; text-align:center;">
+                        <span style="font-size:1.5rem;">🗓️</span>
+                        <p style="margin:0; font-size:0.82rem; font-weight:800; color:#362a22; line-height:1.3;">Viernes<br>12 Jun</p>
+                        <p style="margin:0; font-size:0.75rem; color:#8c7565; line-height:1.4;">10:00 am<br>— 8:00 pm</p>
                     </div>
-                    <div style="display:flex; align-items:center; gap:10px; background:#fff; border-radius:8px; padding:10px 12px; border:1px solid #e8ddd5;">
-                        <span style="font-size:1.4rem; flex-shrink:0;">🗓️</span>
-                        <div>
-                            <p style="margin:0; font-size:0.92rem; font-weight:700; color:#362a22;">Sábado 13 de Junio</p>
-                            <p style="margin:0; font-size:0.82rem; color:#8c7565;">10:00 am — 7:00 pm</p>
-                        </div>
+                    <div style="flex:1; min-width:100px; display:flex; flex-direction:column; align-items:center; gap:4px; background:#fff; border-radius:10px; padding:10px 8px; border:1px solid #e8ddd5; text-align:center;">
+                        <span style="font-size:1.5rem;">🗓️</span>
+                        <p style="margin:0; font-size:0.82rem; font-weight:800; color:#362a22; line-height:1.3;">Sábado<br>13 Jun</p>
+                        <p style="margin:0; font-size:0.75rem; color:#8c7565; line-height:1.4;">10:00 am<br>— 7:00 pm</p>
                     </div>
                 </div>
                 <p style="font-size:0.88rem; color:#5c4d43; line-height:1.65; margin:0; background:#fdf3ec; border-left:3px solid #8c7565; padding:10px 12px; border-radius:0 8px 8px 0;">
@@ -1670,6 +1683,45 @@
         </div>
     </div>
 </div>
+
+<!-- Script contador regresivo bazar -->
+<script>
+(function() {
+    // ── CONFIGURACIÓN: primera fecha del bazar ──────────────────────
+    // Cambia solo esta línea cuando actualices las fechas del bazar.
+    // Formato: año, mes (0-11), día  →  11 de junio 2025 = (2025, 5, 11)
+    var FECHA_BAZAR = new Date(2025, 5, 11); // 11 de Junio 2025
+    // ────────────────────────────────────────────────────────────────
+
+    function actualizarContador() {
+        var el = document.getElementById('bazarCountdownTexto');
+        var zona = document.getElementById('bazarCountdownZona');
+        if (!el) return;
+
+        var ahora = new Date();
+        // Comparar solo fechas (sin hora)
+        var hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+        var meta = new Date(FECHA_BAZAR.getFullYear(), FECHA_BAZAR.getMonth(), FECHA_BAZAR.getDate());
+        var diff = Math.round((meta - hoy) / (1000 * 60 * 60 * 24));
+
+        if (diff > 1) {
+            el.textContent = '🗓️ Quedan ' + diff + ' días para el bazar';
+        } else if (diff === 1) {
+            el.textContent = '🔥 ¡Mañana es el bazar!';
+        } else if (diff === 0) {
+            el.textContent = '🎉 ¡Hoy es el bazar!';
+        } else {
+            // Ya pasó — ocultar la zona del contador
+            if (zona) zona.style.display = 'none';
+        }
+    }
+
+    // Ejecutar al cargar y al abrir el modal
+    document.addEventListener('DOMContentLoaded', actualizarContador);
+    // Exponer para que abrirModalBazar() también lo refresque
+    window._actualizarContadorBazar = actualizarContador;
+})();
+</script>
 
 <!-- ===== GALERÍA FACEBOOK PAGINADA ===== -->
 
