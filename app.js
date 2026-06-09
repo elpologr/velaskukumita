@@ -4777,3 +4777,21 @@ window.togglePanelEventos = function() {
     panel.style.display = visible ? 'none' : 'block';
     if (icono) icono.textContent = visible ? '▼' : '▲';
 };
+
+// ══════════════════════════════════════════════════════════════════
+// REORDENAR DOM: panelArreglos siempre después de bloqueFiltroPrecioArreglos
+// Esto se ejecuta tanto al inicio como cuando el catálogo termina de cargar,
+// para que el orden sea correcto sin importar cómo esté el HTML original.
+// ══════════════════════════════════════════════════════════════════
+function _reordenarBuscadorArreglos() {
+    var panel  = document.getElementById('panelArreglos');
+    var bloque = document.getElementById('bloqueFiltroPrecioArreglos');
+    if (!panel || !bloque) return;
+    // Si el panel ya está después del bloque, no hacer nada
+    if (bloque.nextElementSibling === panel) return;
+    // Moverlo: insertarlo justo después del bloque de precios
+    bloque.parentNode.insertBefore(panel, bloque.nextSibling);
+}
+
+_ready(_reordenarBuscadorArreglos);
+document.addEventListener('catalogoCargado', _reordenarBuscadorArreglos);
