@@ -351,6 +351,7 @@ function renderizarCatalogoCompleto() {
         // ── Data-attributes necesarios para filtros y modal ──
         card.setAttribute('data-num',             String(p.id));
         card.setAttribute('data-idx',             String(p.id));
+        card.setAttribute('data-sheet-row',       String(p.id + 1));
         card.setAttribute('data-forma',           p.forma || '');
         card.setAttribute('data-evento',          p.eventos || '');
         card.setAttribute('data-precio',          String(parseInt(p.precioNormal, 10) || 0));
@@ -3276,6 +3277,38 @@ function inyectarEtiquetasModal(card) {
             zonaPrincipal.style.gap = '6px';
         } else {
             zonaPrincipal.style.display = 'none';
+        }
+    }
+
+    // ── Badge número de fila en Google Sheets (esquina derecha, misma altura) ──
+    var filaSheets = card.getAttribute('data-sheet-row') || '';
+    var badgeAnterior = document.getElementById('mpSheetRowBadge');
+    if (badgeAnterior) badgeAnterior.remove();
+    if (filaSheets) {
+        // Contenedor padre: primer div hijo de mp-info-zona que contiene mpEtiquetaPrincipalZona
+        var contenedorFila = zonaPrincipal ? zonaPrincipal.parentElement : null;
+        if (contenedorFila) {
+            var badge = document.createElement('span');
+            badge.id = 'mpSheetRowBadge';
+            badge.title = 'Fila ' + filaSheets + ' en Google Sheets';
+            badge.style.cssText = [
+                'margin-left:auto',
+                'flex-shrink:0',
+                'font-size:10px',
+                'font-weight:800',
+                'color:#9a8878',
+                'background:#f5f0eb',
+                'border:1.5px solid #e0d5cc',
+                'border-radius:8px',
+                'padding:3px 8px',
+                'letter-spacing:0.3px',
+                'white-space:nowrap',
+                'cursor:default',
+                'user-select:none',
+                'line-height:1.4'
+            ].join(';');
+            badge.textContent = '# ' + filaSheets;
+            contenedorFila.appendChild(badge);
         }
     }
 
