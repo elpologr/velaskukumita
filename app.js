@@ -2028,8 +2028,6 @@ if (document.readyState === 'loading') {
     window.toggleDropdownFiltros        = toggleDropdownFiltros;
     window.toggleGrupoFiltro            = toggleGrupoFiltro;
     window.seleccionarTagFiltro         = seleccionarTagFiltro;
-
-    // ===== FILTROS TODOS LOS PRODUCTOS =====
     function actualizarPrecio(val) {
         document.getElementById('txtPrecioMax').textContent = '$' + val + ' MXN';
         aplicarFiltrosTodos();
@@ -2133,6 +2131,11 @@ if (document.readyState === 'loading') {
         const el = document.getElementById(id);
         if (el) el.scrollBy({ left: px, behavior: 'smooth' });
     }
+
+    // Exponer al scope global
+    window.filtrarPrecioTodos  = filtrarPrecioTodos;
+    window.cambiarTipoPrecio   = cambiarTipoPrecio;
+    window.scrollPrecios       = scrollPrecios;
 
     // Inicializar listeners de filtros de botones (forma / evento)
     _ready(function() {
@@ -4784,11 +4787,88 @@ function _cargarFavoritosFirestore(uid) {
 window.togglePanelEventos = function() {
     var panel = document.getElementById('panelEventoCarrusel');
     var icono = document.getElementById('iconToggleEventos');
+    var btn   = document.getElementById('btnToggleEventos');
     if (!panel) return;
     var visible = panel.style.display !== 'none';
     panel.style.display = visible ? 'none' : 'block';
     if (icono) icono.textContent = visible ? '▼' : '▲';
+    if (btn) btn.style.borderColor = visible ? '#e0d5cc' : '#8c7565';
 };
+
+// ── Filtrar por Forma (carrusel) ──
+window.togglePanelFormas = function() {
+    var panel = document.getElementById('panelFormaCarrusel');
+    var icono = document.getElementById('iconToggleFormas');
+    var btn   = document.getElementById('btnToggleFormas');
+    if (!panel) return;
+    var visible = panel.style.display !== 'none';
+    panel.style.display = visible ? 'none' : 'block';
+    if (icono) icono.textContent = visible ? '▼' : '▲';
+    if (btn) btn.style.borderColor = visible ? '#e0d5cc' : '#8c7565';
+};
+
+// Normalizar texto para comparar sub-etiquetas de forma
+function _normForma(txt) {
+    return (txt || '').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quitar tildes
+        .replace(/[^a-z0-9\-]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+}
+
+window.filtrarPorFormaCarrusel = function(btnPulsado, forma) {
+    // Marcar botón activo
+    document.querySelectorAll('.btn-forma-carrusel').forEach(function(b) {
+        b.classList.remove('activo-evento');
+    });
+    btnPulsado.classList.add('activo-evento');
+
+    // Actualizar estilo del botón "Filtrar por Forma"
+    var btnToggle = document.getElementById('btnToggleFormas');
+    if (btnToggle) btnToggle.style.borderColor = forma === 'todos' ? '#e0d5cc' : '#8c7565';
+
+    // Activar modo "Mostrar Todo" para que todas las cards sean candidatas
+    if (typeof window.cambiarModoVelas === 'function') {
+        window.cambiarModoVelas('mostrar_todo');
+    }
+
+    if (forma === 'todos') {
+        return;
+    }
+
+    setTimeout(function() {
+        var cards = document.querySelectorAll('#gridProductos .card-dinamica');
+        var hay = false;
+        cards.forEach(function(card) {
+            // Buscar en data-subtags (columna H = SubEtiqueta)
+            var subtags = (card.getAttribute('data-subtags') || '').toLowerCase();
+            var subtaguNorm = subtags.split('|').map(function(s){ return _normForma(s.trim()); });
+            var formaSlug = _normForma(forma);
+            var coincide = subtaguNorm.includes(formaSlug);
+            card.classList.toggle('oculto', !coincide);
+            card.classList.remove('paginacion-oculto');
+            if (coincide) hay = true;
+        });
+        if (typeof window.actualizarPaginacion === 'function') {
+            window.actualizarPaginacion();
+        }
+    }, 60);
+};
+
+// Limpiar filtro de forma cuando el usuario cambia de tab
+_ready(function() {
+    document.querySelectorAll('.btn-modo-velas').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.btn-forma-carrusel').forEach(function(b) {
+                b.classList.remove('activo-evento');
+            });
+            var btnTodos = document.querySelector('.btn-forma-carrusel[data-forma="todos"]');
+            if (btnTodos) btnTodos.classList.add('activo-evento');
+            var btnToggle = document.getElementById('btnToggleFormas');
+            if (btnToggle) btnToggle.style.borderColor = '#e0d5cc';
+        });
+    });
+});
 
 // ══════════════════════════════════════════════════════════════════
 // _reordenarBuscadorArreglos eliminada — el orden se mantiene directamente en cambiarModoVelas.

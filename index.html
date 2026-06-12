@@ -1055,9 +1055,12 @@
             </div>
         </div>
 
-        <!-- ===== BUSCA POR EVENTO ===== -->
+        <!-- ===== BUSCA POR EVENTO Y FORMA ===== -->
         <div style="padding: 0 0 8px 0;">
-            <p id="btnToggleEventos" onclick="togglePanelEventos()" style="text-align:center; font-size:1.1rem; font-weight:800; color:#5c4d43; margin:0 0 0 0; letter-spacing:0.3px; cursor:pointer; user-select:none; padding:10px 0;">🎉 Busca por Evento <span id="iconToggleEventos" style="font-size:0.85rem; font-weight:400;">▼</span></p>
+            <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; padding:4px 0 0;">
+            <p id="btnToggleEventos" onclick="togglePanelEventos()" style="text-align:center; font-size:1.1rem; font-weight:800; color:#5c4d43; margin:0; letter-spacing:0.3px; cursor:pointer; user-select:none; padding:10px 16px; border-radius:999px; border:2px solid #e0d5cc; background:#fff; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 5px rgba(0,0,0,0.07); transition:background 0.16s, border-color 0.16s;">🎉 Filtrar por Evento <span id="iconToggleEventos" style="font-size:0.85rem; font-weight:400;">▼</span></p>
+            <p id="btnToggleFormas" onclick="togglePanelFormas()" style="text-align:center; font-size:1.1rem; font-weight:800; color:#5c4d43; margin:0; letter-spacing:0.3px; cursor:pointer; user-select:none; padding:10px 16px; border-radius:999px; border:2px solid #e0d5cc; background:#fff; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 5px rgba(0,0,0,0.07); transition:background 0.16s, border-color 0.16s;">🔷 Filtrar por Forma <span id="iconToggleFormas" style="font-size:0.85rem; font-weight:400;">▼</span></p>
+            </div>
             <div id="panelEventoCarrusel" style="display:none; overflow:hidden;">
             <div style="height:10px;"></div>
             <div style="position:relative;">
@@ -1091,6 +1094,22 @@
                 </div><!-- /overflow:hidden -->
             </div><!-- /position:relative -->
             </div><!-- /panelEventoCarrusel -->
+
+            <!-- Panel Filtrar por Forma -->
+            <div id="panelFormaCarrusel" style="display:none; overflow:hidden;">
+            <div style="height:10px;"></div>
+            <div style="overflow:hidden; padding:0 2px;">
+                <div id="formaCarrusel" style="display:flex; gap:9px; overflow-x:auto; padding:4px 12px 10px; scroll-snap-type:x mandatory; scrollbar-width:none; -ms-overflow-style:none;">
+                    <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="todos" onclick="filtrarPorFormaCarrusel(this,'todos')" style="background:#1a1a1a; color:#fff; border-color:#1a1a1a;">Ver Todo</button>
+                    <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="figura" onclick="filtrarPorFormaCarrusel(this,'figura')">🏺 Figura</button>
+                    <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="maceta" onclick="filtrarPorFormaCarrusel(this,'maceta')">🪴 Maceta</button>
+                    <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="base" onclick="filtrarPorFormaCarrusel(this,'base')">🔲 Base</button>
+                    <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="tazon" onclick="filtrarPorFormaCarrusel(this,'tazon')">🥣 Tazón</button>
+                    <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="porta-velas" onclick="filtrarPorFormaCarrusel(this,'porta-velas')">🕯️ Porta Velas</button>
+                    <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="religioso" onclick="filtrarPorFormaCarrusel(this,'religioso')">✝️ Religioso</button>
+                </div>
+            </div>
+            </div><!-- /panelFormaCarrusel -->
         </div>
         <style>
         .btn-evento-carrusel {
@@ -1145,6 +1164,8 @@
                     <button class="btn-scroll-precios" onclick="scrollPrecios('lista-precios-arreglos', -200)" title="Ver precios anteriores" style="margin-left:0; margin-right:6px;">‹</button>
                     <div class="lista-precios-velas" id="lista-precios-arreglos">
                     <button class="btn-precio-velas activo" onclick="filtrarPrecioArreglos(this,'todos')">Ver Todo</button>
+                    <button class="btn-precio-velas" onclick="filtrarPrecioArreglos(this,'5')">$5</button>
+                    <button class="btn-precio-velas" onclick="filtrarPrecioArreglos(this,'10')">$10</button>
                     <button class="btn-precio-velas" onclick="filtrarPrecioArreglos(this,'15')">$15</button>
                     <button class="btn-precio-velas" onclick="filtrarPrecioArreglos(this,'20')">$20</button>
                     <button class="btn-precio-velas" onclick="filtrarPrecioArreglos(this,'25')">$25</button>
@@ -1198,90 +1219,6 @@
                     <button class="bbu-btn-lupa" onclick="filtrarPorNombreUnificado('arreglos', document.getElementById('inputBusquedaArreglos').value)" title="Buscar">
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     </button>
-                    <button class="bbu-btn-flecha" id="btnFlechaArreglos" onclick="toggleDropdownFiltros('arreglos')" title="Filtros">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                    </button>
-                </div>
-                <div class="bbu-dropdown" id="dropdownArreglos">
-                    <div class="bbu-grupo">
-                        <button class="bbu-grupo-header" onclick="toggleGrupoFiltro('grupoFormaArreglos')">
-                            <span>🔷 Filtrar por Forma</span>
-                            <svg class="bbu-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                        </button>
-                        <div class="bbu-grupo-opciones" id="grupoFormaArreglos">
-                            <button class="bbu-tag activo" onclick="seleccionarTagFiltro(this,'arreglos','forma','todos')">Ver Todo</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','forma','animales')">🐾 Animales</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','forma','humana')">🧍 Forma Humana</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','forma','religioso')">✝️ Religioso</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','forma','objetos')">🕯️ Objetos</button>
-                        </div>
-                    </div>
-                    <div class="bbu-grupo">
-                        <button class="bbu-grupo-header" onclick="toggleGrupoFiltro('grupoEventoArreglos')">
-                            <span>🎉 Filtrar por Evento</span>
-                            <svg class="bbu-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                        </button>
-                        <div class="bbu-grupo-opciones" id="grupoEventoArreglos">
-                            <button class="bbu-tag activo" onclick="seleccionarTagFiltro(this,'arreglos','evento','todos')">Ver Todo</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','boda')">💍 Boda</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','baby-shower')">🍼 Baby Shower</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','bautizo')">🕊️ Bautizo</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','primera-comunion')">🙏 Primera Comunión</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','quince-anos')">👑 Quince Años</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','graduacion')">🎓 Graduación</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','aniversario-luctuoso')">🕯️ Aniversario Luctuoso</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','fin-novenario')">🌿 Fin de Novenario</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'arreglos','evento','despedida-soltera')">🥂 Despedida de Soltera</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TODOS LOS PRODUCTOS -->
-        <div class="panel-busqueda-unificado" id="panelTodos">
-            <div class="barra-busqueda-unificada-wrap">
-                <div class="barra-busqueda-unificada" id="barraBuscadorTodos">
-                    <input type="text" id="inputBusquedaTodos" class="bbu-input" placeholder="Buscar Todos los Productos…" oninput="filtrarPorNombreUnificado('todos', this.value)">
-                    <button class="bbu-btn-lupa" onclick="filtrarPorNombreUnificado('todos', document.getElementById('inputBusquedaTodos').value)" title="Buscar">
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    </button>
-                    <button class="bbu-btn-flecha" id="btnFlechaTodos" onclick="toggleDropdownFiltros('todos')" title="Filtros">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                    </button>
-                </div>
-                <div class="bbu-dropdown" id="dropdownTodos">
-                    <div class="bbu-grupo">
-                        <button class="bbu-grupo-header" onclick="toggleGrupoFiltro('grupoFormaTodos')">
-                            <span>🔷 Filtrar por Forma</span>
-                            <svg class="bbu-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                        </button>
-                        <div class="bbu-grupo-opciones" id="grupoFormaTodos">
-                            <button class="bbu-tag activo" onclick="seleccionarTagFiltro(this,'todos','forma','todos')">Ver Todo</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'todos','forma','animales')">🐾 Animales</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'todos','forma','humana')">🧍 Forma Humana</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'todos','forma','religioso')">✝️ Religioso</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'todos','forma','objetos')">🕯️ Objetos</button>
-                        </div>
-                    </div>
-                    <div class="bbu-grupo">
-                        <button class="bbu-grupo-header" onclick="toggleGrupoFiltro('grupoEventoTodos')">
-                            <span>🎉 Filtrar por Evento</span>
-                            <svg class="bbu-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                        </button>
-                        <div class="bbu-grupo-opciones" id="grupoEventoTodos">
-                            <button class="bbu-tag activo" onclick="seleccionarTagFiltro(this,'todos','evento','todos')">Ver Todo</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'todos','evento','boda')">💍 Boda</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'todos','evento','baby-shower')">🍼 Baby Shower</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'todos','evento','bautizo')">🕊️ Bautizo</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'todos','evento','primera-comunion')">🙏 Primera Comunión</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'todos','evento','quince-anos')">👑 Quince Años</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'todos','evento','graduacion')">🎓 Graduación</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'todos','evento','aniversario-luctuoso')">🕯️ Aniversario Luctuoso</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'todos','evento','fin-novenario')">🌿 Fin de Novenario</button>
-                            <button class="bbu-tag" onclick="seleccionarTagFiltro(this,'todos','evento','despedida-soltera')">🥂 Despedida de Soltera</button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -1298,6 +1235,8 @@
                     <button class="btn-scroll-precios" onclick="scrollPrecios('lista-precios-todos', -200)" title="Ver precios anteriores" style="margin-left:0; margin-right:6px;">‹</button>
                     <div class="lista-precios-velas" id="lista-precios-todos">
                     <button class="btn-precio-velas activo" onclick="filtrarPrecioTodos(this,'todos')">Ver Todo</button>
+                    <button class="btn-precio-velas" onclick="filtrarPrecioTodos(this,'5')">$5</button>
+                    <button class="btn-precio-velas" onclick="filtrarPrecioTodos(this,'10')">$10</button>
                     <button class="btn-precio-velas" onclick="filtrarPrecioTodos(this,'15')">$15</button>
                     <button class="btn-precio-velas" onclick="filtrarPrecioTodos(this,'20')">$20</button>
                     <button class="btn-precio-velas" onclick="filtrarPrecioTodos(this,'25')">$25</button>
@@ -1339,6 +1278,18 @@
                     <button class="btn-precio-velas" onclick="filtrarPrecioTodos(this,'800')">$800</button>
                 </div>
                     <button class="btn-scroll-precios" onclick="scrollPrecios('lista-precios-todos', 200)" title="Ver más precios">›</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TODOS LOS PRODUCTOS -->
+        <div class="panel-busqueda-unificado" id="panelTodos">
+            <div class="barra-busqueda-unificada-wrap">
+                <div class="barra-busqueda-unificada" id="barraBuscadorTodos">
+                    <input type="text" id="inputBusquedaTodos" class="bbu-input" placeholder="Buscar Todos los Productos…" oninput="filtrarPorNombreUnificado('todos', this.value)">
+                    <button class="bbu-btn-lupa" onclick="filtrarPorNombreUnificado('todos', document.getElementById('inputBusquedaTodos').value)" title="Buscar">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </button>
                 </div>
             </div>
         </div>
