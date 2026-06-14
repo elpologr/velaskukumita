@@ -554,10 +554,10 @@ function _abrirProductoDesdeURL() {
         function setMeta(id, val) { var el=document.getElementById(id); if(el) el.setAttribute('content',val); }
         setMeta('og-title',       _ogTitleOriginal);
         setMeta('og-description', _ogDescOriginal);
-        setMeta('og-image',       '');
+        setMeta('og-image',       'https://elpologr.github.io/velaskukumita/imagenes/logo-velas-kukumita.webp');
         setMeta('tw-title',       _ogTitleOriginal);
         setMeta('tw-description', _ogDescOriginal);
-        setMeta('tw-image',       '');
+        setMeta('tw-image',       'https://elpologr.github.io/velaskukumita/imagenes/logo-velas-kukumita.webp');
     });
 })();
 
