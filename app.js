@@ -297,7 +297,11 @@ function csvAProductos(filas) {
             tipos:        tiposArray,
             subtags:      get(7) ? get(7).split(',').map(function(s){ return s.trim(); }).filter(Boolean).join('|') : '',
             eventos:      get(8)
-                            ? get(8).split(',').map(function(s){ return s.trim().toLowerCase(); }).filter(Boolean).join(' ')
+                            ? get(8).split(/[,|]/).map(function(s){
+                                return s.trim().toLowerCase()
+                                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quitar acentos
+                                    .replace(/\s+/g, '-'); // espacios → guiones (ej: "baby shower" → "baby-shower")
+                              }).filter(Boolean).join('|')
                             : '',
             etiquetas:    tiposArray,
             aditivos:     [],
@@ -845,7 +849,7 @@ if (document.readyState === 'loading') {
                 const pTarjeta = parseInt(tarjeta.getAttribute('data-precio')) || 0;
 
                 const cumpleForma  = (formaActiva  === 'todos' || fTarjeta === formaActiva);
-                const cumpleEvento = (eventoActivo === 'todos' || eTarjeta === eventoActivo);
+                const cumpleEvento = (eventoActivo === 'todos' || eTarjeta.split('|').map(function(e){ return e.trim(); }).includes(eventoActivo));
                 const cumplePrecio = (pTarjeta <= precioMaximoActivo);
 
                 tarjeta.classList.toggle('oculto', !(cumpleForma && cumpleEvento && cumplePrecio));
@@ -1039,7 +1043,7 @@ if (document.readyState === 'loading') {
             // Si no está en el mapa, mostrarlo tal como viene (con mayúscula inicial)
             return slug.charAt(0).toUpperCase() + slug.slice(1);
         }
-        const eventoSlots = dataEvento.split(/\s+/).filter(e => e && e !== 'sin' && e !== 'evento');
+        const eventoSlots = dataEvento.split('|').filter(e => e && e !== 'sin' && e !== 'sin-evento');
         if (eventoSlots.length > 0) {
             haySubetiquetas = true;
             const labelEv = document.createElement('div');
@@ -1856,7 +1860,7 @@ if (document.readyState === 'loading') {
 
             const okNombre = coincideNombre(nombreCard, textoBusq, card);
             const okForma  = formaActiva  === 'todos' || formaCard === formaActiva;
-            const okEvento = eventoActivo === 'todos' || eventoCard.split(' ').includes(eventoActivo);
+            const okEvento = eventoActivo === 'todos' || eventoCard.split('|').map(function(e){ return e.trim(); }).includes(eventoActivo);
 
             // Si hay texto de búsqueda activo, ignorar el filtro de tipo y buscar en TODOS los productos
             if (textoBusq) {
@@ -2098,7 +2102,7 @@ if (document.readyState === 'loading') {
             }
 
             const okForma   = formaActiva  === 'todos' || formaCard  === formaActiva;
-            const okEvento  = eventoActivo === 'todos' || eventoCard.split(' ').includes(eventoActivo);
+            const okEvento  = eventoActivo === 'todos' || eventoCard.split('|').map(function(e){ return e.trim(); }).includes(eventoActivo);
             const okNombre  = coincideNombre(nombreCard, textoBusq, card);
 
             // Si hay precio exacto activo (boton $15/$20/etc), tiene prioridad sobre el slider
@@ -4637,8 +4641,8 @@ function _cargarFavoritosFirestore(uid) {
             var hay = false;
             cards.forEach(function(card) {
                 var dataEvento = (card.getAttribute('data-evento') || '').toLowerCase();
-                // data-evento puede ser multi-valor separado por espacios
-                var slugs = dataEvento.split(/\s+/).map(_normSlug).filter(Boolean);
+                // data-evento es multi-valor separado por |
+                var slugs = dataEvento.split('|').map(_normSlug).filter(Boolean);
                 var coincide = slugs.includes(slugFiltro);
                 card.classList.toggle('oculto', !coincide);
                 card.classList.remove('paginacion-oculto');
