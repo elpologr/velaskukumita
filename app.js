@@ -664,11 +664,8 @@ if (document.readyState === 'loading') {
     function mostrarPagina(num) {
         paginaActual = num;
         // Guardar página en el hash de la URL para que persista al recargar
-        var nuevoHash = (window.location.hash || '').replace(/#?pagina=\d+/, '').replace(/^#?&/, '').replace(/^#/, '') || '';
-        var hashFinal = (nuevoHash ? nuevoHash + '&' : '') + 'pagina=' + num;
-        if (window.history && window.history.replaceState) {
-            window.history.replaceState(null, '', '#' + hashFinal);
-        }
+        // (Hash de paginación desactivado para evitar scroll automático al recargar)
+        // La URL se mantiene limpia; la página siempre arranca desde el top.
         var inicio = (num - 1) * POR_PAGINA;
         var fin = inicio + POR_PAGINA;
         // Quita paginacion-oculto a todas
@@ -712,8 +709,7 @@ if (document.readyState === 'loading') {
             if (total <= 1) {
                 // Limpiar el hash de página para que no quede sucio al quitar filtros
                 if (window.history && window.history.replaceState) {
-                    var hashLimpio = (window.location.hash || '').replace(/#?pagina=\d+/, '').replace(/^#?&/, '').replace(/^#/, '');
-                    window.history.replaceState(null, '', hashLimpio ? '#' + hashLimpio : window.location.pathname);
+                    // URL ya limpia — no hay hash de paginación que limpiar
                 }
                 return;
             }
@@ -746,13 +742,10 @@ if (document.readyState === 'loading') {
 
     function actualizarPaginacion() {
         tarjetasVisibles = obtenerTarjetasVisibles();
-        // Restaurar página desde URL (#pagina=N) si es válida; si no, ir a 1
-        var hash = window.location.hash || '';
-        var match = hash.match(/pagina=(\d+)/);
-        var paginaGuardada = match ? parseInt(match[1]) : 1;
-        var totalPags = Math.ceil(tarjetasVisibles.length / POR_PAGINA);
-        var paginaInicial = (paginaGuardada > 1 && paginaGuardada <= totalPags) ? paginaGuardada : 1;
-        mostrarPagina(paginaInicial);
+        // Siempre arrancar en página 1 y en el top de la pantalla
+        // (se eliminó la restauración desde hash para evitar scroll automático al recargar)
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        mostrarPagina(1);
     }
 
     // Escuchar el evento de catálogo cargado (Google Sheets) en lugar de usar un timeout fijo
@@ -4891,24 +4884,19 @@ function _initBarraCookies() {
     var barra = document.getElementById('barraCookies');
     if (!barra) return;
     if (localStorage.getItem(_COOKIE_KEY) === '1') {
-        // Ya aceptó antes — ocultar completamente sin animación
-        barra.style.display = 'none';
-    } else {
-        // Primera visita o nunca aceptó — mostrar la barra
-        barra.style.display = 'flex';
+        barra.classList.add('oculta');
     }
+    // Desplaza hacia abajo el botón del drawer para que no quede tapado
     _ajustarOffsetDrawer();
 }
 
 /**
- * El usuario presionó "Aceptar" — guarda en localStorage y oculta la barra con animación.
+ * El usuario presionó "Aceptar" — guarda en localStorage y oculta la barra.
  */
 function aceptarCookies() {
     localStorage.setItem(_COOKIE_KEY, '1');
     var barra = document.getElementById('barraCookies');
-    if (!barra) return;
-    barra.classList.add('oculta');
-    setTimeout(function() { barra.style.display = 'none'; }, 350);
+    if (barra) barra.classList.add('oculta');
 }
 
 /**
@@ -4972,6 +4960,16 @@ function _ajustarOffsetDrawer() {
         if (_popOriginal) _popOriginal.call(window, e);
     });
 })();
+
+// Siempre arrancar en el top de la página al cargar o recargar
+_ready(function() {
+    // Limpiar cualquier hash residual de la URL
+    if (window.location.hash) {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+    // Forzar scroll al top (por si el navegador restauró la posición anterior)
+    window.scrollTo(0, 0);
+});
 
 // Arrancar cuando el DOM esté listo
 _ready(_initBarraCookies);

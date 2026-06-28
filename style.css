@@ -3263,7 +3263,7 @@ body.busqueda-global-activa #bloqueFiltroPrecioTodos { opacity: 0.4; pointer-eve
     z-index: 9999;
     background: #3d2e24;
     color: #f0e8e0;
-    display: none;          /* JS lo activa a flex si no hay cookie aceptada */
+    display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
@@ -3271,10 +3271,10 @@ body.busqueda-global-activa #bloqueFiltroPrecioTodos { opacity: 0.4; pointer-eve
     font-size: 0.72rem;
     line-height: 1.3;
     box-shadow: 0 2px 8px rgba(0,0,0,0.22);
-    transition: transform 0.35s ease, opacity 0.35s ease;
+    transition: transform 0.3s ease, opacity 0.3s ease;
 }
 #barraCookies.oculta {
-    transform: translateY(-110%);
+    transform: translateY(-100%);
     opacity: 0;
     pointer-events: none;
 }
