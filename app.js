@@ -4891,19 +4891,24 @@ function _initBarraCookies() {
     var barra = document.getElementById('barraCookies');
     if (!barra) return;
     if (localStorage.getItem(_COOKIE_KEY) === '1') {
-        barra.classList.add('oculta');
+        // Ya aceptó antes — ocultar completamente sin animación
+        barra.style.display = 'none';
+    } else {
+        // Primera visita o nunca aceptó — mostrar la barra
+        barra.style.display = 'flex';
     }
-    // Desplaza hacia abajo el botón del drawer para que no quede tapado
     _ajustarOffsetDrawer();
 }
 
 /**
- * El usuario presionó "Aceptar" — guarda en localStorage y oculta la barra.
+ * El usuario presionó "Aceptar" — guarda en localStorage y oculta la barra con animación.
  */
 function aceptarCookies() {
     localStorage.setItem(_COOKIE_KEY, '1');
     var barra = document.getElementById('barraCookies');
-    if (barra) barra.classList.add('oculta');
+    if (!barra) return;
+    barra.classList.add('oculta');
+    setTimeout(function() { barra.style.display = 'none'; }, 350);
 }
 
 /**
