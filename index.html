@@ -161,6 +161,98 @@
 </head>
 <body>
 
+    <!-- ══════════════════════════════════════════════════════
+         BARRA DE COOKIES (tope de pantalla, siempre visible)
+         ══════════════════════════════════════════════════════ -->
+    <div id="barraCookies">
+        <span id="barraCookiesTexto">🍪 Usamos cookies y almacenamiento local para mejorar tu experiencia.</span>
+        <div id="barraCookiesBotones">
+            <button id="btnVerAvisoBar" onclick="abrirPantallaPrivacidad()">Aviso de privacidad</button>
+            <button id="btnAceptarCookies" onclick="aceptarCookies()">Aceptar</button>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         PANTALLA COMPLETA — AVISO DE PRIVACIDAD Y COOKIES
+         ══════════════════════════════════════════════════════ -->
+    <div id="pantallaPrivacidad">
+        <div class="privacidad-header">
+            <button class="btn-volver-privacidad" onclick="cerrarPantallaPrivacidad()">‹ Regresar</button>
+            <span class="privacidad-titulo">Aviso de Privacidad y Cookies</span>
+            <div style="width:90px;"></div>
+        </div>
+        <div class="privacidad-body">
+
+            <p class="privacidad-fecha">Última actualización: junio 2025</p>
+
+            <h2 class="privacidad-seccion-titulo">1. Responsable del tratamiento de datos</h2>
+            <p class="privacidad-parrafo">
+                <strong>Velas Kukumita</strong> (en adelante "nosotros" o "el sitio"), con presencia en línea a través de <em>velaskukumita.com</em>, es el responsable del tratamiento de los datos personales que se recaben a través de este sitio web, de conformidad con la <strong>Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP)</strong> y su Reglamento.
+            </p>
+            <p class="privacidad-parrafo">Para cualquier consulta o ejercicio de derechos, puedes contactarnos en: <strong>velaskukumita@gmail.com</strong></p>
+
+            <h2 class="privacidad-seccion-titulo">2. Datos personales que recopilamos</h2>
+            <p class="privacidad-parrafo">Únicamente recopilamos datos cuando el usuario elige iniciar sesión de forma voluntaria. Los datos que se obtienen son:</p>
+            <ul class="privacidad-lista">
+                <li><strong>Nombre o nombre para mostrar</strong> — proporcionado por tu cuenta de Google.</li>
+                <li><strong>Correo electrónico</strong> — proporcionado por tu cuenta de Google.</li>
+                <li><strong>Foto de perfil</strong> — la imagen pública asociada a tu cuenta de Google, o la imagen que elijas subir manualmente.</li>
+                <li><strong>Identificador de sesión y proveedor de autenticación</strong> — almacenados de forma temporal en tu dispositivo.</li>
+            </ul>
+            <p class="privacidad-parrafo">Si no inicias sesión, <strong>no recopilamos ningún dato personal identificable</strong>. Solo guardamos en tu dispositivo tu preferencia de modo oscuro y la última sección visitada.</p>
+
+            <h2 class="privacidad-seccion-titulo">3. Finalidad del tratamiento</h2>
+            <ul class="privacidad-lista">
+                <li>Identificarte dentro de la plataforma y mostrar tu nombre y foto de perfil.</li>
+                <li>Permitirte personalizar tu experiencia (nombre de usuario, foto de perfil propia).</li>
+                <li>Guardar preferencias de visualización (modo oscuro, página de inicio).</li>
+                <li>Almacenar temporalmente imágenes de perfil en Firebase Storage para mejorar la experiencia.</li>
+            </ul>
+            <p class="privacidad-parrafo">No utilizamos tus datos con fines publicitarios, ni los vendemos o cedemos a terceros con fines comerciales.</p>
+
+            <h2 class="privacidad-seccion-titulo">4. Terceros involucrados en el tratamiento</h2>
+            <p class="privacidad-parrafo">Para operar este sitio utilizamos servicios de terceros que pueden procesar datos técnicos o personales:</p>
+            <ul class="privacidad-lista">
+                <li><strong>Google Firebase</strong> (Authentication y Storage) — autenticación de usuarios y almacenamiento de imágenes de perfil. Sujeto a la <a class="privacidad-enlace" href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Política de Privacidad de Google Firebase</a>.</li>
+                <li><strong>Google Fonts</strong> — carga de tipografías desde servidores de Google, lo que puede transmitir tu dirección IP a Google al cargar la página.</li>
+                <li><strong>Google Sheets</strong> — el catálogo de productos se obtiene de una hoja de cálculo pública; no implica recopilación de datos del usuario.</li>
+            </ul>
+            <p class="privacidad-parrafo">Al utilizar este sitio, reconoces que los servicios de Google operan bajo sus propias políticas de privacidad, sobre las cuales Velas Kukumita no tiene control directo.</p>
+
+            <h2 class="privacidad-seccion-titulo">5. Uso de cookies y almacenamiento local</h2>
+            <p class="privacidad-parrafo">Este sitio <strong>no utiliza cookies propias</strong> de rastreo o publicidad. Sin embargo, utiliza <strong>almacenamiento local del navegador (localStorage)</strong> para guardar:</p>
+            <ul class="privacidad-lista">
+                <li>Preferencia de modo oscuro o claro.</li>
+                <li>Sección de inicio preferida (productos o biografía).</li>
+                <li>Datos de sesión del usuario autenticado (nombre, foto, correo) de manera local como respaldo.</li>
+            </ul>
+            <p class="privacidad-parrafo">Estos datos <strong>no salen de tu dispositivo</strong> salvo los que Firebase gestiona para la autenticación. Puedes eliminarlos en cualquier momento limpiando el almacenamiento del navegador en la configuración de tu dispositivo.</p>
+
+            <h2 class="privacidad-seccion-titulo">6. Si ignoras o no aceptas este aviso</h2>
+            <p class="privacidad-parrafo">
+                El uso continuado de este sitio web, independientemente de si aceptas o ignoras el presente aviso, implica la interacción con los servicios de infraestructura necesarios para su funcionamiento, en particular <strong>Google Firebase</strong>. En tal caso, el tratamiento de datos técnicos que estos servicios puedan recopilar (como dirección IP o datos de sesión) queda sujeto exclusivamente a las <strong>Políticas de Privacidad y Términos de Servicio de Google</strong>, disponibles en <a class="privacidad-enlace" href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a>.
+            </p>
+            <p class="privacidad-parrafo">
+                Velas Kukumita <strong>no asume responsabilidad</strong> por el tratamiento de datos que Google o Firebase realicen en el marco de sus propios servicios, de conformidad con la legislación aplicable en materia de protección de datos, que establece que el responsable no responde por los actos de terceros que actúen con base en sus propios términos de servicio.
+            </p>
+
+            <h2 class="privacidad-seccion-titulo">7. Derechos ARCO</h2>
+            <p class="privacidad-parrafo">Tienes derecho a <strong>Acceder, Rectificar, Cancelar u Oponerte</strong> al tratamiento de tus datos personales. Para ejercerlos, envíanos un correo a <strong>velaskukumita@gmail.com</strong> indicando tu nombre, el dato que deseas corregir o eliminar, y una copia de identificación oficial.</p>
+            <p class="privacidad-parrafo">Daremos respuesta en un plazo máximo de <strong>20 días hábiles</strong>, conforme a lo establecido por la LFPDPPP.</p>
+
+            <h2 class="privacidad-seccion-titulo">8. Cambios a este aviso</h2>
+            <p class="privacidad-parrafo">Nos reservamos el derecho de actualizar este aviso en cualquier momento. Cualquier modificación será publicada en esta misma página con una nueva fecha de actualización.</p>
+
+            <div class="privacidad-aceptar-bloque">
+                <button class="privacidad-btn-aceptar" onclick="aceptarCookies(); cerrarPantallaPrivacidad();">
+                    ✅ Entendido y acepto
+                </button>
+                <p class="privacidad-nota-aceptar">Al presionar este botón confirmas que leíste y aceptas este aviso de privacidad.</p>
+            </div>
+
+        </div>
+    </div>
+
     <!-- ══ BOTÓN ABRIR DRAWER ══ -->
     <button class="btn-abrir-drawer" onclick="abrirDrawer()" aria-label="Abrir menú">☰</button>
 
@@ -321,6 +413,9 @@
                         💬 WhatsApp del negocio
                     </button>
                 </a>
+                <button class="drawer-sub-btn btn-privacidad-drawer" onclick="cerrarDrawer(); abrirPantallaPrivacidad();" style="width:100%; margin-top:6px;">
+                    🔒 Aviso de privacidad y cookies
+                </button>
             </div>
         </div>
 
