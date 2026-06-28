@@ -4912,8 +4912,14 @@ function aceptarCookies() {
 function abrirPantallaPrivacidad() {
     var pantalla = document.getElementById('pantallaPrivacidad');
     if (!pantalla) return;
-    pantalla.classList.add('abierta');
-    // Agregar entrada al historial para que el botón Atrás del móvil funcione
+    // Mostrar primero (quita el display:none), luego en el siguiente frame agregar la clase
+    // para que la transición CSS se ejecute correctamente
+    pantalla.style.display = 'flex';
+    requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+            pantalla.classList.add('abierta');
+        });
+    });
     history.pushState({ kukumitaModal: 'privacidad' }, '');
 }
 
@@ -4922,7 +4928,14 @@ function abrirPantallaPrivacidad() {
  */
 function cerrarPantallaPrivacidad() {
     var pantalla = document.getElementById('pantallaPrivacidad');
-    if (pantalla) pantalla.classList.remove('abierta');
+    if (!pantalla) return;
+    pantalla.classList.remove('abierta');
+    // Esperar a que termine la transición (280ms) antes de volver a ocultar
+    setTimeout(function() {
+        if (!pantalla.classList.contains('abierta')) {
+            pantalla.style.display = 'none';
+        }
+    }, 300);
 }
 
 /**
