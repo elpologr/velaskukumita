@@ -61,7 +61,7 @@
 
     /* ── Base del botón ── */
     .btn-modo-velas {
-        padding: 9px 16px;
+        padding: 27px 16px;
         border-radius: 999px;
         border: none;
         font-size: 0.84rem;
@@ -80,9 +80,9 @@
     .btn-modo-mostrar-todo {
         background: #1a1a1a;
         color: #fff;
-        min-width: 160px;
+        min-width: 320px;
         font-size: 0.9rem;
-        padding: 10px 32px;
+        padding: 20px 64px;
     }
     .btn-modo-mostrar-todo:hover {
         background: #333;
@@ -1144,20 +1144,20 @@
         <div class="selector-modo-velas-wrap">
             <!-- Fila superior: Mostrar Todo -->
             <div class="selector-modo-fila-top">
-                <button class="btn-modo-velas btn-modo-mostrar-todo activo" id="btnModoTodosProductos" onclick="cambiarModoVelas('mostrar_todo')">Mostrar Todo</button>
+                <button class="btn-modo-velas btn-modo-mostrar-todo activo" id="btnModoTodosProductos" onclick="cambiarModoVelas('mostrar_todo'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});">Mostrar Todo</button>
             </div>
             <!-- Fila inferior: los 4 botones de categoría -->
             <div class="selector-modo-velas" id="selectorModoVelas">
-                <button class="btn-modo-velas btn-modo-productos" id="btnModoTodos" onclick="cambiarModoVelas('todos')">🛍️ Productos</button>
-                <button class="btn-modo-velas btn-modo-arreglos" id="btnModoArreglos" onclick="cambiarModoVelas('arreglos')">🕯️ Arreglos</button>
-                <button class="btn-modo-velas btn-modo-decoraciones" id="btnModoDecoraciones" onclick="cambiarModoVelas('decoraciones')" style="line-height:1.25;">✨ Decoraciones<br>y Aditamentos</button>
-                <button class="btn-modo-velas btn-modo-etiquetas" id="btnModoEtiquetas" onclick="cambiarModoVelas('etiquetas')">🏷️ Etiquetas</button>
+                <button class="btn-modo-velas btn-modo-productos" id="btnModoTodos" onclick="cambiarModoVelas('todos'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});">🛍️ Buscar solo Productos</button>
+                <button class="btn-modo-velas btn-modo-arreglos" id="btnModoArreglos" onclick="cambiarModoVelas('arreglos'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});">🕯️ Buscar solo Arreglos</button>
+                <button class="btn-modo-velas btn-modo-decoraciones" id="btnModoDecoraciones" onclick="cambiarModoVelas('decoraciones'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});" style="line-height:1.25;">✨ Buscar solo Decoraciones<br>y Aditamentos</button>
+                <button class="btn-modo-velas btn-modo-etiquetas" id="btnModoEtiquetas" onclick="cambiarModoVelas('etiquetas'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});">🏷️ Buscar solo Etiquetas</button>
             </div>
         </div>
 
         <!-- ===== BUSCA POR EVENTO Y FORMA ===== -->
         <div style="padding: 0 0 8px 0;">
-            <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; padding:4px 0 0;">
+            <div style="display:flex; flex-direction:column; align-items:center; gap:10px; padding:4px 0 0;">
             <p id="btnToggleEventos" onclick="togglePanelEventos()" style="text-align:center; font-size:1.1rem; font-weight:800; color:#5c4d43; margin:0; letter-spacing:0.3px; cursor:pointer; user-select:none; padding:10px 16px; border-radius:999px; border:2px solid #e0d5cc; background:#fff; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 5px rgba(0,0,0,0.07); transition:background 0.16s, border-color 0.16s;">🎉 Filtrar por Evento <span id="iconToggleEventos" style="font-size:0.85rem; font-weight:400;">▼</span></p>
             <p id="btnToggleFormas" onclick="togglePanelFormas()" style="text-align:center; font-size:1.1rem; font-weight:800; color:#5c4d43; margin:0; letter-spacing:0.3px; cursor:pointer; user-select:none; padding:10px 16px; border-radius:999px; border:2px solid #e0d5cc; background:#fff; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 5px rgba(0,0,0,0.07); transition:background 0.16s, border-color 0.16s;">🔷 Filtrar por Forma <span id="iconToggleFormas" style="font-size:0.85rem; font-weight:400;">▼</span></p>
             </div>
