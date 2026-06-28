@@ -1305,7 +1305,7 @@
             <div class="barra-busqueda-unificada-wrap">
                 <div class="barra-busqueda-unificada" id="barraBuscadorArreglos">
                     <input type="text" id="inputBusquedaArreglos" class="bbu-input" placeholder="Buscar productos…" oninput="filtrarPorNombreUnificado('arreglos', this.value)">
-                    <button class="bbu-btn-lupa" onclick="filtrarPorNombreUnificado('arreglos', document.getElementById('inputBusquedaArreglos').value)" title="Buscar">
+                    <button class="bbu-btn-lupa" onclick="filtrarPorNombreUnificadoInmediato('arreglos')" title="Buscar">
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     </button>
                 </div>
@@ -1376,7 +1376,7 @@
             <div class="barra-busqueda-unificada-wrap">
                 <div class="barra-busqueda-unificada" id="barraBuscadorTodos">
                     <input type="text" id="inputBusquedaTodos" class="bbu-input" placeholder="Buscar Todos los Productos…" oninput="filtrarPorNombreUnificado('todos', this.value)">
-                    <button class="bbu-btn-lupa" onclick="filtrarPorNombreUnificado('todos', document.getElementById('inputBusquedaTodos').value)" title="Buscar">
+                    <button class="bbu-btn-lupa" onclick="filtrarPorNombreUnificadoInmediato('todos')" title="Buscar">
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     </button>
                 </div>
@@ -1388,7 +1388,7 @@
             <div class="barra-busqueda-unificada-wrap">
                 <div class="barra-busqueda-unificada" id="barraBuscadorDecoraciones">
                     <input type="text" id="inputBusquedaDecoraciones" class="bbu-input" placeholder="Buscar Decoraciones y Aditamentos…" oninput="filtrarPorNombreUnificado('decoraciones', this.value)">
-                    <button class="bbu-btn-lupa" onclick="filtrarPorNombreUnificado('decoraciones', document.getElementById('inputBusquedaDecoraciones').value)" title="Buscar">
+                    <button class="bbu-btn-lupa" onclick="filtrarPorNombreUnificadoInmediato('decoraciones')" title="Buscar">
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     </button>
                 </div>
@@ -1400,7 +1400,7 @@
             <div class="barra-busqueda-unificada-wrap">
                 <div class="barra-busqueda-unificada" id="barraBuscadorEtiquetas">
                     <input type="text" id="inputBusquedaEtiquetas" class="bbu-input" placeholder="Buscar Etiquetas…" oninput="filtrarPorNombreUnificado('etiquetas', this.value)">
-                    <button class="bbu-btn-lupa" onclick="filtrarPorNombreUnificado('etiquetas', document.getElementById('inputBusquedaEtiquetas').value)" title="Buscar">
+                    <button class="bbu-btn-lupa" onclick="filtrarPorNombreUnificadoInmediato('etiquetas')" title="Buscar">
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     </button>
                     <button class="bbu-btn-flecha" id="btnFlechaEtiquetas" onclick="toggleDropdownFiltros('etiquetas')" title="Filtros">

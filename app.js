@@ -1766,7 +1766,24 @@ if (document.readyState === 'loading') {
     }
     // ────────────────────────────────────────────────────────────────────────
 
+    // Temporizadores de debounce por panel
+    var _busquedaTimers = {};
+
+    // Llamada con debounce — para el evento oninput (espera 3 s sin escribir)
     function filtrarPorNombreUnificado(panel, valor) {
+        if (_busquedaTimers[panel]) clearTimeout(_busquedaTimers[panel]);
+        _busquedaTimers[panel] = setTimeout(function() {
+            _busquedaTimers[panel] = null;
+            aplicarFiltrosUnificados(panel);
+        }, 3000);
+    }
+
+    // Llamada inmediata — para el botón de lupa
+    function filtrarPorNombreUnificadoInmediato(panel) {
+        if (_busquedaTimers[panel]) {
+            clearTimeout(_busquedaTimers[panel]);
+            _busquedaTimers[panel] = null;
+        }
         aplicarFiltrosUnificados(panel);
     }
 
@@ -2022,6 +2039,7 @@ if (document.readyState === 'loading') {
     window.filtrarTamanoArreglos        = filtrarTamanoArreglos;
     window.aplicarFiltrosUnificados     = aplicarFiltrosUnificados;
     window.filtrarPorNombreUnificado    = filtrarPorNombreUnificado;
+    window.filtrarPorNombreUnificadoInmediato = filtrarPorNombreUnificadoInmediato;
     window.toggleDropdownFiltros        = toggleDropdownFiltros;
     window.toggleGrupoFiltro            = toggleGrupoFiltro;
     window.seleccionarTagFiltro         = seleccionarTagFiltro;
