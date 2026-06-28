@@ -1155,61 +1155,77 @@
             </div>
         </div>
 
-        <!-- ===== BUSCA POR EVENTO Y FORMA ===== -->
-        <div style="padding: 0 0 8px 0;">
-            <div style="display:flex; flex-direction:column; align-items:center; gap:10px; padding:4px 0 0;">
-            <p id="btnToggleEventos" onclick="togglePanelEventos()" style="text-align:center; font-size:1.1rem; font-weight:800; color:#5c4d43; margin:0; letter-spacing:0.3px; cursor:pointer; user-select:none; padding:10px 16px; border-radius:999px; border:2px solid #e0d5cc; background:#fff; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 5px rgba(0,0,0,0.07); transition:background 0.16s, border-color 0.16s;">🎉 Filtrar por Evento <span id="iconToggleEventos" style="font-size:0.85rem; font-weight:400;">▼</span></p>
-            <p id="btnToggleFormas" onclick="togglePanelFormas()" style="text-align:center; font-size:1.1rem; font-weight:800; color:#5c4d43; margin:0; letter-spacing:0.3px; cursor:pointer; user-select:none; padding:10px 16px; border-radius:999px; border:2px solid #e0d5cc; background:#fff; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 5px rgba(0,0,0,0.07); transition:background 0.16s, border-color 0.16s;">🔷 Filtrar por Forma <span id="iconToggleFormas" style="font-size:0.85rem; font-weight:400;">▼</span></p>
-            </div>
-            <div id="panelEventoCarrusel" style="display:none; overflow:hidden;">
-            <div style="height:10px;"></div>
-            <div style="position:relative;">
-                <!-- Botón izquierdo (solo desktop) -->
-                <button id="btnEventoPrev" onclick="scrollEventos(-1)" style="display:none; position:absolute; left:-4px; top:50%; transform:translateY(-65%); z-index:4; width:30px; height:30px; border-radius:50%; background:#fff; border:1.5px solid #e0d5cc; box-shadow:0 2px 8px rgba(0,0,0,0.13); font-size:18px; cursor:pointer; align-items:center; justify-content:center; line-height:1; color:#5c4d43; padding:0;">‹</button>
-                <!-- Botón derecho (solo desktop) -->
-                <button id="btnEventoNext" onclick="scrollEventos(1)" style="display:none; position:absolute; right:-4px; top:50%; transform:translateY(-65%); z-index:4; width:30px; height:30px; border-radius:50%; background:#fff; border:1.5px solid #e0d5cc; box-shadow:0 2px 8px rgba(0,0,0,0.13); font-size:18px; cursor:pointer; align-items:center; justify-content:center; line-height:1; color:#5c4d43; padding:0;">›</button>
-                <div style="overflow:hidden; padding:0 2px;">
-                <!-- Gradiente derecho -->
-                <div id="eventoScrollGradient" style="position:absolute; right:0; top:0; bottom:0; width:60px; background:linear-gradient(to right, transparent, rgba(255,255,255,0.97)); pointer-events:none; z-index:2; transition:opacity 0.3s;"></div>
-                <!-- Gradiente izquierdo -->
-                <div id="eventoScrollGradientL" style="position:absolute; left:0; top:0; bottom:0; width:40px; background:linear-gradient(to left, transparent, rgba(255,255,255,0.97)); pointer-events:none; z-index:2; opacity:0; transition:opacity 0.3s;"></div>
-                <div id="eventoCarrusel" style="display:flex; gap:9px; overflow-x:auto; padding:4px 12px 10px; scroll-snap-type:x mandatory; scrollbar-width:none; -ms-overflow-style:none;" onscroll="actualizarGradienteEvento(this)">
-                    <button class="btn-evento-carrusel" data-evento="todos" onclick="filtrarPorEventoCarrusel(this,'todos')" style="background:#1a1a1a; color:#fff; border-color:#1a1a1a;">Ver Todo</button>
-                    <button class="btn-evento-carrusel" data-evento="dia-de-muertos" onclick="filtrarPorEventoCarrusel(this,'dia-de-muertos')">💀 Día de Muertos</button>
-                    <button class="btn-evento-carrusel" data-evento="navidad" onclick="filtrarPorEventoCarrusel(this,'navidad')">🎄 Navidad</button>
-                    <button class="btn-evento-carrusel" data-evento="dia-de-las-madres" onclick="filtrarPorEventoCarrusel(this,'dia-de-las-madres')">🌹 Día de las Madres</button>
-                    <button class="btn-evento-carrusel" data-evento="dia-del-maestro" onclick="filtrarPorEventoCarrusel(this,'dia-del-maestro')">📚 Día del Maestro</button>
-                    <button class="btn-evento-carrusel" data-evento="dia-del-nino" onclick="filtrarPorEventoCarrusel(this,'dia-del-nino')">🧸 Día del Niño</button>
-                    <button class="btn-evento-carrusel" data-evento="dia-del-estudiante" onclick="filtrarPorEventoCarrusel(this,'dia-del-estudiante')">🎓 Día del Estudiante</button>
-                    <button class="btn-evento-carrusel" data-evento="boda" onclick="filtrarPorEventoCarrusel(this,'boda')">💍 Boda</button>
-                    <button class="btn-evento-carrusel" data-evento="baby-shower" onclick="filtrarPorEventoCarrusel(this,'baby-shower')">🍼 Baby Shower</button>
-                    <button class="btn-evento-carrusel" data-evento="bautizo" onclick="filtrarPorEventoCarrusel(this,'bautizo')">🕊️ Bautizo</button>
-                    <button class="btn-evento-carrusel" data-evento="primera-comunion" onclick="filtrarPorEventoCarrusel(this,'primera-comunion')">🙏 Primera Comunión</button>
-                    <button class="btn-evento-carrusel" data-evento="quince-anos" onclick="filtrarPorEventoCarrusel(this,'quince-anos')">👑 Quince Años</button>
-                    <button class="btn-evento-carrusel" data-evento="graduacion" onclick="filtrarPorEventoCarrusel(this,'graduacion')">🎓 Graduación</button>
-                    <button class="btn-evento-carrusel" data-evento="aniversario-luctuoso" onclick="filtrarPorEventoCarrusel(this,'aniversario-luctuoso')">🕯️ Aniv. Luctuoso</button>
-                    <button class="btn-evento-carrusel" data-evento="fin-novenario" onclick="filtrarPorEventoCarrusel(this,'fin-novenario')">🌿 Fin de Novenario</button>
-                    <button class="btn-evento-carrusel" data-evento="despedida-soltera" onclick="filtrarPorEventoCarrusel(this,'despedida-soltera')">🥂 Despedida Soltera</button>
-                </div>
-                </div><!-- /overflow:hidden -->
-            </div><!-- /position:relative -->
-            </div><!-- /panelEventoCarrusel -->
+        <!-- ===== BUSCA POR EVENTO, FORMA Y FESTIVIDAD ===== -->
+        <div style="padding: 0 0 8px 0; display:flex; flex-direction:column; align-items:center; gap:0;">
 
-            <!-- Panel Filtrar por Forma -->
-            <div id="panelFormaCarrusel" style="display:none; overflow:hidden;">
-            <div style="height:10px;"></div>
-            <div style="overflow:hidden; padding:0 2px;">
-                <div id="formaCarrusel" style="display:flex; gap:9px; overflow-x:auto; padding:4px 12px 10px; scroll-snap-type:x mandatory; scrollbar-width:none; -ms-overflow-style:none;">
-                    <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="todos" onclick="filtrarPorFormaCarrusel(this,'todos')" style="background:#1a1a1a; color:#fff; border-color:#1a1a1a;">Ver Todo</button>
-                    <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="figura" onclick="filtrarPorFormaCarrusel(this,'figura')">🏺 Figura</button>
-                    <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="maceta" onclick="filtrarPorFormaCarrusel(this,'maceta')">🪴 Maceta</button>
-                    <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="base" onclick="filtrarPorFormaCarrusel(this,'base')">🔲 Base</button>
-                    <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="tazon" onclick="filtrarPorFormaCarrusel(this,'tazon')">🥣 Tazón</button>
-                    <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="porta-velas" onclick="filtrarPorFormaCarrusel(this,'porta-velas')">🕯️ Porta Velas</button>
-                    <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="religioso" onclick="filtrarPorFormaCarrusel(this,'religioso')">✝️ Religioso</button>
+            <!-- ── FILTRAR POR EVENTO ── -->
+            <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
+                <p id="btnToggleEventos" onclick="togglePanelEventos()" style="text-align:center; font-size:1.1rem; font-weight:800; color:#5c4d43; margin:8px 0 0; letter-spacing:0.3px; cursor:pointer; user-select:none; padding:10px 16px; border-radius:999px; border:2px solid #e0d5cc; background:#fff; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 5px rgba(0,0,0,0.07); transition:background 0.16s, border-color 0.16s;">🎉 Filtrar por Evento <span id="iconToggleEventos" style="font-size:0.85rem; font-weight:400;">▼</span></p>
+                <div id="panelEventoCarrusel" style="display:none; overflow:hidden; width:100%;">
+                    <div style="height:10px;"></div>
+                    <div style="position:relative;">
+                        <button id="btnEventoPrev" onclick="scrollEventos(-1)" style="display:none; position:absolute; left:-4px; top:50%; transform:translateY(-65%); z-index:4; width:30px; height:30px; border-radius:50%; background:#fff; border:1.5px solid #e0d5cc; box-shadow:0 2px 8px rgba(0,0,0,0.13); font-size:18px; cursor:pointer; align-items:center; justify-content:center; line-height:1; color:#5c4d43; padding:0;">‹</button>
+                        <button id="btnEventoNext" onclick="scrollEventos(1)" style="display:none; position:absolute; right:-4px; top:50%; transform:translateY(-65%); z-index:4; width:30px; height:30px; border-radius:50%; background:#fff; border:1.5px solid #e0d5cc; box-shadow:0 2px 8px rgba(0,0,0,0.13); font-size:18px; cursor:pointer; align-items:center; justify-content:center; line-height:1; color:#5c4d43; padding:0;">›</button>
+                        <div style="overflow:hidden; padding:0 2px;">
+                            <div id="eventoScrollGradient" style="position:absolute; right:0; top:0; bottom:0; width:60px; background:linear-gradient(to right, transparent, rgba(255,255,255,0.97)); pointer-events:none; z-index:2; transition:opacity 0.3s;"></div>
+                            <div id="eventoScrollGradientL" style="position:absolute; left:0; top:0; bottom:0; width:40px; background:linear-gradient(to left, transparent, rgba(255,255,255,0.97)); pointer-events:none; z-index:2; opacity:0; transition:opacity 0.3s;"></div>
+                            <div id="eventoCarrusel" style="display:flex; gap:9px; overflow-x:auto; padding:4px 12px 10px; scroll-snap-type:x mandatory; scrollbar-width:none; -ms-overflow-style:none;" onscroll="actualizarGradienteEvento(this)">
+                                <button class="btn-evento-carrusel" data-evento="todos" onclick="filtrarPorEventoCarrusel(this,'todos'); scrollToGrid();" style="background:#1a1a1a; color:#fff; border-color:#1a1a1a;">Ver Todo</button>
+                                <button class="btn-evento-carrusel" data-evento="primera-comunion" onclick="filtrarPorEventoCarrusel(this,'primera-comunion'); scrollToGrid();">🙏 Primera Comunión</button>
+                                <button class="btn-evento-carrusel" data-evento="bautizo" onclick="filtrarPorEventoCarrusel(this,'bautizo'); scrollToGrid();">🕊️ Bautizo</button>
+                                <button class="btn-evento-carrusel" data-evento="boda" onclick="filtrarPorEventoCarrusel(this,'boda'); scrollToGrid();">💍 Boda</button>
+                                <button class="btn-evento-carrusel" data-evento="quince-anos" onclick="filtrarPorEventoCarrusel(this,'quince-anos'); scrollToGrid();">👑 Quince Años</button>
+                                <button class="btn-evento-carrusel" data-evento="baby-shower" onclick="filtrarPorEventoCarrusel(this,'baby-shower'); scrollToGrid();">🍼 Baby Shower</button>
+                                <button class="btn-evento-carrusel" data-evento="graduacion" onclick="filtrarPorEventoCarrusel(this,'graduacion'); scrollToGrid();">🎓 Graduación</button>
+                                <button class="btn-evento-carrusel" data-evento="aniversario-luctuoso" onclick="filtrarPorEventoCarrusel(this,'aniversario-luctuoso'); scrollToGrid();">🕯️ Aniv. Luctuoso</button>
+                                <button class="btn-evento-carrusel" data-evento="fin-novenario" onclick="filtrarPorEventoCarrusel(this,'fin-novenario'); scrollToGrid();">🌿 Fin de Novenario</button>
+                                <button class="btn-evento-carrusel" data-evento="despedida-soltera" onclick="filtrarPorEventoCarrusel(this,'despedida-soltera'); scrollToGrid();">🥂 Despedida de Soltera</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            </div><!-- /panelFormaCarrusel -->
+
+            <!-- ── FILTRAR POR FORMA ── -->
+            <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
+                <p id="btnToggleFormas" onclick="togglePanelFormas()" style="text-align:center; font-size:1.1rem; font-weight:800; color:#5c4d43; margin:8px 0 0; letter-spacing:0.3px; cursor:pointer; user-select:none; padding:10px 16px; border-radius:999px; border:2px solid #e0d5cc; background:#fff; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 5px rgba(0,0,0,0.07); transition:background 0.16s, border-color 0.16s;">🔷 Filtrar por Forma <span id="iconToggleFormas" style="font-size:0.85rem; font-weight:400;">▼</span></p>
+                <div id="panelFormaCarrusel" style="display:none; overflow:hidden; width:100%;">
+                    <div style="height:10px;"></div>
+                    <div style="overflow:hidden; padding:0 2px;">
+                        <div id="formaCarrusel" style="display:flex; gap:9px; overflow-x:auto; padding:4px 12px 10px; scroll-snap-type:x mandatory; scrollbar-width:none; -ms-overflow-style:none;">
+                            <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="todos" onclick="filtrarPorFormaCarrusel(this,'todos'); scrollToGrid();" style="background:#1a1a1a; color:#fff; border-color:#1a1a1a;">Ver Todo</button>
+                            <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="figura" onclick="filtrarPorFormaCarrusel(this,'figura'); scrollToGrid();">🏺 Figura</button>
+                            <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="maceta" onclick="filtrarPorFormaCarrusel(this,'maceta'); scrollToGrid();">🪴 Maceta</button>
+                            <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="base" onclick="filtrarPorFormaCarrusel(this,'base'); scrollToGrid();">🔲 Base</button>
+                            <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="tazon" onclick="filtrarPorFormaCarrusel(this,'tazon'); scrollToGrid();">🥣 Tazón</button>
+                            <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="porta-velas" onclick="filtrarPorFormaCarrusel(this,'porta-velas'); scrollToGrid();">🕯️ Porta Velas</button>
+                            <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="religioso" onclick="filtrarPorFormaCarrusel(this,'religioso'); scrollToGrid();">✝️ Religioso</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── FILTRAR POR FESTIVIDAD ── -->
+            <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
+                <p id="btnToggleFestividades" onclick="togglePanelFestividades()" style="text-align:center; font-size:1.1rem; font-weight:800; color:#5c4d43; margin:8px 0 0; letter-spacing:0.3px; cursor:pointer; user-select:none; padding:10px 16px; border-radius:999px; border:2px solid #e0d5cc; background:#fff; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 5px rgba(0,0,0,0.07); transition:background 0.16s, border-color 0.16s;">🎊 Filtrar por Festividad <span id="iconToggleFestividades" style="font-size:0.85rem; font-weight:400;">▼</span></p>
+                <div id="panelFestividadCarrusel" style="display:none; overflow:hidden; width:100%;">
+                    <div style="height:10px;"></div>
+                    <div style="overflow:hidden; padding:0 2px;">
+                        <div id="festividadCarrusel" style="display:flex; gap:9px; overflow-x:auto; padding:4px 12px 10px; scroll-snap-type:x mandatory; scrollbar-width:none; -ms-overflow-style:none;">
+                            <button class="btn-evento-carrusel btn-festividad-carrusel" data-festividad="todos" onclick="filtrarPorFestividadCarrusel(this,'todos'); scrollToGrid();" style="background:#1a1a1a; color:#fff; border-color:#1a1a1a;">Ver Todo</button>
+                            <button class="btn-evento-carrusel btn-festividad-carrusel" data-festividad="navidad" onclick="filtrarPorFestividadCarrusel(this,'navidad'); scrollToGrid();">🎄 Navidad</button>
+                            <button class="btn-evento-carrusel btn-festividad-carrusel" data-festividad="dia-de-muertos" onclick="filtrarPorFestividadCarrusel(this,'dia-de-muertos'); scrollToGrid();">💀 Día de Muertos / Halloween</button>
+                            <button class="btn-evento-carrusel btn-festividad-carrusel" data-festividad="dia-de-las-madres" onclick="filtrarPorFestividadCarrusel(this,'dia-de-las-madres'); scrollToGrid();">🌹 Día de las Madres</button>
+                            <button class="btn-evento-carrusel btn-festividad-carrusel" data-festividad="dia-del-maestro" onclick="filtrarPorFestividadCarrusel(this,'dia-del-maestro'); scrollToGrid();">📚 Día del Maestro</button>
+                            <button class="btn-evento-carrusel btn-festividad-carrusel" data-festividad="dia-del-nino" onclick="filtrarPorFestividadCarrusel(this,'dia-del-nino'); scrollToGrid();">🧸 Día del Niño</button>
+                            <button class="btn-evento-carrusel btn-festividad-carrusel" data-festividad="dia-del-padre" onclick="filtrarPorFestividadCarrusel(this,'dia-del-padre'); scrollToGrid();">👔 Día del Padre</button>
+                            <button class="btn-evento-carrusel btn-festividad-carrusel" data-festividad="reyes" onclick="filtrarPorFestividadCarrusel(this,'reyes'); scrollToGrid();">👑 Día de Reyes</button>
+                            <button class="btn-evento-carrusel btn-festividad-carrusel" data-festividad="pascua" onclick="filtrarPorFestividadCarrusel(this,'pascua'); scrollToGrid();">🐣 Pascua</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
         <style>
         .btn-evento-carrusel {

@@ -4804,6 +4804,59 @@ window.togglePanelFormas = function() {
     if (btn) btn.style.borderColor = visible ? '#e0d5cc' : '#8c7565';
 };
 
+// ── Filtrar por Festividad (carrusel) ──
+window.togglePanelFestividades = function() {
+    var panel = document.getElementById('panelFestividadCarrusel');
+    var icono = document.getElementById('iconToggleFestividades');
+    var btn   = document.getElementById('btnToggleFestividades');
+    if (!panel) return;
+    var visible = panel.style.display !== 'none';
+    panel.style.display = visible ? 'none' : 'block';
+    if (icono) icono.textContent = visible ? '▼' : '▲';
+    if (btn) btn.style.borderColor = visible ? '#e0d5cc' : '#8c7565';
+};
+
+// ── Scroll suave al grid de productos ──
+window.scrollToGrid = function() {
+    var grid = document.getElementById('gridProductos');
+    if (grid) setTimeout(function() { grid.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80);
+};
+
+// ── Filtrar por Festividad ──
+window.filtrarPorFestividadCarrusel = function(btnPulsado, festividad) {
+    document.querySelectorAll('.btn-festividad-carrusel').forEach(function(b) {
+        b.classList.remove('activo-evento');
+    });
+    btnPulsado.classList.add('activo-evento');
+
+    var btnToggle = document.getElementById('btnToggleFestividades');
+    if (btnToggle) btnToggle.style.borderColor = festividad === 'todos' ? '#e0d5cc' : '#8c7565';
+
+    if (typeof window.cambiarModoVelas === 'function') {
+        window.cambiarModoVelas('mostrar_todo');
+    }
+
+    if (festividad === 'todos') return;
+
+    setTimeout(function() {
+        var slugFiltro = festividad;
+        var cards = document.querySelectorAll('#gridProductos .card-dinamica');
+        var hay = false;
+        cards.forEach(function(card) {
+            var dataEvento = (card.getAttribute('data-evento') || '').toLowerCase();
+            var slugs = dataEvento.split('|').map(function(s){ return s.trim(); }).filter(Boolean);
+            var coincide = slugs.includes(slugFiltro) ||
+                           (card.getAttribute('data-subtags') || '').toLowerCase().indexOf(slugFiltro.replace(/-/g,' ')) !== -1;
+            card.classList.toggle('oculto', !coincide);
+            card.classList.remove('paginacion-oculto');
+            if (coincide) hay = true;
+        });
+        if (typeof window.actualizarPaginacion === 'function') {
+            window.actualizarPaginacion();
+        }
+    }, 60);
+};
+
 // Normalizar texto para comparar sub-etiquetas de forma
 function _normForma(txt) {
     return (txt || '').toLowerCase()
