@@ -1,5 +1,5 @@
 // ============================================================
-// VELAS KUKUMITA — app.js
+// YESOS KUKÚMITA — app.js
 // JavaScript extraído y organizado desde index.html.
 // Incluye:
 //   - cargarCatalogo()  : fetch dinámico desde Google Sheets CSV
@@ -163,7 +163,14 @@ function _resetBotonesRed() {
 // Para editar productos: abre el link de Google Sheets y modifica las filas.
 //
 // 🔧 CONFIGURACIÓN — cambia solo esta línea si mueves la hoja:
-var SHEET_ID = '1jin2wMYingvbPD2csGxIbm5AhulfRvCRvIzAKJTUNMw';
+var SHEET_ID = '1GoIVWBIyl9s0wYo2qyv0GQwco_xBl3sajDwF0qcnf5o';
+
+// 🔧 URL del Cloudflare Worker para compartir en redes sociales (Facebook, etc.)
+// Cuando instales el worker, reemplaza esta URL con la que te asigne Cloudflare.
+// Ejemplo: 'https://kukumita-og.TU-USUARIO.workers.dev'
+// Mientras no lo tengas configurado, deja el valor vacío ('') y funcionará
+// como antes (sin imagen en Facebook).
+var OG_WORKER_URL = 'https://cool-river-013e.dulceprincesa086.workers.dev';
 // ──────────────────────────────────────────────────────────────────────────────
 // COLUMNAS ESPERADAS EN LA HOJA (fila 1 = encabezados, datos desde fila 2):
 //   A(0):  Nombre
@@ -297,11 +304,7 @@ function csvAProductos(filas) {
             tipos:        tiposArray,
             subtags:      get(7) ? get(7).split(',').map(function(s){ return s.trim(); }).filter(Boolean).join('|') : '',
             eventos:      get(8)
-                            ? get(8).split(/[,|]/).map(function(s){
-                                return s.trim().toLowerCase()
-                                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quitar acentos
-                                    .replace(/\s+/g, '-'); // espacios → guiones (ej: "baby shower" → "baby-shower")
-                              }).filter(Boolean).join('|')
+                            ? get(8).split(',').map(function(s){ return s.trim().toLowerCase(); }).filter(Boolean).join(' ')
                             : '',
             etiquetas:    tiposArray,
             aditivos:     [],
@@ -505,14 +508,14 @@ function _actualizarMetaOG(titulo, descripcion, imagen, url) {
     }
     var urlFinal = url || window.location.href;
     setMeta('og-url',         urlFinal);
-    setMeta('og-title',       titulo + ' — Velas Kukumita');
-    setMeta('og-description', descripcion || 'Descubre este producto en Velas Kukumita.');
+    setMeta('og-title',       titulo + ' — Yesos Fer Kukúmita');
+    setMeta('og-description', descripcion || 'Descubre este producto en Yesos Fer Kukúmita.');
     setMeta('og-image',       imagen);
-    setMeta('tw-title',       titulo + ' — Velas Kukumita');
-    setMeta('tw-description', descripcion || 'Descubre este producto en Velas Kukumita.');
+    setMeta('tw-title',       titulo + ' — Yesos Fer Kukúmita');
+    setMeta('tw-description', descripcion || 'Descubre este producto en Yesos Fer Kukúmita.');
     setMeta('tw-image',       imagen);
     // Actualizar también el <title> de la página
-    document.title = titulo + ' — Velas Kukumita';
+    document.title = titulo + ' — Yesos Fer Kukúmita';
 }
 
 function _abrirProductoDesdeURL() {
@@ -550,18 +553,18 @@ function _abrirProductoDesdeURL() {
 // Restaurar meta OG genéricos al cerrar el modal
 (function() {
     var _tituloOriginal    = document.title;
-    var _ogTitleOriginal   = 'Velas Kukumita — Arreglos y Productos Artesanales';
-    var _ogDescOriginal    = 'Descubre nuestros hermosos arreglos y productos artesanales de Velas Kukumita.';
+    var _ogTitleOriginal   = 'Yesos Fer Kukúmita — Arreglos y Productos Artesanales';
+    var _ogDescOriginal    = 'Descubre nuestros hermosos arreglos y productos artesanales de Yesos Fer Kukúmita.';
 
     document.addEventListener('modalProductoCerrado', function() {
         document.title = _tituloOriginal;
         function setMeta(id, val) { var el=document.getElementById(id); if(el) el.setAttribute('content',val); }
         setMeta('og-title',       _ogTitleOriginal);
         setMeta('og-description', _ogDescOriginal);
-        setMeta('og-image',       'https://velaskukumita.com/imagenes/logo-velas-kukumita.jpg');
+        setMeta('og-image',       '');
         setMeta('tw-title',       _ogTitleOriginal);
         setMeta('tw-description', _ogDescOriginal);
-        setMeta('tw-image',       'https://velaskukumita.com/imagenes/logo-velas-kukumita.jpg');
+        setMeta('tw-image',       '');
     });
 })();
 
@@ -605,9 +608,6 @@ function cargarDesdeGoogleSheets() {
 
             // Disparar evento para que otros sistemas (paginación, filtros) se enteren
             document.dispatchEvent(new CustomEvent('catalogoCargado'));
-
-            // Marcar que la carga inicial ya terminó (evita scroll automático al top)
-            setTimeout(function() { window._cargaInicialCompletada = true; }, 500);
 
             // Refrescar carruseles de ofertas/más vendidos con las nuevas cards
             if (typeof window.refrescarCarruseles === 'function') {
@@ -657,7 +657,10 @@ if (document.readyState === 'loading') {
 
     function obtenerTarjetasVisibles() {
         return Array.from(document.querySelectorAll('#gridProductos .card-dinamica'))
-            .filter(function(c) { return !c.classList.contains('oculto'); });
+            .filter(function(c) {
+                return !c.classList.contains('oculto') &&
+                       !c.classList.contains('oculto-forma-carrusel');
+            });
     }
 
     function calcularTotalPaginas() {
@@ -667,8 +670,11 @@ if (document.readyState === 'loading') {
     function mostrarPagina(num) {
         paginaActual = num;
         // Guardar página en el hash de la URL para que persista al recargar
-        // (Hash de paginación desactivado para evitar scroll automático al recargar)
-        // La URL se mantiene limpia; la página siempre arranca desde el top.
+        var nuevoHash = (window.location.hash || '').replace(/#?pagina=\d+/, '').replace(/^#?&/, '').replace(/^#/, '') || '';
+        var hashFinal = (nuevoHash ? nuevoHash + '&' : '') + 'pagina=' + num;
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, '', '#' + hashFinal);
+        }
         var inicio = (num - 1) * POR_PAGINA;
         var fin = inicio + POR_PAGINA;
         // Quita paginacion-oculto a todas
@@ -712,7 +718,8 @@ if (document.readyState === 'loading') {
             if (total <= 1) {
                 // Limpiar el hash de página para que no quede sucio al quitar filtros
                 if (window.history && window.history.replaceState) {
-                    // URL ya limpia — no hay hash de paginación que limpiar
+                    var hashLimpio = (window.location.hash || '').replace(/#?pagina=\d+/, '').replace(/^#?&/, '').replace(/^#/, '');
+                    window.history.replaceState(null, '', hashLimpio ? '#' + hashLimpio : window.location.pathname);
                 }
                 return;
             }
@@ -743,12 +750,22 @@ if (document.readyState === 'loading') {
         });
     }
 
+    var _primeraVez = true;
+
     function actualizarPaginacion() {
         tarjetasVisibles = obtenerTarjetasVisibles();
-        // Siempre arrancar en página 1 y en el top de la pantalla
-        // (se eliminó la restauración desde hash para evitar scroll automático al recargar)
-        window.history.replaceState(null, '', window.location.pathname + window.location.search);
-        mostrarPagina(1);
+        var paginaInicial = 1;
+        // Solo restaurar la página guardada en el hash durante la carga inicial,
+        // no al cambiar filtros (para evitar mostrar páginas desincronizadas).
+        if (_primeraVez) {
+            var hash = window.location.hash || '';
+            var match = hash.match(/pagina=(\d+)/);
+            var paginaGuardada = match ? parseInt(match[1]) : 1;
+            var totalPags = Math.ceil(tarjetasVisibles.length / POR_PAGINA);
+            paginaInicial = (paginaGuardada > 1 && paginaGuardada <= totalPags) ? paginaGuardada : 1;
+            _primeraVez = false;
+        }
+        mostrarPagina(paginaInicial);
     }
 
     // Escuchar el evento de catálogo cargado (Google Sheets) en lugar de usar un timeout fijo
@@ -756,11 +773,10 @@ if (document.readyState === 'loading') {
         // Detectar el modo activo antes de que el catálogo cargara
         var btnActivo = document.querySelector('.btn-modo-velas.activo');
         var mapaIDs = {
-            'btnModoTodosProductos': 'mostrar_todo',
-            'btnModoTodos':          'todos',
-            'btnModoArreglos':       'arreglos',
-            'btnModoDecoraciones':   'decoraciones',
-            'btnModoEtiquetas':      'etiquetas'
+            'btnModoTodosProductos':  'mostrar_todo',
+            'btnModoArreglos':        'arreglos',
+            'btnModoPaquetes':        'paquetes',
+            'btnModoEtiquetas':       'etiquetas'
         };
         var modoActual = btnActivo ? (mapaIDs[btnActivo.id] || 'mostrar_todo') : 'mostrar_todo';
 
@@ -845,7 +861,7 @@ if (document.readyState === 'loading') {
                 const pTarjeta = parseInt(tarjeta.getAttribute('data-precio')) || 0;
 
                 const cumpleForma  = (formaActiva  === 'todos' || fTarjeta === formaActiva);
-                const cumpleEvento = (eventoActivo === 'todos' || eTarjeta.split('|').map(function(e){ return e.trim(); }).includes(eventoActivo));
+                const cumpleEvento = (eventoActivo === 'todos' || eTarjeta === eventoActivo);
                 const cumplePrecio = (pTarjeta <= precioMaximoActivo);
 
                 tarjeta.classList.toggle('oculto', !(cumpleForma && cumpleEvento && cumplePrecio));
@@ -1039,7 +1055,7 @@ if (document.readyState === 'loading') {
             // Si no está en el mapa, mostrarlo tal como viene (con mayúscula inicial)
             return slug.charAt(0).toUpperCase() + slug.slice(1);
         }
-        const eventoSlots = dataEvento.split('|').filter(e => e && e !== 'sin' && e !== 'sin-evento');
+        const eventoSlots = dataEvento.split(/\s+/).filter(e => e && e !== 'sin' && e !== 'evento');
         if (eventoSlots.length > 0) {
             haySubetiquetas = true;
             const labelEv = document.createElement('div');
@@ -1257,16 +1273,17 @@ if (document.readyState === 'loading') {
         // Botón WhatsApp
         document.getElementById('mpBtnWhatsapp').onclick = () => {
             const texto = encodeURIComponent('Hola, me interesa el producto: ' + nombre + (precioNum ? ' ($' + precioNum + ' MXN)' : ''));
-            window.open('https://wa.me/524431469161?text=' + texto, '_blank');
+            window.open('https://wa.me/524431322032?text=' + texto, '_blank');
         };
 
         // Botón Compartir — actualiza OG y abre submenu
         document.getElementById('mpBtnCompartir').onclick = (e) => {
             e.stopPropagation();
-            const url = window.location.href.split('?')[0] + '?producto=' + encodeURIComponent(nombre);
+            const url    = window.location.href.split('?')[0] + '?producto=' + encodeURIComponent(nombre);
+            const urlOG  = (typeof _urlOG === 'function') ? _urlOG(url) : url;
             // Actualizar meta OG con este producto antes de compartir
             if (typeof _actualizarMetaOG === 'function') {
-                _actualizarMetaOG(nombre, descripcion, galeriaImagenes[0] || '', url);
+                _actualizarMetaOG(nombre, descripcion, galeriaImagenes[0] || '', urlOG);
             }
             abrirSubmenuCompartir(url, nombre);
         };
@@ -1636,52 +1653,51 @@ if (document.readyState === 'loading') {
 
     // ===== CAMBIO DE MODO: ARREGLOS / TODOS LOS PRODUCTOS =====
     function cambiarModoVelas(modo) {
-        const btnArreglos       = document.getElementById('btnModoArreglos');
-        const btnEtiquetas      = document.getElementById('btnModoEtiquetas');
-        const btnDecoraciones   = document.getElementById('btnModoDecoraciones');
-        const btnTodos          = document.getElementById('btnModoTodos');
+        // Botones
         const btnTodosProductos = document.getElementById('btnModoTodosProductos');
-        const panelArr          = document.getElementById('panelArreglos');
-        const panelEtiq         = document.getElementById('panelEtiquetas');
-        const panelDeco         = document.getElementById('panelDecoraciones');
-        const panelTod          = document.getElementById('panelTodos');
-        const bloqueArr         = document.getElementById('bloqueFiltroPrecioArreglos');
-        const bloqueTod         = document.getElementById('bloqueFiltroPrecioTodos');
+        const btnArreglos       = document.getElementById('btnModoArreglos');
+        const btnPaquetes       = document.getElementById('btnModoPaquetes');
+        const btnEtiquetas      = document.getElementById('btnModoEtiquetas');
+
+        const panelArr  = document.getElementById('panelArreglos');
+        const panelEtiq = document.getElementById('panelEtiquetas');
+        const panelTod  = document.getElementById('panelTodos');
+        const bloqueArr = document.getElementById('bloqueFiltroPrecioArreglos');
+        const bloqueTod = document.getElementById('bloqueFiltroPrecioTodos');
 
         // Desactivar todos los botones y paneles
-        [btnArreglos, btnEtiquetas, btnDecoraciones, btnTodos, btnTodosProductos]
+        [btnTodosProductos, btnArreglos, btnPaquetes, btnEtiquetas]
             .forEach(b => b && b.classList.remove('activo'));
-        [panelArr, panelEtiq, panelDeco, panelTod]
+        [panelArr, panelEtiq, panelTod]
             .forEach(p => p && p.classList.remove('visible'));
-        // Ocultar ambos bloques de precio
         if (bloqueArr) bloqueArr.style.display = 'none';
         if (bloqueTod) bloqueTod.style.display = 'none';
 
-        if (modo === 'arreglos') {
-            if (btnArreglos) btnArreglos.classList.add('activo');
-            if (bloqueArr) bloqueArr.style.display = 'block';
-            if (panelArr) panelArr.classList.add('visible');
-            aplicarFiltrosArreglos();
-        } else if (modo === 'etiquetas') {
-            if (btnEtiquetas) btnEtiquetas.classList.add('activo');
-            if (panelEtiq) panelEtiq.classList.add('visible');
-            aplicarFiltrosUnificados('etiquetas');
-        } else if (modo === 'decoraciones') {
-            if (btnDecoraciones) btnDecoraciones.classList.add('activo');
-            if (panelDeco) panelDeco.classList.add('visible');
-            aplicarFiltrosUnificados('decoraciones');
-        } else if (modo === 'mostrar_todo') {
-            // Mostrar Todo: activa sólo el botón superior y muestra absolutamente todo
+        if (modo === 'mostrar_todo') {
             if (btnTodosProductos) btnTodosProductos.classList.add('activo');
             if (panelTod) panelTod.classList.add('visible');
             if (bloqueTod) bloqueTod.style.display = 'block';
             aplicarFiltrosUnificados('mostrar_todo');
-        } else {
-            // 'todos' = 🛍️ Productos (solo tipo producto)
-            if (btnTodos) btnTodos.classList.add('activo');
+        } else if (modo === 'arreglos') {
+            if (btnArreglos) btnArreglos.classList.add('activo');
+            if (bloqueArr) bloqueArr.style.display = 'block';
+            if (panelArr) panelArr.classList.add('visible');
+            aplicarFiltrosArreglos();
+        } else if (modo === 'paquetes') {
+            if (btnPaquetes) btnPaquetes.classList.add('activo');
             if (panelTod) panelTod.classList.add('visible');
             if (bloqueTod) bloqueTod.style.display = 'block';
-            aplicarFiltrosUnificados('todos');
+            aplicarFiltrosUnificados('paquetes');
+        } else if (modo === 'etiquetas') {
+            if (btnEtiquetas) btnEtiquetas.classList.add('activo');
+            if (panelEtiq) panelEtiq.classList.add('visible');
+            aplicarFiltrosUnificados('etiquetas');
+        } else {
+            // Fallback: mostrar todo
+            if (btnTodosProductos) btnTodosProductos.classList.add('activo');
+            if (panelTod) panelTod.classList.add('visible');
+            if (bloqueTod) bloqueTod.style.display = 'block';
+            aplicarFiltrosUnificados('mostrar_todo');
         }
     }
 
@@ -1769,24 +1785,7 @@ if (document.readyState === 'loading') {
     }
     // ────────────────────────────────────────────────────────────────────────
 
-    // Temporizadores de debounce por panel
-    var _busquedaTimers = {};
-
-    // Llamada con debounce — para el evento oninput (espera 3 s sin escribir)
     function filtrarPorNombreUnificado(panel, valor) {
-        if (_busquedaTimers[panel]) clearTimeout(_busquedaTimers[panel]);
-        _busquedaTimers[panel] = setTimeout(function() {
-            _busquedaTimers[panel] = null;
-            aplicarFiltrosUnificados(panel);
-        }, 3000);
-    }
-
-    // Llamada inmediata — para el botón de lupa
-    function filtrarPorNombreUnificadoInmediato(panel) {
-        if (_busquedaTimers[panel]) {
-            clearTimeout(_busquedaTimers[panel]);
-            _busquedaTimers[panel] = null;
-        }
         aplicarFiltrosUnificados(panel);
     }
 
@@ -1842,10 +1841,19 @@ if (document.readyState === 'loading') {
         const rawTipos = (card.getAttribute('data-tipos') || card.getAttribute('data-tipo') || '');
         const tipos = rawTipos.toLowerCase().replace(/^"+|"+$/g, '').split(/[|,]/).map(s => s.trim().replace(/^"+|"+$/g, '')).filter(Boolean);
         const variantes = {
-            'producto':      ['producto','productos'],
-            'arreglo':       ['arreglo','arreglos'],
-            'decoracion':    ['decoracion','decoraciones','aditamento','aditamentos'],
-            'etiqueta':      ['etiqueta','etiquetas']
+            'producto':        ['producto','productos'],
+            'arreglo':         ['arreglo','arreglos'],
+            'paquetes':        ['paquete','paquetes'],
+            'decoracion':      ['decoracion','decoraciones','aditamento','aditamentos','centro de mesa','centro_de_mesa','centrodemesa'],
+            'etiqueta':        ['etiqueta','etiquetas'],
+            // Categorías de etiquetaprincipal (col G)
+            'figuras':         ['figura','figuras'],
+            'bases':           ['base','bases'],
+            'macetas':         ['maceta','macetas'],
+            'tazones':         ['tazon','tazones','tazón','tazónes'],
+            'portavelas':      ['porta vela','porta velas','portavela','portavelas','porta_vela','porta_velas'],
+            'portainciensos':  ['porta incienso','porta inciensos','portaincienso','portainciensos','porta_incienso','porta_inciensos'],
+            'aditamentos':     ['aditamento','aditamentos']
         };
         return buscar.some(function(b) {
             const lista = variantes[b] || [b];
@@ -1866,6 +1874,9 @@ if (document.readyState === 'loading') {
         const formaActiva  = filtros.forma  || 'todos';
         const eventoActivo = filtros.evento || 'todos';
 
+        // Modos que filtran por etiquetaprincipal directamente
+        const modosPorEtiqueta = ['paquetes'];
+
         document.querySelectorAll('.card-dinamica').forEach(card => {
             const formaCard  = (card.dataset.forma  || '').toLowerCase();
             const eventoCard = (card.dataset.evento || '').toLowerCase();
@@ -1873,11 +1884,14 @@ if (document.readyState === 'loading') {
 
             const okNombre = coincideNombre(nombreCard, textoBusq, card);
             const okForma  = formaActiva  === 'todos' || formaCard === formaActiva;
-            const okEvento = eventoActivo === 'todos' || eventoCard.split('|').map(function(e){ return e.trim(); }).includes(eventoActivo);
+            const okEvento = eventoActivo === 'todos' || eventoCard.split(' ').includes(eventoActivo);
 
             // Si hay texto de búsqueda activo, ignorar el filtro de tipo y buscar en TODOS los productos
             if (textoBusq) {
                 card.classList.toggle('oculto', !okNombre);
+            } else if (modosPorEtiqueta.includes(panel)) {
+                // Filtrar por etiquetaprincipal usando tieneTipo con el nombre del modo
+                card.classList.toggle('oculto', !tieneTipo(card, panel));
             } else if (panel === 'decoraciones') {
                 card.classList.toggle('oculto', !tieneTipo(card, 'decoracion'));
             } else if (panel === 'etiquetas') {
@@ -1895,7 +1909,7 @@ if (document.readyState === 'loading') {
             } else if (panel === 'mostrar_todo') {
                 card.classList.toggle('oculto', false); // sin texto: mostrar todo
             } else {
-                // panel === 'todos' (🛍️ Productos): muestra solo los que tienen tipo 'producto'
+                // panel === 'todos' (Productos): muestra solo los que tienen tipo 'producto'
                 card.classList.toggle('oculto', !(tieneTipo(card, 'producto') && okForma && okEvento));
             }
         });
@@ -1974,7 +1988,6 @@ if (document.readyState === 'loading') {
         } else {
             aplicarFiltrosArreglos();
         }
-        if (typeof window.scrollToGrid === 'function') window.scrollToGrid();
     }
 
     // Filtra por precio exacto sobre TODOS los tipos sin restricción de categoría
@@ -2043,10 +2056,11 @@ if (document.readyState === 'loading') {
     window.filtrarTamanoArreglos        = filtrarTamanoArreglos;
     window.aplicarFiltrosUnificados     = aplicarFiltrosUnificados;
     window.filtrarPorNombreUnificado    = filtrarPorNombreUnificado;
-    window.filtrarPorNombreUnificadoInmediato = filtrarPorNombreUnificadoInmediato;
     window.toggleDropdownFiltros        = toggleDropdownFiltros;
     window.toggleGrupoFiltro            = toggleGrupoFiltro;
     window.seleccionarTagFiltro         = seleccionarTagFiltro;
+
+    // ===== FILTROS TODOS LOS PRODUCTOS =====
     function actualizarPrecio(val) {
         document.getElementById('txtPrecioMax').textContent = '$' + val + ' MXN';
         aplicarFiltrosTodos();
@@ -2073,7 +2087,6 @@ if (document.readyState === 'loading') {
         document.querySelectorAll('#lista-precios-todos .btn-precio-velas').forEach(b => b.classList.remove('activo'));
         btn.classList.add('activo');
         aplicarFiltrosPrecioExactoTodos();
-        if (typeof window.scrollToGrid === 'function') window.scrollToGrid();
     }
 
     function aplicarFiltrosPrecioExactoTodos() {
@@ -2118,7 +2131,7 @@ if (document.readyState === 'loading') {
             }
 
             const okForma   = formaActiva  === 'todos' || formaCard  === formaActiva;
-            const okEvento  = eventoActivo === 'todos' || eventoCard.split('|').map(function(e){ return e.trim(); }).includes(eventoActivo);
+            const okEvento  = eventoActivo === 'todos' || eventoCard.split(' ').includes(eventoActivo);
             const okNombre  = coincideNombre(nombreCard, textoBusq, card);
 
             // Si hay precio exacto activo (boton $15/$20/etc), tiene prioridad sobre el slider
@@ -2151,11 +2164,6 @@ if (document.readyState === 'loading') {
         const el = document.getElementById(id);
         if (el) el.scrollBy({ left: px, behavior: 'smooth' });
     }
-
-    // Exponer al scope global
-    window.filtrarPrecioTodos  = filtrarPrecioTodos;
-    window.cambiarTipoPrecio   = cambiarTipoPrecio;
-    window.scrollPrecios       = scrollPrecios;
 
     // Inicializar listeners de filtros de botones (forma / evento)
     _ready(function() {
@@ -2596,11 +2604,9 @@ function ejecutarBusquedaDrawer() {
     });
     // 4. Repaginar
     if (typeof window.actualizarPaginacion === 'function') window.actualizarPaginacion();
-    // 5. Scroll al catálogo (solo si fue acción del usuario, no carga inicial)
-    if (window._cargaInicialCompletada) {
-        var grid = document.getElementById('gridProductos');
-        if (grid) setTimeout(function(){ grid.scrollIntoView({ behavior:'smooth', block:'start' }); }, 100);
-    }
+    // 5. Scroll al catálogo
+    var grid = document.getElementById('gridProductos');
+    if (grid) setTimeout(function(){ grid.scrollIntoView({ behavior:'smooth', block:'start' }); }, 100);
     // 6. Toast informativo
     if (typeof mostrarToast === 'function') {
         mostrarToast(total > 0
@@ -2645,13 +2651,13 @@ function renderizarResultadosDrawer(lista, titulo) {
 //  FIREBASE CONFIGURACIÓN
 // ═══════════════════════════════════════════
 const firebaseConfig = {
-    apiKey: "AIzaSyBc_AUz1lfgAPFuQd9oKvDYGm1lyrHALGs",
-    authDomain: "velas-kukumita.firebaseapp.com",
-    projectId: "velas-kukumita",
-    storageBucket: "velas-kukumita.firebasestorage.app",
-    messagingSenderId: "76727611900",
-    appId: "1:76727611900:web:8eb54f485d2da99e40c279",
-    measurementId: "G-KPV214PPVY"
+    apiKey: "AIzaSyAkyPOwwU-HoDAVqNcMKIkiI7pkBhpTRmw",
+    authDomain: "yesos-kukumita.firebaseapp.com",
+    projectId: "yesos-kukumita",
+    storageBucket: "yesos-kukumita.firebasestorage.app",
+    messagingSenderId: "784730667884",
+    appId: "1:784730667884:web:95e50565255b6e1d379149",
+    measurementId: "G-B3ST4NJR1G"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -2957,7 +2963,9 @@ function activarPill(cual) {
     if (catalogo) catalogo.style.display = (cual === 'biografia') ? 'none' : 'block';
 
     if (cual === 'productos') {
-        // Sin scroll automático al mostrar el panel de productos
+        setTimeout(function() {
+            if (catalogo) catalogo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 80);
     }
 }
 
@@ -3352,8 +3360,13 @@ var TIPO_INFO = {
     aditamentos:  { cls: 'aditamento', label: '✨ Aditamento' },
     decoracion:   { cls: 'decoracion', label: '🎀 Decoración' },
     decoraciones: { cls: 'decoracion', label: '🎀 Decoración' },
-    etiqueta:     { cls: 'etiqueta',   label: '🏷️ Etiqueta' },
-    etiquetas:    { cls: 'etiqueta',   label: '🏷️ Etiqueta' }
+    etiqueta:        { cls: 'etiqueta',      label: '🏷️ Etiqueta' },
+    etiquetas:       { cls: 'etiqueta',      label: '🏷️ Etiqueta' },
+    'centro de mesa':{ cls: 'centro-mesa',   label: '🌸 Centro de Mesa' },
+    'centro_de_mesa':{ cls: 'centro-mesa',   label: '🌸 Centro de Mesa' },
+    centrodemesa:    { cls: 'centro-mesa',   label: '🌸 Centro de Mesa' },
+    paquete:         { cls: 'paquete',       label: '🎁 Paquete' },
+    paquetes:        { cls: 'paquete',       label: '🎁 Paquete' }
 };
 
 // ── Inyectar etiqueta principal (sobre el título) y sub-etiquetas (sobre evento) ──
@@ -3979,7 +3992,7 @@ function pedirCotizacionWA() {
     var total = carrito.reduce(function(sum, i){ return sum + i.precio * i.cantidad; }, 0);
 
     // Construir mensaje
-    var lineas = ['Hola, me gustaría pedir una cotización de los siguientes productos de Velas Kukumita:\n'];
+    var lineas = ['Hola, me gustaría pedir una cotización de los siguientes productos de Yesos Fer Kukúmita:\n'];
     carrito.forEach(function(item, i) {
         lineas.push((i+1) + '. *' + item.nombre + '*');
         lineas.push('   Cantidad: ' + item.cantidad + ' piezas');
@@ -3994,7 +4007,7 @@ function pedirCotizacionWA() {
     btn.disabled = true;
     btn.textContent = '⏳ Enviando...';
     setTimeout(function() {
-        window.open('https://wa.me/524431469161?text=' + encodeURIComponent(mensaje), '_blank');
+        window.open('https://wa.me/524431322032?text=' + encodeURIComponent(mensaje), '_blank');
         btn.disabled = false;
         btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg> Pedir Cotización por WhatsApp';
     }, 800);
@@ -4391,14 +4404,17 @@ function cerrarSubmenuCompartir() {
 }
 
 function copiarLinkProducto() {
+    // Usar la URL del Worker (si está configurado) para que al pegar en Facebook
+    // se muestre la imagen del producto en lugar de la imagen genérica del sitio.
+    var urlACopiar = (typeof _urlOG === 'function') ? _urlOG(_scUrlActual) : _scUrlActual;
     if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(_scUrlActual).then(function() {
+        navigator.clipboard.writeText(urlACopiar).then(function() {
             mostrarToast('✅ ¡Link copiado al portapapeles!');
         }).catch(function() {
-            _copiarFallback(_scUrlActual);
+            _copiarFallback(urlACopiar);
         });
     } else {
-        _copiarFallback(_scUrlActual);
+        _copiarFallback(urlACopiar);
     }
 }
 
@@ -4412,14 +4428,32 @@ function _copiarFallback(texto) {
     document.body.removeChild(ta);
 }
 
+// ── Helper: devuelve la URL del Cloudflare Worker si está configurado,
+//    o la URL normal de la página en caso contrario.
+//    El worker sirve las meta tags OG correctas para que Facebook
+//    muestre la imagen del producto al pegar el link.
+function _urlOG(urlPaginaReal) {
+    if (!OG_WORKER_URL || !OG_WORKER_URL.trim()) return urlPaginaReal;
+    try {
+        var params = new URL(urlPaginaReal).searchParams;
+        var producto = params.get('producto');
+        if (!producto) return urlPaginaReal;
+        return OG_WORKER_URL.replace(/\/$/, '') + '/?producto=' + encodeURIComponent(producto);
+    } catch(e) {
+        return urlPaginaReal;
+    }
+}
+
 function compartirEnWhatsApp() {
-    var texto = encodeURIComponent('🕯️ Mira este producto de Velas Kukumita: ' + _scNombreActual + '\n' + _scUrlActual);
+    var texto = encodeURIComponent('🕯️ Mira este producto de Yesos Fer Kukúmita: ' + _scNombreActual + '\n' + _scUrlActual);
     window.open('https://wa.me/?text=' + texto, '_blank');
 }
 
 function compartirEnFacebook() {
-    var url = encodeURIComponent(_scUrlActual);
-    window.open('https://www.facebook.com/sharer/sharer.php?u=' + url, '_blank', 'width=600,height=400');
+    // Usamos la URL del worker (si está configurado) para que Facebook
+    // lea las meta tags OG y muestre la imagen del producto.
+    var urlParaFB = encodeURIComponent(_urlOG(_scUrlActual));
+    window.open('https://www.facebook.com/sharer/sharer.php?u=' + urlParaFB, '_blank', 'width=600,height=400');
 }
 
 function compartirEnInstagram() {
@@ -4587,7 +4621,7 @@ function _cargarFavoritosFirestore(uid) {
         var total       = carrito.reduce(function(s,i){ return s+(i.precio||0)*i.cantidad; }, 0);
         var descuento   = (typeof calcularDescuentoCupones==='function') ? calcularDescuentoCupones(carrito) : 0;
 
-        var lineas = ['Hola, me gustaría pedir una cotización de los siguientes productos de Velas Kukumita:\n'];
+        var lineas = ['Hola, me gustaría pedir una cotización de los siguientes productos de Yesos Fer Kukúmita:\n'];
         carrito.forEach(function(item, i) {
             lineas.push((i+1)+'. *'+item.nombre+'*');
             lineas.push('   Cantidad: '+item.cantidad+' piezas');
@@ -4612,7 +4646,7 @@ function _cargarFavoritosFirestore(uid) {
         var btn = document.getElementById('btnPedirCotizacion');
         if (btn) { btn.disabled=true; btn.textContent='⏳ Enviando...'; }
         setTimeout(function() {
-            window.open('https://wa.me/524431469161?text='+encodeURIComponent(mensaje), '_blank');
+            window.open('https://wa.me/524431322032?text='+encodeURIComponent(mensaje), '_blank');
             if (btn) {
                 btn.disabled = false;
                 btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg> Pedir Cotización por WhatsApp';
@@ -4657,8 +4691,8 @@ function _cargarFavoritosFirestore(uid) {
             var hay = false;
             cards.forEach(function(card) {
                 var dataEvento = (card.getAttribute('data-evento') || '').toLowerCase();
-                // data-evento es multi-valor separado por |
-                var slugs = dataEvento.split('|').map(_normSlug).filter(Boolean);
+                // data-evento puede ser multi-valor separado por espacios
+                var slugs = dataEvento.split(/\s+/).map(_normSlug).filter(Boolean);
                 var coincide = slugs.includes(slugFiltro);
                 card.classList.toggle('oculto', !coincide);
                 card.classList.remove('paginacion-oculto');
@@ -4761,11 +4795,10 @@ function _cargarFavoritosFirestore(uid) {
         var btnActivo = document.querySelector('.btn-modo-velas.activo');
         if (btnActivo) {
             var modos = {
-                'btnModoTodosProductos': 'mostrar_todo',
-                'btnModoTodos':          'todos',
-                'btnModoArreglos':       'arreglos',
-                'btnModoDecoraciones':   'decoraciones',
-                'btnModoEtiquetas':      'etiquetas'
+                'btnModoTodosProductos':  'mostrar_todo',
+                'btnModoArreglos':        'arreglos',
+                'btnModoPaquetes':        'paquetes',
+                'btnModoEtiquetas':       'etiquetas'
             };
             var modo = modos[btnActivo.id] || 'mostrar_todo';
             if (typeof window.cambiarModoVelas === 'function') window.cambiarModoVelas(modo);
@@ -4807,252 +4840,62 @@ function _cargarFavoritosFirestore(uid) {
 window.togglePanelEventos = function() {
     var panel = document.getElementById('panelEventoCarrusel');
     var icono = document.getElementById('iconToggleEventos');
-    var btn   = document.getElementById('btnToggleEventos');
     if (!panel) return;
     var visible = panel.style.display !== 'none';
     panel.style.display = visible ? 'none' : 'block';
     if (icono) icono.textContent = visible ? '▼' : '▲';
-    if (btn) btn.style.borderColor = visible ? '#e0d5cc' : '#8c7565';
 };
 
-// ── Filtrar por Forma (carrusel) ──
 window.togglePanelFormas = function() {
     var panel = document.getElementById('panelFormaCarrusel');
     var icono = document.getElementById('iconToggleFormas');
-    var btn   = document.getElementById('btnToggleFormas');
     if (!panel) return;
     var visible = panel.style.display !== 'none';
     panel.style.display = visible ? 'none' : 'block';
     if (icono) icono.textContent = visible ? '▼' : '▲';
-    if (btn) btn.style.borderColor = visible ? '#e0d5cc' : '#8c7565';
 };
 
-// ── Filtrar por Festividad (carrusel) ──
-window.togglePanelFestividades = function() {
-    var panel = document.getElementById('panelFestividadCarrusel');
-    var icono = document.getElementById('iconToggleFestividades');
-    var btn   = document.getElementById('btnToggleFestividades');
-    if (!panel) return;
-    var visible = panel.style.display !== 'none';
-    panel.style.display = visible ? 'none' : 'block';
-    if (icono) icono.textContent = visible ? '▼' : '▲';
-    if (btn) btn.style.borderColor = visible ? '#e0d5cc' : '#8c7565';
-};
+// Filtro de forma global usando columna EtiquetaPrincipal (data-tipos, col G)
+var formaCarruselActiva = 'todos';
 
-// ── Scroll suave al grid de productos ──
-window.scrollToGrid = function() {
-    var grid = document.getElementById('gridProductos');
-    if (grid) setTimeout(function() { grid.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80);
-};
-
-// ── Filtrar por Festividad ──
-window.filtrarPorFestividadCarrusel = function(btnPulsado, festividad) {
-    document.querySelectorAll('.btn-festividad-carrusel').forEach(function(b) {
-        b.classList.remove('activo-evento');
-    });
-    btnPulsado.classList.add('activo-evento');
-
-    var btnToggle = document.getElementById('btnToggleFestividades');
-    if (btnToggle) btnToggle.style.borderColor = festividad === 'todos' ? '#e0d5cc' : '#8c7565';
-
-    if (typeof window.cambiarModoVelas === 'function') {
-        window.cambiarModoVelas('mostrar_todo');
-    }
-
-    if (festividad === 'todos') return;
-
-    setTimeout(function() {
-        var slugFiltro = festividad;
-        var cards = document.querySelectorAll('#gridProductos .card-dinamica');
-        var hay = false;
-        cards.forEach(function(card) {
-            var dataEvento = (card.getAttribute('data-evento') || '').toLowerCase();
-            var slugs = dataEvento.split('|').map(function(s){ return s.trim(); }).filter(Boolean);
-            var coincide = slugs.includes(slugFiltro) ||
-                           (card.getAttribute('data-subtags') || '').toLowerCase().indexOf(slugFiltro.replace(/-/g,' ')) !== -1;
-            card.classList.toggle('oculto', !coincide);
-            card.classList.remove('paginacion-oculto');
-            if (coincide) hay = true;
-        });
-        if (typeof window.actualizarPaginacion === 'function') {
-            window.actualizarPaginacion();
-        }
-    }, 60);
-};
-
-// Normalizar texto para comparar sub-etiquetas de forma
-function _normForma(txt) {
-    return (txt || '').toLowerCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quitar tildes
-        .replace(/[^a-z0-9\-]/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '');
-}
-
-window.filtrarPorFormaCarrusel = function(btnPulsado, forma) {
-    // Marcar botón activo
+window.seleccionarFormaCarrusel = function(btn, forma) {
+    formaCarruselActiva = forma;
+    // Marcar activo
     document.querySelectorAll('.btn-forma-carrusel').forEach(function(b) {
         b.classList.remove('activo-evento');
+        b.style.background = '';
+        b.style.color = '';
+        b.style.borderColor = '';
     });
-    btnPulsado.classList.add('activo-evento');
-
-    // Actualizar estilo del botón "Filtrar por Forma"
-    var btnToggle = document.getElementById('btnToggleFormas');
-    if (btnToggle) btnToggle.style.borderColor = forma === 'todos' ? '#e0d5cc' : '#8c7565';
-
-    // Activar modo "Mostrar Todo" para que todas las cards sean candidatas
-    if (typeof window.cambiarModoVelas === 'function') {
-        window.cambiarModoVelas('mostrar_todo');
-    }
-
+    btn.classList.add('activo-evento');
     if (forma === 'todos') {
-        return;
+        btn.style.background = '#1a1a1a';
+        btn.style.color = '#fff';
+        btn.style.borderColor = '#1a1a1a';
     }
-
-    setTimeout(function() {
-        var cards = document.querySelectorAll('#gridProductos .card-dinamica');
-        var hay = false;
-        cards.forEach(function(card) {
-            // Buscar en data-subtags (columna H = SubEtiqueta)
-            var subtags = (card.getAttribute('data-subtags') || '').toLowerCase();
-            var subtaguNorm = subtags.split('|').map(function(s){ return _normForma(s.trim()); });
-            var formaSlug = _normForma(forma);
-            var coincide = subtaguNorm.includes(formaSlug);
-            card.classList.toggle('oculto', !coincide);
-            card.classList.remove('paginacion-oculto');
-            if (coincide) hay = true;
-        });
-        if (typeof window.actualizarPaginacion === 'function') {
-            window.actualizarPaginacion();
-        }
-    }, 60);
+    // Aplicar filtro a todas las cards visibles
+    aplicarFiltroFormaCarrusel();
 };
 
-// Limpiar filtro de forma cuando el usuario cambia de tab
-_ready(function() {
-    document.querySelectorAll('.btn-modo-velas').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.btn-forma-carrusel').forEach(function(b) {
-                b.classList.remove('activo-evento');
-            });
-            var btnTodos = document.querySelector('.btn-forma-carrusel[data-forma="todos"]');
-            if (btnTodos) btnTodos.classList.add('activo-evento');
-            var btnToggle = document.getElementById('btnToggleFormas');
-            if (btnToggle) btnToggle.style.borderColor = '#e0d5cc';
-        });
+function aplicarFiltroFormaCarrusel() {
+    document.querySelectorAll('.card-dinamica').forEach(function(card) {
+        if (formaCarruselActiva === 'todos') {
+            card.classList.remove('oculto-forma-carrusel');
+        } else {
+            // Usa tieneTipo() para aprovechar las variantes definidas (col G / data-tipos)
+            var coincide = tieneTipo(card, formaCarruselActiva);
+            card.classList.toggle('oculto-forma-carrusel', !coincide);
+        }
     });
-});
+    // Limpiar hash de página para que actualizarPaginacion arranque siempre desde la 1
+    if (window.history && window.history.replaceState) {
+        var hashLimpio = (window.location.hash || '').replace(/#?pagina=\d+/, '').replace(/^#?&/, '').replace(/^#/, '');
+        window.history.replaceState(null, '', hashLimpio ? '#' + hashLimpio : window.location.pathname);
+    }
+    if (typeof window.actualizarPaginacion === 'function') window.actualizarPaginacion();
+}
+
+
 
 // ══════════════════════════════════════════════════════════════════
 // _reordenarBuscadorArreglos eliminada — el orden se mantiene directamente en cambiarModoVelas.
-
-// ══════════════════════════════════════════════════════════════════
-// AVISO DE PRIVACIDAD Y COOKIES
-// ══════════════════════════════════════════════════════════════════
-
-var _COOKIE_KEY = 'velas-cookies-aceptadas';
-
-/**
- * Inicializa la barra de cookies al cargar la página.
- * Si el usuario ya aceptó antes, la oculta de inmediato sin animación.
- */
-function _initBarraCookies() {
-    var barra = document.getElementById('barraCookies');
-    if (!barra) return;
-    if (localStorage.getItem(_COOKIE_KEY) === '1') {
-        barra.classList.add('oculta');
-    }
-    // Desplaza hacia abajo el botón del drawer para que no quede tapado
-    _ajustarOffsetDrawer();
-}
-
-/**
- * El usuario presionó "Aceptar" — guarda en localStorage y oculta la barra.
- */
-function aceptarCookies() {
-    localStorage.setItem(_COOKIE_KEY, '1');
-    var barra = document.getElementById('barraCookies');
-    if (barra) barra.classList.add('oculta');
-}
-
-/**
- * Abre la pantalla de aviso de privacidad (desliza desde la derecha).
- */
-function abrirPantallaPrivacidad() {
-    var pantalla = document.getElementById('pantallaPrivacidad');
-    if (!pantalla) return;
-    // Mostrar primero (quita el display:none), luego en el siguiente frame agregar la clase
-    // para que la transición CSS se ejecute correctamente
-    pantalla.style.display = 'flex';
-    requestAnimationFrame(function() {
-        requestAnimationFrame(function() {
-            pantalla.classList.add('abierta');
-        });
-    });
-    history.pushState({ kukumitaModal: 'privacidad' }, '');
-}
-
-/**
- * Cierra la pantalla de aviso de privacidad.
- */
-function cerrarPantallaPrivacidad() {
-    var pantalla = document.getElementById('pantallaPrivacidad');
-    if (!pantalla) return;
-    pantalla.classList.remove('abierta');
-    // Esperar a que termine la transición (280ms) antes de volver a ocultar
-    setTimeout(function() {
-        if (!pantalla.classList.contains('abierta')) {
-            pantalla.style.display = 'none';
-        }
-    }, 300);
-}
-
-/**
- * Ajusta el top del btn-abrir-drawer para que no quede debajo de la barra de cookies
- * cuando esta está visible. En móvil la barra mide ~38px, en desktop ~32px.
- */
-function _ajustarOffsetDrawer() {
-    var barra   = document.getElementById('barraCookies');
-    var btnMenu = document.querySelector('.btn-abrir-drawer');
-    if (!barra || !btnMenu) return;
-    if (barra.classList.contains('oculta')) {
-        btnMenu.style.top = '';   // valor CSS por defecto
-    } else {
-        var altoBarra = barra.offsetHeight || 38;
-        btnMenu.style.top = (altoBarra + 8) + 'px';
-    }
-}
-
-// Conectar cierre con el botón Atrás del navegador/móvil
-(function _patchPopstatePrivacidad() {
-    var _popOriginal = window.onpopstate;
-    window.addEventListener('popstate', function(e) {
-        // Si la pantalla de privacidad está abierta, cerrarla primero
-        var pantalla = document.getElementById('pantallaPrivacidad');
-        if (pantalla && pantalla.classList.contains('abierta')) {
-            pantalla.classList.remove('abierta');
-            return; // no propagar a otros handlers
-        }
-        if (_popOriginal) _popOriginal.call(window, e);
-    });
-})();
-
-// Siempre arrancar en el top de la página al cargar o recargar
-_ready(function() {
-    // Limpiar cualquier hash residual de la URL
-    if (window.location.hash) {
-        window.history.replaceState(null, '', window.location.pathname + window.location.search);
-    }
-    // Forzar scroll al top (por si el navegador restauró la posición anterior)
-    window.scrollTo(0, 0);
-    // Segunda llamada por si algo del render tardío lo mueve
-    setTimeout(function() {
-        if (!window._cargaInicialCompletada) window.scrollTo(0, 0);
-    }, 200);
-    setTimeout(function() {
-        if (!window._cargaInicialCompletada) window.scrollTo(0, 0);
-    }, 600);
-});
-
-// Arrancar cuando el DOM esté listo
-_ready(_initBarraCookies);
