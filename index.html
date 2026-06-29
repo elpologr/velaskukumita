@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Velas Kukumita</title>
+    <title>Yesos Fer Kukúmita</title>
 
     <!-- Open Graph / Facebook / WhatsApp — se actualizan dinámicamente por app.js -->
     <meta property="og:type"        content="website" id="og-type">
-    <meta property="og:site_name"   content="Velas Kukumita" id="og-site-name">
-    <meta property="og:url"         content="https://velaskukumita.com" id="og-url">
-    <meta property="og:title"       content="Velas Kukumita — Arreglos y Productos Artesanales" id="og-title">
-    <meta property="og:description" content="Descubre nuestros hermosos arreglos y productos artesanales de Velas Kukumita." id="og-description">
-    <meta property="og:image"       content="https://velaskukumita.com/imagenes/logo-velas-kukumita.jpg" id="og-image">
+    <meta property="og:site_name"   content="Yesos Fer Kukúmita" id="og-site-name">
+    <meta property="og:url"         content="" id="og-url">
+    <meta property="og:title"       content="Yesos Fer Kukúmita — Arreglos y Productos Artesanales" id="og-title">
+    <meta property="og:description" content="Descubre nuestros hermosos arreglos y productos artesanales de Yesos Fer Kukúmita." id="og-description">
+    <meta property="og:image"       content="" id="og-image">
     <meta property="og:image:width" content="1200" id="og-image-width">
     <meta property="og:image:height"content="630"  id="og-image-height">
     <!-- Twitter Card -->
     <meta name="twitter:card"        content="summary_large_image" id="tw-card">
-    <meta name="twitter:title"       content="Velas Kukumita" id="tw-title">
+    <meta name="twitter:title"       content="Yesos Fer Kukúmita" id="tw-title">
     <meta name="twitter:description" content="Descubre nuestros hermosos arreglos y productos artesanales." id="tw-description">
-    <meta name="twitter:image"       content="https://velaskukumita.com/imagenes/logo-velas-kukumita.jpg" id="tw-image">
+    <meta name="twitter:image"       content="" id="tw-image">
 
     <!-- Favicon -->
     <link rel="icon" type="image/webp" href="imagenes/velalogo.webp">
@@ -61,7 +61,7 @@
 
     /* ── Base del botón ── */
     .btn-modo-velas {
-        padding: 27px 16px;
+        padding: 9px 16px;
         border-radius: 999px;
         border: none;
         font-size: 0.84rem;
@@ -71,11 +71,6 @@
         transition: background 0.18s, color 0.18s, transform 0.12s, box-shadow 0.18s;
         white-space: nowrap;
         box-shadow: 0 2px 6px rgba(0,0,0,0.10);
-        display: inline-flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        line-height: 1.3;
     }
     .btn-modo-velas:active {
         transform: scale(0.96);
@@ -85,9 +80,9 @@
     .btn-modo-mostrar-todo {
         background: #1a1a1a;
         color: #fff;
-        min-width: 320px;
+        min-width: 160px;
         font-size: 0.9rem;
-        padding: 20px 64px;
+        padding: 10px 32px;
     }
     .btn-modo-mostrar-todo:hover {
         background: #333;
@@ -162,101 +157,67 @@
     .modo-oscuro .btn-modo-arreglos.activo       { background: #6aaee0; color: #fff; }
     .modo-oscuro .btn-modo-decoraciones          { background: #7a2a3a; color: #ffc8d8; }
     .modo-oscuro .btn-modo-decoraciones.activo   { background: #e8607a; color: #fff; }
+
+    /* ── Figuras: terracota ── */
+    .btn-modo-figuras { background: #d4816a; color: #fff; }
+    .btn-modo-figuras:hover { background: #bf6a52; }
+    .btn-modo-figuras.activo { background: #a04f38; color: #fff; box-shadow: 0 3px 10px rgba(160,79,56,0.35); }
+
+    /* ── Bases: arena/beige ── */
+    .btn-modo-bases { background: #c9a96e; color: #fff; }
+    .btn-modo-bases:hover { background: #b5925a; }
+    .btn-modo-bases.activo { background: #8a6a3a; color: #fff; box-shadow: 0 3px 10px rgba(138,106,58,0.35); }
+
+    /* ── Macetas: verde musgo ── */
+    .btn-modo-macetas { background: #7aad72; color: #fff; }
+    .btn-modo-macetas:hover { background: #62975a; }
+    .btn-modo-macetas.activo { background: #3d7035; color: #fff; box-shadow: 0 3px 10px rgba(61,112,53,0.35); }
+
+    /* ── Tazones: azul pizarra ── */
+    .btn-modo-tazones { background: #6a8fbf; color: #fff; }
+    .btn-modo-tazones:hover { background: #5278a8; }
+    .btn-modo-tazones.activo { background: #2e5680; color: #fff; box-shadow: 0 3px 10px rgba(46,86,128,0.35); }
+
+    /* ── Porta Velas: durazno cálido ── */
+    .btn-modo-portavelas { background: #e8a87c; color: #fff; }
+    .btn-modo-portavelas:hover { background: #d4905f; }
+    .btn-modo-portavelas.activo { background: #b06535; color: #fff; box-shadow: 0 3px 10px rgba(176,101,53,0.35); }
+
+    /* ── Porta Inciensos: lavanda ── */
+    .btn-modo-portainciensos { background: #a98bc8; color: #fff; }
+    .btn-modo-portainciensos:hover { background: #9272b5; }
+    .btn-modo-portainciensos.activo { background: #6b4a9a; color: #fff; box-shadow: 0 3px 10px rgba(107,74,154,0.35); }
+
+    /* ── Más: gris oscuro ── */
+    .btn-modo-mas { background: #6b6b6b; color: #fff; }
+    .btn-modo-mas:hover { background: #555; }
+    .btn-modo-mas.activo { background: #333; color: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.25); }
+
+    /* ── Aditamentos: rosa pastel (igual que decoraciones) ── */
+    .btn-modo-aditamentos { background: #ffc8d8; color: #8b2040; }
+    .btn-modo-aditamentos:hover { background: #ffaac0; }
+    .btn-modo-aditamentos.activo { background: #e8607a; color: #fff; box-shadow: 0 3px 10px rgba(232,96,122,0.35); }
+
+    /* ── Submenú desplegable del botón Más ── */
+    .selector-modo-mas-submenu {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+        padding: 8px 12px;
+        background: rgba(0,0,0,0.04);
+        border-radius: 12px;
+        margin-top: 6px;
+        animation: fadeInSubmenu 0.18s ease;
+    }
+    @keyframes fadeInSubmenu {
+        from { opacity: 0; transform: translateY(-4px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .modo-oscuro .selector-modo-mas-submenu { background: rgba(255,255,255,0.06); }
     </style>
 </head>
 <body>
-
-    <!-- ══════════════════════════════════════════════════════
-         BARRA DE COOKIES (tope de pantalla, siempre visible)
-         ══════════════════════════════════════════════════════ -->
-    <div id="barraCookies">
-        <span id="barraCookiesTexto">🍪 Usamos cookies y almacenamiento local para mejorar tu experiencia.</span>
-        <div id="barraCookiesBotones">
-            <button id="btnVerAvisoBar" onclick="abrirPantallaPrivacidad()">Aviso de privacidad</button>
-            <button id="btnAceptarCookies" onclick="aceptarCookies()">Aceptar</button>
-        </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════════════════
-         PANTALLA COMPLETA — AVISO DE PRIVACIDAD Y COOKIES
-         ══════════════════════════════════════════════════════ -->
-    <div id="pantallaPrivacidad" style="display:none;">
-        <div class="privacidad-header">
-            <button class="btn-volver-privacidad" onclick="cerrarPantallaPrivacidad()">‹ Regresar</button>
-            <span class="privacidad-titulo">Aviso de Privacidad y Cookies</span>
-            <div style="width:90px;"></div>
-        </div>
-        <div class="privacidad-body">
-
-            <p class="privacidad-fecha">Última actualización: junio 2025</p>
-
-            <h2 class="privacidad-seccion-titulo">1. Responsable del tratamiento de datos</h2>
-            <p class="privacidad-parrafo">
-                <strong>Velas Kukumita</strong> (en adelante "nosotros" o "el sitio"), con presencia en línea a través de <em>velaskukumita.com</em>, es el responsable del tratamiento de los datos personales que se recaben a través de este sitio web, de conformidad con la <strong>Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP)</strong> y su Reglamento.
-            </p>
-            <p class="privacidad-parrafo">Para cualquier consulta o ejercicio de derechos, puedes contactarnos en: <strong>velaskukumita@gmail.com</strong></p>
-
-            <h2 class="privacidad-seccion-titulo">2. Datos personales que recopilamos</h2>
-            <p class="privacidad-parrafo">Únicamente recopilamos datos cuando el usuario elige iniciar sesión de forma voluntaria. Los datos que se obtienen son:</p>
-            <ul class="privacidad-lista">
-                <li><strong>Nombre o nombre para mostrar</strong> — proporcionado por tu cuenta de Google.</li>
-                <li><strong>Correo electrónico</strong> — proporcionado por tu cuenta de Google.</li>
-                <li><strong>Foto de perfil</strong> — la imagen pública asociada a tu cuenta de Google, o la imagen que elijas subir manualmente.</li>
-                <li><strong>Identificador de sesión y proveedor de autenticación</strong> — almacenados de forma temporal en tu dispositivo.</li>
-            </ul>
-            <p class="privacidad-parrafo">Si no inicias sesión, <strong>no recopilamos ningún dato personal identificable</strong>. Solo guardamos en tu dispositivo tu preferencia de modo oscuro y la última sección visitada.</p>
-
-            <h2 class="privacidad-seccion-titulo">3. Finalidad del tratamiento</h2>
-            <ul class="privacidad-lista">
-                <li>Identificarte dentro de la plataforma y mostrar tu nombre y foto de perfil.</li>
-                <li>Permitirte personalizar tu experiencia (nombre de usuario, foto de perfil propia).</li>
-                <li>Guardar preferencias de visualización (modo oscuro, página de inicio).</li>
-                <li>Almacenar temporalmente imágenes de perfil en Firebase Storage para mejorar la experiencia.</li>
-            </ul>
-            <p class="privacidad-parrafo">No utilizamos tus datos con fines publicitarios, ni los vendemos o cedemos a terceros con fines comerciales.</p>
-
-            <h2 class="privacidad-seccion-titulo">4. Terceros involucrados en el tratamiento</h2>
-            <p class="privacidad-parrafo">Para operar este sitio utilizamos servicios de terceros que pueden procesar datos técnicos o personales:</p>
-            <ul class="privacidad-lista">
-                <li><strong>Google Firebase</strong> (Authentication y Storage) — autenticación de usuarios y almacenamiento de imágenes de perfil. Sujeto a la <a class="privacidad-enlace" href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Política de Privacidad de Google Firebase</a>.</li>
-                <li><strong>Google Fonts</strong> — carga de tipografías desde servidores de Google, lo que puede transmitir tu dirección IP a Google al cargar la página.</li>
-                <li><strong>Google Sheets</strong> — el catálogo de productos se obtiene de una hoja de cálculo pública; no implica recopilación de datos del usuario.</li>
-            </ul>
-            <p class="privacidad-parrafo">Al utilizar este sitio, reconoces que los servicios de Google operan bajo sus propias políticas de privacidad, sobre las cuales Velas Kukumita no tiene control directo.</p>
-
-            <h2 class="privacidad-seccion-titulo">5. Uso de cookies y almacenamiento local</h2>
-            <p class="privacidad-parrafo">Este sitio <strong>no utiliza cookies propias</strong> de rastreo o publicidad. Sin embargo, utiliza <strong>almacenamiento local del navegador (localStorage)</strong> para guardar:</p>
-            <ul class="privacidad-lista">
-                <li>Preferencia de modo oscuro o claro.</li>
-                <li>Sección de inicio preferida (productos o biografía).</li>
-                <li>Datos de sesión del usuario autenticado (nombre, foto, correo) de manera local como respaldo.</li>
-            </ul>
-            <p class="privacidad-parrafo">Estos datos <strong>no salen de tu dispositivo</strong> salvo los que Firebase gestiona para la autenticación. Puedes eliminarlos en cualquier momento limpiando el almacenamiento del navegador en la configuración de tu dispositivo.</p>
-
-            <h2 class="privacidad-seccion-titulo">6. Si ignoras o no aceptas este aviso</h2>
-            <p class="privacidad-parrafo">
-                El uso continuado de este sitio web, independientemente de si aceptas o ignoras el presente aviso, implica la interacción con los servicios de infraestructura necesarios para su funcionamiento, en particular <strong>Google Firebase</strong>. En tal caso, el tratamiento de datos técnicos que estos servicios puedan recopilar (como dirección IP o datos de sesión) queda sujeto exclusivamente a las <strong>Políticas de Privacidad y Términos de Servicio de Google</strong>, disponibles en <a class="privacidad-enlace" href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a>.
-            </p>
-            <p class="privacidad-parrafo">
-                Velas Kukumita <strong>no asume responsabilidad</strong> por el tratamiento de datos que Google o Firebase realicen en el marco de sus propios servicios, de conformidad con la legislación aplicable en materia de protección de datos, que establece que el responsable no responde por los actos de terceros que actúen con base en sus propios términos de servicio.
-            </p>
-
-            <h2 class="privacidad-seccion-titulo">7. Derechos ARCO</h2>
-            <p class="privacidad-parrafo">Tienes derecho a <strong>Acceder, Rectificar, Cancelar u Oponerte</strong> al tratamiento de tus datos personales. Para ejercerlos, envíanos un correo a <strong>velaskukumita@gmail.com</strong> indicando tu nombre, el dato que deseas corregir o eliminar, y una copia de identificación oficial.</p>
-            <p class="privacidad-parrafo">Daremos respuesta en un plazo máximo de <strong>20 días hábiles</strong>, conforme a lo establecido por la LFPDPPP.</p>
-
-            <h2 class="privacidad-seccion-titulo">8. Cambios a este aviso</h2>
-            <p class="privacidad-parrafo">Nos reservamos el derecho de actualizar este aviso en cualquier momento. Cualquier modificación será publicada en esta misma página con una nueva fecha de actualización.</p>
-
-            <div class="privacidad-aceptar-bloque">
-                <button class="privacidad-btn-aceptar" onclick="aceptarCookies(); cerrarPantallaPrivacidad();">
-                    ✅ Entendido y acepto
-                </button>
-                <p class="privacidad-nota-aceptar">Al presionar este botón confirmas que leíste y aceptas este aviso de privacidad.</p>
-            </div>
-
-        </div>
-    </div>
 
     <!-- ══ BOTÓN ABRIR DRAWER ══ -->
     <button class="btn-abrir-drawer" onclick="abrirDrawer()" aria-label="Abrir menú">☰</button>
@@ -327,7 +288,7 @@
 
         <!-- Cabecera -->
         <div class="drawer-header">
-            <span class="drawer-header-titulo">🕯️ Velas Kukúmita</span>
+            <span class="drawer-header-titulo">🕯️ Yesos Fer Kukúmita</span>
             <button class="btn-cerrar-drawer" onclick="cerrarDrawer()">✕</button>
         </div>
 
@@ -412,15 +373,12 @@
                         🕯️ Biografía
                     </button>
                 </div>
-                <a href="https://wa.me/524431469161?text=Hola,%20me%20interesa%20una%20vela"
+                <a href="https://wa.me/524431322032?text=Hola,%20me%20interesa%20una%20vela"
                    target="_blank" style="text-decoration:none; margin-top:6px; display:block;">
                     <button class="drawer-sub-btn" style="width:100%; background:#e8fef0; border-color:#25D366; color:#128c35;">
                         💬 WhatsApp del negocio
                     </button>
                 </a>
-                <button class="drawer-sub-btn btn-privacidad-drawer" onclick="cerrarDrawer(); abrirPantallaPrivacidad();" style="width:100%; margin-top:6px;">
-                    🔒 Aviso de privacidad y cookies
-                </button>
             </div>
         </div>
 
@@ -433,23 +391,32 @@
 
     <!-- ===== BANDA DE REDES SOCIALES ===== -->
     <div class="banda-redes">
-        <a class="red-social wa" href="https://wa.me/524431469161" target="_blank" aria-label="WhatsApp">
+        <a class="red-social wa" href="https://wa.me/524431322032" target="_blank" aria-label="WhatsApp">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.557 4.12 1.532 5.848L.054 23.447a.5.5 0 0 0 .598.598l5.6-1.478A11.955 11.955 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.955 9.955 0 0 1-5.073-1.38l-.363-.217-3.767.993.993-3.767-.217-.363A9.955 9.955 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
             <span>WhatsApp</span>
         </a>
-
-        <a class="red-social ig" href="https://www.instagram.com/velaskukumita" target="_blank" aria-label="Instagram">
+        <a class="red-social yt" href="https://www.youtube.com/@velaskukumita" target="_blank" aria-label="YouTube">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+            <span>YouTube</span>
+        </a>
+        <a class="red-social ig" href="https://www.instagram.com/yesoskukumita/" target="_blank" aria-label="Instagram">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
             <span>Instagram</span>
         </a>
-        <a class="red-social fb" href="https://www.facebook.com/velaskukumita" target="_blank" aria-label="Facebook">
+        <a class="red-social fb" href="https://www.facebook.com/yesoskukumita" target="_blank" aria-label="Facebook">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
             <span>Facebook</span>
         </a>
 
 
-
-
+        <a class="red-social ml" href="https://www.mercadolibre.com.mx/tienda/velas-kukumita" target="_blank" aria-label="Mercado Libre">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="#333"/></svg>
+            <span style="color:#333;">Mercado Libre</span>
+        </a>
+        <button class="red-social uber" onclick="abrirModalUber()" aria-label="Uber Envíos">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c.96 0 1.86.25 2.65.68L6.68 14.65A4.97 4.97 0 0 1 7 12c0-2.76 2.24-5 5-5zm0 14c-.96 0-1.86-.25-2.65-.68l7.97-7.97c.43.79.68 1.69.68 2.65 0 2.76-2.24 5-5 5z"/></svg>
+            <span>Uber Envíos</span>
+        </button>
         <button class="red-social compartir" onclick="abrirModalQR()" aria-label="Compartir QR">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
             <span>Compartir</span>
@@ -461,11 +428,10 @@
         <div style="position:relative;">
             <div id="imgPerfilBtn"
                  onclick="event.stopPropagation(); toggleSubmenuPerfil('imagen')"
-                 style="width:400px; height:400px; max-width:90vw; max-height:90vw; border-radius:16px; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,0.12); cursor:pointer; transition:transform 0.2s, box-shadow 0.2s; position:relative;"
-                 onmouseover="this.style.transform='scale(1.015)'; this.style.boxShadow='0 8px 32px rgba(0,0,0,0.18)';"
-                 onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 24px rgba(0,0,0,0.12)';">
-                <img src="imagenes/logo-velas-kukumita.webp" alt="Velas Kukumita" style="width:100%; height:100%; object-fit:cover; display:block;">
-
+                 style="width:220px; height:220px; max-width:70vw; max-height:70vw; border-radius:50%; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,0.15); cursor:pointer; transition:transform 0.2s, box-shadow 0.2s; position:relative; border:3px solid #e8ddd5;"
+                 onmouseover="this.style.transform='scale(1.015)'; this.style.boxShadow='0 8px 32px rgba(0,0,0,0.22)';"
+                 onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 24px rgba(0,0,0,0.15)';">
+                <img src="imagenes/perfil-yesoskukumita.webp" alt="Yesos Fer Kukúmita" style="width:100%; height:100%; object-fit:cover; display:block;">
             </div>
             <!-- Submenú de imagen -->
             <div id="submenuImagen" style="display:none; position:absolute; top:calc(100% + 12px); left:50%; transform:translateX(-50%); background:#fff; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.18); border:1.5px solid #e8ddd5; min-width:240px; z-index:500; overflow:hidden; animation:submenuFadeIn 0.2s ease;">
@@ -489,14 +455,14 @@
                 onclick="event.stopPropagation(); toggleSubmenuPerfil('titulo')"
                 style="font-size:4rem; font-weight:900; color:#111; letter-spacing:3px; margin:0; font-family:'Playfair Display',Georgia,serif; font-style:italic; line-height:1.1; cursor:pointer; transition:color 0.2s; user-select:none; display:block;"
                 onmouseover="this.style.color='#8c7565'"
-                onmouseout="this.style.color='#111'">Velas Kukúmita</h1>
+                onmouseout="this.style.color='#111'">Yesos Fer Kukúmita</h1>
             <!-- Submenú del título — aparece debajo, centrado -->
             <div id="submenuTitulo" style="display:none; position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%); background:#fff; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.18); border:1.5px solid #e8ddd5; min-width:280px; z-index:600; overflow:hidden; animation:submenuFadeIn 0.2s ease;">
                 <div style="padding:14px 18px 10px; border-bottom:1px solid #f0eae4;">
                     <p style="margin:0; font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#aaa;">Nombre del negocio</p>
                 </div>
                 <div style="padding:18px 18px 14px;">
-                    <p style="font-family:'Playfair Display',Georgia,serif; font-style:italic; font-size:1.5rem; font-weight:900; color:#111; margin:0 0 16px; text-align:center; letter-spacing:2px;">Velas Kukúmita</p>
+                    <p style="font-family:'Playfair Display',Georgia,serif; font-style:italic; font-size:1.5rem; font-weight:900; color:#111; margin:0 0 16px; text-align:center; letter-spacing:2px;">Yesos Fer Kukúmita</p>
                     <p style="font-size:0.82rem; color:#8c7565; margin:0 0 16px; text-align:center; line-height:1.6;">Fábrica artesanal de velas, fundada por Claudia Guzmán en el año 2000 en Morelia, Michoacán.</p>
                     <button onclick="irAZonaInteractiva(); cerrarSubmenus();"
                         style="width:100%; background:linear-gradient(135deg,#f5a623,#e8921a); color:white; border:none; border-radius:999px; padding:12px 20px; font-size:0.9rem; font-weight:800; cursor:pointer; font-family:inherit; transition:opacity 0.2s;"
@@ -507,44 +473,41 @@
             </div>
         </div>
 
-        <!-- Botón píldora Yesos Kukumita — justo debajo del título, encima de los botones principales -->
+        <!-- Botón píldora Yesos Fer Kukúmita — justo debajo del título, encima de los botones principales -->
         <div style="margin-bottom:18px; position:relative; display:block; overflow:visible;">
             <button id="btnYesosKukumita"
                     onclick="toggleSubmenuYesos()"
-                    style="display:inline-flex; align-items:center; gap:8px; background:#000; color:#fff; border:2px solid #000; border-radius:999px; padding:18px 28px; font-size:0.88rem; font-weight:700; font-family:inherit; cursor:pointer; transition:all 0.22s; box-shadow:0 2px 8px rgba(0,0,0,0.22);"
-                    onmouseover="this.style.background='#222'; this.style.borderColor='#222';"
-                    onmouseout="this.style.background='#000'; this.style.borderColor='#000';">
-                🪨 También vendemos Yeso ▾
+                    style="display:inline-flex; align-items:center; gap:8px; background:#fff; color:#5c4d43; border:2px solid #c9a98a; border-radius:999px; padding:9px 22px; font-size:0.84rem; font-weight:700; font-family:inherit; cursor:pointer; transition:all 0.22s; box-shadow:0 2px 8px rgba(140,117,101,0.12);"
+                    onmouseover="this.style.background='#fdf6f0'; this.style.borderColor='#8c7565';"
+                    onmouseout="this.style.background='#fff'; this.style.borderColor='#c9a98a';">
+                🪨 También vendemos Velas — presiona aquí para visitar la página ▾
             </button>
             <!-- Submenú desplegable con logo + texto + botón píldora -->
             <div id="submenuYesosKukumita"
                  style="display:none; max-width:420px; width:90vw; margin:10px auto 0; position:absolute; left:50%; transform:translateX(-50%); background:#fff; border-radius:18px; box-shadow:0 10px 32px rgba(0,0,0,0.14); border:1.5px solid #e8ddd5; overflow:hidden; animation:submenuFadeIn 0.22s ease; text-align:center; z-index:600;">
-                <!-- Logo + imagen perfil clicable -->
+                <!-- Logo -->
                 <div style="background:linear-gradient(135deg,#f5f0eb,#ede4db); padding:22px 20px 14px;">
-                    <!-- Imagen perfil-yesoskukumita — clicable, redirige a la página de yesos -->
-                    <a href="https://elpologr.github.io/yesoskukumita/" target="_blank" rel="nofollow"
-                       title="Visitar Yesos Kukumita"
-                       style="display:block; margin:0 auto 14px; width:150px; cursor:pointer;">
-                        <img src="imagenes/perfil-yesoskukumita.webp" alt="Yesos Kukumita — visitar página"
-                             style="width:150px; height:150px; border-radius:16px; object-fit:cover; box-shadow:0 6px 20px rgba(0,0,0,0.16); display:block; transition:transform 0.22s, box-shadow 0.22s;"
-                             onmouseover="this.style.transform='scale(1.04)'; this.style.boxShadow='0 10px 28px rgba(0,0,0,0.22)';"
-                             onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.16)';"
-                             onerror="this.style.display='none';">
-                    </a>
+                    <img src="imagenes/logo-velas-kukumita.webp" alt="Velas Kukúmita"
+                         style="width:110px; height:110px; border-radius:50%; object-fit:cover; box-shadow:0 4px 16px rgba(0,0,0,0.12); display:block; margin:0 auto 14px;"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div style="display:none; width:110px; height:110px; border-radius:50%; background:#e8ddd5; align-items:center; justify-content:center; margin:0 auto 14px; font-size:2.8rem;">🪨</div>
+                    <p style="font-size:1.05rem; font-weight:800; color:#362a22; line-height:1.6; margin:0 0 6px;">
+                        También vendemos Velas
+                    </p>
+                    <p style="font-size:0.88rem; color:#5c4d43; font-weight:600; margin:0;">
+                        Presiona el siguiente botón para visitar la página de Yesos.
+                    </p>
                 </div>
                 <div style="padding:16px 20px 18px;">
-                    <a href="https://elpologr.github.io/yesoskukumita/" target="_blank" rel="nofollow"
+                    <a href="https://velaskukumita.com" target="_blank" rel="nofollow"
                        style="display:inline-flex; align-items:center; gap:9px; background:linear-gradient(135deg,#8c7565,#5c4d43); color:white; text-decoration:none; border-radius:999px; padding:12px 28px; font-size:0.95rem; font-weight:800; font-family:inherit; box-shadow:0 4px 14px rgba(92,77,67,0.3); transition:all 0.22s;"
                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 7px 22px rgba(92,77,67,0.42)';"
                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 14px rgba(92,77,67,0.3)';">
-                        🪨 Yesos Kukúmita
+                        🕯️ Velas Kukúmita
                     </a>
                 </div>
             </div>
         </div>
-
-        <!-- Separador zona Yesos -->
-        <div style="width:100%; height:3px; background:linear-gradient(90deg,transparent,#d0d8e8,transparent); margin:14px 0 18px;"></div>
 
         <!-- Botones en su propia línea, debajo del botón de Yesos -->
         <div style="display:flex; flex-wrap:wrap; gap:14px; justify-content:center; padding: 0 12px; box-sizing:border-box; width:100%;">
@@ -562,8 +525,18 @@
             </a>
         </div>
         <p style="font-size:0.78rem; color:#aaa; margin:10px 0 0; letter-spacing:0.3px;">↓ Ver próximas fechas, ubicaciones y horarios</p>
-        <!-- Separador zona botones tienda/bazar -->
-        <div style="width:100%; height:3px; background:linear-gradient(90deg,transparent,#d0d8e8,transparent); margin:18px 0 0;"></div>
+    </div>
+
+    <!-- ===== MODAL UBER ENVÍOS ===== -->
+    <div class="modal-info-social-overlay" id="modalUber" onclick="if(event.target===this)cerrarModalUber()">
+        <div class="modal-info-social-caja">
+            <button class="modal-info-social-cerrar" onclick="cerrarModalUber()">✕</button>
+            <h3 class="modal-info-social-titulo">🚗 Información de Uber Envíos</h3>
+            <p class="modal-info-social-texto">
+                Para hacer pedidos por Uber el cliente debe ser el que haga el pedido desde la aplicación de Uber, solicitando a un repartidor recoger la entrega <strong>EL DÍA ACORDADO</strong>, y pagando por el servicio una vez que llegue el pedido. La ubicación del local es <strong>Morelia Michoacán: Col. Prados Verdes, Calle Las Primaveras, Número #519</strong>, entre la calle Paseo de los Sauces y la calle Paseo de las Jacarandas.<br><br>
+                No olvides acordar el día de la entrega, ya que si haces un pedido primero lo tenemos que fabricar como pan caliente, y a veces podemos tardar varios días en terminar de fabricar tu pedido.
+            </p>
+        </div>
     </div>
 
     <!-- ===== MODAL BÚSCANOS EN TIENDA ===== -->
@@ -613,7 +586,7 @@
                 </p>
             </div>
             <!-- Botón WhatsApp cita -->
-            <a href="https://wa.me/524431469161?text=Hola,%20me%20gustaría%20agendar%20una%20cita%20para%20visitar%20la%20tienda"
+            <a href="https://wa.me/524431322032?text=Hola,%20me%20gustaría%20agendar%20una%20cita%20para%20visitar%20la%20tienda"
                target="_blank"
                style="display:flex; align-items:center; justify-content:center; gap:10px; background:#25D366; color:white; text-decoration:none; border-radius:12px; padding:14px 20px; font-size:1rem; font-weight:700; font-family:inherit; transition:background 0.2s;"
                onmouseover="this.style.background='#1ebe5d'" onmouseout="this.style.background='#25D366'">
@@ -638,7 +611,7 @@
     </div>
 
     <!-- ===== BARRA DE PÍLDORAS: BIOGRAFÍA / OFERTAS / MÁS VENDIDOS ===== -->
-    <div class="pill-nav-barra" id="pillNavBarra" style="background:#ddeaf7; border-radius:0;">
+    <div class="pill-nav-barra" id="pillNavBarra">
         <button class="pill-btn" id="pillBiografia" onclick="activarPill('biografia')">
             <span style="font-size:2.25rem; line-height:1;">🕯️</span>
             <span class="pill-btn-label">Biografía</span>
@@ -762,7 +735,7 @@
             </p>
             <!-- Botón → WhatsApp / Cita -->
             <div style="text-align:center; margin-bottom:28px;">
-                <a href="https://wa.me/524431469161?text=Hola,%20me%20interesa%20una%20cita%20o%20cotización" target="_blank"
+                <a href="https://wa.me/524431322032?text=Hola,%20me%20interesa%20una%20cita%20o%20cotización" target="_blank"
                    style="display:inline-flex; align-items:center; gap:8px; background:#25D366; color:white; text-decoration:none; border-radius:999px; padding:11px 26px; font-size:0.92rem; font-weight:700; font-family:inherit; box-shadow:0 3px 10px rgba(37,211,102,0.3); transition:all 0.22s;">
                     💬 Pedir cita o cotización por WhatsApp
                 </a>
@@ -1122,88 +1095,69 @@
         <div class="selector-modo-velas-wrap">
             <!-- Fila superior: Mostrar Todo -->
             <div class="selector-modo-fila-top">
-                <button class="btn-modo-velas btn-modo-mostrar-todo activo" id="btnModoTodosProductos" onclick="cambiarModoVelas('mostrar_todo'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});">Mostrar Todo</button>
+                <button class="btn-modo-velas btn-modo-mostrar-todo activo" id="btnModoTodosProductos" onclick="cambiarModoVelas('mostrar_todo')">Mostrar Todo</button>
             </div>
-            <!-- Fila inferior: los 4 botones de categoría -->
+            <!-- Fila inferior: 3 botones principales de categoría -->
             <div class="selector-modo-velas" id="selectorModoVelas">
-                <button class="btn-modo-velas btn-modo-productos" id="btnModoTodos" onclick="cambiarModoVelas('todos'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});"><span style="display:block; font-size:0.72rem; font-weight:600; opacity:0.75;">Buscar solo</span>🛍️ Productos</button>
-                <button class="btn-modo-velas btn-modo-arreglos" id="btnModoArreglos" onclick="cambiarModoVelas('arreglos'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});"><span style="display:block; font-size:0.72rem; font-weight:600; opacity:0.75;">Buscar solo</span>🕯️ Arreglos</button>
-                <button class="btn-modo-velas btn-modo-decoraciones" id="btnModoDecoraciones" onclick="cambiarModoVelas('decoraciones'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});" style="line-height:1.25;"><span style="display:block; font-size:0.72rem; font-weight:600; opacity:0.75;">Buscar solo</span>✨ Decoraciones<br>y Aditamentos</button>
-                <button class="btn-modo-velas btn-modo-etiquetas" id="btnModoEtiquetas" onclick="cambiarModoVelas('etiquetas'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});"><span style="display:block; font-size:0.72rem; font-weight:600; opacity:0.75;">Buscar solo</span>🏷️ Etiquetas</button>
+                <button class="btn-modo-velas btn-modo-arreglos" id="btnModoArreglos" onclick="cambiarModoVelas('arreglos')">🕯️ Arreglos</button>
+                <button class="btn-modo-velas btn-modo-paquetes" id="btnModoPaquetes" onclick="cambiarModoVelas('paquetes')">📦 Paquetes</button>
+                <button class="btn-modo-velas btn-modo-etiquetas" id="btnModoEtiquetas" onclick="cambiarModoVelas('etiquetas')">🏷️ Etiquetas</button>
             </div>
         </div>
 
-        <!-- ===== BUSCA POR EVENTO, FORMA Y FESTIVIDAD ===== -->
-        <div style="padding: 0 0 8px 0; display:flex; flex-direction:column; align-items:center; gap:0;">
-
-            <!-- ── FILTRAR POR EVENTO ── -->
-            <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
-                <p id="btnToggleEventos" onclick="togglePanelEventos()" style="text-align:center; font-size:1.1rem; font-weight:800; color:#5c4d43; margin:8px 0 0; letter-spacing:0.3px; cursor:pointer; user-select:none; padding:10px 16px; border-radius:999px; border:2px solid #e0d5cc; background:#fff; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 5px rgba(0,0,0,0.07); transition:background 0.16s, border-color 0.16s;">🎉 Filtrar por Evento <span id="iconToggleEventos" style="font-size:0.85rem; font-weight:400;">▼</span></p>
-                <div id="panelEventoCarrusel" style="display:none; overflow:hidden; width:100%;">
-                    <div style="height:10px;"></div>
-                    <div style="position:relative;">
-                        <button id="btnEventoPrev" onclick="scrollEventos(-1)" style="display:none; position:absolute; left:-4px; top:50%; transform:translateY(-65%); z-index:4; width:30px; height:30px; border-radius:50%; background:#fff; border:1.5px solid #e0d5cc; box-shadow:0 2px 8px rgba(0,0,0,0.13); font-size:18px; cursor:pointer; align-items:center; justify-content:center; line-height:1; color:#5c4d43; padding:0;">‹</button>
-                        <button id="btnEventoNext" onclick="scrollEventos(1)" style="display:none; position:absolute; right:-4px; top:50%; transform:translateY(-65%); z-index:4; width:30px; height:30px; border-radius:50%; background:#fff; border:1.5px solid #e0d5cc; box-shadow:0 2px 8px rgba(0,0,0,0.13); font-size:18px; cursor:pointer; align-items:center; justify-content:center; line-height:1; color:#5c4d43; padding:0;">›</button>
-                        <div style="overflow:hidden; padding:0 2px;">
-                            <div id="eventoScrollGradient" style="position:absolute; right:0; top:0; bottom:0; width:60px; background:linear-gradient(to right, transparent, rgba(255,255,255,0.97)); pointer-events:none; z-index:2; transition:opacity 0.3s;"></div>
-                            <div id="eventoScrollGradientL" style="position:absolute; left:0; top:0; bottom:0; width:40px; background:linear-gradient(to left, transparent, rgba(255,255,255,0.97)); pointer-events:none; z-index:2; opacity:0; transition:opacity 0.3s;"></div>
-                            <div id="eventoCarrusel" style="display:flex; gap:9px; overflow-x:auto; padding:4px 12px 10px; scroll-snap-type:x mandatory; scrollbar-width:none; -ms-overflow-style:none;" onscroll="actualizarGradienteEvento(this)">
-                                <button class="btn-evento-carrusel" data-evento="todos" onclick="filtrarPorEventoCarrusel(this,'todos'); scrollToGrid();" style="background:#1a1a1a; color:#fff; border-color:#1a1a1a;">Ver Todo</button>
-                                <button class="btn-evento-carrusel" data-evento="primera-comunion" onclick="filtrarPorEventoCarrusel(this,'primera-comunion'); scrollToGrid();">🙏 Primera Comunión</button>
-                                <button class="btn-evento-carrusel" data-evento="bautizo" onclick="filtrarPorEventoCarrusel(this,'bautizo'); scrollToGrid();">🕊️ Bautizo</button>
-                                <button class="btn-evento-carrusel" data-evento="boda" onclick="filtrarPorEventoCarrusel(this,'boda'); scrollToGrid();">💍 Boda</button>
-                                <button class="btn-evento-carrusel" data-evento="quince-anos" onclick="filtrarPorEventoCarrusel(this,'quince-anos'); scrollToGrid();">👑 Quince Años</button>
-                                <button class="btn-evento-carrusel" data-evento="baby-shower" onclick="filtrarPorEventoCarrusel(this,'baby-shower'); scrollToGrid();">🍼 Baby Shower</button>
-                                <button class="btn-evento-carrusel" data-evento="graduacion" onclick="filtrarPorEventoCarrusel(this,'graduacion'); scrollToGrid();">🎓 Graduación</button>
-                                <button class="btn-evento-carrusel" data-evento="aniversario-luctuoso" onclick="filtrarPorEventoCarrusel(this,'aniversario-luctuoso'); scrollToGrid();">🕯️ Aniv. Luctuoso</button>
-                                <button class="btn-evento-carrusel" data-evento="fin-novenario" onclick="filtrarPorEventoCarrusel(this,'fin-novenario'); scrollToGrid();">🌿 Fin de Novenario</button>
-                                <button class="btn-evento-carrusel" data-evento="despedida-soltera" onclick="filtrarPorEventoCarrusel(this,'despedida-soltera'); scrollToGrid();">🥂 Despedida de Soltera</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <!-- ===== BUSCA POR EVENTO Y FORMA ===== -->
+        <div style="padding: 0 0 8px 0;">
+            <div style="display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap;">
+                <p id="btnToggleEventos" onclick="togglePanelEventos()" style="text-align:center; font-size:1.1rem; font-weight:800; color:#5c4d43; margin:0; letter-spacing:0.3px; cursor:pointer; user-select:none; padding:10px 0;">🎉 Busca por Evento <span id="iconToggleEventos" style="font-size:0.85rem; font-weight:400;">▼</span></p>
+                <p id="btnToggleFormas" onclick="togglePanelFormas()" style="text-align:center; font-size:1.1rem; font-weight:800; color:#5c4d43; margin:0; letter-spacing:0.3px; cursor:pointer; user-select:none; padding:10px 0;">🔷 Filtrar por Forma <span id="iconToggleFormas" style="font-size:0.85rem; font-weight:400;">▼</span></p>
             </div>
-
-            <!-- ── FILTRAR POR FORMA ── -->
-            <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
-                <p id="btnToggleFormas" onclick="togglePanelFormas()" style="text-align:center; font-size:1.1rem; font-weight:800; color:#5c4d43; margin:8px 0 0; letter-spacing:0.3px; cursor:pointer; user-select:none; padding:10px 16px; border-radius:999px; border:2px solid #e0d5cc; background:#fff; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 5px rgba(0,0,0,0.07); transition:background 0.16s, border-color 0.16s;">🔷 Filtrar por Forma <span id="iconToggleFormas" style="font-size:0.85rem; font-weight:400;">▼</span></p>
-                <div id="panelFormaCarrusel" style="display:none; overflow:hidden; width:100%;">
-                    <div style="height:10px;"></div>
-                    <div style="overflow:hidden; padding:0 2px;">
-                        <div id="formaCarrusel" style="display:flex; gap:9px; overflow-x:auto; padding:4px 12px 10px; scroll-snap-type:x mandatory; scrollbar-width:none; -ms-overflow-style:none;">
-                            <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="todos" onclick="filtrarPorFormaCarrusel(this,'todos'); scrollToGrid();" style="background:#1a1a1a; color:#fff; border-color:#1a1a1a;">Ver Todo</button>
-                            <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="figura" onclick="filtrarPorFormaCarrusel(this,'figura'); scrollToGrid();">🏺 Figura</button>
-                            <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="maceta" onclick="filtrarPorFormaCarrusel(this,'maceta'); scrollToGrid();">🪴 Maceta</button>
-                            <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="base" onclick="filtrarPorFormaCarrusel(this,'base'); scrollToGrid();">🔲 Base</button>
-                            <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="tazon" onclick="filtrarPorFormaCarrusel(this,'tazon'); scrollToGrid();">🥣 Tazón</button>
-                            <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="porta-velas" onclick="filtrarPorFormaCarrusel(this,'porta-velas'); scrollToGrid();">🕯️ Porta Velas</button>
-                            <button class="btn-evento-carrusel btn-forma-carrusel" data-forma="religioso" onclick="filtrarPorFormaCarrusel(this,'religioso'); scrollToGrid();">✝️ Religioso</button>
-                        </div>
-                    </div>
+            <div id="panelEventoCarrusel" style="display:none; overflow:hidden;">
+            <div style="height:10px;"></div>
+            <div style="position:relative;">
+                <!-- Botón izquierdo (solo desktop) -->
+                <button id="btnEventoPrev" onclick="scrollEventos(-1)" style="display:none; position:absolute; left:-4px; top:50%; transform:translateY(-65%); z-index:4; width:30px; height:30px; border-radius:50%; background:#fff; border:1.5px solid #e0d5cc; box-shadow:0 2px 8px rgba(0,0,0,0.13); font-size:18px; cursor:pointer; align-items:center; justify-content:center; line-height:1; color:#5c4d43; padding:0;">‹</button>
+                <!-- Botón derecho (solo desktop) -->
+                <button id="btnEventoNext" onclick="scrollEventos(1)" style="display:none; position:absolute; right:-4px; top:50%; transform:translateY(-65%); z-index:4; width:30px; height:30px; border-radius:50%; background:#fff; border:1.5px solid #e0d5cc; box-shadow:0 2px 8px rgba(0,0,0,0.13); font-size:18px; cursor:pointer; align-items:center; justify-content:center; line-height:1; color:#5c4d43; padding:0;">›</button>
+                <div style="overflow:hidden; padding:0 2px;">
+                <!-- Gradiente derecho -->
+                <div id="eventoScrollGradient" style="position:absolute; right:0; top:0; bottom:0; width:60px; background:linear-gradient(to right, transparent, rgba(255,255,255,0.97)); pointer-events:none; z-index:2; transition:opacity 0.3s;"></div>
+                <!-- Gradiente izquierdo -->
+                <div id="eventoScrollGradientL" style="position:absolute; left:0; top:0; bottom:0; width:40px; background:linear-gradient(to left, transparent, rgba(255,255,255,0.97)); pointer-events:none; z-index:2; opacity:0; transition:opacity 0.3s;"></div>
+                <div id="eventoCarrusel" style="display:flex; gap:9px; overflow-x:auto; padding:4px 12px 10px; scroll-snap-type:x mandatory; scrollbar-width:none; -ms-overflow-style:none;" onscroll="actualizarGradienteEvento(this)">
+                    <button class="btn-evento-carrusel" data-evento="todos" onclick="filtrarPorEventoCarrusel(this,'todos')" style="background:#1a1a1a; color:#fff; border-color:#1a1a1a;">Ver Todo</button>
+                    <button class="btn-evento-carrusel" data-evento="dia-de-muertos" onclick="filtrarPorEventoCarrusel(this,'dia-de-muertos')">💀 Día de Muertos</button>
+                    <button class="btn-evento-carrusel" data-evento="navidad" onclick="filtrarPorEventoCarrusel(this,'navidad')">🎄 Navidad</button>
+                    <button class="btn-evento-carrusel" data-evento="dia-de-las-madres" onclick="filtrarPorEventoCarrusel(this,'dia-de-las-madres')">🌹 Día de las Madres</button>
+                    <button class="btn-evento-carrusel" data-evento="dia-del-maestro" onclick="filtrarPorEventoCarrusel(this,'dia-del-maestro')">📚 Día del Maestro</button>
+                    <button class="btn-evento-carrusel" data-evento="dia-del-nino" onclick="filtrarPorEventoCarrusel(this,'dia-del-nino')">🧸 Día del Niño</button>
+                    <button class="btn-evento-carrusel" data-evento="dia-del-estudiante" onclick="filtrarPorEventoCarrusel(this,'dia-del-estudiante')">🎓 Día del Estudiante</button>
+                    <button class="btn-evento-carrusel" data-evento="boda" onclick="filtrarPorEventoCarrusel(this,'boda')">💍 Boda</button>
+                    <button class="btn-evento-carrusel" data-evento="baby-shower" onclick="filtrarPorEventoCarrusel(this,'baby-shower')">🍼 Baby Shower</button>
+                    <button class="btn-evento-carrusel" data-evento="bautizo" onclick="filtrarPorEventoCarrusel(this,'bautizo')">🕊️ Bautizo</button>
+                    <button class="btn-evento-carrusel" data-evento="primera-comunion" onclick="filtrarPorEventoCarrusel(this,'primera-comunion')">🙏 Primera Comunión</button>
+                    <button class="btn-evento-carrusel" data-evento="quince-anos" onclick="filtrarPorEventoCarrusel(this,'quince-anos')">👑 Quince Años</button>
+                    <button class="btn-evento-carrusel" data-evento="graduacion" onclick="filtrarPorEventoCarrusel(this,'graduacion')">🎓 Graduación</button>
+                    <button class="btn-evento-carrusel" data-evento="aniversario-luctuoso" onclick="filtrarPorEventoCarrusel(this,'aniversario-luctuoso')">🕯️ Aniv. Luctuoso</button>
+                    <button class="btn-evento-carrusel" data-evento="fin-novenario" onclick="filtrarPorEventoCarrusel(this,'fin-novenario')">🌿 Fin de Novenario</button>
+                    <button class="btn-evento-carrusel" data-evento="despedida-soltera" onclick="filtrarPorEventoCarrusel(this,'despedida-soltera')">🥂 Despedida Soltera</button>
                 </div>
-            </div>
+                </div><!-- /overflow:hidden -->
+            </div><!-- /position:relative -->
+            </div><!-- /panelEventoCarrusel -->
 
-            <!-- ── FILTRAR POR FESTIVIDAD ── -->
-            <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
-                <p id="btnToggleFestividades" onclick="togglePanelFestividades()" style="text-align:center; font-size:1.1rem; font-weight:800; color:#5c4d43; margin:8px 0 0; letter-spacing:0.3px; cursor:pointer; user-select:none; padding:10px 16px; border-radius:999px; border:2px solid #e0d5cc; background:#fff; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 5px rgba(0,0,0,0.07); transition:background 0.16s, border-color 0.16s;">🎊 Filtrar por Festividad <span id="iconToggleFestividades" style="font-size:0.85rem; font-weight:400;">▼</span></p>
-                <div id="panelFestividadCarrusel" style="display:none; overflow:hidden; width:100%;">
-                    <div style="height:10px;"></div>
-                    <div style="overflow:hidden; padding:0 2px;">
-                        <div id="festividadCarrusel" style="display:flex; gap:9px; overflow-x:auto; padding:4px 12px 10px; scroll-snap-type:x mandatory; scrollbar-width:none; -ms-overflow-style:none;">
-                            <button class="btn-evento-carrusel btn-festividad-carrusel" data-festividad="todos" onclick="filtrarPorFestividadCarrusel(this,'todos'); scrollToGrid();" style="background:#1a1a1a; color:#fff; border-color:#1a1a1a;">Ver Todo</button>
-                            <button class="btn-evento-carrusel btn-festividad-carrusel" data-festividad="navidad" onclick="filtrarPorFestividadCarrusel(this,'navidad'); scrollToGrid();">🎄 Navidad</button>
-                            <button class="btn-evento-carrusel btn-festividad-carrusel" data-festividad="dia-de-muertos" onclick="filtrarPorFestividadCarrusel(this,'dia-de-muertos'); scrollToGrid();">💀 Día de Muertos / Halloween</button>
-                            <button class="btn-evento-carrusel btn-festividad-carrusel" data-festividad="dia-de-las-madres" onclick="filtrarPorFestividadCarrusel(this,'dia-de-las-madres'); scrollToGrid();">🌹 Día de las Madres</button>
-                            <button class="btn-evento-carrusel btn-festividad-carrusel" data-festividad="dia-del-maestro" onclick="filtrarPorFestividadCarrusel(this,'dia-del-maestro'); scrollToGrid();">📚 Día del Maestro</button>
-                            <button class="btn-evento-carrusel btn-festividad-carrusel" data-festividad="dia-del-nino" onclick="filtrarPorFestividadCarrusel(this,'dia-del-nino'); scrollToGrid();">🧸 Día del Niño</button>
-                            <button class="btn-evento-carrusel btn-festividad-carrusel" data-festividad="dia-del-padre" onclick="filtrarPorFestividadCarrusel(this,'dia-del-padre'); scrollToGrid();">👔 Día del Padre</button>
-                            <button class="btn-evento-carrusel btn-festividad-carrusel" data-festividad="reyes" onclick="filtrarPorFestividadCarrusel(this,'reyes'); scrollToGrid();">👑 Día de Reyes</button>
-                            <button class="btn-evento-carrusel btn-festividad-carrusel" data-festividad="pascua" onclick="filtrarPorFestividadCarrusel(this,'pascua'); scrollToGrid();">🐣 Pascua</button>
-                        </div>
-                    </div>
-                </div>
+            <!-- ===== PANEL FILTRAR POR FORMA ===== -->
+            <div id="panelFormaCarrusel" style="display:none; overflow:hidden;">
+            <div style="height:10px;"></div>
+            <div style="display:flex; flex-wrap:wrap; gap:9px; justify-content:center; padding:4px 12px 10px;">
+                <button class="btn-evento-carrusel btn-forma-carrusel activo-evento" data-forma="todos" onclick="seleccionarFormaCarrusel(this,'todos')" style="background:#1a1a1a; color:#fff; border-color:#1a1a1a;">Ver Todo</button>
+                <button class="btn-evento-carrusel btn-forma-carrusel btn-modo-figuras" data-forma="figuras" onclick="seleccionarFormaCarrusel(this,'figuras')">🗿 Figuras</button>
+                <button class="btn-evento-carrusel btn-forma-carrusel btn-modo-bases" data-forma="bases" onclick="seleccionarFormaCarrusel(this,'bases')">🪨 Bases</button>
+                <button class="btn-evento-carrusel btn-forma-carrusel btn-modo-macetas" data-forma="macetas" onclick="seleccionarFormaCarrusel(this,'macetas')">🌱 Macetas</button>
+                <button class="btn-evento-carrusel btn-forma-carrusel btn-modo-tazones" data-forma="tazones" onclick="seleccionarFormaCarrusel(this,'tazones')">🥣 Tazones</button>
+                <button class="btn-evento-carrusel btn-forma-carrusel btn-modo-portavelas" data-forma="portavelas" onclick="seleccionarFormaCarrusel(this,'portavelas')">🕯️ Porta Velas</button>
+                <button class="btn-evento-carrusel btn-forma-carrusel btn-modo-portainciensos" data-forma="portainciensos" onclick="seleccionarFormaCarrusel(this,'portainciensos')">🪔 Porta Inciensos</button>
             </div>
-
+            </div><!-- /panelFormaCarrusel -->
         </div>
         <style>
         .btn-evento-carrusel {
@@ -1258,8 +1212,8 @@
                     <button class="btn-scroll-precios" onclick="scrollPrecios('lista-precios-arreglos', -200)" title="Ver precios anteriores" style="margin-left:0; margin-right:6px;">‹</button>
                     <div class="lista-precios-velas" id="lista-precios-arreglos">
                     <button class="btn-precio-velas activo" onclick="filtrarPrecioArreglos(this,'todos')">Ver Todo</button>
-                    <button class="btn-precio-velas" onclick="filtrarPrecioArreglos(this,'5')">$5</button>
-                    <button class="btn-precio-velas" onclick="filtrarPrecioArreglos(this,'10')">$10</button>
+                    <button class="btn-precio-velas" onclick="filtrarPrecioArreglos(this,'1')">$1</button>
+                    <button class="btn-precio-velas" onclick="filtrarPrecioArreglos(this,'2')">$2</button>
                     <button class="btn-precio-velas" onclick="filtrarPrecioArreglos(this,'15')">$15</button>
                     <button class="btn-precio-velas" onclick="filtrarPrecioArreglos(this,'20')">$20</button>
                     <button class="btn-precio-velas" onclick="filtrarPrecioArreglos(this,'25')">$25</button>
@@ -1317,6 +1271,18 @@
             </div>
         </div>
 
+        <!-- TODOS LOS PRODUCTOS -->
+        <div class="panel-busqueda-unificado" id="panelTodos">
+            <div class="barra-busqueda-unificada-wrap">
+                <div class="barra-busqueda-unificada" id="barraBuscadorTodos">
+                    <input type="text" id="inputBusquedaTodos" class="bbu-input" placeholder="Buscar Todos los Productos…" oninput="filtrarPorNombreUnificado('todos', this.value)">
+                    <button class="bbu-btn-lupa" onclick="filtrarPorNombreUnificado('todos', document.getElementById('inputBusquedaTodos').value)" title="Buscar">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- FILTRO DE PRECIO — TODOS LOS PRODUCTOS -->
         <div id="bloqueFiltroPrecioTodos" style="display:none; background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin: 8px 0 14px 0; padding: 16px 14px 14px;">
             <p style="text-align:center; font-weight:700; color:#5c4d43; font-size:0.92rem; margin-bottom:10px; letter-spacing:0.3px;">Filtrar por</p>
@@ -1329,8 +1295,8 @@
                     <button class="btn-scroll-precios" onclick="scrollPrecios('lista-precios-todos', -200)" title="Ver precios anteriores" style="margin-left:0; margin-right:6px;">‹</button>
                     <div class="lista-precios-velas" id="lista-precios-todos">
                     <button class="btn-precio-velas activo" onclick="filtrarPrecioTodos(this,'todos')">Ver Todo</button>
-                    <button class="btn-precio-velas" onclick="filtrarPrecioTodos(this,'5')">$5</button>
-                    <button class="btn-precio-velas" onclick="filtrarPrecioTodos(this,'10')">$10</button>
+                    <button class="btn-precio-velas" onclick="filtrarPrecioTodos(this,'1')">$1</button>
+                    <button class="btn-precio-velas" onclick="filtrarPrecioTodos(this,'2')">$2</button>
                     <button class="btn-precio-velas" onclick="filtrarPrecioTodos(this,'15')">$15</button>
                     <button class="btn-precio-velas" onclick="filtrarPrecioTodos(this,'20')">$20</button>
                     <button class="btn-precio-velas" onclick="filtrarPrecioTodos(this,'25')">$25</button>
@@ -1372,18 +1338,6 @@
                     <button class="btn-precio-velas" onclick="filtrarPrecioTodos(this,'800')">$800</button>
                 </div>
                     <button class="btn-scroll-precios" onclick="scrollPrecios('lista-precios-todos', 200)" title="Ver más precios">›</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- TODOS LOS PRODUCTOS -->
-        <div class="panel-busqueda-unificado" id="panelTodos">
-            <div class="barra-busqueda-unificada-wrap">
-                <div class="barra-busqueda-unificada" id="barraBuscadorTodos">
-                    <input type="text" id="inputBusquedaTodos" class="bbu-input" placeholder="Buscar Todos los Productos…" oninput="filtrarPorNombreUnificado('todos', this.value)">
-                    <button class="bbu-btn-lupa" onclick="filtrarPorNombreUnificado('todos', document.getElementById('inputBusquedaTodos').value)" title="Buscar">
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    </button>
                 </div>
             </div>
         </div>
@@ -1443,10 +1397,10 @@
     <div class="paginacion-wrapper" id="pagControlesArriba"></div>
 </div>
 
-<!-- Texto informativo: todos son VELAS -->
+<!-- Texto informativo: todos son de YESO -->
 <div style="text-align:center; padding:14px 16px 6px;">
     <p style="font-size:1.64rem; color:#8c7565; margin:0; line-height:1.5; font-weight:500;">
-        <strong style="color:#5c4d43;">Todos</strong> los productos de esta página son <strong style="color:#5c4d43;">VELAS</strong>, así es, <strong style="color:#5c4d43;">TODOS</strong>.
+        <strong style="color:#5c4d43;">Todos</strong> los productos de esta página son de <strong style="color:#5c4d43;">YESO</strong>, así es, <strong style="color:#5c4d43;">TODOS</strong>.
     </p>
 </div>
 
@@ -1618,7 +1572,7 @@
             <h2>🕯️ Velas Kukumita</h2>
             <p>Velas artesanales hechas a mano en Morelia, Michoacán. Cada pieza es única, elaborada con amor y dedicación para iluminar tus momentos especiales.</p>
             <br>
-            <a href="https://www.facebook.com/VelasKukumita" target="_blank" class="footer-fb">
+            <a href="https://www.facebook.com/yesoskukumita" target="_blank" class="footer-fb">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                 @VelasKukumita
             </a>
@@ -1635,7 +1589,7 @@
         <div class="footer-col">
             <h4>Contacto</h4>
             <ul>
-                <li><a href="https://wa.me/524431469161" target="_blank">WhatsApp</a></li>
+                <li><a href="https://wa.me/524431322032" target="_blank">WhatsApp</a></li>
                 <li><a href="mailto:velaskukumita@gmail.com">velaskukumita@gmail.com</a></li>
                 <li><a href="#">Morelia, Michoacán</a></li>
                 <li><a href="#">Pedidos por mayoreo</a></li>
@@ -1966,7 +1920,7 @@
     })();
     </script>
 
-    <!-- Función submenú Yesos Kukumita -->
+    <!-- Función submenú Yesos Fer Kukúmita -->
     <script>
         function toggleSubmenuYesos() {
             var sub = document.getElementById('submenuYesosKukumita');
