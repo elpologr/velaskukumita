@@ -1974,6 +1974,7 @@ if (document.readyState === 'loading') {
         } else {
             aplicarFiltrosArreglos();
         }
+        if (typeof window.scrollToGrid === 'function') window.scrollToGrid();
     }
 
     // Filtra por precio exacto sobre TODOS los tipos sin restricción de categoría
@@ -2072,6 +2073,7 @@ if (document.readyState === 'loading') {
         document.querySelectorAll('#lista-precios-todos .btn-precio-velas').forEach(b => b.classList.remove('activo'));
         btn.classList.add('activo');
         aplicarFiltrosPrecioExactoTodos();
+        if (typeof window.scrollToGrid === 'function') window.scrollToGrid();
     }
 
     function aplicarFiltrosPrecioExactoTodos() {
