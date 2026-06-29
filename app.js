@@ -606,6 +606,9 @@ function cargarDesdeGoogleSheets() {
             // Disparar evento para que otros sistemas (paginación, filtros) se enteren
             document.dispatchEvent(new CustomEvent('catalogoCargado'));
 
+            // Marcar que la carga inicial ya terminó (evita scroll automático al top)
+            setTimeout(function() { window._cargaInicialCompletada = true; }, 500);
+
             // Refrescar carruseles de ofertas/más vendidos con las nuevas cards
             if (typeof window.refrescarCarruseles === 'function') {
                 setTimeout(function() { window.refrescarCarruseles(); }, 50);
@@ -2591,9 +2594,11 @@ function ejecutarBusquedaDrawer() {
     });
     // 4. Repaginar
     if (typeof window.actualizarPaginacion === 'function') window.actualizarPaginacion();
-    // 5. Scroll al catálogo
-    var grid = document.getElementById('gridProductos');
-    if (grid) setTimeout(function(){ grid.scrollIntoView({ behavior:'smooth', block:'start' }); }, 100);
+    // 5. Scroll al catálogo (solo si fue acción del usuario, no carga inicial)
+    if (window._cargaInicialCompletada) {
+        var grid = document.getElementById('gridProductos');
+        if (grid) setTimeout(function(){ grid.scrollIntoView({ behavior:'smooth', block:'start' }); }, 100);
+    }
     // 6. Toast informativo
     if (typeof mostrarToast === 'function') {
         mostrarToast(total > 0
@@ -5038,6 +5043,13 @@ _ready(function() {
     }
     // Forzar scroll al top (por si el navegador restauró la posición anterior)
     window.scrollTo(0, 0);
+    // Segunda llamada por si algo del render tardío lo mueve
+    setTimeout(function() {
+        if (!window._cargaInicialCompletada) window.scrollTo(0, 0);
+    }, 200);
+    setTimeout(function() {
+        if (!window._cargaInicialCompletada) window.scrollTo(0, 0);
+    }, 600);
 });
 
 // Arrancar cuando el DOM esté listo
