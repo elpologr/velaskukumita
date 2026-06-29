@@ -2950,9 +2950,7 @@ function activarPill(cual) {
     if (catalogo) catalogo.style.display = (cual === 'biografia') ? 'none' : 'block';
 
     if (cual === 'productos') {
-        setTimeout(function() {
-            if (catalogo) catalogo.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 80);
+        // Sin scroll automático al mostrar el panel de productos
     }
 }
 
