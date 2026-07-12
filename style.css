@@ -34,7 +34,9 @@
             position: relative;
         }
         body {
-            background-color: #fdfbf7;
+            background-color: #e3cda1;
+            background-image: linear-gradient(135deg, #f2e4c2 0%, #ecd9a6 30%, #dbc9aa 60%, #c9a686 100%);
+            background-attachment: fixed;
             color: #4a3b32;
         }
 
