@@ -50,44 +50,71 @@
         justify-content: center;
     }
 
-    /* ── Fila de los 4 botones de categoría ── */
+    /* ── Cuadrícula de los 6 botones de categoría: 3 por fila ── */
     .selector-modo-velas {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(3, 135px);
         justify-content: center;
-        gap: 8px;
+        gap: 10px;
         width: 100%;
     }
 
-    /* ── Base del botón ── */
+    /* ── Base del botón (misma forma que los pill-btn: cuadrado, esquinas redondeadas) ── */
     .btn-modo-velas {
-        padding: 27px 16px;
-        border-radius: 999px;
         border: none;
-        font-size: 0.84rem;
-        font-weight: 700;
         font-family: inherit;
         cursor: pointer;
         transition: background 0.18s, color 0.18s, transform 0.12s, box-shadow 0.18s;
-        white-space: nowrap;
         box-shadow: 0 2px 6px rgba(0,0,0,0.10);
         display: inline-flex;
         flex-direction: column;
         align-items: center;
-        gap: 4px;
-        line-height: 1.3;
+        justify-content: center;
+        gap: 6px;
+        width: 135px;
+        height: 135px;
+        padding: 12px 9px;
+        box-sizing: border-box;
+        border-radius: 24px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        text-align: center;
+        line-height: 1.2;
+        overflow: hidden;
+        white-space: normal;
     }
     .btn-modo-velas:active {
         transform: scale(0.96);
     }
+    /* Emoji grande arriba, como en los pill-btn */
+    .btn-modo-velas .btn-modo-velas-emoji {
+        font-size: 2.1rem;
+        line-height: 1;
+    }
+    .btn-modo-velas .btn-modo-velas-subtitulo {
+        display: block;
+        font-size: 0.68rem;
+        font-weight: 600;
+        opacity: 0.75;
+    }
+    .btn-modo-velas .btn-modo-velas-label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
 
-    /* ── Mostrar Todo: negro / gris al presionar ── */
+    /* ── Mostrar Todo: negro / gris al presionar (mantiene su forma de píldora original) ── */
     .btn-modo-mostrar-todo {
         background: #1a1a1a;
         color: #fff;
+        width: auto;
+        height: auto;
         min-width: 320px;
         font-size: 0.9rem;
         padding: 20px 64px;
+        border-radius: 999px;
+        flex-direction: row;
     }
     .btn-modo-mostrar-todo:hover {
         background: #333;
@@ -140,6 +167,20 @@
         box-shadow: 0 3px 10px rgba(232,96,122,0.35);
     }
 
+    /* ── Centros de Mesa: verde salvia / verde oscuro activo ── */
+    .btn-modo-centros-mesa {
+        background: #c9dfc4;
+        color: #2f5233;
+    }
+    .btn-modo-centros-mesa:hover {
+        background: #aecfa5;
+    }
+    .btn-modo-centros-mesa.activo {
+        background: #4f7d4a;
+        color: #fff;
+        box-shadow: 0 3px 10px rgba(79,125,74,0.35);
+    }
+
     /* ── Etiquetas: rojo / rojo claro activo ── */
     .btn-modo-etiquetas {
         background: #e03030;
@@ -162,6 +203,25 @@
     .modo-oscuro .btn-modo-arreglos.activo       { background: #6aaee0; color: #fff; }
     .modo-oscuro .btn-modo-decoraciones          { background: #7a2a3a; color: #ffc8d8; }
     .modo-oscuro .btn-modo-decoraciones.activo   { background: #e8607a; color: #fff; }
+    .modo-oscuro .btn-modo-centros-mesa          { background: #2f4a30; color: #c9dfc4; }
+    .modo-oscuro .btn-modo-centros-mesa.activo   { background: #4f7d4a; color: #fff; }
+
+    /* ── Pantallas angostas: reducir tamaño para que los 3 botones por fila quepan sin desbordar ── */
+    @media (max-width: 480px) {
+        .selector-modo-velas {
+            grid-template-columns: repeat(3, 100px);
+            gap: 6px;
+        }
+        .btn-modo-velas {
+            width: 100px;
+            height: 100px;
+            padding: 8px 6px;
+            gap: 3px;
+        }
+        .btn-modo-velas .btn-modo-velas-emoji    { font-size: 1.6rem; }
+        .btn-modo-velas .btn-modo-velas-subtitulo{ font-size: 0.56rem; }
+        .btn-modo-velas .btn-modo-velas-label    { font-size: 0.66rem; }
+    }
     </style>
 </head>
 <body>
@@ -1124,12 +1184,33 @@
             <div class="selector-modo-fila-top">
                 <button class="btn-modo-velas btn-modo-mostrar-todo activo" id="btnModoTodosProductos" onclick="cambiarModoVelas('mostrar_todo'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});">Mostrar Todo</button>
             </div>
-            <!-- Fila inferior: los 4 botones de categoría -->
+            <!-- Fila inferior: los 6 botones de categoría (3 por fila) -->
             <div class="selector-modo-velas" id="selectorModoVelas">
-                <button class="btn-modo-velas btn-modo-productos" id="btnModoTodos" onclick="cambiarModoVelas('todos'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});"><span style="display:block; font-size:0.72rem; font-weight:600; opacity:0.75;">Buscar solo</span>🛍️ Productos</button>
-                <button class="btn-modo-velas btn-modo-arreglos" id="btnModoArreglos" onclick="cambiarModoVelas('arreglos'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});"><span style="display:block; font-size:0.72rem; font-weight:600; opacity:0.75;">Buscar solo</span>🕯️ Arreglos</button>
-                <button class="btn-modo-velas btn-modo-decoraciones" id="btnModoDecoraciones" onclick="cambiarModoVelas('decoraciones'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});" style="line-height:1.25;"><span style="display:block; font-size:0.72rem; font-weight:600; opacity:0.75;">Buscar solo</span>✨ Decoraciones<br>y Aditamentos</button>
-                <button class="btn-modo-velas btn-modo-etiquetas" id="btnModoEtiquetas" onclick="cambiarModoVelas('etiquetas'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});"><span style="display:block; font-size:0.72rem; font-weight:600; opacity:0.75;">Buscar solo</span>🏷️ Etiquetas</button>
+                <button class="btn-modo-velas btn-modo-productos" id="btnModoTodos" onclick="cambiarModoVelas('todos'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});">
+                    <span class="btn-modo-velas-emoji">🛍️</span>
+                    <span class="btn-modo-velas-subtitulo">Buscar solo</span>
+                    <span class="btn-modo-velas-label">Productos</span>
+                </button>
+                <button class="btn-modo-velas btn-modo-arreglos" id="btnModoArreglos" onclick="cambiarModoVelas('arreglos'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});">
+                    <span class="btn-modo-velas-emoji">🕯️</span>
+                    <span class="btn-modo-velas-subtitulo">Buscar solo</span>
+                    <span class="btn-modo-velas-label">Arreglos</span>
+                </button>
+                <button class="btn-modo-velas btn-modo-decoraciones" id="btnModoDecoraciones" onclick="cambiarModoVelas('decoraciones'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});">
+                    <span class="btn-modo-velas-emoji">✨</span>
+                    <span class="btn-modo-velas-subtitulo">Buscar solo</span>
+                    <span class="btn-modo-velas-label">Decoraciones<br>y Aditamentos</span>
+                </button>
+                <button class="btn-modo-velas btn-modo-etiquetas" id="btnModoEtiquetas" onclick="cambiarModoVelas('etiquetas'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});">
+                    <span class="btn-modo-velas-emoji">🏷️</span>
+                    <span class="btn-modo-velas-subtitulo">Buscar solo</span>
+                    <span class="btn-modo-velas-label">Etiquetas</span>
+                </button>
+                <button class="btn-modo-velas btn-modo-centros-mesa" id="btnModoCentrosMesa" onclick="cambiarModoVelas('centros_mesa'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});">
+                    <span class="btn-modo-velas-emoji">🍽️</span>
+                    <span class="btn-modo-velas-subtitulo">Buscar solo</span>
+                    <span class="btn-modo-velas-label">Centros de Mesa</span>
+                </button>
             </div>
         </div>
 
@@ -1394,6 +1475,18 @@
                 <div class="barra-busqueda-unificada" id="barraBuscadorDecoraciones">
                     <input type="text" id="inputBusquedaDecoraciones" class="bbu-input" placeholder="Buscar Decoraciones y Aditamentos…" oninput="filtrarPorNombreUnificado('decoraciones', this.value)">
                     <button class="bbu-btn-lupa" onclick="filtrarPorNombreUnificado('decoraciones', document.getElementById('inputBusquedaDecoraciones').value)" title="Buscar">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTROS DE MESA -->
+        <div class="panel-busqueda-unificado" id="panelCentrosMesa">
+            <div class="barra-busqueda-unificada-wrap">
+                <div class="barra-busqueda-unificada" id="barraBuscadorCentrosMesa">
+                    <input type="text" id="inputBusquedaCentrosMesa" class="bbu-input" placeholder="Buscar Centros de Mesa…" oninput="filtrarPorNombreUnificado('centros_mesa', this.value)">
+                    <button class="bbu-btn-lupa" onclick="filtrarPorNombreUnificado('centros_mesa', document.getElementById('inputBusquedaCentrosMesa').value)" title="Buscar">
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     </button>
                 </div>

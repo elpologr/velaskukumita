@@ -1639,19 +1639,21 @@ if (document.readyState === 'loading') {
         const btnArreglos       = document.getElementById('btnModoArreglos');
         const btnEtiquetas      = document.getElementById('btnModoEtiquetas');
         const btnDecoraciones   = document.getElementById('btnModoDecoraciones');
+        const btnCentrosMesa    = document.getElementById('btnModoCentrosMesa');
         const btnTodos          = document.getElementById('btnModoTodos');
         const btnTodosProductos = document.getElementById('btnModoTodosProductos');
         const panelArr          = document.getElementById('panelArreglos');
         const panelEtiq         = document.getElementById('panelEtiquetas');
         const panelDeco         = document.getElementById('panelDecoraciones');
+        const panelCentrosMesa  = document.getElementById('panelCentrosMesa');
         const panelTod          = document.getElementById('panelTodos');
         const bloqueArr         = document.getElementById('bloqueFiltroPrecioArreglos');
         const bloqueTod         = document.getElementById('bloqueFiltroPrecioTodos');
 
         // Desactivar todos los botones y paneles
-        [btnArreglos, btnEtiquetas, btnDecoraciones, btnTodos, btnTodosProductos]
+        [btnArreglos, btnEtiquetas, btnDecoraciones, btnCentrosMesa, btnTodos, btnTodosProductos]
             .forEach(b => b && b.classList.remove('activo'));
-        [panelArr, panelEtiq, panelDeco, panelTod]
+        [panelArr, panelEtiq, panelDeco, panelCentrosMesa, panelTod]
             .forEach(p => p && p.classList.remove('visible'));
         // Ocultar ambos bloques de precio
         if (bloqueArr) bloqueArr.style.display = 'none';
@@ -1670,6 +1672,10 @@ if (document.readyState === 'loading') {
             if (btnDecoraciones) btnDecoraciones.classList.add('activo');
             if (panelDeco) panelDeco.classList.add('visible');
             aplicarFiltrosUnificados('decoraciones');
+        } else if (modo === 'centros_mesa') {
+            if (btnCentrosMesa) btnCentrosMesa.classList.add('activo');
+            if (panelCentrosMesa) panelCentrosMesa.classList.add('visible');
+            aplicarFiltrosUnificados('centros_mesa');
         } else if (modo === 'mostrar_todo') {
             // Mostrar Todo: activa sólo el botón superior y muestra absolutamente todo
             if (btnTodosProductos) btnTodosProductos.classList.add('activo');
@@ -1696,7 +1702,8 @@ if (document.readyState === 'loading') {
         todos:        { forma: 'todos', evento: 'todos' },
         mostrar_todo: {},
         etiquetas:    { evento: 'todos' },
-        decoraciones: {}
+        decoraciones: {},
+        centros_mesa: {}
     };
 
     // ── Utilidades de búsqueda inteligente ──────────────────────────────────
@@ -1845,7 +1852,8 @@ if (document.readyState === 'loading') {
             'producto':      ['producto','productos'],
             'arreglo':       ['arreglo','arreglos'],
             'decoracion':    ['decoracion','decoraciones','aditamento','aditamentos'],
-            'etiqueta':      ['etiqueta','etiquetas']
+            'etiqueta':      ['etiqueta','etiquetas'],
+            'centro_mesa':   ['centro_mesa','centros_mesa','centro de mesa','centros de mesa','centromesa','centrodemesa']
         };
         return buscar.some(function(b) {
             const lista = variantes[b] || [b];
@@ -1858,7 +1866,8 @@ if (document.readyState === 'loading') {
             arreglos:     'inputBusquedaArreglos',
             todos:        'inputBusquedaTodos',
             etiquetas:    'inputBusquedaEtiquetas',
-            decoraciones: 'inputBusquedaDecoraciones'
+            decoraciones: 'inputBusquedaDecoraciones',
+            centros_mesa: 'inputBusquedaCentrosMesa'
         };
         const inputEl = document.getElementById(inputMap[panel]);
         const textoBusq = (inputEl ? inputEl.value : '').trim().toLowerCase();
@@ -1880,6 +1889,8 @@ if (document.readyState === 'loading') {
                 card.classList.toggle('oculto', !okNombre);
             } else if (panel === 'decoraciones') {
                 card.classList.toggle('oculto', !tieneTipo(card, 'decoracion'));
+            } else if (panel === 'centros_mesa') {
+                card.classList.toggle('oculto', !tieneTipo(card, 'centro_mesa'));
             } else if (panel === 'etiquetas') {
                 card.classList.toggle('oculto', !(tieneTipo(card, 'etiqueta') && okEvento));
             } else if (panel === 'arreglos') {
