@@ -43,14 +43,7 @@
         padding: 0 12px 14px;
     }
 
-    /* ── Fila superior: Mostrar Todo ── */
-    .selector-modo-fila-top {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-    }
-
-    /* ── Cuadrícula de los 6 botones de categoría: 3 por fila ── */
+    /* ── Cuadrícula única de 6 botones (Mostrar Todo + 5 categorías): 3 por fila ── */
     .selector-modo-velas {
         display: grid;
         grid-template-columns: repeat(3, 135px);
@@ -569,29 +562,46 @@
                     onmouseout="this.style.background='#000'; this.style.borderColor='#000';">
                 🪨 También vendemos Yeso ▾
             </button>
-            <!-- Submenú desplegable con logo + texto + botón píldora -->
+            <!-- Submenú desplegable con 2 perfiles: Yesos Fer Kukumita y Yesos Polo Kukumita -->
             <div id="submenuYesosKukumita"
-                 style="display:none; max-width:420px; width:90vw; margin:10px auto 0; position:absolute; left:50%; transform:translateX(-50%); background:#fff; border-radius:18px; box-shadow:0 10px 32px rgba(0,0,0,0.14); border:1.5px solid #e8ddd5; overflow:hidden; animation:submenuFadeIn 0.22s ease; text-align:center; z-index:600;">
-                <!-- Logo + imagen perfil clicable -->
-                <div style="background:linear-gradient(135deg,#f5f0eb,#ede4db); padding:22px 20px 14px;">
-                    <!-- Imagen perfil-yesoskukumita — clicable, redirige a la página de yesos -->
-                    <a href="https://elpologr.github.io/yesoskukumita/" target="_blank" rel="nofollow"
-                       title="Visitar Yesos Kukumita"
-                       style="display:block; margin:0 auto 14px; width:150px; cursor:pointer;">
-                        <img src="imagenes/perfil-yesoskukumita.webp" alt="Yesos Kukumita — visitar página"
-                             style="width:150px; height:150px; border-radius:16px; object-fit:cover; box-shadow:0 6px 20px rgba(0,0,0,0.16); display:block; transition:transform 0.22s, box-shadow 0.22s;"
-                             onmouseover="this.style.transform='scale(1.04)'; this.style.boxShadow='0 10px 28px rgba(0,0,0,0.22)';"
-                             onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.16)';"
-                             onerror="this.style.display='none';">
-                    </a>
-                </div>
-                <div style="padding:16px 20px 18px;">
-                    <a href="https://elpologr.github.io/yesoskukumita/" target="_blank" rel="nofollow"
-                       style="display:inline-flex; align-items:center; gap:9px; background:linear-gradient(135deg,#8c7565,#5c4d43); color:white; text-decoration:none; border-radius:999px; padding:12px 28px; font-size:0.95rem; font-weight:800; font-family:inherit; box-shadow:0 4px 14px rgba(92,77,67,0.3); transition:all 0.22s;"
-                       onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 7px 22px rgba(92,77,67,0.42)';"
-                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 14px rgba(92,77,67,0.3)';">
-                        🪨 Yesos Kukúmita
-                    </a>
+                 style="display:none; max-width:460px; width:92vw; margin:10px auto 0; position:absolute; left:50%; transform:translateX(-50%); background:#fff; border-radius:18px; box-shadow:0 10px 32px rgba(0,0,0,0.14); border:1.5px solid #e8ddd5; overflow:hidden; animation:submenuFadeIn 0.22s ease; text-align:center; z-index:600;">
+                <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px; background:linear-gradient(135deg,#f5f0eb,#ede4db); padding:22px 16px 18px;">
+                    <!-- Perfil: Yesos Fer Kukumita -->
+                    <div style="flex:1; min-width:150px; max-width:190px;">
+                        <a href="https://dulcefer.github.io/yesosferkukumita/" target="_blank" rel="nofollow"
+                           title="Visitar Yesos Fer Kukumita"
+                           style="display:block; margin:0 auto 10px; width:130px; cursor:pointer;">
+                            <img src="imagenes/yesosferperfil.webp" alt="Yesos Fer Kukumita — visitar página"
+                                 style="width:130px; height:130px; border-radius:16px; object-fit:cover; box-shadow:0 6px 20px rgba(0,0,0,0.16); display:block; transition:transform 0.22s, box-shadow 0.22s;"
+                                 onmouseover="this.style.transform='scale(1.04)'; this.style.boxShadow='0 10px 28px rgba(0,0,0,0.22)';"
+                                 onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.16)';"
+                                 onerror="this.style.display='none';">
+                        </a>
+                        <a href="https://dulcefer.github.io/yesosferkukumita/" target="_blank" rel="nofollow"
+                           style="display:inline-flex; align-items:center; justify-content:center; gap:7px; background:linear-gradient(135deg,#8c7565,#5c4d43); color:white; text-decoration:none; border-radius:999px; padding:10px 16px; font-size:0.85rem; font-weight:800; font-family:inherit; box-shadow:0 4px 14px rgba(92,77,67,0.3); transition:all 0.22s; width:100%; box-sizing:border-box;"
+                           onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 7px 22px rgba(92,77,67,0.42)';"
+                           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 14px rgba(92,77,67,0.3)';">
+                            🪨 Yesos Fer Kukúmita
+                        </a>
+                    </div>
+                    <!-- Perfil: Yesos Polo Kukumita -->
+                    <div style="flex:1; min-width:150px; max-width:190px;">
+                        <a href="https://elpologr.github.io/yesospolokukumita/" target="_blank" rel="nofollow"
+                           title="Visitar Yesos Polo Kukumita"
+                           style="display:block; margin:0 auto 10px; width:130px; cursor:pointer;">
+                            <img src="imagenes/yesospoloperfil.webp" alt="Yesos Polo Kukumita — visitar página"
+                                 style="width:130px; height:130px; border-radius:16px; object-fit:cover; box-shadow:0 6px 20px rgba(0,0,0,0.16); display:block; transition:transform 0.22s, box-shadow 0.22s;"
+                                 onmouseover="this.style.transform='scale(1.04)'; this.style.boxShadow='0 10px 28px rgba(0,0,0,0.22)';"
+                                 onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.16)';"
+                                 onerror="this.style.display='none';">
+                        </a>
+                        <a href="https://elpologr.github.io/yesospolokukumita/" target="_blank" rel="nofollow"
+                           style="display:inline-flex; align-items:center; justify-content:center; gap:7px; background:linear-gradient(135deg,#8c7565,#5c4d43); color:white; text-decoration:none; border-radius:999px; padding:10px 16px; font-size:0.85rem; font-weight:800; font-family:inherit; box-shadow:0 4px 14px rgba(92,77,67,0.3); transition:all 0.22s; width:100%; box-sizing:border-box;"
+                           onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 7px 22px rgba(92,77,67,0.42)';"
+                           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 14px rgba(92,77,67,0.3)';">
+                            🪨 Yesos Polo Kukúmita
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -603,14 +613,14 @@
         <div style="display:flex; flex-wrap:wrap; gap:14px; justify-content:center; padding: 0 12px; box-sizing:border-box; width:100%;">
             <!-- Botón Búscanos en Tienda -->
             <a href="#" onclick="event.preventDefault(); abrirModalTienda()"
-               style="display:inline-flex; align-items:center; gap:10px; background:#5c4d43; color:white; text-decoration:none; border-radius:999px; padding:14px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(92,77,67,0.3); transition:all 0.25s; cursor:pointer; border:none; justify-content:center; flex:1; min-width:140px; max-width:300px;">
-                <span style="width:40px; height:40px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:1.4rem;">📍</span>
+               style="display:inline-flex; align-items:center; gap:10px; background:#5c4d43; color:white; text-decoration:none; border-radius:999px; padding:28px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(92,77,67,0.3); transition:all 0.25s; cursor:pointer; border:none; justify-content:center; flex:1; min-width:140px; max-width:300px;">
+                <span style="width:80px; height:80px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:2.8rem;">📍</span>
                 <span style="font-family:'Cormorant Garamond', Georgia, serif; font-style:italic; letter-spacing:1px;">Búscanos en Tienda</span>
             </a>
             <!-- Botón bazar grande tipo píldora con imagen opcional -->
             <a id="btnBazarPrincipal" href="#" onclick="event.preventDefault(); abrirModalBazar()"
-               style="display:inline-flex; align-items:center; gap:10px; background:#8c7565; color:white; text-decoration:none; border-radius:999px; padding:14px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(140,117,101,0.3); transition:all 0.25s; cursor:pointer; border:none; justify-content:center; flex:1; min-width:140px; max-width:300px;">
-                <span id="btnBazarImgWrap" style="width:40px; height:40px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:1.4rem;">🗓️</span>
+               style="display:inline-flex; align-items:center; gap:10px; background:#8c7565; color:white; text-decoration:none; border-radius:999px; padding:28px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(140,117,101,0.3); transition:all 0.25s; cursor:pointer; border:none; justify-content:center; flex:1; min-width:140px; max-width:300px;">
+                <span id="btnBazarImgWrap" style="width:80px; height:80px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:2.8rem;">🗓️</span>
                 <span style="font-family:'Cormorant Garamond', Georgia, serif; font-style:italic; letter-spacing:1px;">Búscanos en Bazar</span>
             </a>
         </div>
@@ -1173,12 +1183,9 @@
 
         <!-- ===== BOTONES DE MODO: MOSTRAR TODO + PRODUCTOS / ARREGLOS / DECORACIONES / ETIQUETAS ===== -->
         <div class="selector-modo-velas-wrap">
-            <!-- Fila superior: Mostrar Todo -->
-            <div class="selector-modo-fila-top">
-                <button class="btn-modo-velas btn-modo-mostrar-todo activo" id="btnModoTodosProductos" onclick="cambiarModoVelas('mostrar_todo'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});">Mostrar Todo</button>
-            </div>
-            <!-- Fila inferior: los 6 botones de categoría (3 por fila) -->
+            <!-- Cuadrícula única de 6 botones (Mostrar Todo + 5 categorías), 3 por fila = 2 filas -->
             <div class="selector-modo-velas" id="selectorModoVelas">
+                <button class="btn-modo-velas btn-modo-mostrar-todo activo" id="btnModoTodosProductos" onclick="cambiarModoVelas('mostrar_todo'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});">Mostrar Todo</button>
                 <button class="btn-modo-velas btn-modo-productos" id="btnModoTodos" onclick="cambiarModoVelas('todos'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});">
                     <span class="btn-modo-velas-emoji">🛍️</span>
                     <span class="btn-modo-velas-subtitulo">Buscar solo</span>
