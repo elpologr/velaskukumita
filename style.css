@@ -877,8 +877,8 @@
             gap: 12px;
             flex-wrap: wrap;
             padding: 18px 20px;
-            background: #fff;
-            border-bottom: 1px solid #eee;
+            background: transparent;
+            border-bottom: 1px solid rgba(140,117,101,0.18);
         }
         .red-social {
             display: flex;
