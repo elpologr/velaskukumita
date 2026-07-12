@@ -43,14 +43,7 @@
         padding: 0 12px 14px;
     }
 
-    /* ── Fila superior: Mostrar Todo ── */
-    .selector-modo-fila-top {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-    }
-
-    /* ── Cuadrícula de los 6 botones de categoría: 3 por fila ── */
+    /* ── Cuadrícula única de 6 botones (Mostrar Todo + 5 categorías): 3 por fila ── */
     .selector-modo-velas {
         display: grid;
         grid-template-columns: repeat(3, 135px);
@@ -603,14 +596,14 @@
         <div style="display:flex; flex-wrap:wrap; gap:14px; justify-content:center; padding: 0 12px; box-sizing:border-box; width:100%;">
             <!-- Botón Búscanos en Tienda -->
             <a href="#" onclick="event.preventDefault(); abrirModalTienda()"
-               style="display:inline-flex; align-items:center; gap:10px; background:#5c4d43; color:white; text-decoration:none; border-radius:999px; padding:14px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(92,77,67,0.3); transition:all 0.25s; cursor:pointer; border:none; justify-content:center; flex:1; min-width:140px; max-width:300px;">
-                <span style="width:40px; height:40px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:1.4rem;">📍</span>
+               style="display:inline-flex; align-items:center; gap:10px; background:#5c4d43; color:white; text-decoration:none; border-radius:999px; padding:28px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(92,77,67,0.3); transition:all 0.25s; cursor:pointer; border:none; justify-content:center; flex:1; min-width:140px; max-width:300px;">
+                <span style="width:80px; height:80px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:2.8rem;">📍</span>
                 <span style="font-family:'Cormorant Garamond', Georgia, serif; font-style:italic; letter-spacing:1px;">Búscanos en Tienda</span>
             </a>
             <!-- Botón bazar grande tipo píldora con imagen opcional -->
             <a id="btnBazarPrincipal" href="#" onclick="event.preventDefault(); abrirModalBazar()"
-               style="display:inline-flex; align-items:center; gap:10px; background:#8c7565; color:white; text-decoration:none; border-radius:999px; padding:14px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(140,117,101,0.3); transition:all 0.25s; cursor:pointer; border:none; justify-content:center; flex:1; min-width:140px; max-width:300px;">
-                <span id="btnBazarImgWrap" style="width:40px; height:40px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:1.4rem;">🗓️</span>
+               style="display:inline-flex; align-items:center; gap:10px; background:#8c7565; color:white; text-decoration:none; border-radius:999px; padding:28px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(140,117,101,0.3); transition:all 0.25s; cursor:pointer; border:none; justify-content:center; flex:1; min-width:140px; max-width:300px;">
+                <span id="btnBazarImgWrap" style="width:80px; height:80px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:2.8rem;">🗓️</span>
                 <span style="font-family:'Cormorant Garamond', Georgia, serif; font-style:italic; letter-spacing:1px;">Búscanos en Bazar</span>
             </a>
         </div>
@@ -1173,12 +1166,9 @@
 
         <!-- ===== BOTONES DE MODO: MOSTRAR TODO + PRODUCTOS / ARREGLOS / DECORACIONES / ETIQUETAS ===== -->
         <div class="selector-modo-velas-wrap">
-            <!-- Fila superior: Mostrar Todo -->
-            <div class="selector-modo-fila-top">
-                <button class="btn-modo-velas btn-modo-mostrar-todo activo" id="btnModoTodosProductos" onclick="cambiarModoVelas('mostrar_todo'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});">Mostrar Todo</button>
-            </div>
-            <!-- Fila inferior: los 6 botones de categoría (3 por fila) -->
+            <!-- Cuadrícula única de 6 botones (Mostrar Todo + 5 categorías), 3 por fila = 2 filas -->
             <div class="selector-modo-velas" id="selectorModoVelas">
+                <button class="btn-modo-velas btn-modo-mostrar-todo activo" id="btnModoTodosProductos" onclick="cambiarModoVelas('mostrar_todo'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});">Mostrar Todo</button>
                 <button class="btn-modo-velas btn-modo-productos" id="btnModoTodos" onclick="cambiarModoVelas('todos'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});">
                     <span class="btn-modo-velas-emoji">🛍️</span>
                     <span class="btn-modo-velas-subtitulo">Buscar solo</span>
