@@ -1366,6 +1366,10 @@
 
 
         /* ===== BOTONES DE MODO: ARREGLOS / TODOS LOS PRODUCTOS ===== */
+        .selector-modo-velas-wrap {
+            background: #3F2C25;
+            padding: 10px 12px;
+        }
         .selector-modo-velas {
             display: flex;
             justify-content: center;
