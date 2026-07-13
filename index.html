@@ -167,18 +167,18 @@
         box-shadow: 0 3px 10px rgba(79,125,74,0.35);
     }
 
-    /* ── Etiquetas: rojo / rojo claro activo ── */
+    /* ── Etiquetas: morado pastel / morado más oscuro activo ── */
     .btn-modo-etiquetas {
-        background: #e03030;
+        background: #a48fc7;
         color: #fff;
     }
     .btn-modo-etiquetas:hover {
-        background: #c52020;
+        background: #8f76b8;
     }
     .btn-modo-etiquetas.activo {
-        background: #ff6b6b;
+        background: #6c4f96;
         color: #fff;
-        box-shadow: 0 3px 10px rgba(224,48,48,0.35);
+        box-shadow: 0 3px 10px rgba(108,79,150,0.35);
     }
 
     /* ── Modo oscuro ── */
@@ -191,6 +191,8 @@
     .modo-oscuro .btn-modo-decoraciones.activo   { background: #e8607a; color: #fff; }
     .modo-oscuro .btn-modo-centros-mesa          { background: #2f4a30; color: #c9dfc4; }
     .modo-oscuro .btn-modo-centros-mesa.activo   { background: #4f7d4a; color: #fff; }
+    .modo-oscuro .btn-modo-etiquetas             { background: #4a3a66; color: #d9c9ec; }
+    .modo-oscuro .btn-modo-etiquetas.activo      { background: #6c4f96; color: #fff; }
 
     /* ── Pantallas angostas: reducir tamaño para que los 3 botones por fila quepan sin desbordar ── */
     @media (max-width: 480px) {
@@ -1202,12 +1204,11 @@
                     <span class="btn-modo-velas-label">Decoraciones<br>y Aditamentos</span>
                 </button>
                 <button class="btn-modo-velas btn-modo-etiquetas" id="btnModoEtiquetas" onclick="cambiarModoVelas('etiquetas'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});">
-                    <span class="btn-modo-velas-emoji">🏷️</span>
-                    <span class="btn-modo-velas-subtitulo">Buscar solo</span>
+                    <span class="btn-modo-velas-emoji">🔖</span>
                     <span class="btn-modo-velas-label">Etiquetas</span>
                 </button>
                 <button class="btn-modo-velas btn-modo-centros-mesa" id="btnModoCentrosMesa" onclick="cambiarModoVelas('centros_mesa'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});">
-                    <span class="btn-modo-velas-emoji">🪔</span>
+                    <span class="btn-modo-velas-emoji">🍽️🕯️</span>
                     <span class="btn-modo-velas-subtitulo">Buscar solo</span>
                     <span class="btn-modo-velas-label">Centros de Mesa</span>
                 </button>

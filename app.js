@@ -760,6 +760,7 @@ if (document.readyState === 'loading') {
             'btnModoTodos':          'todos',
             'btnModoArreglos':       'arreglos',
             'btnModoDecoraciones':   'decoraciones',
+            'btnModoCentrosMesa':    'centros_mesa',
             'btnModoEtiquetas':      'etiquetas'
         };
         var modoActual = btnActivo ? (mapaIDs[btnActivo.id] || 'mostrar_todo') : 'mostrar_todo';
@@ -1904,7 +1905,9 @@ if (document.readyState === 'loading') {
                 }
                 card.classList.toggle('oculto', !(tieneTipo(card, 'arreglo') && okForma && okEvento && okPrecio));
             } else if (panel === 'mostrar_todo') {
-                card.classList.toggle('oculto', false); // sin texto: mostrar todo
+                // Ocultar de "Mostrar Todo" los productos cuya EtiquetaPrincipal es "Etiqueta":
+                // sólo deben verse al presionar el botón de Etiquetas.
+                card.classList.toggle('oculto', tieneTipo(card, 'etiqueta'));
             } else {
                 // panel === 'todos' (🛍️ Productos): muestra solo los que tienen tipo 'producto'
                 card.classList.toggle('oculto', !(tieneTipo(card, 'producto') && okForma && okEvento));
@@ -1991,6 +1994,10 @@ if (document.readyState === 'loading') {
     // Filtra por precio exacto sobre TODOS los tipos sin restricción de categoría
     function aplicarFiltroPrecioSobreTodo(precio, tipoPrecio) {
         document.querySelectorAll('.card-dinamica').forEach(function(card) {
+            if (tieneTipo(card, 'etiqueta')) {
+                card.classList.add('oculto');
+                return;
+            }
             if (precio === 'todos') {
                 card.classList.remove('oculto');
             } else {
@@ -4776,6 +4783,7 @@ function _cargarFavoritosFirestore(uid) {
                 'btnModoTodos':          'todos',
                 'btnModoArreglos':       'arreglos',
                 'btnModoDecoraciones':   'decoraciones',
+                'btnModoCentrosMesa':    'centros_mesa',
                 'btnModoEtiquetas':      'etiquetas'
             };
             var modo = modos[btnActivo.id] || 'mostrar_todo';
