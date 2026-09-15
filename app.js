@@ -3261,6 +3261,7 @@ auth.onAuthStateChanged(user => {
     }
     actualizarEstadoSesionDrawer();
     actualizarPantallaPerfil();
+    _actualizarVisibilidadPanelAdmin();
 });
 
 // ─── ACTUALIZAR PANTALLA PERFIL CON DATOS REALES ───
@@ -5720,3 +5721,169 @@ function _ajustarOffsetDrawer() {
 
 // Inicializar barra de cookies cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', _initBarraCookies);
+
+// ══════════════════════════════════════════════════════════════
+// PANEL DE ADMINISTRACIÓN DE PRODUCTOS — solo cuentas autorizadas
+// ══════════════════════════════════════════════════════════════
+// ⚠️ CONFIGURACIÓN OBLIGATORIA ANTES DE USAR:
+// 1) Pon aquí los correos de Google que pueden publicar productos.
+// 2) Pon la URL de tu Apps Script publicado como Web App (ver el
+//    archivo apps-script-crear-producto.gs).
+// Esto solo oculta/muestra el botón en pantalla — la validación real
+// (la que de verdad impide que alguien más publique) ocurre en el
+// Apps Script del servidor, revisando el mismo correo contra su
+// propia lista y un token de Google fresco. Ver la explicación en
+// el chat sobre por qué se necesitan ambas capas.
+var CORREOS_ADMIN_PRODUCTOS = [
+    'REEMPLAZA-CON-TU-CORREO@gmail.com',
+    'REEMPLAZA-CON-EL-CORREO-DE-TU-MAMA@gmail.com'
+];
+var APPS_SCRIPT_PRODUCTOS_URL = 'REEMPLAZA-CON-LA-URL-DE-TU-WEB-APP-DE-APPS-SCRIPT';
+
+var _imagenProductoWebp = null;
+var _subImagenProductoWebp = null;
+var _ultimaPublicacionProducto = 0;
+var _COOLDOWN_PUBLICAR_PRODUCTO = 120000; // 2 minutos — aviso local; el Apps Script aplica el límite real
+
+function _actualizarVisibilidadPanelAdmin() {
+    var panel = document.getElementById('panelAdminProductos');
+    if (!panel) return;
+    var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+    var autorizado = !!(user && user.email && CORREOS_ADMIN_PRODUCTOS.indexOf(user.email) !== -1);
+    panel.style.display = autorizado ? 'block' : 'none';
+}
+
+function toggleFormularioProducto() {
+    var form = document.getElementById('formularioProducto');
+    if (form) form.classList.toggle('abierto');
+}
+
+// Convierte un archivo de imagen a WebP redimensionado, usando un <canvas> temporal
+function _archivoAWebP(file, maxLado, calidad) {
+    return new Promise(function (resolve, reject) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var img = new Image();
+            img.onload = function () {
+                var w = img.width, h = img.height;
+                if (w > maxLado || h > maxLado) {
+                    if (w > h) { h = Math.round(h * maxLado / w); w = maxLado; }
+                    else { w = Math.round(w * maxLado / h); h = maxLado; }
+                }
+                var canvas = document.createElement('canvas');
+                canvas.width = w; canvas.height = h;
+                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                resolve(canvas.toDataURL('image/webp', calidad || 0.82));
+            };
+            img.onerror = reject;
+            img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+function previsualizarImagenProducto(evento, destino) {
+    var file = evento.target.files && evento.target.files[0];
+    if (!file) return;
+    _archivoAWebP(file, 1000, 0.82).then(function (dataUrl) {
+        if (destino === 'imagenProducto') _imagenProductoWebp = dataUrl;
+        else _subImagenProductoWebp = dataUrl;
+        var idPreview = 'preview' + destino.charAt(0).toUpperCase() + destino.slice(1);
+        var img = document.getElementById(idPreview);
+        if (img) { img.src = dataUrl; img.style.display = 'block'; }
+    }).catch(function () {
+        mostrarToast('No se pudo procesar la imagen');
+    });
+}
+
+function _limpiarFormularioProducto() {
+    ['campoNombre', 'campoPrecio', 'campoPrecioMayoreo', 'campoDescripcion', 'campoVideoYoutube',
+     'campoEtiquetaPrincipal', 'campoSubEtiqueta', 'campoEtiquetasEvento', 'campoAlto', 'campoAncho',
+     'campoYoutubeImgVid', 'campoExistencia'].forEach(function (id) {
+        var el = document.getElementById(id); if (el) el.value = '';
+    });
+    ['campoEnOferta', 'campoMasVendido'].forEach(function (id) {
+        var el = document.getElementById(id); if (el) el.checked = false;
+    });
+    _imagenProductoWebp = null; _subImagenProductoWebp = null;
+    ['previewImagenProducto', 'previewSubImagenProducto'].forEach(function (id) {
+        var el = document.getElementById(id); if (el) { el.style.display = 'none'; el.src = ''; }
+    });
+}
+
+function publicarProducto() {
+    var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+    if (!user || CORREOS_ADMIN_PRODUCTOS.indexOf(user.email) === -1) {
+        mostrarToast('No tienes permiso para publicar productos');
+        return;
+    }
+
+    var ahora = Date.now();
+    if (ahora - _ultimaPublicacionProducto < _COOLDOWN_PUBLICAR_PRODUCTO) {
+        var restante = Math.ceil((_COOLDOWN_PUBLICAR_PRODUCTO - (ahora - _ultimaPublicacionProducto)) / 1000);
+        mostrarToast('⏳ Espera ' + restante + ' segundos antes de publicar otro producto');
+        return;
+    }
+
+    var nombre = (document.getElementById('campoNombre').value || '').trim();
+    if (!nombre) { mostrarToast('Falta el nombre del producto'); return; }
+    if (!_imagenProductoWebp) { mostrarToast('Falta la foto principal'); return; }
+
+    var estado = document.getElementById('adminProductoEstado');
+    var boton = document.getElementById('btnPublicarProducto');
+    if (estado) estado.textContent = 'Publicando…';
+    if (boton) boton.disabled = true;
+
+    // Pide un token de Google fresco justo antes de publicar — el Apps Script lo valida
+    // contra el servidor de Google, así que no basta con haber iniciado sesión hace rato.
+    auth.signInWithPopup(providerGoogle).then(function (resultado) {
+        var credencial = firebase.auth.GoogleAuthProvider.credentialFromResult(resultado);
+        var idToken = credencial && credencial.idToken;
+        if (!idToken) throw new Error('No se pudo verificar tu sesión de Google');
+
+        var payload = {
+            idToken: idToken,
+            nombre: nombre,
+            precio: (document.getElementById('campoPrecio').value || '').trim(),
+            precioMayoreo: (document.getElementById('campoPrecioMayoreo').value || '').trim(),
+            descripcion: (document.getElementById('campoDescripcion').value || '').trim(),
+            videoYoutube: (document.getElementById('campoVideoYoutube').value || '').trim(),
+            etiquetaPrincipal: (document.getElementById('campoEtiquetaPrincipal').value || '').trim(),
+            subEtiqueta: (document.getElementById('campoSubEtiqueta').value || '').trim(),
+            etiquetasEvento: (document.getElementById('campoEtiquetasEvento').value || '').trim(),
+            enOferta: document.getElementById('campoEnOferta').checked,
+            masVendido: document.getElementById('campoMasVendido').checked,
+            alto: (document.getElementById('campoAlto').value || '').trim(),
+            ancho: (document.getElementById('campoAncho').value || '').trim(),
+            youtubeImgVid: (document.getElementById('campoYoutubeImgVid').value || '').trim(),
+            existencia: (document.getElementById('campoExistencia').value || '').trim(),
+            imagenBase64: _imagenProductoWebp,
+            subImagenBase64: _subImagenProductoWebp || ''
+        };
+
+        // Sin header Content-Type explícito a propósito: así el navegador lo manda como
+        // text/plain y Apps Script no exige un preflight CORS que normalmente rechaza.
+        return fetch(APPS_SCRIPT_PRODUCTOS_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    }).then(function (resp) { return resp.json(); }).then(function (data) {
+        if (data.status === 'success') {
+            _ultimaPublicacionProducto = Date.now();
+            mostrarToast('✅ Producto publicado');
+            if (estado) estado.textContent = '';
+            var form = document.getElementById('formularioProducto');
+            if (form) form.classList.remove('abierto');
+            _limpiarFormularioProducto();
+        } else {
+            mostrarToast('❌ ' + (data.mensaje || 'Error al publicar'));
+            if (estado) estado.textContent = data.mensaje || '';
+        }
+    }).catch(function (err) {
+        mostrarToast('❌ No se pudo publicar el producto');
+        if (estado) estado.textContent = String(err && err.message || err);
+    }).finally(function () {
+        if (boton) boton.disabled = false;
+    });
+}

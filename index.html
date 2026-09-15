@@ -401,6 +401,75 @@
                 </div>
             </div>
 
+            <!-- ══ PANEL DE ADMINISTRACIÓN — solo visible para cuentas autorizadas ══ -->
+            <div id="panelAdminProductos" class="panel-admin-productos" style="display:none;">
+                <button class="btn-opcion-perfil" onclick="toggleFormularioProducto()">
+                    <span class="op-icono">➕</span>
+                    <div>
+                        Agregar producto
+                        <span class="op-sub">Panel de administración del catálogo</span>
+                    </div>
+                </button>
+
+                <div id="formularioProducto" class="panel-form-producto">
+                    <div class="panel-form-producto-inner">
+                        <p id="adminProductoEstado" class="admin-producto-estado"></p>
+
+                        <label class="admin-campo-label">Foto principal</label>
+                        <input type="file" id="inputImagenProducto" accept="image/*" class="admin-campo-file" onchange="previsualizarImagenProducto(event,'imagenProducto')">
+                        <img id="previewImagenProducto" class="admin-preview-imagen" style="display:none;">
+
+                        <label class="admin-campo-label">Foto secundaria (opcional)</label>
+                        <input type="file" id="inputSubImagenProducto" accept="image/*" class="admin-campo-file" onchange="previsualizarImagenProducto(event,'subImagenProducto')">
+                        <img id="previewSubImagenProducto" class="admin-preview-imagen" style="display:none;">
+
+                        <label class="admin-campo-label">Nombre</label>
+                        <input type="text" id="campoNombre" class="panel-nombre-input" placeholder="Nombre del producto">
+
+                        <label class="admin-campo-label">Precio</label>
+                        <input type="number" id="campoPrecio" class="panel-nombre-input" placeholder="Ej. 120">
+
+                        <label class="admin-campo-label">Precio mayoreo</label>
+                        <input type="number" id="campoPrecioMayoreo" class="panel-nombre-input" placeholder="Ej. 90">
+
+                        <label class="admin-campo-label">Descripción</label>
+                        <textarea id="campoDescripcion" class="panel-nombre-input admin-textarea" rows="3" placeholder="Descripción del producto"></textarea>
+
+                        <label class="admin-campo-label">Video de YouTube</label>
+                        <input type="text" id="campoVideoYoutube" class="panel-nombre-input" placeholder="Link de YouTube">
+
+                        <label class="admin-campo-label">Etiqueta principal</label>
+                        <input type="text" id="campoEtiquetaPrincipal" class="panel-nombre-input" placeholder="Ej. Velas">
+
+                        <label class="admin-campo-label">Subetiqueta</label>
+                        <input type="text" id="campoSubEtiqueta" class="panel-nombre-input" placeholder="Ej. Aromáticas">
+
+                        <label class="admin-campo-label">Etiquetas de evento</label>
+                        <input type="text" id="campoEtiquetasEvento" class="panel-nombre-input" placeholder="Ej. Bodas, XV años">
+
+                        <label class="admin-campo-check"><input type="checkbox" id="campoEnOferta"> En oferta</label>
+                        <label class="admin-campo-check"><input type="checkbox" id="campoMasVendido"> Más vendido</label>
+
+                        <label class="admin-campo-label">Alto</label>
+                        <input type="text" id="campoAlto" class="panel-nombre-input" placeholder="Ej. 15 cm">
+
+                        <label class="admin-campo-label">Ancho</label>
+                        <input type="text" id="campoAncho" class="panel-nombre-input" placeholder="Ej. 8 cm">
+
+                        <label class="admin-campo-label">YouTube img/vid</label>
+                        <input type="text" id="campoYoutubeImgVid" class="panel-nombre-input" placeholder="Link o referencia">
+
+                        <label class="admin-campo-label">Existencia</label>
+                        <input type="number" id="campoExistencia" class="panel-nombre-input" placeholder="Ej. 10">
+
+                        <div class="panel-nombre-acciones">
+                            <button class="panel-nombre-btn cancelar" onclick="document.getElementById('formularioProducto').classList.remove('abierto')">Cancelar</button>
+                            <button class="panel-nombre-btn guardar" id="btnPublicarProducto" onclick="publicarProducto()">Publicar producto</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <button class="btn-opcion-perfil" id="btnContrasena" onclick="gestionarContrasena()">
                 <span class="op-icono">🔒</span>
                 <div>
