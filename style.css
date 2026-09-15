@@ -3484,3 +3484,40 @@ body.modo-oscuro .btn-privacidad-drawer {
     color: #c8b8a8 !important;
 }
 body.modo-oscuro .btn-privacidad-drawer:hover { background: #3a2e26 !important; }
+
+/* ===== Responsivo: botones "Búscanos en Tienda" / "Búscanos en Bazar" ===== */
+/* En móvil el texto se salía del contorno de la píldora por el padding/font-size fijos en línea */
+@media (max-width: 600px) {
+    .btn-tienda-bazar {
+        padding: 14px 16px !important;
+        gap: 10px !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        flex: 1 1 100% !important;
+        box-sizing: border-box !important;
+    }
+    .btn-tienda-bazar-icono {
+        width: 52px !important;
+        height: 52px !important;
+        font-size: 1.7rem !important;
+    }
+    .btn-tienda-bazar-texto {
+        font-size: 1.05rem !important;
+        letter-spacing: 0.3px !important;
+        white-space: normal !important;
+        text-align: left !important;
+        line-height: 1.2 !important;
+        flex: 1 !important;
+    }
+}
+
+@media (max-width: 360px) {
+    .btn-tienda-bazar-icono {
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 1.4rem !important;
+    }
+    .btn-tienda-bazar-texto {
+        font-size: 0.92rem !important;
+    }
+}

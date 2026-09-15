@@ -1,5 +1,5 @@
 // ============================================================
-// VELAS KUKUMITA — app.js
+// YESOS KUKÚMITA — app.js
 // JavaScript extraído y organizado desde index.html.
 // Incluye:
 //   - cargarCatalogo()  : fetch dinámico desde Google Sheets CSV
@@ -19,6 +19,44 @@ function _ready(fn) {
     } else {
         fn();
     }
+}
+
+// ── Respaldos de imagen (usados en onerror="") ──
+// Antes este HTML iba escrito directo dentro del atributo onerror con comillas
+// escapadas; se movió aquí como funciones normales para que el HTML no lleve
+// marcado embebido (algunos antivirus heurísticos marcan como sospechoso el
+// patrón de HTML-dentro-de-atributo, aunque aquí es completamente inofensivo).
+function _fallbackAvatar(imgEl, tamano) {
+    var s = tamano || 110;
+    var radio = Math.round(s / 2);
+    var fuente = Math.round(s * 0.44);
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + s + '" height="' + s + '">' +
+        '<rect width="' + s + '" height="' + s + '" fill="#f0eae4" rx="' + radio + '"/>' +
+        '<text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle" font-size="' + fuente + '" fill="#8c7565">👤</text></svg>';
+    imgEl.src = 'data:image/svg+xml,' + encodeURIComponent(svg);
+}
+function _fallbackIcono(imgEl, emoji) {
+    var contenedor = imgEl.parentElement;
+    if (!contenedor) return;
+    contenedor.textContent = '';
+    var div = document.createElement('div');
+    div.style.cssText = 'width:80px;height:80px;display:flex;align-items:center;justify-content:center;font-size:2rem;';
+    div.textContent = emoji;
+    contenedor.appendChild(div);
+}
+function _fallbackImagenBazar(imgEl) {
+    var contenedor = imgEl.parentElement;
+    if (!contenedor) return;
+    contenedor.textContent = '';
+    contenedor.style.cssText += 'width:100%;height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#3d2b1f,#6b4c37);';
+    var icono = document.createElement('div');
+    icono.style.fontSize = '5rem';
+    icono.textContent = '🏪';
+    var texto = document.createElement('p');
+    texto.style.cssText = 'color:rgba(255,255,255,0.7);font-size:1rem;font-style:italic;letter-spacing:2px;font-family:Cormorant Garamond,Georgia,serif;margin-top:12px;';
+    texto.textContent = 'Yesos Polo Kukúmita en Bazar';
+    contenedor.appendChild(icono);
+    contenedor.appendChild(texto);
 }
 
 // ── DATOS DE VIDEOS POR RED SOCIAL ──
@@ -163,30 +201,103 @@ function _resetBotonesRed() {
 // Para editar productos: abre el link de Google Sheets y modifica las filas.
 //
 // 🔧 CONFIGURACIÓN — cambia solo esta línea si mueves la hoja:
-var SHEET_ID = '1jin2wMYingvbPD2csGxIbm5AhulfRvCRvIzAKJTUNMw';
+var SHEET_ID = '1LX-jUhxnbWYEQ8aa8cfbmCenWRYLGI8aHlojkfG7oNA';
+
+// 🔧 URL del Cloudflare Worker para compartir en redes sociales (Facebook, etc.)
+// Cuando instales el worker, reemplaza esta URL con la que te asigne Cloudflare.
+// Ejemplo: 'https://kukumita-og.TU-USUARIO.workers.dev'
+// Mientras no lo tengas configurado, deja el valor vacío ('') y funcionará
+// como antes (sin imagen en Facebook).
+var OG_WORKER_URL = 'https://yesos-polo-kukumita-linker.dulceprincesa086.workers.dev';
+
+// 🔧 Hoja de cálculo de Velas Kukúmita — se reutiliza en TRES lugares:
+//   1) Botón "Etiquetas" (grid propio)                → Hoja 2 completa
+//   2) Zona "Mostrar Más Velas" en la 1ª hoja de Yesos → primeros 3 de la Hoja 1
+//   3) Zona "Mostrar Más Etiquetas" en la 1ª hoja      → primeros 3 de la Hoja 2
+// Columnas en el mismo formato que la hoja de arriba (A Nombre, B precio,
+// C precio mayoreo, D descripción, ... H EtiquetaPrincipal, etc.)
+// NOTA: por defecto Google Sheets nombra la segunda pestaña "Hoja 2". Si tu pestaña
+// tiene otro nombre, cámbialo aquí exactamente igual (respetando mayúsculas/espacios).
+// La Hoja 1 no necesita nombre: se lee automáticamente como pestaña por defecto.
+var SHEET_ID_ETIQUETAS   = '1jin2wMYingvbPD2csGxIbm5AhulfRvCRvIzAKJTUNMw';
+var SHEET_NOMBRE_ETIQUETAS = 'Hoja 2';
+
+// 🔧 Segunda pestaña de ESTA MISMA hoja (SHEET_ID) con la info del modal "Búscanos en Bazar".
+// NOTA: por defecto Google Sheets nombra la segunda pestaña "Hoja 2". Si tu pestaña
+// tiene otro nombre, cámbialo aquí exactamente igual (respetando mayúsculas/espacios).
+var SHEET_NOMBRE_BAZAR = 'Hoja 2';
 // ──────────────────────────────────────────────────────────────────────────────
 // COLUMNAS ESPERADAS EN LA HOJA (fila 1 = encabezados, datos desde fila 2):
-//   A(0):  Nombre
-//   B(1):  precio
-//   C(2):  precio mayoreo
+// Hoja exclusiva de Yesos Polo Kukúmita (separada de la de Yesos Fer) — A a L:
+//   A(0):  Producto              (nombre)
+//   B(1):  Precio Original
+//   C(2):  Precio Bazar
 //   D(3):  Descripcion
-//   E(4):  video youtube
-//   F(5):  Imagen
-//   G(6):  EtiquetaPrincipal
-//   H(7):  SubEtiqueta
-//   I(8):  EtiquetaEvento
-//   J(9):  en oferta          (escribe "si" para activar)
-//   K(10): mas vendido        (escribe "si" para activar)
-//   L(11): Alto
-//   M(12): Ancho
-//   N(13): SubImagen          (URLs separadas por coma)
-//   O(14): youtube img/vid
-//   P(15): existencia         (número de piezas en stock)
+//   E(4):  Imagenes imgbb        (URLs separadas por coma; la primera es la principal)
+//   F(5):  Video                 (video principal del producto)
+//   G(6):  Etiqueta Principal
+//   H(7):  Sub Etiquetas
+//   I(8):  Medidas alto/ancho    (texto libre, se muestra tal cual en el modal)
+//   J(9):  Existencia            (número de piezas en stock)
+//   K(10): En Oferta             (escribe "si" para activar)
+//   L(11): Mas Vendido           (escribe "si" para activar)
+//
+// NOTA: esta hoja ya NO tiene columnas para "Etiqueta Evento" (filtro por
+// evento), "SubImagen"/aditamentos, ni video de redes sociales por producto.
+// Esas funciones quedan con lista vacía — no rompen nada, pero tampoco
+// mostrarán datos hasta que se agregue una fuente para ellas.
 // ══════════════════════════════════════════════════════════════════════════════
+
+// ── Caché en sessionStorage para las descargas de CSV de Google Sheets ──
+// Evita volver a descargar el mismo CSV si el usuario recarga la página o
+// navega de regreso dentro de la misma pestaña/sesión. TTL corto (por
+// defecto 3 minutos) para que los cambios que hagas en la hoja se reflejen
+// pronto sin tener que forzar recarga.
+var _CSV_CACHE_TTL_MS = 3 * 60 * 1000;
+function fetchCSVConCache(url, claveCache) {
+    try {
+        var guardado = sessionStorage.getItem(claveCache);
+        if (guardado) {
+            var datos = JSON.parse(guardado);
+            if (datos && (Date.now() - datos.t) < _CSV_CACHE_TTL_MS) {
+                return Promise.resolve(datos.texto);
+            }
+        }
+    } catch (e) { /* sessionStorage no disponible o dato corrupto: seguir sin caché */ }
+
+    return fetch(url)
+        .then(function(res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.text();
+        })
+        .then(function(texto) {
+            try {
+                sessionStorage.setItem(claveCache, JSON.stringify({ t: Date.now(), texto: texto }));
+            } catch (e) { /* cuota de sessionStorage llena: no es crítico, seguir sin guardar */ }
+            return texto;
+        });
+}
+
+// ── Escapa texto proveniente de Google Sheets antes de insertarlo con innerHTML ──
+// Úsalo siempre que construyas HTML por concatenación con datos de producto
+// (nombre, descripción, subtags, etc.). Si solo insertas texto plano, usa
+// textContent en su lugar — no necesita esta función.
+function escapeHtml(texto) {
+    var s = (texto === undefined || texto === null) ? '' : String(texto);
+    return s.replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+}
 
 var listaProductos = [];
 
 // ── Parser de CSV que maneja campos entre comillas con comas internas ──
+// IMPORTANTE: conserva TODAS las líneas, incluidas las completamente vacías.
+// Esto es necesario para que el número de fila de cada producto (usado en el
+// badge "# fila" del modal) siga coincidiendo con la fila real de Google Sheets
+// aunque haya huecos/filas vacías en medio de la hoja.
 function parsearCSV(texto) {
     var lineas = [];
     var filaActual = [];
@@ -208,80 +319,123 @@ function parsearCSV(texto) {
         } else if ((c === '\n' || c === '\r') && !dentroDeComillas) {
             if (c === '\r' && texto[i + 1] === '\n') i++;
             filaActual.push(campoActual.trim());
-            if (filaActual.some(function(f) { return f !== ''; })) {
-                lineas.push(filaActual);
-            }
+            lineas.push(filaActual);
             filaActual = [];
             campoActual = '';
         } else {
             campoActual += c;
         }
     }
-    // Última celda
-    filaActual.push(campoActual.trim());
-    if (filaActual.some(function(f) { return f !== ''; })) lineas.push(filaActual);
+    // Última celda — solo se agrega si el texto no terminaba ya en salto de línea
+    if (filaActual.length > 0 || campoActual !== '') {
+        filaActual.push(campoActual.trim());
+        lineas.push(filaActual);
+    }
+    // Quita únicamente líneas colgantes al final del archivo (por el último \n)
+    while (lineas.length > 0) {
+        var ultima = lineas[lineas.length - 1];
+        if (ultima.every(function(f) { return f === ''; })) {
+            lineas.pop();
+        } else {
+            break;
+        }
+    }
     return lineas;
 }
 
+// ── Encabezados esperados por posición (ver tabla de columnas arriba) ──
+// Se usa solo para VALIDAR que el orden de tu hoja no cambió; el mapeo de
+// datos sigue siendo por índice fijo (get(0), get(1), etc.) como antes.
+var _ENCABEZADOS_ESPERADOS = [
+    'producto', 'precio original', 'precio bazar', 'descripcion', 'imagenes imgbb',
+    'video', 'etiqueta principal', 'sub etiquetas', 'medidas alto/ancho',
+    'existencia', 'en oferta', 'mas vendido'
+];
+
+function _normalizarEncabezado(s) {
+    return (s || '').toString().trim().toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // quita acentos
+}
+
+// Compara la fila de encabezados real contra la esperada y avisa fuerte en
+// consola (una sola vez por carga) si alguna columna no coincide con su
+// posición esperada — para detectar de inmediato si moviste/insertaste una
+// columna en Google Sheets, en vez de que el catálogo se llene en silencio
+// con datos mal mapeados (ej. alto y ancho intercambiados).
+function _validarEncabezadosCSV(filaEncabezados) {
+    if (!filaEncabezados || filaEncabezados.length === 0) return;
+    var problemas = [];
+    _ENCABEZADOS_ESPERADOS.forEach(function(esperado, idx) {
+        var real = _normalizarEncabezado(filaEncabezados[idx]);
+        if (real.indexOf(esperado) === -1 && esperado.indexOf(real) === -1) {
+            problemas.push('Columna ' + String.fromCharCode(65 + idx) + ' (posición ' + idx +
+                '): se esperaba algo como "' + esperado + '" y se encontró "' + (filaEncabezados[idx] || '(vacío)') + '"');
+        }
+    });
+    if (problemas.length > 0) {
+        console.warn(
+            '⚠️ [Kukumita] El orden de columnas de tu Google Sheet no coincide con lo esperado.\n' +
+            'Si moviste, insertaste o borraste una columna, los datos pueden estar mal asignados ' +
+            '(por ejemplo, Alto y Ancho intercambiados, o precios en la columna equivocada).\n' +
+            problemas.join('\n')
+        );
+    }
+}
+
 // ── Convierte filas CSV en objetos de producto ──
+// Un producto solo se genera si la columna E (Imagenes imgbb) tiene contenido.
+// Si la fila solo tiene nombre/precio pero no imagen, se ignora (no aparece en la web).
 function csvAProductos(filas) {
     if (filas.length < 2) return [];
+    _validarEncabezadosCSV(filas[0]);
     // Omitir la fila de encabezados (fila 0)
     var productos = [];
     for (var i = 1; i < filas.length; i++) {
         var f = filas[i];
         var get = function(idx) { return (f[idx] || '').trim(); };
 
-        // Saltar filas sin nombre
-        if (!get(0)) continue;
+        // Saltar filas sin imagen en la columna E (aunque tengan nombre o precio)
+        if (!get(4)) continue;
 
-        // Nuevo orden de columnas (Google Sheets):
-        // A=0  nombre
-        // B=1  precio
-        // C=2  precioMayoreo (antes precioBazar)
-        // D=3  descripcion
-        // E=4  video youtube
-        // F=5  Imagen (URL principal + extras separadas por coma)
-        // G=6  EtiquetaPrincipal
-        // H=7  SubEtiqueta
-        // I=8  EtiquetaEvento
-        // J=9  en oferta  (si / vacío)
-        // K=10 mas vendido (si / vacío)
-        // L=11 Alto
-        // M=12 Ancho
-        // N=13 SubImagen (URLs o nombres separados por coma)
-        // O=14 youtube img/vid
-        // P=15 existencia (número de piezas en stock)
+        // Orden de columnas de la hoja exclusiva de Yesos Polo Kukúmita (A a L):
+        // A=0  Producto (nombre)
+        // B=1  Precio Original
+        // C=2  Precio Bazar
+        // D=3  Descripcion
+        // E=4  Imagenes imgbb (URL principal + extras separadas por coma)
+        // F=5  Video (principal del producto)
+        // G=6  Etiqueta Principal
+        // H=7  Sub Etiquetas
+        // I=8  Medidas alto/ancho (texto libre)
+        // J=9  Existencia
+        // K=10 En Oferta   (si / vacío)
+        // L=11 Mas Vendido (si / vacío)
 
-        // Video principal (E=4)
-        var videoPrincipal = get(4).replace(/^"+|"+$/g, '').trim();
+        // Video principal (F=5)
+        var videoPrincipal = get(5).replace(/^"+|"+$/g, '').trim();
 
-        // Imágenes: columna F=5
-        var _rawImg = get(5).replace(/^"+|"+$/g, '').trim();
+        // Imágenes: columna E=4 (Imagenes imgbb)
+        var _rawImg = get(4).replace(/^"+|"+$/g, '').trim();
         var imagenesExtra = _rawImg
             ? _rawImg.split(',').map(function(s) { return s.trim().replace(/^"+|"+$/g, ''); }).filter(Boolean)
             : [];
 
-        // EtiquetaPrincipal G=6
+        // Etiqueta Principal G=6
         var _rawTipos = get(6).replace(/^"+|"+$/g, '').trim();
         var tiposArray = _rawTipos
             ? _rawTipos.split(/[|,]/).map(function(s) { return s.trim().replace(/^"+|"+$/g, '').toLowerCase(); }).filter(Boolean)
             : ['arreglo'];
         var tipoPrincipal = tiposArray[0] || 'arreglo';
 
-        // Oferta y Más Vendido (J=9, K=10)
-        var enOferta   = get(9).toLowerCase()  === 'si' ? 1 : 0;
-        var masVendido = get(10).toLowerCase() === 'si' ? 1 : 0;
+        // Oferta y Más Vendido (K=10, L=11)
+        var enOferta   = get(10).toLowerCase() === 'si' ? 1 : 0;
+        var masVendido = get(11).toLowerCase() === 'si' ? 1 : 0;
 
-        // Existencia (P=15)
-        var existencia = parseInt(get(15).replace(/[^0-9]/g, '')) || 0;
+        // Existencia (J=9)
+        var existencia = parseInt(get(9).replace(/[^0-9]/g, '')) || 0;
 
-        // YouTube img/vid (O=14)
-        function parsearRed(idx) {
-            var raw = get(idx).replace(/^"+|"+$/g, '').trim();
-            return raw ? raw.split(',').map(function(s){ return s.trim().replace(/^"+|"+$/g, ''); }).filter(Boolean) : [];
-        }
-        var redYoutube = parsearRed(14);
+        // Medidas alto/ancho (I=8) — texto libre, ya no se separa en Alto/Ancho
+        var medidas = get(8).replace(/^"+|"+$/g, '').trim();
 
         productos.push({
             id:           i,
@@ -296,31 +450,27 @@ function csvAProductos(filas) {
             tipo:         tipoPrincipal,
             tipos:        tiposArray,
             subtags:      get(7) ? get(7).split(',').map(function(s){ return s.trim(); }).filter(Boolean).join('|') : '',
-            eventos:      get(8)
-                            ? get(8).split(/[,|]/).map(function(s){
-                                return s.trim().toLowerCase()
-                                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quitar acentos
-                                    .replace(/\s+/g, '-'); // espacios → guiones (ej: "baby shower" → "baby-shower")
-                              }).filter(Boolean).join('|')
-                            : '',
+            // Ya no hay columna de "Etiqueta Evento" en esta hoja — el filtro por
+            // evento queda inactivo (mostrará todos los productos con "todos").
+            eventos:      '',
             etiquetas:    tiposArray,
             aditivos:     [],
             oferta:       enOferta,
             masVendido:   masVendido,
-            alto:         get(11),
-            ancho:        get(12),
+            // "Medidas alto/ancho" viene en una sola columna: se guarda completa en
+            // `alto` (que el modal ya muestra en su propio recuadro) y se deja
+            // `ancho` vacío para que su recuadro no se muestre duplicado.
+            alto:         medidas,
+            ancho:        '',
             existencia:   existencia,
-            redYoutube:   redYoutube,
+            // Sin columna dedicada a videos de redes sociales por producto en esta hoja.
+            redYoutube:   [],
             redFacebook:  [],
             redInstagram: [],
             redTiktok:    [],
-            subImagenes:  (function() {
-                // Columna N (índice 13): SubImagen — valores separados por coma
-                var rawSub = (f[13] || '').trim().replace(/^"+|"+$/g, '').trim();
-                return rawSub
-                    ? rawSub.split(',').map(function(s){ return s.trim().replace(/^"+|"+$/g, ''); }).filter(Boolean)
-                    : [];
-            })()
+            // Sin columna "SubImagen" en esta hoja — el bloque de aditamentos
+            // relacionados en el modal queda vacío (no se muestra, no rompe nada).
+            subImagenes:  []
         });
     }
     return productos;
@@ -344,11 +494,16 @@ function mostrarEstadoCarga(mensaje, esError) {
 // Lee listaProductos y genera dinámicamente cada tarjeta .card-dinamica
 // ══════════════════════════════════════════════════════════════════════════════
 function renderizarCatalogoCompleto() {
-    var grid = document.getElementById('gridProductos');
-    if (!grid) { console.warn('renderizarCatalogoCompleto: #gridProductos no encontrado'); return; }
+    renderizarCatalogoEnGrid('gridProductos', listaProductos);
+}
+
+// ── Versión genérica: pinta cualquier lista de productos en cualquier grid ──
+function renderizarCatalogoEnGrid(gridId, productos) {
+    var grid = document.getElementById(gridId);
+    if (!grid) { console.warn('renderizarCatalogoEnGrid: #' + gridId + ' no encontrado'); return; }
     grid.innerHTML = '';
 
-    listaProductos.forEach(function(p) {
+    (productos || []).forEach(function(p) {
         var card = document.createElement('div');
         card.className = 'card-dinamica';
 
@@ -380,6 +535,7 @@ function renderizarCatalogoCompleto() {
         card.setAttribute('data-red-facebook',    JSON.stringify(p.redFacebook  || []));
         card.setAttribute('data-red-instagram',   JSON.stringify(p.redInstagram || []));
         card.setAttribute('data-red-tiktok',      JSON.stringify(p.redTiktok    || []));
+        card.setAttribute('data-origen-externo',  p._origenExterno || '');
         card.style.cursor = 'pointer';
 
         // ── Imagen principal ──
@@ -505,14 +661,14 @@ function _actualizarMetaOG(titulo, descripcion, imagen, url) {
     }
     var urlFinal = url || window.location.href;
     setMeta('og-url',         urlFinal);
-    setMeta('og-title',       titulo + ' — Velas Kukumita');
-    setMeta('og-description', descripcion || 'Descubre este producto en Velas Kukumita.');
+    setMeta('og-title',       titulo + ' — Yesos Polo Kukúmita');
+    setMeta('og-description', descripcion || 'Descubre este producto en Yesos Polo Kukúmita.');
     setMeta('og-image',       imagen);
-    setMeta('tw-title',       titulo + ' — Velas Kukumita');
-    setMeta('tw-description', descripcion || 'Descubre este producto en Velas Kukumita.');
+    setMeta('tw-title',       titulo + ' — Yesos Polo Kukúmita');
+    setMeta('tw-description', descripcion || 'Descubre este producto en Yesos Polo Kukúmita.');
     setMeta('tw-image',       imagen);
     // Actualizar también el <title> de la página
-    document.title = titulo + ' — Velas Kukumita';
+    document.title = titulo + ' — Yesos Polo Kukúmita';
 }
 
 function _abrirProductoDesdeURL() {
@@ -537,7 +693,7 @@ function _abrirProductoDesdeURL() {
     var imagenes  = [];
     try { imagenes = JSON.parse(cardEncontrada.getAttribute('data-imagenes') || '[]'); } catch(e) {}
     var imagen    = imagenes[0] || '';
-    var urlProd   = window.location.href.split('?')[0] + '?producto=' + encodeURIComponent(nombre);
+    var urlProd   = window.location.origin + window.location.pathname + '?producto=' + encodeURIComponent(nombre);
 
     _actualizarMetaOG(nombre, desc, imagen, urlProd);
 
@@ -550,18 +706,19 @@ function _abrirProductoDesdeURL() {
 // Restaurar meta OG genéricos al cerrar el modal
 (function() {
     var _tituloOriginal    = document.title;
-    var _ogTitleOriginal   = 'Velas Kukumita — Arreglos y Productos Artesanales';
-    var _ogDescOriginal    = 'Descubre nuestros hermosos arreglos y productos artesanales de Velas Kukumita.';
+    var _ogTitleOriginal   = 'Yesos Polo Kukúmita — Arreglos y Productos Artesanales';
+    var _ogDescOriginal    = 'Descubre nuestros hermosos arreglos y productos artesanales de Yesos Polo Kukúmita.';
+    var _ogImagenOriginal  = 'https://elpologr.github.io/yesospolokukumita/imagenes/perfil-yesoskukumita.webp';
 
     document.addEventListener('modalProductoCerrado', function() {
         document.title = _tituloOriginal;
         function setMeta(id, val) { var el=document.getElementById(id); if(el) el.setAttribute('content',val); }
         setMeta('og-title',       _ogTitleOriginal);
         setMeta('og-description', _ogDescOriginal);
-        setMeta('og-image',       'https://velaskukumita.com/imagenes/logo-velas-kukumita.jpg');
+        setMeta('og-image',       _ogImagenOriginal);
         setMeta('tw-title',       _ogTitleOriginal);
         setMeta('tw-description', _ogDescOriginal);
-        setMeta('tw-image',       'https://velaskukumita.com/imagenes/logo-velas-kukumita.jpg');
+        setMeta('tw-image',       _ogImagenOriginal);
     });
 })();
 
@@ -572,11 +729,7 @@ function cargarDesdeGoogleSheets() {
 
     mostrarEstadoCarga('Cargando catálogo desde Google Sheets…', false);
 
-    fetch(csvUrl)
-        .then(function(res) {
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            return res.text();
-        })
+    fetchCSVConCache(csvUrl, 'kukumita_csv_catalogo')
         .then(function(texto) {
             var filas = parsearCSV(texto);
 
@@ -605,9 +758,6 @@ function cargarDesdeGoogleSheets() {
 
             // Disparar evento para que otros sistemas (paginación, filtros) se enteren
             document.dispatchEvent(new CustomEvent('catalogoCargado'));
-
-            // Marcar que la carga inicial ya terminó (evita scroll automático al top)
-            setTimeout(function() { window._cargaInicialCompletada = true; }, 500);
 
             // Refrescar carruseles de ofertas/más vendidos con las nuevas cards
             if (typeof window.refrescarCarruseles === 'function') {
@@ -647,7 +797,300 @@ if (document.readyState === 'loading') {
     cargarDesdeGoogleSheets();
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// CARGA DE PRODUCTOS PARA EL BOTÓN "ETIQUETAS" — Hoja 2 de un Google Sheets distinto
+// ══════════════════════════════════════════════════════════════════════════════
+var listaProductosEtiquetas = [];
+var _etiquetasCargando = false;
+var _etiquetasCargadas = false;
 
+function mostrarEstadoCargaEtiquetas(mensaje, esError) {
+    var grid = document.getElementById('gridProductosEtiquetas');
+    if (!grid) return;
+    grid.innerHTML =
+        '<div style="grid-column:1/-1; text-align:center; padding:60px 20px; color:' +
+        (esError ? '#c0392b' : '#8c7565') + ';">' +
+        '<div style="font-size:2rem; margin-bottom:12px;">' + (esError ? '⚠️' : '⏳') + '</div>' +
+        '<p style="font-size:1rem; font-weight:600;">' + mensaje + '</p>' +
+        (esError ? '<p style="font-size:0.85rem; color:#999; margin-top:8px;">Revisa que "' + SHEET_NOMBRE_ETIQUETAS + '" sea el nombre correcto de la pestaña y que la hoja esté compartida como "Cualquiera con el enlace puede ver".</p>' : '') +
+        '</div>';
+}
+
+// Carga (una sola vez, con caché en memoria) los productos de la Hoja 2 del
+// Google Sheets de Etiquetas y los pinta en su propio grid.
+function cargarProductosEtiquetas(forzar) {
+    if (_etiquetasCargando) return;
+    if (_etiquetasCargadas && !forzar) {
+        renderizarCatalogoEnGrid('gridProductosEtiquetas', listaProductosEtiquetas);
+        return;
+    }
+    _etiquetasCargando = true;
+    mostrarEstadoCargaEtiquetas('Cargando productos desde Google Sheets…', false);
+
+    var csvUrl = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID_ETIQUETAS +
+        '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent(SHEET_NOMBRE_ETIQUETAS);
+
+    fetchCSVConCache(csvUrl, 'kukumita_csv_etiquetas_' + SHEET_NOMBRE_ETIQUETAS)
+        .then(function(texto) {
+            var filas = parsearCSV(texto);
+            var productos = csvAProductos(filas);
+
+            if (productos.length === 0) {
+                mostrarEstadoCargaEtiquetas('Esa hoja está vacía o no tiene el formato correcto.', true);
+                _etiquetasCargando = false;
+                return;
+            }
+
+            listaProductosEtiquetas = productos;
+            _etiquetasCargadas = true;
+            _etiquetasCargando = false;
+            renderizarCatalogoEnGrid('gridProductosEtiquetas', listaProductosEtiquetas);
+
+            if (typeof syncBotonesLike === 'function') syncBotonesLike();
+            document.dispatchEvent(new CustomEvent('catalogoEtiquetasCargado'));
+        })
+        .catch(function(err) {
+            console.error('Error cargando hoja de Etiquetas:', err);
+            _etiquetasCargando = false;
+            mostrarEstadoCargaEtiquetas('No se pudo cargar el catálogo de Etiquetas.', true);
+        });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PRODUCTOS ESPECIALES INSERTADOS EN LA PRIMERA HOJA (Yesos Polo Kukúmita):
+//   • Zona "Mostrar Más Etiquetas" (fila 9,  posiciones 26-28) → primeras 3
+//     etiquetas de la Hoja 2 de Velas Kukúmita.
+//   • Zona "Mostrar Más Velas"     (fila 10, posiciones 29-31) → primeros 3
+//     productos de la Hoja 1 de Velas Kukúmita.
+// En la hoja de Yesos, las filas 26-31 deben quedar SIN link de imagen en la
+// columna F para que csvAProductos() las ignore y así dejar ese hueco libre
+// para estos 6 productos "prestados".
+// ══════════════════════════════════════════════════════════════════════════════
+var FILA_INICIO_ETIQUETAS = 26; // fila de Google Sheets (Yesos) que le correspondería al 1er producto de "Etiquetas"
+var FILA_INICIO_VELAS     = 29; // ídem para el 1er producto de Velas
+var _especialesInsertados = false;
+
+// Clona un producto (ya parseado desde OTRA hoja) y le asigna el "id" que le
+// haría mostrar en el badge del modal la fila que le correspondería dentro
+// del catálogo de Yesos (data-sheet-row = id + 1), en vez de su fila real
+// en la hoja de Velas Kukúmita.
+function _prepararProductoEspecial(p, filaSheetsSimulada, origen) {
+    var clone = Object.assign({}, p);
+    clone.id = filaSheetsSimulada - 1;
+    clone._origenExterno = origen;
+    return clone;
+}
+
+function cargarProductosEspecialesVelas() {
+    var urlHoja1 = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID_ETIQUETAS + '/gviz/tq?tqx=out:csv';
+    var urlHoja2 = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID_ETIQUETAS +
+        '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent(SHEET_NOMBRE_ETIQUETAS);
+
+    Promise.all([
+        fetchCSVConCache(urlHoja1, 'kukumita_csv_velas'),
+        fetchCSVConCache(urlHoja2, 'kukumita_csv_etiquetas_' + SHEET_NOMBRE_ETIQUETAS)
+    ]).then(function(textos) {
+        var productosVelas     = csvAProductos(parsearCSV(textos[0])).slice(0, 3);
+        var productosEtiquetas = csvAProductos(parsearCSV(textos[1])).slice(0, 3);
+
+        var especiales = [];
+        productosEtiquetas.forEach(function(p, i) {
+            especiales.push(_prepararProductoEspecial(p, FILA_INICIO_ETIQUETAS + i, 'etiquetas-externas'));
+        });
+        productosVelas.forEach(function(p, i) {
+            especiales.push(_prepararProductoEspecial(p, FILA_INICIO_VELAS + i, 'velas'));
+        });
+
+        _insertarProductosEspecialesEnListaPrincipal(especiales);
+    }).catch(function(err) {
+        console.error('No se pudieron cargar los productos especiales de Velas Kukúmita:', err);
+    });
+}
+
+function _insertarProductosEspecialesEnListaPrincipal(especiales) {
+    if (!especiales || especiales.length === 0) return;
+    // Punto de inserción: justo antes del primer producto real cuya fila de
+    // Google Sheets sea igual o mayor a donde deberían ir estos especiales.
+    var idx = listaProductos.findIndex(function(p) { return (p.id + 1) >= FILA_INICIO_ETIQUETAS; });
+    if (idx === -1) idx = listaProductos.length;
+    listaProductos.splice.apply(listaProductos, [idx, 0].concat(especiales));
+
+    renderizarCatalogoCompleto();
+    if (typeof syncBotonesLike === 'function') syncBotonesLike();
+    document.dispatchEvent(new CustomEvent('catalogoCargado'));
+}
+
+// Se dispara una sola vez, justo después de que el catálogo principal de
+// Yesos haya cargado por primera vez.
+document.addEventListener('catalogoCargado', function() {
+    if (_especialesInsertados) return;
+    _especialesInsertados = true;
+    cargarProductosEspecialesVelas();
+});
+
+
+
+// ===== BARRAS DE CATEGORÍA SOBRE CADA FILA (solo página 1, modo "Mostrar Todo") =====
+// Aparecen arriba de cada una de las 10 filas de 3 productos que forman los
+// primeros 30 productos de la hoja principal de productos (no aplica al grid de "Etiquetas").
+// Cada barra funciona como botón de filtro: al presionarla, filtra el catálogo
+// exactamente igual que si se hubiera seleccionado esa etiqueta en "Filtrar por".
+var CATEGORIAS_BARRAS = [
+    { texto: 'Mostrar Más Figuras',        tipo: 'figuras' },
+    { texto: 'Mostrar Más Bases',          tipo: 'bases' },
+    { texto: 'Mostrar Más Macetas',        tipo: 'macetas' },
+    { texto: 'Mostrar Más Porta Velas',    tipo: 'portavelas' },
+    { texto: 'Mostrar Más Tazones',        tipo: 'tazones' },
+    { texto: 'Mostrar Más Porta Inciensos',tipo: 'portainciensos' },
+    { texto: 'Mostrar Más Alajeros',       tipo: 'alajeros' },
+    { texto: 'Mostrar Más Arreglos',       tipo: 'arreglo' },
+    { texto: 'Mostrar Más Etiquetas',      origenExterno: 'etiquetas-externas' },
+    { texto: 'Mostrar Más Velas',          origenExterno: 'velas' }
+];
+
+// Grupos de palabras equivalentes usados para reconocer la categoría de cada
+// producto a partir de su(s) data-tipos, igual que el sistema de filtros del sitio.
+// Se comparan sin acentos, espacios ni mayúsculas para tolerar variaciones de
+// escritura en la columna "EtiquetaPrincipal" de Google Sheets.
+var _VARIANTES_CATEGORIA_BARRA = {
+    figuras:        ['figura', 'figuras', 'animal', 'animales'],
+    bases:          ['base', 'bases'],
+    macetas:        ['maceta', 'macetas'],
+    portavelas:     ['portavela', 'portavelas', 'porta vela', 'porta velas'],
+    tazones:        ['tazon', 'tazones', 'tazón', 'tazónes'],
+    portainciensos: ['portaincienso', 'portainciensos', 'porta incienso', 'porta inciensos'],
+    alajeros:       ['alajero', 'alajeros', 'alhajero', 'alhajeros', 'joyero', 'joyeros'],
+    arreglo:        ['arreglo', 'arreglos']
+};
+
+// Quita acentos, espacios, guiones y pasa a minúsculas para comparar sin
+// importar cómo se haya escrito la etiqueta en la hoja de cálculo.
+function _normalizarCategoriaBarra(str) {
+    return (str || '').toString().toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[\s_\-]+/g, '');
+}
+
+function _cardCoincideConCategoriaBarra(card, cfg) {
+    if (cfg.origenExterno) {
+        return card.getAttribute('data-origen-externo') === cfg.origenExterno;
+    }
+    var rawTipos = (card.getAttribute('data-tipos') || card.getAttribute('data-tipo') || '');
+    var rawSubtags = (card.getAttribute('data-subtags') || '');
+    var candidatos = (rawTipos + '|' + rawSubtags).split(/[|,]/)
+        .map(function(s) { return _normalizarCategoriaBarra(s.replace(/^"+|"+$/g, '')); })
+        .filter(Boolean);
+    var lista = (_VARIANTES_CATEGORIA_BARRA[cfg.tipo] || [cfg.tipo]).map(_normalizarCategoriaBarra);
+    return candidatos.some(function(c) {
+        return lista.some(function(v) { return c === v || c.indexOf(v) !== -1 || v.indexOf(c) !== -1; });
+    });
+}
+
+// Índice (0-9) de la barra actualmente usada como filtro, o null si no hay ninguna activa
+var _filtroBarraCategoriaActivo = null;
+
+function filtrarPorBarraCategoria(fila) {
+    var grid = document.getElementById('gridProductos');
+    if (!grid) return;
+    var cfg = CATEGORIAS_BARRAS[fila];
+    if (!cfg) return;
+
+    if (_filtroBarraCategoriaActivo === fila) {
+        // Ya estaba activa esta categoría: se desactiva y vuelve a mostrar todo
+        _filtroBarraCategoriaActivo = null;
+        grid.querySelectorAll('.card-dinamica').forEach(function(c) { c.classList.remove('oculto'); });
+    } else {
+        _filtroBarraCategoriaActivo = fila;
+        var coincidencias = 0;
+        grid.querySelectorAll('.card-dinamica').forEach(function(c) {
+            var coincide = _cardCoincideConCategoriaBarra(c, cfg);
+            if (coincide) coincidencias++;
+            c.classList.toggle('oculto', !coincide);
+        });
+        if (coincidencias === 0) {
+            console.warn(
+                '[Barra de categoría] "' + cfg.texto + '" no encontró productos con la etiqueta "' +
+                cfg.tipo + '". Revisa el texto exacto que escribiste en la columna EtiquetaPrincipal ' +
+                '(H) de Google Sheets para esos productos.'
+            );
+        }
+    }
+
+    if (typeof window.actualizarPaginacion === 'function') window.actualizarPaginacion();
+
+    var zonaFiltro = document.getElementById('panelTodos');
+    (zonaFiltro || grid).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+window.filtrarPorBarraCategoria = filtrarPorBarraCategoria;
+
+// Detecta si hay una búsqueda de texto activa en cualquiera de los 3 buscadores
+// del sitio (buscador global superior, drawer de búsqueda, o el campo de texto
+// del panel "Todos"). Mientras haya búsqueda activa, los resultados ya no
+// corresponden a las categorías ordenadas manualmente entre los primeros 30
+// productos, así que las barras "Mostrar Más X" no deben aparecer.
+function _hayBusquedaDeTextoActiva() {
+    if (document.body.classList.contains('busqueda-global-activa')) return true;
+    if (window._busquedaDrawerTextoActiva) return true;
+    var inputTodos = document.getElementById('inputBusquedaTodos');
+    if (inputTodos && inputTodos.value.trim()) return true;
+    return false;
+}
+
+function insertarBarrasCategoriaProductos() {
+    var grid = document.getElementById('gridProductos');
+    if (!grid) return;
+
+    // Quitar barras insertadas previamente (se recalculan en cada render)
+    grid.querySelectorAll('.barra-categoria-fila').forEach(function(b) { b.remove(); });
+
+    // Solo debe aparecer en el modo "Mostrar Todo"
+    var btnTodosProductos = document.getElementById('btnModoTodosProductos');
+    var esModoMostrarTodo = btnTodosProductos && btnTodosProductos.classList.contains('activo');
+    if (!esModoMostrarTodo) return;
+
+    // No deben aparecer mientras el usuario esté usando algún buscador: el orden
+    // de resultados ya no corresponde a las 10 categorías acomodadas manualmente
+    if (_hayBusquedaDeTextoActiva()) return;
+
+    // Mientras haya un filtro de barra activo, se muestra una única barra para
+    // quitarlo en vez de las 10 (el listado ya no conserva la estructura de
+    // 10 filas de 3, así que las barras normales no aplican)
+    if (_filtroBarraCategoriaActivo !== null) {
+        var primeraCard = grid.querySelector('.card-dinamica');
+        var barraQuitar = document.createElement('button');
+        barraQuitar.type = 'button';
+        barraQuitar.className = 'barra-categoria-fila barra-categoria-fila-quitar';
+        barraQuitar.textContent = '✕ Quitar filtro y ver todo';
+        barraQuitar.addEventListener('click', function() { filtrarPorBarraCategoria(_filtroBarraCategoriaActivo); });
+        if (primeraCard) grid.insertBefore(barraQuitar, primeraCard);
+        else grid.appendChild(barraQuitar);
+        return;
+    }
+
+    // Solo en la página 1 de la paginación
+    var hashMatch = (window.location.hash || '').match(/pagina=(\d+)/);
+    var paginaActualNum = hashMatch ? parseInt(hashMatch[1], 10) : 1;
+    if (paginaActualNum !== 1) return;
+
+    var cards = Array.from(grid.querySelectorAll('.card-dinamica')).filter(function(c) {
+        return !c.classList.contains('oculto') && !c.classList.contains('paginacion-oculto');
+    });
+
+    for (var fila = 0; fila < 10; fila++) {
+        var idx = fila * 3;
+        if (idx >= cards.length) break;
+        var cfg = CATEGORIAS_BARRAS[fila] || { texto: 'Mostrar Más Productos' };
+        var barra = document.createElement('button');
+        barra.type = 'button';
+        barra.className = 'barra-categoria-fila';
+        barra.textContent = cfg.texto;
+        (function(filaCerrada) {
+            barra.addEventListener('click', function() { filtrarPorBarraCategoria(filaCerrada); });
+        })(fila);
+        grid.insertBefore(barra, cards[idx]);
+    }
+}
+window.insertarBarrasCategoriaProductos = insertarBarrasCategoriaProductos;
 
 // ===== PAGINACIÓN DE 30 PRODUCTOS POR PÁGINA =====
 (function() {
@@ -657,7 +1100,10 @@ if (document.readyState === 'loading') {
 
     function obtenerTarjetasVisibles() {
         return Array.from(document.querySelectorAll('#gridProductos .card-dinamica'))
-            .filter(function(c) { return !c.classList.contains('oculto'); });
+            .filter(function(c) {
+                return !c.classList.contains('oculto') &&
+                       !c.classList.contains('oculto-forma-carrusel');
+            });
     }
 
     function calcularTotalPaginas() {
@@ -667,8 +1113,11 @@ if (document.readyState === 'loading') {
     function mostrarPagina(num) {
         paginaActual = num;
         // Guardar página en el hash de la URL para que persista al recargar
-        // (Hash de paginación desactivado para evitar scroll automático al recargar)
-        // La URL se mantiene limpia; la página siempre arranca desde el top.
+        var nuevoHash = (window.location.hash || '').replace(/#?pagina=\d+/, '').replace(/^#?&/, '').replace(/^#/, '') || '';
+        var hashFinal = (nuevoHash ? nuevoHash + '&' : '') + 'pagina=' + num;
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, '', '#' + hashFinal);
+        }
         var inicio = (num - 1) * POR_PAGINA;
         var fin = inicio + POR_PAGINA;
         // Quita paginacion-oculto a todas
@@ -682,6 +1131,7 @@ if (document.readyState === 'loading') {
             }
         });
         renderControles();
+        insertarBarrasCategoriaProductos();
         if (_scrollAlCambiarPagina) {
             var grid = document.getElementById('gridProductos');
             if (grid) {
@@ -712,7 +1162,8 @@ if (document.readyState === 'loading') {
             if (total <= 1) {
                 // Limpiar el hash de página para que no quede sucio al quitar filtros
                 if (window.history && window.history.replaceState) {
-                    // URL ya limpia — no hay hash de paginación que limpiar
+                    var hashLimpio = (window.location.hash || '').replace(/#?pagina=\d+/, '').replace(/^#?&/, '').replace(/^#/, '');
+                    window.history.replaceState(null, '', hashLimpio ? '#' + hashLimpio : window.location.pathname);
                 }
                 return;
             }
@@ -743,12 +1194,22 @@ if (document.readyState === 'loading') {
         });
     }
 
+    var _primeraVez = true;
+
     function actualizarPaginacion() {
         tarjetasVisibles = obtenerTarjetasVisibles();
-        // Siempre arrancar en página 1 y en el top de la pantalla
-        // (se eliminó la restauración desde hash para evitar scroll automático al recargar)
-        window.history.replaceState(null, '', window.location.pathname + window.location.search);
-        mostrarPagina(1);
+        var paginaInicial = 1;
+        // Solo restaurar la página guardada en el hash durante la carga inicial,
+        // no al cambiar filtros (para evitar mostrar páginas desincronizadas).
+        if (_primeraVez) {
+            var hash = window.location.hash || '';
+            var match = hash.match(/pagina=(\d+)/);
+            var paginaGuardada = match ? parseInt(match[1]) : 1;
+            var totalPags = Math.ceil(tarjetasVisibles.length / POR_PAGINA);
+            paginaInicial = (paginaGuardada > 1 && paginaGuardada <= totalPags) ? paginaGuardada : 1;
+            _primeraVez = false;
+        }
+        mostrarPagina(paginaInicial);
     }
 
     // Escuchar el evento de catálogo cargado (Google Sheets) en lugar de usar un timeout fijo
@@ -756,12 +1217,10 @@ if (document.readyState === 'loading') {
         // Detectar el modo activo antes de que el catálogo cargara
         var btnActivo = document.querySelector('.btn-modo-velas.activo');
         var mapaIDs = {
-            'btnModoTodosProductos': 'mostrar_todo',
-            'btnModoTodos':          'todos',
-            'btnModoArreglos':       'arreglos',
-            'btnModoDecoraciones':   'decoraciones',
-            'btnModoCentrosMesa':    'centros_mesa',
-            'btnModoEtiquetas':      'etiquetas'
+            'btnModoTodosProductos':  'mostrar_todo',
+            'btnModoArreglos':        'arreglos',
+            'btnModoPaquetes':        'paquetes',
+            'btnModoEtiquetas':       'etiquetas'
         };
         var modoActual = btnActivo ? (mapaIDs[btnActivo.id] || 'mostrar_todo') : 'mostrar_todo';
 
@@ -846,7 +1305,7 @@ if (document.readyState === 'loading') {
                 const pTarjeta = parseInt(tarjeta.getAttribute('data-precio')) || 0;
 
                 const cumpleForma  = (formaActiva  === 'todos' || fTarjeta === formaActiva);
-                const cumpleEvento = (eventoActivo === 'todos' || eTarjeta.split('|').map(function(e){ return e.trim(); }).includes(eventoActivo));
+                const cumpleEvento = (eventoActivo === 'todos' || eTarjeta === eventoActivo);
                 const cumplePrecio = (pTarjeta <= precioMaximoActivo);
 
                 tarjeta.classList.toggle('oculto', !(cumpleForma && cumpleEvento && cumplePrecio));
@@ -1040,7 +1499,7 @@ if (document.readyState === 'loading') {
             // Si no está en el mapa, mostrarlo tal como viene (con mayúscula inicial)
             return slug.charAt(0).toUpperCase() + slug.slice(1);
         }
-        const eventoSlots = dataEvento.split('|').filter(e => e && e !== 'sin' && e !== 'sin-evento');
+        const eventoSlots = dataEvento.split(/\s+/).filter(e => e && e !== 'sin' && e !== 'evento');
         if (eventoSlots.length > 0) {
             haySubetiquetas = true;
             const labelEv = document.createElement('div');
@@ -1257,20 +1716,46 @@ if (document.readyState === 'loading') {
 
         // Botón WhatsApp
         document.getElementById('mpBtnWhatsapp').onclick = () => {
-            const texto = encodeURIComponent('Hola, me interesa el producto: ' + nombre + (precioNum ? ' ($' + precioNum + ' MXN)' : ''));
-            window.open('https://wa.me/524431469161?text=' + texto, '_blank');
+            const textoPlano = 'Hola, me interesa el producto: ' + nombre + (precioNum ? ' ($' + precioNum + ' MXN)' : '');
+            const imagenProducto = (galeriaImagenes && galeriaImagenes[0]) || '';
+            compartirConImagenOFallback(textoPlano, imagenProducto, '524431382094');
         };
 
         // Botón Compartir — actualiza OG y abre submenu
         document.getElementById('mpBtnCompartir').onclick = (e) => {
             e.stopPropagation();
-            const url = window.location.href.split('?')[0] + '?producto=' + encodeURIComponent(nombre);
+            const url    = window.location.origin + window.location.pathname + '?producto=' + encodeURIComponent(nombre);
+            const urlOG  = (typeof _urlOG === 'function') ? _urlOG(url) : url;
             // Actualizar meta OG con este producto antes de compartir
             if (typeof _actualizarMetaOG === 'function') {
-                _actualizarMetaOG(nombre, descripcion, galeriaImagenes[0] || '', url);
+                _actualizarMetaOG(nombre, descripcion, galeriaImagenes[0] || '', urlOG);
             }
-            abrirSubmenuCompartir(url, nombre);
+            abrirSubmenuCompartir(url, nombre, galeriaImagenes[0] || '');
         };
+
+        // ── Producto especial traído desde Velas Kukúmita (zona "Mostrar Más Velas") ──
+        // Para estos productos: sin Favoritos, sin Carrito y sin Compartir —
+        // solo WhatsApp y un botón para ver el producto en velaskukumita.com
+        const origenExterno    = card.getAttribute('data-origen-externo') || '';
+        const filaFavCarrito   = document.getElementById('mpFilaFavCarrito');
+        const btnCompartirModal = document.getElementById('mpBtnCompartir');
+        const btnVisitarVelas   = document.getElementById('mpBtnVisitarVelas');
+
+        if (origenExterno === 'velas') {
+            if (filaFavCarrito)    filaFavCarrito.style.display = 'none';
+            if (btnCompartirModal) btnCompartirModal.style.display = 'none';
+            if (btnVisitarVelas) {
+                btnVisitarVelas.style.display = '';
+                btnVisitarVelas.onclick = () => {
+                    const urlVelas = 'https://velaskukumita.com/?producto=' + encodeURIComponent(nombre);
+                    window.open(urlVelas, '_blank');
+                };
+            }
+        } else {
+            if (filaFavCarrito)    filaFavCarrito.style.display = '';
+            if (btnCompartirModal) btnCompartirModal.style.display = '';
+            if (btnVisitarVelas)   btnVisitarVelas.style.display = 'none';
+        }
 
         renderizarGaleria();
 
@@ -1637,58 +2122,67 @@ if (document.readyState === 'loading') {
 
     // ===== CAMBIO DE MODO: ARREGLOS / TODOS LOS PRODUCTOS =====
     function cambiarModoVelas(modo) {
-        const btnArreglos       = document.getElementById('btnModoArreglos');
-        const btnEtiquetas      = document.getElementById('btnModoEtiquetas');
-        const btnDecoraciones   = document.getElementById('btnModoDecoraciones');
-        const btnCentrosMesa    = document.getElementById('btnModoCentrosMesa');
-        const btnTodos          = document.getElementById('btnModoTodos');
+        // Limpiar bandera de búsqueda del drawer (se reactiva justo después si el
+        // cambio de modo vino de una búsqueda; ver ejecutarBusquedaDrawer)
+        window._busquedaDrawerTextoActiva = false;
+
+        // Botones
         const btnTodosProductos = document.getElementById('btnModoTodosProductos');
-        const panelArr          = document.getElementById('panelArreglos');
-        const panelEtiq         = document.getElementById('panelEtiquetas');
-        const panelDeco         = document.getElementById('panelDecoraciones');
-        const panelCentrosMesa  = document.getElementById('panelCentrosMesa');
-        const panelTod          = document.getElementById('panelTodos');
-        const bloqueArr         = document.getElementById('bloqueFiltroPrecioArreglos');
-        const bloqueTod         = document.getElementById('bloqueFiltroPrecioTodos');
+        const btnArreglos       = document.getElementById('btnModoArreglos');
+        const btnPaquetes       = document.getElementById('btnModoPaquetes');
+        const btnEtiquetas      = document.getElementById('btnModoEtiquetas');
+
+        const panelArr  = document.getElementById('panelArreglos');
+        const panelEtiq = document.getElementById('panelEtiquetas');
+        const panelTod  = document.getElementById('panelTodos');
+        const bloqueArr = document.getElementById('bloqueFiltroPrecioArreglos');
+        const bloqueTod = document.getElementById('bloqueFiltroPrecioTodos');
+        const gridPrincipal   = document.getElementById('gridProductos');
+        const gridEtiquetas   = document.getElementById('gridProductosEtiquetas');
+
+        // Por defecto: grid principal visible, grid de etiquetas oculto.
+        // (el bloque "etiquetas" de abajo invierte esto cuando corresponde)
+        if (gridPrincipal) gridPrincipal.style.display = '';
+        if (gridEtiquetas) gridEtiquetas.style.display = 'none';
 
         // Desactivar todos los botones y paneles
-        [btnArreglos, btnEtiquetas, btnDecoraciones, btnCentrosMesa, btnTodos, btnTodosProductos]
+        [btnTodosProductos, btnArreglos, btnPaquetes, btnEtiquetas]
             .forEach(b => b && b.classList.remove('activo'));
-        [panelArr, panelEtiq, panelDeco, panelCentrosMesa, panelTod]
+        [panelArr, panelEtiq, panelTod]
             .forEach(p => p && p.classList.remove('visible'));
-        // Ocultar ambos bloques de precio
         if (bloqueArr) bloqueArr.style.display = 'none';
         if (bloqueTod) bloqueTod.style.display = 'none';
 
-        if (modo === 'arreglos') {
+        if (modo === 'mostrar_todo') {
+            if (btnTodosProductos) btnTodosProductos.classList.add('activo');
+            if (panelTod) panelTod.classList.add('visible');
+            if (bloqueTod) bloqueTod.style.display = 'block';
+            _filtroBarraCategoriaActivo = null;
+            aplicarFiltrosUnificados('mostrar_todo');
+        } else if (modo === 'arreglos') {
             if (btnArreglos) btnArreglos.classList.add('activo');
             if (bloqueArr) bloqueArr.style.display = 'block';
             if (panelArr) panelArr.classList.add('visible');
             aplicarFiltrosArreglos();
+        } else if (modo === 'paquetes') {
+            if (btnPaquetes) btnPaquetes.classList.add('activo');
+            if (panelTod) panelTod.classList.add('visible');
+            if (bloqueTod) bloqueTod.style.display = 'block';
+            aplicarFiltrosUnificados('paquetes');
         } else if (modo === 'etiquetas') {
             if (btnEtiquetas) btnEtiquetas.classList.add('activo');
             if (panelEtiq) panelEtiq.classList.add('visible');
+            if (gridPrincipal) gridPrincipal.style.display = 'none';
+            if (gridEtiquetas) gridEtiquetas.style.display = '';
+            cargarProductosEtiquetas();
             aplicarFiltrosUnificados('etiquetas');
-        } else if (modo === 'decoraciones') {
-            if (btnDecoraciones) btnDecoraciones.classList.add('activo');
-            if (panelDeco) panelDeco.classList.add('visible');
-            aplicarFiltrosUnificados('decoraciones');
-        } else if (modo === 'centros_mesa') {
-            if (btnCentrosMesa) btnCentrosMesa.classList.add('activo');
-            if (panelCentrosMesa) panelCentrosMesa.classList.add('visible');
-            aplicarFiltrosUnificados('centros_mesa');
-        } else if (modo === 'mostrar_todo') {
-            // Mostrar Todo: activa sólo el botón superior y muestra absolutamente todo
+        } else {
+            // Fallback: mostrar todo
             if (btnTodosProductos) btnTodosProductos.classList.add('activo');
             if (panelTod) panelTod.classList.add('visible');
             if (bloqueTod) bloqueTod.style.display = 'block';
+            _filtroBarraCategoriaActivo = null;
             aplicarFiltrosUnificados('mostrar_todo');
-        } else {
-            // 'todos' = 🛍️ Productos (solo tipo producto)
-            if (btnTodos) btnTodos.classList.add('activo');
-            if (panelTod) panelTod.classList.add('visible');
-            if (bloqueTod) bloqueTod.style.display = 'block';
-            aplicarFiltrosUnificados('todos');
         }
     }
 
@@ -1703,8 +2197,7 @@ if (document.readyState === 'loading') {
         todos:        { forma: 'todos', evento: 'todos' },
         mostrar_todo: {},
         etiquetas:    { evento: 'todos' },
-        decoraciones: {},
-        centros_mesa: {}
+        decoraciones: {}
     };
 
     // ── Utilidades de búsqueda inteligente ──────────────────────────────────
@@ -1777,24 +2270,7 @@ if (document.readyState === 'loading') {
     }
     // ────────────────────────────────────────────────────────────────────────
 
-    // Temporizadores de debounce por panel
-    var _busquedaTimers = {};
-
-    // Llamada con debounce — para el evento oninput (espera 3 s sin escribir)
     function filtrarPorNombreUnificado(panel, valor) {
-        if (_busquedaTimers[panel]) clearTimeout(_busquedaTimers[panel]);
-        _busquedaTimers[panel] = setTimeout(function() {
-            _busquedaTimers[panel] = null;
-            aplicarFiltrosUnificados(panel);
-        }, 3000);
-    }
-
-    // Llamada inmediata — para el botón de lupa
-    function filtrarPorNombreUnificadoInmediato(panel) {
-        if (_busquedaTimers[panel]) {
-            clearTimeout(_busquedaTimers[panel]);
-            _busquedaTimers[panel] = null;
-        }
         aplicarFiltrosUnificados(panel);
     }
 
@@ -1850,11 +2326,19 @@ if (document.readyState === 'loading') {
         const rawTipos = (card.getAttribute('data-tipos') || card.getAttribute('data-tipo') || '');
         const tipos = rawTipos.toLowerCase().replace(/^"+|"+$/g, '').split(/[|,]/).map(s => s.trim().replace(/^"+|"+$/g, '')).filter(Boolean);
         const variantes = {
-            'producto':      ['producto','productos'],
-            'arreglo':       ['arreglo','arreglos'],
-            'decoracion':    ['decoracion','decoraciones','aditamento','aditamentos'],
-            'etiqueta':      ['etiqueta','etiquetas'],
-            'centro_mesa':   ['centro_mesa','centros_mesa','centro de mesa','centros de mesa','centromesa','centrodemesa']
+            'producto':        ['producto','productos'],
+            'arreglo':         ['arreglo','arreglos'],
+            'paquetes':        ['paquete','paquetes'],
+            'decoracion':      ['decoracion','decoraciones','aditamento','aditamentos','centro de mesa','centro_de_mesa','centrodemesa'],
+            'etiqueta':        ['etiqueta','etiquetas'],
+            // Categorías de etiquetaprincipal (col G)
+            'figuras':         ['figura','figuras'],
+            'bases':           ['base','bases'],
+            'macetas':         ['maceta','macetas'],
+            'tazones':         ['tazon','tazones','tazón','tazónes'],
+            'portavelas':      ['porta vela','porta velas','portavela','portavelas','porta_vela','porta_velas'],
+            'portainciensos':  ['porta incienso','porta inciensos','portaincienso','portainciensos','porta_incienso','porta_inciensos'],
+            'aditamentos':     ['aditamento','aditamentos']
         };
         return buscar.some(function(b) {
             const lista = variantes[b] || [b];
@@ -1867,14 +2351,16 @@ if (document.readyState === 'loading') {
             arreglos:     'inputBusquedaArreglos',
             todos:        'inputBusquedaTodos',
             etiquetas:    'inputBusquedaEtiquetas',
-            decoraciones: 'inputBusquedaDecoraciones',
-            centros_mesa: 'inputBusquedaCentrosMesa'
+            decoraciones: 'inputBusquedaDecoraciones'
         };
         const inputEl = document.getElementById(inputMap[panel]);
         const textoBusq = (inputEl ? inputEl.value : '').trim().toLowerCase();
         const filtros = filtrosUnificados[panel] || {};
         const formaActiva  = filtros.forma  || 'todos';
         const eventoActivo = filtros.evento || 'todos';
+
+        // Modos que filtran por etiquetaprincipal directamente
+        const modosPorEtiqueta = ['paquetes'];
 
         document.querySelectorAll('.card-dinamica').forEach(card => {
             const formaCard  = (card.dataset.forma  || '').toLowerCase();
@@ -1883,17 +2369,21 @@ if (document.readyState === 'loading') {
 
             const okNombre = coincideNombre(nombreCard, textoBusq, card);
             const okForma  = formaActiva  === 'todos' || formaCard === formaActiva;
-            const okEvento = eventoActivo === 'todos' || eventoCard.split('|').map(function(e){ return e.trim(); }).includes(eventoActivo);
+            const okEvento = eventoActivo === 'todos' || eventoCard.split(' ').includes(eventoActivo);
 
             // Si hay texto de búsqueda activo, ignorar el filtro de tipo y buscar en TODOS los productos
             if (textoBusq) {
                 card.classList.toggle('oculto', !okNombre);
+            } else if (modosPorEtiqueta.includes(panel)) {
+                // Filtrar por etiquetaprincipal usando tieneTipo con el nombre del modo
+                card.classList.toggle('oculto', !tieneTipo(card, panel));
             } else if (panel === 'decoraciones') {
                 card.classList.toggle('oculto', !tieneTipo(card, 'decoracion'));
-            } else if (panel === 'centros_mesa') {
-                card.classList.toggle('oculto', !tieneTipo(card, 'centro_mesa'));
             } else if (panel === 'etiquetas') {
-                card.classList.toggle('oculto', !(tieneTipo(card, 'etiqueta') && okEvento));
+                // Los productos de este panel vienen de una hoja dedicada (Hoja 2),
+                // así que se muestran todos por defecto; solo se filtran por
+                // nombre/evento si el usuario usa la búsqueda o los filtros de evento.
+                card.classList.toggle('oculto', !(okNombre && okEvento));
             } else if (panel === 'arreglos') {
                 // Respetar también el filtro de precio activo en arreglos
                 let okPrecio = true;
@@ -1905,11 +2395,9 @@ if (document.readyState === 'loading') {
                 }
                 card.classList.toggle('oculto', !(tieneTipo(card, 'arreglo') && okForma && okEvento && okPrecio));
             } else if (panel === 'mostrar_todo') {
-                // Ocultar de "Mostrar Todo" los productos cuya EtiquetaPrincipal es "Etiqueta":
-                // sólo deben verse al presionar el botón de Etiquetas.
-                card.classList.toggle('oculto', tieneTipo(card, 'etiqueta'));
+                card.classList.toggle('oculto', false); // sin texto: mostrar todo
             } else {
-                // panel === 'todos' (🛍️ Productos): muestra solo los que tienen tipo 'producto'
+                // panel === 'todos' (Productos): muestra solo los que tienen tipo 'producto'
                 card.classList.toggle('oculto', !(tieneTipo(card, 'producto') && okForma && okEvento));
             }
         });
@@ -1988,16 +2476,11 @@ if (document.readyState === 'loading') {
         } else {
             aplicarFiltrosArreglos();
         }
-        if (typeof window.scrollToGrid === 'function') window.scrollToGrid();
     }
 
     // Filtra por precio exacto sobre TODOS los tipos sin restricción de categoría
     function aplicarFiltroPrecioSobreTodo(precio, tipoPrecio) {
         document.querySelectorAll('.card-dinamica').forEach(function(card) {
-            if (tieneTipo(card, 'etiqueta')) {
-                card.classList.add('oculto');
-                return;
-            }
             if (precio === 'todos') {
                 card.classList.remove('oculto');
             } else {
@@ -2061,10 +2544,11 @@ if (document.readyState === 'loading') {
     window.filtrarTamanoArreglos        = filtrarTamanoArreglos;
     window.aplicarFiltrosUnificados     = aplicarFiltrosUnificados;
     window.filtrarPorNombreUnificado    = filtrarPorNombreUnificado;
-    window.filtrarPorNombreUnificadoInmediato = filtrarPorNombreUnificadoInmediato;
     window.toggleDropdownFiltros        = toggleDropdownFiltros;
     window.toggleGrupoFiltro            = toggleGrupoFiltro;
     window.seleccionarTagFiltro         = seleccionarTagFiltro;
+
+    // ===== FILTROS TODOS LOS PRODUCTOS =====
     function actualizarPrecio(val) {
         document.getElementById('txtPrecioMax').textContent = '$' + val + ' MXN';
         aplicarFiltrosTodos();
@@ -2091,7 +2575,6 @@ if (document.readyState === 'loading') {
         document.querySelectorAll('#lista-precios-todos .btn-precio-velas').forEach(b => b.classList.remove('activo'));
         btn.classList.add('activo');
         aplicarFiltrosPrecioExactoTodos();
-        if (typeof window.scrollToGrid === 'function') window.scrollToGrid();
     }
 
     function aplicarFiltrosPrecioExactoTodos() {
@@ -2136,7 +2619,7 @@ if (document.readyState === 'loading') {
             }
 
             const okForma   = formaActiva  === 'todos' || formaCard  === formaActiva;
-            const okEvento  = eventoActivo === 'todos' || eventoCard.split('|').map(function(e){ return e.trim(); }).includes(eventoActivo);
+            const okEvento  = eventoActivo === 'todos' || eventoCard.split(' ').includes(eventoActivo);
             const okNombre  = coincideNombre(nombreCard, textoBusq, card);
 
             // Si hay precio exacto activo (boton $15/$20/etc), tiene prioridad sobre el slider
@@ -2169,11 +2652,6 @@ if (document.readyState === 'loading') {
         const el = document.getElementById(id);
         if (el) el.scrollBy({ left: px, behavior: 'smooth' });
     }
-
-    // Exponer al scope global
-    window.filtrarPrecioTodos  = filtrarPrecioTodos;
-    window.cambiarTipoPrecio   = cambiarTipoPrecio;
-    window.scrollPrecios       = scrollPrecios;
 
     // Inicializar listeners de filtros de botones (forma / evento)
     _ready(function() {
@@ -2595,13 +3073,15 @@ function _coincideDrawer(nombre, query, card) {
 function ejecutarBusquedaDrawer() {
     var rawQuery = document.getElementById('drawerInputBusqueda').value.trim();
     var query    = rawQuery.toLowerCase();
-    if (!query) { mostrarSugerenciasDrawer(); return; }
+    if (!query) { window._busquedaDrawerTextoActiva = false; mostrarSugerenciasDrawer(); return; }
 
     // Mostrar TODOS los resultados en el catálogo principal:
     // 1. Cerrar drawer
     cerrarDrawer();
     // 2. Cambiar a modo "mostrar todo" para que no haya filtro de tipo
     if (typeof window.cambiarModoVelas === 'function') window.cambiarModoVelas('mostrar_todo');
+    // Marcar que hay una búsqueda de texto activa (oculta las barras "Mostrar Más X")
+    window._busquedaDrawerTextoActiva = true;
     // 3. Filtrar todas las cards por query (con acento y sinónimos)
     var cards = document.querySelectorAll('#gridProductos .card-dinamica');
     var total = 0;
@@ -2614,11 +3094,9 @@ function ejecutarBusquedaDrawer() {
     });
     // 4. Repaginar
     if (typeof window.actualizarPaginacion === 'function') window.actualizarPaginacion();
-    // 5. Scroll al catálogo (solo si fue acción del usuario, no carga inicial)
-    if (window._cargaInicialCompletada) {
-        var grid = document.getElementById('gridProductos');
-        if (grid) setTimeout(function(){ grid.scrollIntoView({ behavior:'smooth', block:'start' }); }, 100);
-    }
+    // 5. Scroll al catálogo
+    var grid = document.getElementById('gridProductos');
+    if (grid) setTimeout(function(){ grid.scrollIntoView({ behavior:'smooth', block:'start' }); }, 100);
     // 6. Toast informativo
     if (typeof mostrarToast === 'function') {
         mostrarToast(total > 0
@@ -2639,9 +3117,10 @@ function renderizarResultadosDrawer(lista, titulo) {
     lista.slice(0, 4).forEach(function(p) {
         var item = document.createElement('div');
         item.className = 'drawer-rec-item';
-        item.innerHTML = '<img class="drawer-rec-img" src="' + p.img + '" alt="' + p.nombre + '" onerror="this.style.background=\'#eee\'">'
-            + '<div class="drawer-rec-info"><p class="drawer-rec-nombre">' + p.nombre + '</p>'
-            + '<p class="drawer-rec-precio">$' + p.precio + ' MXN</p></div>'
+        var nombreSeguroDrawer = escapeHtml(p.nombre);
+        item.innerHTML = '<img class="drawer-rec-img" src="' + escapeHtml(p.img) + '" alt="' + nombreSeguroDrawer + '" onerror="this.style.background=\'#eee\'">'
+            + '<div class="drawer-rec-info"><p class="drawer-rec-nombre">' + nombreSeguroDrawer + '</p>'
+            + '<p class="drawer-rec-precio">$' + escapeHtml(p.precio) + ' MXN</p></div>'
             + '<span style="color:#bbb;">›</span>';
         item.onclick = function() {
             cerrarDrawer();
@@ -2668,8 +3147,8 @@ const firebaseConfig = {
     projectId: "velas-kukumita",
     storageBucket: "velas-kukumita.firebasestorage.app",
     messagingSenderId: "76727611900",
-    appId: "1:76727611900:web:8eb54f485d2da99e40c279",
-    measurementId: "G-KPV214PPVY"
+    appId: "1:76727611900:web:d0f8b3c2a04e6fb340c279",
+    measurementId: "G-RWNN074LVT"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -2951,7 +3430,9 @@ document.querySelectorAll('.card-dinamica').forEach(function(card) {
 var _pillBtns   = { biografia:'pillBiografia', productos:'pillProductos', ofertas:'pillOfertas', masvendidos:'pillMasVendidos' };
 var _pillPanels = { biografia:'panelPillBiografia', productos:null, ofertas:'panelPillOfertas', masvendidos:'panelPillMasVendidos' };
 
-function activarPill(cual) {
+function activarPill(cual, opts) {
+    var sinScroll = !!(opts && opts.sinScroll);
+
     // Desactivar todos
     Object.values(_pillBtns).forEach(function(id) {
         var el = document.getElementById(id);
@@ -2972,10 +3453,16 @@ function activarPill(cual) {
 
     // Mostrar/ocultar catálogo de productos
     var catalogo = document.getElementById('zona-catalogo');
-    if (catalogo) catalogo.style.display = (cual === 'biografia') ? 'none' : 'block';
+    if (catalogo) catalogo.style.display = (cual === 'productos') ? 'block' : 'none';
 
-    if (cual === 'productos') {
-        // Sin scroll automático al mostrar el panel de productos
+    // El scroll automático hacia el catálogo solo ocurre cuando el usuario
+    // elige "Productos" manualmente (por ejemplo, desde la sección de biografía).
+    // En la carga inicial de la página (F5) se omite para que se muestre
+    // siempre el banner de arriba, sin desplazamiento automático.
+    if (cual === 'productos' && !sinScroll) {
+        setTimeout(function() {
+            if (catalogo) catalogo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 80);
     }
 }
 
@@ -3007,12 +3494,20 @@ function _actualizarBotonesInicio(cual) {
     }
 }
 
-// Aplicar preferencia guardada (o productos por defecto)
+// Aplicar preferencia guardada (o productos por defecto).
+// Nunca hace scroll automático en la carga/recarga de la página:
+// siempre se muestra primero la parte de arriba (banner) y el usuario
+// decide cuándo bajar.
 (function() {
-    var pref = localStorage.getItem('kukumita-inicio') || 'productos';
+    var pref = 'productos'; // Siempre inicia en la zona de Catálogo, sin importar preferencias guardadas
+    // Evita que el navegador restaure una posición de scroll previa al recargar (F5)
+    if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'manual';
+    }
     _ready(function() {
-        activarPill(pref);
+        activarPill(pref, { sinScroll: true });
         _actualizarBotonesInicio(pref);
+        window.scrollTo(0, 0);
     });
 })();
 
@@ -3154,13 +3649,14 @@ function renderizarFavoritos() {
 
         var div = document.createElement('div');
         div.className = 'fav-card';
+        var nombreSeguro = escapeHtml(nombre || 'Producto');
         div.innerHTML =
             '<button class="btn-quitar-fav" onclick="quitarFavorito(' + idxProd + ')">✕</button>' +
-            (imgSrc ? '<img class="fav-card-img" src="' + imgSrc + '" alt="' + (nombre||'') + '">' :
+            (imgSrc ? '<img class="fav-card-img" src="' + escapeHtml(imgSrc) + '" alt="' + nombreSeguro + '">' :
                       '<div class="fav-card-img" style="background:#f0eae4;display:flex;align-items:center;justify-content:center;font-size:2rem;">🕯️</div>') +
             '<div class="fav-card-info">' +
-            '<div class="fav-card-nombre">' + (nombre || 'Producto') + '</div>' +
-            '<div class="fav-card-precio">' + precio + '</div>' +
+            '<div class="fav-card-nombre">' + nombreSeguro + '</div>' +
+            '<div class="fav-card-precio">' + escapeHtml(precio) + '</div>' +
             '</div>';
         div.onclick = function(e) {
             if (e.target.classList.contains('btn-quitar-fav')) return;
@@ -3198,11 +3694,116 @@ _ready(syncBotonesLike);
 
 
 
+// ══════════════════════════════════════════════════════════════════════════════
+// DATOS DINÁMICOS DEL MODAL "BÚSCANOS EN BAZAR" (2ª pestaña de la hoja de Sheets)
+// ──────────────────────────────────────────────────────────────────────────────
+// Columnas esperadas en esa pestaña (fila 1 = encabezados, datos desde fila 2):
+//   A: imagen imgbb            → 3 filas de datos:
+//                                 fila de datos 1 = Plaza del Carmen
+//                                 fila de datos 2 = Bosque Cuauhtémoc
+//                                 fila de datos 3 = Villas del Pedregal
+//   B: imagen elegida          → solo se usa la 1ª fila de datos. Escribe "Plaza del
+//                                 Carmen", "Bosque Cuahutemoc" o "Villas del Pedregal"
+//                                 para elegir cuál de las 3 imágenes de la columna A
+//                                 se muestra en el submenú.
+//   C: descripcion              → solo se usa la 1ª fila de datos. Escribe "1" o "2"
+//                                 para elegir cuál plantilla de la columna I se muestra.
+//   D: dias                     → solo se usa la 1ª fila de datos. Texto libre con
+//                                 los días (ej. "7, 8 y 9 de Septiembre").
+//   E: lugar                    → solo se usa la 1ª fila de datos. Escribe una de las
+//                                 opciones de la columna G ("Plaza del Carmen",
+//                                 "Bosque Cuahutemoc" o "Villas del Pedregal") — se usa
+//                                 únicamente en el texto del aviso (no decide la imagen).
+//   F: estado                   → solo se usa la 1ª fila de datos. Escribe "1" o "2"
+//                                 para elegir cuál opción de la columna H se muestra
+//                                 como etiqueta en la zona de "Aviso Actual"
+//                                 (1 = fila de datos 1 de H, 2 = fila de datos 2 de H).
+//   G: opciones de lugar        → lista de referencia para la columna E (no se lee por código).
+//   H: opciones de estado       → fila de datos 1 = etiqueta de la opción "1"
+//                                 fila de datos 2 = etiqueta de la opción "2"
+//   I: opciones de descripcion  → fila de datos 1 = plantilla de la opción "1"
+//                                 fila de datos 2 = plantilla de la opción "2"
+//      Dentro de esas plantillas, dondequiera que escribas "(lugar: )" se reemplaza
+//      por el valor de la columna E (fila 1), y "(dias: )" se reemplaza por el valor
+//      de la columna D (fila 1) — lo que escribas dentro de esos paréntesis en la
+//      columna I ya no importa, solo actúan como marcador de posición.
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Reemplaza "(lugar: ...)" por valorLugar y "(dias: ...)" por valorDias.
+function _resolverPlaceholdersBazar(texto, valorLugar, valorDias) {
+    if (!texto) return '';
+    return texto
+        .replace(/\(\s*lugar\s*:[^)]*\)/gi, function() { return (valorLugar || '').trim(); })
+        .replace(/\(\s*dias\s*:[^)]*\)/gi, function() { return (valorDias || '').trim(); })
+        .trim();
+}
+
+function cargarDatosBazar() {
+    var csvUrl = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID +
+        '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent(SHEET_NOMBRE_BAZAR);
+
+    fetchCSVConCache(csvUrl, 'kukumita_csv_bazar')
+        .then(function(texto) {
+            var filas = parsearCSV(texto);
+            var datos = filas.slice(1); // quita la fila de encabezados
+            if (datos.length === 0) return;
+
+            var filaDatos1 = datos[0] || [];
+            var filaDatos2 = datos[1] || [];
+            var filaDatos3 = datos[2] || [];
+
+            // ── Imagen a mostrar (columna B "imagen elegida" decide, columna A trae la imagen) ──
+            var seleccionImagen = (filaDatos1[1] || '').toLowerCase();
+            var urlImagen = '';
+            if (seleccionImagen.indexOf('plaza') !== -1) {
+                urlImagen = filaDatos1[0];
+            } else if (seleccionImagen.indexOf('bosque') !== -1) {
+                urlImagen = filaDatos2[0];
+            } else if (seleccionImagen.indexOf('villas') !== -1) {
+                urlImagen = filaDatos3[0];
+            }
+            var imgEl = document.getElementById('bazarImgDinamica');
+            if (imgEl && urlImagen) imgEl.src = urlImagen;
+
+            // ── Texto del aviso (columna C decide, columna I trae la plantilla) ──
+            var opcionDescripcion = (filaDatos1[2] || '').trim();
+            var plantilla = '';
+            if (opcionDescripcion === '1') {
+                plantilla = filaDatos1[8];
+            } else if (opcionDescripcion === '2') {
+                plantilla = filaDatos2[8];
+            }
+
+            var lugarTexto  = filaDatos1[4] || '';
+            var diasTexto   = filaDatos1[3] || '';
+
+            var textoFinal = _resolverPlaceholdersBazar(plantilla, lugarTexto, diasTexto);
+            var avisoEl = document.getElementById('bazarAvisoTexto');
+            if (avisoEl && textoFinal) avisoEl.textContent = textoFinal;
+
+            // ── Etiqueta de estado (columna F decide, columna H trae la etiqueta) ──
+            var opcionEstado = (filaDatos1[5] || '').trim();
+            var estadoTexto = '';
+            if (opcionEstado === '1') {
+                estadoTexto = filaDatos1[7];
+            } else if (opcionEstado === '2') {
+                estadoTexto = filaDatos2[7];
+            }
+            var estadoEl = document.getElementById('bazarEstadoBadge');
+            if (estadoEl && estadoTexto && estadoTexto.trim()) estadoEl.textContent = estadoTexto.trim();
+        })
+        .catch(function(err) {
+            console.error('[Kukumita] No se pudo cargar la info del bazar (¿la 2ª pestaña está publicada/compartida?):', err);
+        });
+}
+_ready(cargarDatosBazar);
+
 function abrirModalBazar() {
     var modal = document.getElementById('modalBazar');
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
     if (typeof window._actualizarContadorBazar === 'function') window._actualizarContadorBazar();
+    if (typeof cargarDatosBazar === 'function') cargarDatosBazar();
 }
 function cerrarModalBazar() {
     var modal = document.getElementById('modalBazar');
@@ -3370,8 +3971,13 @@ var TIPO_INFO = {
     aditamentos:  { cls: 'aditamento', label: '✨ Aditamento' },
     decoracion:   { cls: 'decoracion', label: '🎀 Decoración' },
     decoraciones: { cls: 'decoracion', label: '🎀 Decoración' },
-    etiqueta:     { cls: 'etiqueta',   label: '🏷️ Etiqueta' },
-    etiquetas:    { cls: 'etiqueta',   label: '🏷️ Etiqueta' }
+    etiqueta:        { cls: 'etiqueta',      label: '🏷️ Etiqueta' },
+    etiquetas:       { cls: 'etiqueta',      label: '🏷️ Etiqueta' },
+    'centro de mesa':{ cls: 'centro-mesa',   label: '🌸 Centro de Mesa' },
+    'centro_de_mesa':{ cls: 'centro-mesa',   label: '🌸 Centro de Mesa' },
+    centrodemesa:    { cls: 'centro-mesa',   label: '🌸 Centro de Mesa' },
+    paquete:         { cls: 'paquete',       label: '🎁 Paquete' },
+    paquetes:        { cls: 'paquete',       label: '🎁 Paquete' }
 };
 
 // ── Inyectar etiqueta principal (sobre el título) y sub-etiquetas (sobre evento) ──
@@ -3624,12 +4230,13 @@ function construirCarrusel(tipo) {
 
         var cardEl = document.createElement('div');
         cardEl.className = 'carrusel-card';
+        var nombreSeguroCarrusel = escapeHtml(nombre);
         cardEl.innerHTML =
-            '<img class="carrusel-card-img" src="' + imgSrc + '" alt="' + nombre + '" loading="lazy" onerror="this.style.background=\'#f5f0eb\'; this.style.height=\'120px\';">' +
+            '<img class="carrusel-card-img" src="' + escapeHtml(imgSrc) + '" alt="' + nombreSeguroCarrusel + '" loading="lazy" onerror="this.style.background=\'#f5f0eb\'; this.style.height=\'120px\';">' +
             '<div class="carrusel-card-info">' +
                 '<div class="carrusel-card-badge' + (esOferta ? '' : ' mv') + '">' + (esOferta ? '🏷️ Oferta' : '🏆 Top') + '</div>' +
-                '<div class="carrusel-card-nombre" title="' + nombre + '">' + nombre + '</div>' +
-                '<div class="carrusel-card-precio">' + (precioMostrar ? '$' + precioMostrar + ' MXN' : '') + '</div>' +
+                '<div class="carrusel-card-nombre" title="' + nombreSeguroCarrusel + '">' + nombreSeguroCarrusel + '</div>' +
+                '<div class="carrusel-card-precio">' + (precioMostrar ? '$' + escapeHtml(precioMostrar) + ' MXN' : '') + '</div>' +
             '</div>';
 
         // Al hacer click abre el modal de producto
@@ -3907,8 +4514,9 @@ function renderizarCarrito() {
         var div = document.createElement('div');
         div.className = 'cart-card';
 
+        var nombreSeguroCarrito = escapeHtml(item.nombre);
         var imgHtml = item.img
-            ? '<img class="cart-card-img" src="' + item.img + '" alt="' + item.nombre + '" onerror="this.style.background=\'#f0eae4\'; this.src=\'\';">'
+            ? '<img class="cart-card-img" src="' + escapeHtml(item.img) + '" alt="' + nombreSeguroCarrito + '" onerror="this.style.background=\'#f0eae4\'; this.src=\'\';">'
             : '<div class="cart-card-img" style="background:#f0eae4; display:flex; align-items:center; justify-content:center; font-size:2rem;">🕯️</div>';
 
         var subtotal = item.precio ? '$' + (item.precio * item.cantidad).toFixed(0) + ' MXN' : '';
@@ -3917,8 +4525,8 @@ function renderizarCarrito() {
             '<button class="btn-quitar-cart" onclick="quitarDelCarrito(' + idx + ')">✕</button>' +
             imgHtml +
             '<div class="cart-card-info">' +
-            '<div class="cart-card-nombre">' + item.nombre + '</div>' +
-            (item.precio ? '<div class="cart-card-precio">$' + item.precio + ' MXN c/u</div>' : '') +
+            '<div class="cart-card-nombre">' + nombreSeguroCarrito + '</div>' +
+            (item.precio ? '<div class="cart-card-precio">$' + escapeHtml(item.precio) + ' MXN c/u</div>' : '') +
             // Controles de cantidad editables
             '<div style="display:flex; align-items:center; gap:6px; margin-top:6px;">' +
             '<button onclick="cambiarCantidadCarrito(' + idx + ',-1)" style="width:26px;height:26px;border-radius:50%;background:#8c7565;color:white;border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;flex-shrink:0;" ' + (item.cantidad <= 1 ? 'disabled style="width:26px;height:26px;border-radius:50%;background:#d9cfc8;color:white;border:none;font-size:16px;cursor:default;display:flex;align-items:center;justify-content:center;line-height:1;flex-shrink:0;"' : '') + '>−</button>' +
@@ -3997,7 +4605,7 @@ function pedirCotizacionWA() {
     var total = carrito.reduce(function(sum, i){ return sum + i.precio * i.cantidad; }, 0);
 
     // Construir mensaje
-    var lineas = ['Hola, me gustaría pedir una cotización de los siguientes productos de Velas Kukumita:\n'];
+    var lineas = ['Hola, me gustaría pedir una cotización de los siguientes productos de Yesos Polo Kukúmita:\n'];
     carrito.forEach(function(item, i) {
         lineas.push((i+1) + '. *' + item.nombre + '*');
         lineas.push('   Cantidad: ' + item.cantidad + ' piezas');
@@ -4012,7 +4620,7 @@ function pedirCotizacionWA() {
     btn.disabled = true;
     btn.textContent = '⏳ Enviando...';
     setTimeout(function() {
-        window.open('https://wa.me/524431469161?text=' + encodeURIComponent(mensaje), '_blank');
+        window.open('https://wa.me/524431382094?text=' + encodeURIComponent(mensaje), '_blank');
         btn.disabled = false;
         btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg> Pedir Cotización por WhatsApp';
     }, 800);
@@ -4393,10 +5001,12 @@ _ready(function() {
 // ══════════════════════════════════════════════════════
 var _scUrlActual = '';
 var _scNombreActual = '';
+var _scImagenActual = '';
 
-function abrirSubmenuCompartir(url, nombre) {
+function abrirSubmenuCompartir(url, nombre, imagen) {
     _scUrlActual = url;
     _scNombreActual = nombre || 'Producto';
+    _scImagenActual = imagen || '';
     var linkEl = document.getElementById('scLinkTexto');
     if (linkEl) linkEl.textContent = url;
     document.getElementById('submenuCompartir').classList.add('abierto');
@@ -4409,14 +5019,17 @@ function cerrarSubmenuCompartir() {
 }
 
 function copiarLinkProducto() {
+    // Usar la URL del Worker (si está configurado) para que al pegar en Facebook
+    // se muestre la imagen del producto en lugar de la imagen genérica del sitio.
+    var urlACopiar = (typeof _urlOG === 'function') ? _urlOG(_scUrlActual) : _scUrlActual;
     if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(_scUrlActual).then(function() {
+        navigator.clipboard.writeText(urlACopiar).then(function() {
             mostrarToast('✅ ¡Link copiado al portapapeles!');
         }).catch(function() {
-            _copiarFallback(_scUrlActual);
+            _copiarFallback(urlACopiar);
         });
     } else {
-        _copiarFallback(_scUrlActual);
+        _copiarFallback(urlACopiar);
     }
 }
 
@@ -4430,20 +5043,147 @@ function _copiarFallback(texto) {
     document.body.removeChild(ta);
 }
 
+// ── Helper: devuelve la URL del Cloudflare Worker si está configurado,
+//    o la URL normal de la página en caso contrario.
+//    El worker sirve las meta tags OG correctas para que Facebook
+//    muestre la imagen del producto al pegar el link.
+function _urlOG(urlPaginaReal) {
+    if (!OG_WORKER_URL || !OG_WORKER_URL.trim()) return urlPaginaReal;
+    try {
+        var urlObj = new URL(urlPaginaReal);
+        var producto = urlObj.searchParams.get('producto');
+        // Red de seguridad: si "producto" no está en el query string real
+        // (por ejemplo, quedó atrapado dentro de un hash tipo #pagina=6?producto=X),
+        // lo buscamos ahí también en vez de rendirnos.
+        if (!producto && urlObj.hash) {
+            var m = urlObj.hash.match(/[?&]producto=([^&]+)/);
+            if (m) producto = decodeURIComponent(m[1]);
+        }
+        if (!producto) return urlPaginaReal;
+        return OG_WORKER_URL.replace(/\/$/, '') + '/?producto=' + encodeURIComponent(producto);
+    } catch(e) {
+        return urlPaginaReal;
+    }
+}
+
+// ── Intenta compartir TEXTO + IMAGEN real usando el menú nativo del celular
+//    (Web Share API). Si no es posible (computadora, navegador sin soporte,
+//    el usuario cancela, etc.), cae automáticamente al método clásico de
+//    abrir un chat de WhatsApp con el número indicado (solo texto).
+//    numeroWhatsApp: opcional, ej. '524431382094'. Si se omite, usa wa.me/?text=
+async function compartirConImagenOFallback(textoPlano, imagenUrl, numeroWhatsApp) {
+    const abrirWaMeFallback = () => {
+        const texto = encodeURIComponent(textoPlano);
+        const base = numeroWhatsApp ? ('https://wa.me/' + numeroWhatsApp) : 'https://wa.me/';
+        window.open(base + '?text=' + texto, '_blank');
+    };
+
+    // Solo intentamos Web Share con archivo si: hay navigator.share,
+    // hay navigator.canShare, y tenemos una URL de imagen.
+    const puedeIntentarShare = !!(navigator.share && navigator.canShare && imagenUrl);
+
+    if (!puedeIntentarShare) {
+        abrirWaMeFallback();
+        return;
+    }
+
+    try {
+        // Descargar la imagen y convertirla en un File para poder adjuntarla.
+        const respuesta = await fetch(imagenUrl, { mode: 'cors' });
+        if (!respuesta.ok) throw new Error('No se pudo descargar la imagen');
+        const blob = await respuesta.blob();
+        const extension = (imagenUrl.split('.').pop() || 'jpg').split(/[?#]/)[0].toLowerCase();
+        const tipoMime = blob.type || ('image/' + (extension === 'jpg' ? 'jpeg' : extension));
+        const archivo = new File([blob], 'producto.' + extension, { type: tipoMime });
+
+        const dataParaCompartir = { text: textoPlano, files: [archivo] };
+
+        if (!navigator.canShare(dataParaCompartir)) {
+            // Este navegador no soporta compartir archivos de este tipo.
+            abrirWaMeFallback();
+            return;
+        }
+
+        await navigator.share(dataParaCompartir);
+        // Si el usuario cancela el menú nativo, navigator.share lanza un
+        // AbortError, lo cual cae al catch — y AHÍ decidimos no forzar el
+        // fallback, porque cancelar fue una decisión consciente del usuario.
+    } catch (err) {
+        if (err && err.name === 'AbortError') {
+            // El usuario cerró el menú de compartir a propósito. No hacemos nada más.
+            return;
+        }
+        // Cualquier otro error (CORS al descargar la imagen, navegador raro, etc.)
+        // recurrimos al método clásico para no dejar al usuario sin poder enviar el mensaje.
+        abrirWaMeFallback();
+    }
+}
+
+// ── Copia texto al portapapeles sin mostrar ningún aviso (uso interno,
+//    para dejar el link listo "por si acaso" mientras se abre la app).
+function _copiarAlPortapapelesSilencioso(texto) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(texto).catch(function() { /* silencioso */ });
+        return;
+    }
+    try {
+        var ta = document.createElement('textarea');
+        ta.value = texto;
+        ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+    } catch (e) { /* silencioso */ }
+}
+
 function compartirEnWhatsApp() {
-    var texto = encodeURIComponent('🕯️ Mira este producto de Velas Kukumita: ' + _scNombreActual + '\n' + _scUrlActual);
+    // Usamos la URL del Worker (si está configurado) para que WhatsApp
+    // lea las meta tags OG y muestre la imagen del producto en la vista previa del link.
+    var urlParaWhatsApp = _urlOG(_scUrlActual);
+    var textoPlano = '🕯️ Mira este producto de Yesos Polo Kukúmita: ' + _scNombreActual + '\n' + urlParaWhatsApp;
+
+    // Dejamos el link copiado por si el usuario lo quiere pegar en otro lado.
+    _copiarAlPortapapelesSilencioso(urlParaWhatsApp);
+
+    // Vamos DIRECTO al enlace clásico de WhatsApp (wa.me), sin pasar por el
+    // menú nativo de "compartir archivo" del celular (ese es el que solo
+    // dejaba "copiar imagen"). Con wa.me: se abre la app de WhatsApp, el
+    // usuario elige el contacto, se abre el chat y el texto con el link
+    // YA está escrito en la caja — solo falta presionar enviar.
+    var texto = encodeURIComponent(textoPlano);
     window.open('https://wa.me/?text=' + texto, '_blank');
+    cerrarSubmenuCompartir();
 }
 
 function compartirEnFacebook() {
-    var url = encodeURIComponent(_scUrlActual);
-    window.open('https://www.facebook.com/sharer/sharer.php?u=' + url, '_blank', 'width=600,height=400');
+    // Usamos la URL del worker (si está configurado) para que Facebook
+    // lea las meta tags OG y muestre la imagen del producto.
+    var urlReal = _urlOG(_scUrlActual);
+    _copiarAlPortapapelesSilencioso(urlReal);
+    var urlParaFB = encodeURIComponent(urlReal);
+    // Sin width/height: en celular esto abre la app de Facebook (o pestaña
+    // completa) directo a la pantalla de compartir; en escritorio abre un popup.
+    window.open('https://www.facebook.com/sharer/sharer.php?u=' + urlParaFB, '_blank');
+    cerrarSubmenuCompartir();
 }
 
 function compartirEnInstagram() {
-    // Instagram no tiene share URL directa, copiamos el link
-    copiarLinkProducto();
-    mostrarToast('📸 Link copiado — pégalo en tu historia de Instagram');
+    // Instagram no permite prellenar texto/link en una publicación o mensaje,
+    // así que copiamos el link y abrimos la app directamente para que el
+    // usuario solo tenga que pegarlo (Ctrl+V / mantener presionado > Pegar).
+    var urlReal = _urlOG(_scUrlActual);
+    _copiarAlPortapapelesSilencioso(urlReal);
+    mostrarToast('📸 Link copiado — pégalo en tu historia o mensaje de Instagram');
+
+    var esMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (esMobile) {
+        // Intenta abrir la app de Instagram directamente vía deep link.
+        window.location.href = 'instagram://app';
+    } else {
+        window.open('https://www.instagram.com/', '_blank');
+    }
+    cerrarSubmenuCompartir();
 }
 
 // Cerrar al hacer clic en el fondo
@@ -4605,7 +5345,7 @@ function _cargarFavoritosFirestore(uid) {
         var total       = carrito.reduce(function(s,i){ return s+(i.precio||0)*i.cantidad; }, 0);
         var descuento   = (typeof calcularDescuentoCupones==='function') ? calcularDescuentoCupones(carrito) : 0;
 
-        var lineas = ['Hola, me gustaría pedir una cotización de los siguientes productos de Velas Kukumita:\n'];
+        var lineas = ['Hola, me gustaría pedir una cotización de los siguientes productos de Yesos Polo Kukúmita:\n'];
         carrito.forEach(function(item, i) {
             lineas.push((i+1)+'. *'+item.nombre+'*');
             lineas.push('   Cantidad: '+item.cantidad+' piezas');
@@ -4630,7 +5370,7 @@ function _cargarFavoritosFirestore(uid) {
         var btn = document.getElementById('btnPedirCotizacion');
         if (btn) { btn.disabled=true; btn.textContent='⏳ Enviando...'; }
         setTimeout(function() {
-            window.open('https://wa.me/524431469161?text='+encodeURIComponent(mensaje), '_blank');
+            window.open('https://wa.me/524431382094?text='+encodeURIComponent(mensaje), '_blank');
             if (btn) {
                 btn.disabled = false;
                 btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg> Pedir Cotización por WhatsApp';
@@ -4675,8 +5415,8 @@ function _cargarFavoritosFirestore(uid) {
             var hay = false;
             cards.forEach(function(card) {
                 var dataEvento = (card.getAttribute('data-evento') || '').toLowerCase();
-                // data-evento es multi-valor separado por |
-                var slugs = dataEvento.split('|').map(_normSlug).filter(Boolean);
+                // data-evento puede ser multi-valor separado por espacios
+                var slugs = dataEvento.split(/\s+/).map(_normSlug).filter(Boolean);
                 var coincide = slugs.includes(slugFiltro);
                 card.classList.toggle('oculto', !coincide);
                 card.classList.remove('paginacion-oculto');
@@ -4779,12 +5519,10 @@ function _cargarFavoritosFirestore(uid) {
         var btnActivo = document.querySelector('.btn-modo-velas.activo');
         if (btnActivo) {
             var modos = {
-                'btnModoTodosProductos': 'mostrar_todo',
-                'btnModoTodos':          'todos',
-                'btnModoArreglos':       'arreglos',
-                'btnModoDecoraciones':   'decoraciones',
-                'btnModoCentrosMesa':    'centros_mesa',
-                'btnModoEtiquetas':      'etiquetas'
+                'btnModoTodosProductos':  'mostrar_todo',
+                'btnModoArreglos':        'arreglos',
+                'btnModoPaquetes':        'paquetes',
+                'btnModoEtiquetas':       'etiquetas'
             };
             var modo = modos[btnActivo.id] || 'mostrar_todo';
             if (typeof window.cambiarModoVelas === 'function') window.cambiarModoVelas(modo);
@@ -4826,141 +5564,62 @@ function _cargarFavoritosFirestore(uid) {
 window.togglePanelEventos = function() {
     var panel = document.getElementById('panelEventoCarrusel');
     var icono = document.getElementById('iconToggleEventos');
-    var btn   = document.getElementById('btnToggleEventos');
     if (!panel) return;
     var visible = panel.style.display !== 'none';
     panel.style.display = visible ? 'none' : 'block';
     if (icono) icono.textContent = visible ? '▼' : '▲';
-    if (btn) btn.style.borderColor = visible ? '#e0d5cc' : '#8c7565';
 };
 
-// ── Filtrar por Forma (carrusel) ──
 window.togglePanelFormas = function() {
     var panel = document.getElementById('panelFormaCarrusel');
     var icono = document.getElementById('iconToggleFormas');
-    var btn   = document.getElementById('btnToggleFormas');
     if (!panel) return;
     var visible = panel.style.display !== 'none';
     panel.style.display = visible ? 'none' : 'block';
     if (icono) icono.textContent = visible ? '▼' : '▲';
-    if (btn) btn.style.borderColor = visible ? '#e0d5cc' : '#8c7565';
 };
 
-// ── Filtrar por Festividad (carrusel) ──
-window.togglePanelFestividades = function() {
-    var panel = document.getElementById('panelFestividadCarrusel');
-    var icono = document.getElementById('iconToggleFestividades');
-    var btn   = document.getElementById('btnToggleFestividades');
-    if (!panel) return;
-    var visible = panel.style.display !== 'none';
-    panel.style.display = visible ? 'none' : 'block';
-    if (icono) icono.textContent = visible ? '▼' : '▲';
-    if (btn) btn.style.borderColor = visible ? '#e0d5cc' : '#8c7565';
-};
+// Filtro de forma global usando columna EtiquetaPrincipal (data-tipos, col G)
+var formaCarruselActiva = 'todos';
 
-// ── Scroll suave al grid de productos ──
-window.scrollToGrid = function() {
-    var grid = document.getElementById('gridProductos');
-    if (grid) setTimeout(function() { grid.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80);
-};
-
-// ── Filtrar por Festividad ──
-window.filtrarPorFestividadCarrusel = function(btnPulsado, festividad) {
-    document.querySelectorAll('.btn-festividad-carrusel').forEach(function(b) {
-        b.classList.remove('activo-evento');
-    });
-    btnPulsado.classList.add('activo-evento');
-
-    var btnToggle = document.getElementById('btnToggleFestividades');
-    if (btnToggle) btnToggle.style.borderColor = festividad === 'todos' ? '#e0d5cc' : '#8c7565';
-
-    if (typeof window.cambiarModoVelas === 'function') {
-        window.cambiarModoVelas('mostrar_todo');
-    }
-
-    if (festividad === 'todos') return;
-
-    setTimeout(function() {
-        var slugFiltro = festividad;
-        var cards = document.querySelectorAll('#gridProductos .card-dinamica');
-        var hay = false;
-        cards.forEach(function(card) {
-            var dataEvento = (card.getAttribute('data-evento') || '').toLowerCase();
-            var slugs = dataEvento.split('|').map(function(s){ return s.trim(); }).filter(Boolean);
-            var coincide = slugs.includes(slugFiltro) ||
-                           (card.getAttribute('data-subtags') || '').toLowerCase().indexOf(slugFiltro.replace(/-/g,' ')) !== -1;
-            card.classList.toggle('oculto', !coincide);
-            card.classList.remove('paginacion-oculto');
-            if (coincide) hay = true;
-        });
-        if (typeof window.actualizarPaginacion === 'function') {
-            window.actualizarPaginacion();
-        }
-    }, 60);
-};
-
-// Normalizar texto para comparar sub-etiquetas de forma
-function _normForma(txt) {
-    return (txt || '').toLowerCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quitar tildes
-        .replace(/[^a-z0-9\-]/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '');
-}
-
-window.filtrarPorFormaCarrusel = function(btnPulsado, forma) {
-    // Marcar botón activo
+window.seleccionarFormaCarrusel = function(btn, forma) {
+    formaCarruselActiva = forma;
+    // Marcar activo
     document.querySelectorAll('.btn-forma-carrusel').forEach(function(b) {
         b.classList.remove('activo-evento');
+        b.style.background = '';
+        b.style.color = '';
+        b.style.borderColor = '';
     });
-    btnPulsado.classList.add('activo-evento');
-
-    // Actualizar estilo del botón "Filtrar por Forma"
-    var btnToggle = document.getElementById('btnToggleFormas');
-    if (btnToggle) btnToggle.style.borderColor = forma === 'todos' ? '#e0d5cc' : '#8c7565';
-
-    // Activar modo "Mostrar Todo" para que todas las cards sean candidatas
-    if (typeof window.cambiarModoVelas === 'function') {
-        window.cambiarModoVelas('mostrar_todo');
-    }
-
+    btn.classList.add('activo-evento');
     if (forma === 'todos') {
-        return;
+        btn.style.background = '#1a1a1a';
+        btn.style.color = '#fff';
+        btn.style.borderColor = '#1a1a1a';
     }
-
-    setTimeout(function() {
-        var cards = document.querySelectorAll('#gridProductos .card-dinamica');
-        var hay = false;
-        cards.forEach(function(card) {
-            // Buscar en data-subtags (columna H = SubEtiqueta)
-            var subtags = (card.getAttribute('data-subtags') || '').toLowerCase();
-            var subtaguNorm = subtags.split('|').map(function(s){ return _normForma(s.trim()); });
-            var formaSlug = _normForma(forma);
-            var coincide = subtaguNorm.includes(formaSlug);
-            card.classList.toggle('oculto', !coincide);
-            card.classList.remove('paginacion-oculto');
-            if (coincide) hay = true;
-        });
-        if (typeof window.actualizarPaginacion === 'function') {
-            window.actualizarPaginacion();
-        }
-    }, 60);
+    // Aplicar filtro a todas las cards visibles
+    aplicarFiltroFormaCarrusel();
 };
 
-// Limpiar filtro de forma cuando el usuario cambia de tab
-_ready(function() {
-    document.querySelectorAll('.btn-modo-velas').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.btn-forma-carrusel').forEach(function(b) {
-                b.classList.remove('activo-evento');
-            });
-            var btnTodos = document.querySelector('.btn-forma-carrusel[data-forma="todos"]');
-            if (btnTodos) btnTodos.classList.add('activo-evento');
-            var btnToggle = document.getElementById('btnToggleFormas');
-            if (btnToggle) btnToggle.style.borderColor = '#e0d5cc';
-        });
+function aplicarFiltroFormaCarrusel() {
+    document.querySelectorAll('.card-dinamica').forEach(function(card) {
+        if (formaCarruselActiva === 'todos') {
+            card.classList.remove('oculto-forma-carrusel');
+        } else {
+            // Usa tieneTipo() para aprovechar las variantes definidas (col G / data-tipos)
+            var coincide = tieneTipo(card, formaCarruselActiva);
+            card.classList.toggle('oculto-forma-carrusel', !coincide);
+        }
     });
-});
+    // Limpiar hash de página para que actualizarPaginacion arranque siempre desde la 1
+    if (window.history && window.history.replaceState) {
+        var hashLimpio = (window.location.hash || '').replace(/#?pagina=\d+/, '').replace(/^#?&/, '').replace(/^#/, '');
+        window.history.replaceState(null, '', hashLimpio ? '#' + hashLimpio : window.location.pathname);
+    }
+    if (typeof window.actualizarPaginacion === 'function') window.actualizarPaginacion();
+}
+
+
 
 // ══════════════════════════════════════════════════════════════════
 // _reordenarBuscadorArreglos eliminada — el orden se mantiene directamente en cambiarModoVelas.
@@ -4969,7 +5628,7 @@ _ready(function() {
 // AVISO DE PRIVACIDAD Y COOKIES
 // ══════════════════════════════════════════════════════════════════
 
-var _COOKIE_KEY = 'velas-cookies-aceptadas';
+var _COOKIE_KEY = 'yesosfer-cookies-aceptadas';
 
 /**
  * Inicializa la barra de cookies al cargar la página.
@@ -5050,28 +5709,14 @@ function _ajustarOffsetDrawer() {
         var pantalla = document.getElementById('pantallaPrivacidad');
         if (pantalla && pantalla.classList.contains('abierta')) {
             pantalla.classList.remove('abierta');
-            return; // no propagar a otros handlers
+            setTimeout(function() {
+                if (!pantalla.classList.contains('abierta')) {
+                    pantalla.style.display = 'none';
+                }
+            }, 300);
         }
-        if (_popOriginal) _popOriginal.call(window, e);
     });
 })();
 
-// Siempre arrancar en el top de la página al cargar o recargar
-_ready(function() {
-    // Limpiar cualquier hash residual de la URL
-    if (window.location.hash) {
-        window.history.replaceState(null, '', window.location.pathname + window.location.search);
-    }
-    // Forzar scroll al top (por si el navegador restauró la posición anterior)
-    window.scrollTo(0, 0);
-    // Segunda llamada por si algo del render tardío lo mueve
-    setTimeout(function() {
-        if (!window._cargaInicialCompletada) window.scrollTo(0, 0);
-    }, 200);
-    setTimeout(function() {
-        if (!window._cargaInicialCompletada) window.scrollTo(0, 0);
-    }, 600);
-});
-
-// Arrancar cuando el DOM esté listo
-_ready(_initBarraCookies);
+// Inicializar barra de cookies cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', _initBarraCookies);
