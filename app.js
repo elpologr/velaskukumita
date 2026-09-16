@@ -5077,3 +5077,278 @@ _ready(function() {
 
 // Arrancar cuando el DOM esté listo
 _ready(_initBarraCookies);
+
+
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  MÓDULO ADMIN — AGREGAR PRODUCTO
+// ═══════════════════════════════════════════════════════════════════════════
+//
+//  ⚠️  SOBRE SEGURIDAD — LÉELO
+//  ADMIN_EMAILS controla SOLO si se dibuja el botón. NO es seguridad:
+//  este archivo es público y cualquiera puede forzar la pantalla desde la
+//  consola del navegador. La seguridad real está en el Apps Script, que
+//  verifica el token de Firebase contra su propia lista antes de escribir.
+//  La API key de ImgBB va DENTRO del Apps Script, NUNCA en este archivo.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Correos autorizados. Deben coincidir EXACTAMENTE con los de Codigo.gs
+// en el Apps Script (ver ADMIN_EMAILS allá).
+var ADMIN_EMAILS = [
+    'celvapreciosa27@gmail.com',
+    'celvaguzman72@gmail.com',
+    'velaskuku@gmail.com',
+    'dulceprincesa086@gmail.com'
+];
+
+// ✅ Apps Script publicado como aplicación web
+var ADMIN_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzV9TqpBshVZXpFgSXeDj5a55INp9BOQh0P7CZmfDoAwoSasWNfrl3i8WlXHeLGyryA/exec';
+
+// Estado interno del formulario
+var _adminImagenBase64 = null;   // base64 sin el encabezado data:
+var _adminImagenNombre = null;
+var _adminGuardando    = false;
+
+
+// ─────────────────────────────────────────────────────────────
+//  1. MOSTRAR / OCULTAR EL BOTÓN SEGÚN EL USUARIO
+// ─────────────────────────────────────────────────────────────
+function _esAdminUI(user) {
+    if (!user || !user.email) return false;
+    // Exigimos correo verificado para que nadie registre un email ajeno
+    if (user.emailVerified === false) return false;
+    return ADMIN_EMAILS
+        .map(function (e) { return e.trim().toLowerCase(); })
+        .indexOf(user.email.trim().toLowerCase()) !== -1;
+}
+
+function actualizarBotonAdminProductos(user) {
+    var btn = document.getElementById('btnAdminProductos');
+    if (!btn) return;
+    btn.style.display = _esAdminUI(user) ? 'flex' : 'none';
+}
+
+// Firebase permite varios listeners: este no interfiere con el que ya existe.
+if (typeof auth !== 'undefined' && auth.onAuthStateChanged) {
+    auth.onAuthStateChanged(function (user) {
+        actualizarBotonAdminProductos(user);
+    });
+}
+
+// Refuerzo: cada vez que se abre el perfil se revalida el botón.
+(function () {
+    if (typeof abrirPantallaPerfil !== 'function') return;
+    var _abrirOriginal = abrirPantallaPerfil;
+    window.abrirPantallaPerfil = function () {
+        _abrirOriginal.apply(this, arguments);
+        actualizarBotonAdminProductos(
+            (typeof auth !== 'undefined') ? auth.currentUser : null
+        );
+    };
+})();
+
+
+// ─────────────────────────────────────────────────────────────
+//  2. ABRIR / CERRAR LA PANTALLA
+// ─────────────────────────────────────────────────────────────
+function abrirPantallaAdminProductos() {
+    var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+    if (!_esAdminUI(user)) {
+        mostrarToast('No tienes permiso para acceder a esta sección');
+        return;
+    }
+    var p = document.getElementById('pantallaAdminProductos');
+    if (!p) return;
+    p.classList.add('activo');
+    document.body.style.overflow = 'hidden';
+    if (typeof _modalActivo !== 'undefined') _modalActivo = 'adminProductos';
+    history.pushState({ kukumitaModal: 'adminProductos' }, '');
+}
+
+function cerrarPantallaAdminProductos() {
+    var p = document.getElementById('pantallaAdminProductos');
+    if (p) p.classList.remove('activo');
+    if (history.state && history.state.kukumitaModal === 'adminProductos') {
+        history.replaceState(null, '');
+    }
+}
+
+
+// ─────────────────────────────────────────────────────────────
+//  3. IMAGEN: SELECCIÓN + CONVERSIÓN A WEBP
+// ─────────────────────────────────────────────────────────────
+function seleccionarImagenProducto() {
+    var input = document.getElementById('inputImagenProducto');
+    if (input) input.click();
+}
+
+function _statusAdmin(msg, esError) {
+    var el = document.getElementById('statusAdminProducto');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.style.color = esError ? '#c0392b' : '';
+}
+
+function procesarImagenProducto(event) {
+    var archivo = event.target.files && event.target.files[0];
+    if (!archivo) return;
+
+    if (!/^image\//.test(archivo.type)) {
+        _statusAdmin('El archivo no es una imagen.', true);
+        return;
+    }
+    if (archivo.size > 15 * 1024 * 1024) {
+        _statusAdmin('La imagen supera 15 MB. Usa una más ligera.', true);
+        return;
+    }
+
+    _statusAdmin('Convirtiendo a WebP…', false);
+
+    var lector = new FileReader();
+    lector.onload = function (e) {
+        var img = new Image();
+        img.onload = function () {
+            // Redimensionar manteniendo proporción (lado mayor máx. 1400 px)
+            var MAX = 1400;
+            var w = img.naturalWidth, h = img.naturalHeight;
+            if (w > MAX || h > MAX) {
+                if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
+                else        { w = Math.round(w * MAX / h); h = MAX; }
+            }
+
+            var canvas = document.createElement('canvas');
+            canvas.width  = w;
+            canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+
+            var dataUrl = canvas.toDataURL('image/webp', 0.85);
+            var esWebp  = dataUrl.indexOf('data:image/webp') === 0;
+            // Si el navegador no soporta WebP, cae a JPEG
+            if (!esWebp) dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+            _adminImagenBase64 = dataUrl.split(',')[1];
+            _adminImagenNombre = (archivo.name || 'producto')
+                .replace(/\.[^.]+$/, '') + (esWebp ? '.webp' : '.jpg');
+
+            var prev   = document.getElementById('previewImagenProducto');
+            var quitar = document.getElementById('btnQuitarImagenProducto');
+            if (prev)   { prev.src = dataUrl; prev.style.display = 'block'; }
+            if (quitar) { quitar.style.display = 'inline-block'; }
+
+            var kb = Math.round(_adminImagenBase64.length * 0.75 / 1024);
+            _statusAdmin('Imagen lista (' + (esWebp ? 'WebP' : 'JPEG') + ', ~' + kb + ' KB)', false);
+        };
+        img.onerror = function () { _statusAdmin('No se pudo leer la imagen.', true); };
+        img.src = e.target.result;
+    };
+    lector.onerror = function () { _statusAdmin('No se pudo leer el archivo.', true); };
+    lector.readAsDataURL(archivo);
+}
+
+function quitarImagenProducto() {
+    _adminImagenBase64 = null;
+    _adminImagenNombre = null;
+    var prev   = document.getElementById('previewImagenProducto');
+    var quitar = document.getElementById('btnQuitarImagenProducto');
+    var input  = document.getElementById('inputImagenProducto');
+    if (prev)   { prev.src = ''; prev.style.display = 'none'; }
+    if (quitar) { quitar.style.display = 'none'; }
+    if (input)  { input.value = ''; }
+    _statusAdmin('', false);
+}
+
+
+// ─────────────────────────────────────────────────────────────
+//  4. GUARDAR PRODUCTO
+// ─────────────────────────────────────────────────────────────
+async function guardarProductoAdmin() {
+    if (_adminGuardando) return;
+
+    var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+    if (!_esAdminUI(user)) {
+        _statusAdmin('Tu sesión no está autorizada.', true);
+        return;
+    }
+
+    var nombre = ((document.getElementById('inputNombreProducto') || {}).value || '').trim();
+    var precio = ((document.getElementById('inputPrecioProducto') || {}).value || '').trim();
+    var stock  = ((document.getElementById('inputStockProducto')  || {}).value || '').trim();
+    var codigo = ((document.getElementById('inputCodigoBarrasProducto') || {}).value || '').trim();
+
+    if (!nombre) {
+        _statusAdmin('Escribe el nombre del producto.', true); return;
+    }
+    if (precio === '' || isNaN(Number(precio)) || Number(precio) < 0) {
+        _statusAdmin('Escribe un precio válido.', true); return;
+    }
+    if (stock !== '' && (isNaN(Number(stock)) || Number(stock) < 0)) {
+        _statusAdmin('La existencia debe ser un número.', true); return;
+    }
+    if (!_adminImagenBase64) {
+        _statusAdmin('Agrega una imagen del producto.', true); return;
+    }
+
+    var btn = document.getElementById('btnGuardarProductoAdmin');
+    _adminGuardando = true;
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Guardando…'; }
+    _statusAdmin('Subiendo imagen y guardando en la hoja…', false);
+
+    try {
+        // Token fresco de Firebase — el servidor lo verifica antes de escribir
+        var idToken = await user.getIdToken(true);
+
+        var cuerpo = {
+            idToken:      idToken,
+            nombre:       nombre,
+            precio:       precio,
+            existencia:   stock,
+            codigoBarras: codigo,
+            imagenBase64: _adminImagenBase64,
+            imagenNombre: _adminImagenNombre
+        };
+
+        // text/plain evita el preflight CORS, que Apps Script no responde
+        var resp = await fetch(ADMIN_ENDPOINT, {
+            method:  'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body:    JSON.stringify(cuerpo)
+        });
+
+        var data = await resp.json();
+        if (!data.ok) throw new Error(data.error || 'Error del servidor');
+
+        mostrarToast('✅ Producto agregado');
+
+        // Limpiar formulario
+        ['inputNombreProducto', 'inputPrecioProducto',
+         'inputStockProducto', 'inputCodigoBarrasProducto']
+            .forEach(function (id) {
+                var el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+        quitarImagenProducto();
+        _statusAdmin('✅ Guardado en la fila ' + data.fila, false);
+
+        // Recargar catálogo para que aparezca de inmediato
+        if (typeof cargarDesdeGoogleSheets === 'function') {
+            setTimeout(cargarDesdeGoogleSheets, 1500);
+        }
+
+    } catch (err) {
+        console.error('Error guardando producto:', err);
+        _statusAdmin('❌ ' + (err.message || 'No se pudo guardar'), true);
+    } finally {
+        _adminGuardando = false;
+        if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar producto'; }
+    }
+}
+
+
+// ─────────────────────────────────────────────────────────────
+//  5. BOTÓN ATRÁS DEL CELULAR
+// ─────────────────────────────────────────────────────────────
+window.addEventListener('popstate', function () {
+    var p = document.getElementById('pantallaAdminProductos');
+    if (p && p.classList.contains('activo')) cerrarPantallaAdminProductos();
+});
