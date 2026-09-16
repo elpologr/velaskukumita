@@ -5735,10 +5735,11 @@ document.addEventListener('DOMContentLoaded', _initBarraCookies);
 // propia lista y un token de Google fresco. Ver la explicación en
 // el chat sobre por qué se necesitan ambas capas.
 var CORREOS_ADMIN_PRODUCTOS = [
-    'REEMPLAZA-CON-TU-CORREO@gmail.com',
-    'REEMPLAZA-CON-EL-CORREO-DE-TU-MAMA@gmail.com'
+    'dulceprincesa086@gmail.com',
+    'celvapreciosa27@gmail.com',
+    'celvaguzman72@gmail.com'
 ];
-var APPS_SCRIPT_PRODUCTOS_URL = 'REEMPLAZA-CON-LA-URL-DE-TU-WEB-APP-DE-APPS-SCRIPT';
+var APPS_SCRIPT_PRODUCTOS_URL = 'https://script.google.com/macros/s/AKfycbwDvhzs0a_cvp4goXZr5ixUhNCjJVHKuOD9vVlGOEyAiA1nWuvAArO2yGlBz-NtVIal/exec';
 
 var _imagenProductoWebp = null;
 var _subImagenProductoWebp = null;

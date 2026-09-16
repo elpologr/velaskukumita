@@ -36,8 +36,9 @@ const IMGBB_API_KEY = "1fe0257b2f626d49dfcce373de6b3daf";
 
 // Los ÚNICOS correos de Google que pueden publicar productos.
 const CORREOS_AUTORIZADOS = [
-  "REEMPLAZA-CON-TU-CORREO@gmail.com",
-  "REEMPLAZA-CON-EL-CORREO-DE-TU-MAMA@gmail.com"
+  "dulceprincesa086@gmail.com",
+  "celvapreciosa27@gmail.com",
+  "celvaguzman72@gmail.com"
 ];
 
 // El "Web client ID" de OAuth de tu proyecto de Firebase. Lo encuentras en:
@@ -45,7 +46,7 @@ const CORREOS_AUTORIZADOS = [
 // el bloque "Configuración del SDK web" → ahí aparece como "Web client ID"
 // (termina en ".apps.googleusercontent.com"). NO es la misma API key que
 // usas en firebaseConfig dentro de app.js.
-const GOOGLE_CLIENT_ID = "REEMPLAZA-CON-TU-WEB-CLIENT-ID.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = "76727611900-lv1baflcpv7fni9a3op4drbctjnjbkad.apps.googleusercontent.com";
 
 // Tiempo mínimo entre publicaciones, por persona.
 const RATE_LIMIT_MS = 2 * 60 * 1000; // 2 minutos
