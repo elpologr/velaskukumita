@@ -352,6 +352,15 @@
                 </div>
             </div>
 
+            <!-- Botón de administración: oculto por defecto, solo visible para correos autorizados (ver ADMIN_EMAILS en app.js) -->
+            <button class="btn-opcion-perfil" id="btnAdminProductos" style="display:none;" onclick="abrirPantallaAdminProductos()">
+                <span class="op-icono">📦</span>
+                <div>
+                    Agregar producto
+                    <span class="op-sub">Panel de administración</span>
+                </div>
+            </button>
+
             <button class="btn-opcion-perfil" id="btnContrasena" onclick="gestionarContrasena()">
                 <span class="op-icono">🔒</span>
                 <div>
@@ -364,6 +373,51 @@
                 <span style="font-size:20px;">🚪</span>
                 Cerrar sesión
             </button>
+        </div>
+    </div>
+
+    <!-- ══ PANTALLA ADMIN: AGREGAR PRODUCTO (acceso restringido) ══ -->
+    <div class="pantalla-perfil pantalla-admin-productos" id="pantallaAdminProductos">
+        <div class="pantalla-perfil-header">
+            <button class="btn-volver-perfil" onclick="cerrarPantallaAdminProductos()">‹</button>
+            <span class="pantalla-perfil-titulo">Agregar producto</span>
+            <div style="width:42px;"></div>
+        </div>
+        <div class="pantalla-perfil-body">
+
+            <button class="btn-opcion-perfil" onclick="seleccionarImagenProducto()">
+                <span class="op-icono">🖼️</span>
+                <div>
+                    Agregar imagen
+                    <span class="op-sub">Se convierte a WebP y se sube a ImgBB</span>
+                </div>
+            </button>
+            <input type="file" id="inputImagenProducto" accept="image/*" style="display:none" onchange="procesarImagenProducto(event)">
+
+            <img id="previewImagenProducto" class="preview-imagen-producto" style="display:none;" alt="Vista previa del producto">
+            <a href="#" id="btnQuitarImagenProducto" class="link-quitar-imagen" style="display:none;" onclick="event.preventDefault(); quitarImagenProducto();">Quitar imagen</a>
+
+            <div class="form-admin-producto">
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Nombre del producto</label>
+                    <input id="inputNombreProducto" class="panel-nombre-input" type="text" placeholder="Ej. Vela aromática grande" maxlength="120">
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Precio</label>
+                    <input id="inputPrecioProducto" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ej. 150">
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Cantidad en stock</label>
+                    <input id="inputStockProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="0" step="1" placeholder="Ej. 20">
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Código de barras</label>
+                    <input id="inputCodigoBarrasProducto" class="panel-nombre-input" type="text" placeholder="Opcional">
+                </div>
+            </div>
+
+            <button class="btn-guardar-producto" id="btnGuardarProductoAdmin" onclick="guardarProductoAdmin()">💾 Guardar producto</button>
+            <p class="status-admin-producto" id="statusAdminProducto"></p>
         </div>
     </div>
 

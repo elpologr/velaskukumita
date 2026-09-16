@@ -1873,6 +1873,44 @@
         body.modo-oscuro .panel-nombre-btn.cancelar { background: #3a2e26; color: #a89080; }
         body.modo-oscuro .panel-nombre-btn.guardar { background: #8c7565; color: #fff; }
 
+        /* ── Panel Admin: Agregar producto ── */
+        .pantalla-admin-productos { z-index: 3100; }
+        .preview-imagen-producto {
+            width: 140px; height: 140px; object-fit: cover;
+            border-radius: 14px; border: 2px solid #d4c5b8;
+            background: #eee; margin: -4px 0 -6px;
+        }
+        .link-quitar-imagen {
+            font-size: 13px; font-weight: 600; color: #c0392b;
+            text-decoration: none; margin-bottom: 4px;
+        }
+        .link-quitar-imagen:hover { text-decoration: underline; }
+        .form-admin-producto {
+            width: 100%; max-width: 380px;
+            background: #fdfaf7; border: 1.5px solid #e8ddd5;
+            border-radius: 14px; padding: 18px;
+            display: flex; flex-direction: column; gap: 14px;
+            box-sizing: border-box;
+        }
+        .campo-admin-producto { display: flex; flex-direction: column; gap: 6px; }
+        .btn-guardar-producto {
+            width: 100%; max-width: 380px;
+            padding: 15px 20px;
+            background: #362a22; color: #fff; border: none;
+            border-radius: 14px; font-size: 15px; font-weight: 700;
+            cursor: pointer; transition: background 0.2s; font-family: inherit;
+        }
+        .btn-guardar-producto:hover { background: #5c4d43; }
+        .btn-guardar-producto:disabled { opacity: 0.6; cursor: default; }
+        .status-admin-producto {
+            font-size: 13px; color: #8c7565; min-height: 18px; margin: 0;
+        }
+        body.modo-oscuro .form-admin-producto { background: #2a2218; border-color: #3a3028; }
+        body.modo-oscuro .preview-imagen-producto { border-color: #4a3a2e; }
+        body.modo-oscuro .btn-guardar-producto { background: #8c7565; color: #fff; }
+        body.modo-oscuro .btn-guardar-producto:hover { background: #a08a75; }
+        body.modo-oscuro .status-admin-producto { color: #a89080; }
+
         /* Modo oscuro — perfil */
         body.modo-oscuro .pantalla-perfil { background: #1a1410; }
         body.modo-oscuro .pantalla-perfil-header { border-color: #3a3028; }

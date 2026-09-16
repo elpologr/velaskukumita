@@ -2779,6 +2779,8 @@ auth.onAuthStateChanged(user => {
         localStorage.removeItem('velas-nombre-usuario');
         localStorage.removeItem('velas-email-usuario');
         localStorage.removeItem('velas-proveedor');
+        var btnAdminSalir = document.getElementById('btnAdminProductos');
+        if (btnAdminSalir) btnAdminSalir.style.display = 'none';
     }
     actualizarEstadoSesionDrawer();
     actualizarPantallaPerfil();
