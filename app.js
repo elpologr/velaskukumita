@@ -173,15 +173,13 @@ var SHEET_ID = '1jin2wMYingvbPD2csGxIbm5AhulfRvCRvIzAKJTUNMw';
 //   E(4):  video youtube
 //   F(5):  Imagen
 //   G(6):  EtiquetaPrincipal
-//   H(7):  SubEtiqueta
-//   I(8):  EtiquetaEvento
-//   J(9):  en oferta          (escribe "si" para activar)
-//   K(10): mas vendido        (escribe "si" para activar)
-//   L(11): Alto
-//   M(12): Ancho
-//   N(13): SubImagen          (URLs separadas por coma)
-//   O(14): youtube img/vid
-//   P(15): existencia         (número de piezas en stock)
+//   H(7):  EtiquetaEvento
+//   I(8):  en oferta          (escribe "si" para activar)
+//   J(9):  mas vendido        (escribe "si" para activar)
+//   K(10): Alto
+//   L(11): Ancho
+//   M(12): SubImagen          (URLs separadas por coma)
+//   N(13): existencia         (número de piezas en stock)
 // ══════════════════════════════════════════════════════════════════════════════
 
 var listaProductos = [];
@@ -243,15 +241,13 @@ function csvAProductos(filas) {
         // E=4  video youtube
         // F=5  Imagen (URL principal + extras separadas por coma)
         // G=6  EtiquetaPrincipal
-        // H=7  SubEtiqueta
-        // I=8  EtiquetaEvento
-        // J=9  en oferta  (si / vacío)
-        // K=10 mas vendido (si / vacío)
-        // L=11 Alto
-        // M=12 Ancho
-        // N=13 SubImagen (URLs o nombres separados por coma)
-        // O=14 youtube img/vid
-        // P=15 existencia (número de piezas en stock)
+        // H=7  EtiquetaEvento
+        // I=8  en oferta  (si / vacío)
+        // J=9  mas vendido (si / vacío)
+        // K=10 Alto
+        // L=11 Ancho
+        // M=12 SubImagen (URLs o nombres separados por coma)
+        // N=13 existencia (número de piezas en stock)
 
         // Video principal (E=4)
         var videoPrincipal = get(4).replace(/^"+|"+$/g, '').trim();
@@ -269,19 +265,12 @@ function csvAProductos(filas) {
             : ['arreglo'];
         var tipoPrincipal = tiposArray[0] || 'arreglo';
 
-        // Oferta y Más Vendido (J=9, K=10)
-        var enOferta   = get(9).toLowerCase()  === 'si' ? 1 : 0;
-        var masVendido = get(10).toLowerCase() === 'si' ? 1 : 0;
+        // Oferta y Más Vendido (I=8, J=9)
+        var enOferta   = get(8).toLowerCase()  === 'si' ? 1 : 0;
+        var masVendido = get(9).toLowerCase() === 'si' ? 1 : 0;
 
-        // Existencia (P=15)
-        var existencia = parseInt(get(15).replace(/[^0-9]/g, '')) || 0;
-
-        // YouTube img/vid (O=14)
-        function parsearRed(idx) {
-            var raw = get(idx).replace(/^"+|"+$/g, '').trim();
-            return raw ? raw.split(',').map(function(s){ return s.trim().replace(/^"+|"+$/g, ''); }).filter(Boolean) : [];
-        }
-        var redYoutube = parsearRed(14);
+        // Existencia (N=13)
+        var existencia = parseInt(get(13).replace(/[^0-9]/g, '')) || 0;
 
         productos.push({
             id:           i,
@@ -295,9 +284,8 @@ function csvAProductos(filas) {
             forma:        '',
             tipo:         tipoPrincipal,
             tipos:        tiposArray,
-            subtags:      get(7) ? get(7).split(',').map(function(s){ return s.trim(); }).filter(Boolean).join('|') : '',
-            eventos:      get(8)
-                            ? get(8).split(/[,|]/).map(function(s){
+            eventos:      get(7)
+                            ? get(7).split(/[,|]/).map(function(s){
                                 return s.trim().toLowerCase()
                                     .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quitar acentos
                                     .replace(/\s+/g, '-'); // espacios → guiones (ej: "baby shower" → "baby-shower")
@@ -307,16 +295,16 @@ function csvAProductos(filas) {
             aditivos:     [],
             oferta:       enOferta,
             masVendido:   masVendido,
-            alto:         get(11),
-            ancho:        get(12),
+            alto:         get(10),
+            ancho:        get(11),
             existencia:   existencia,
-            redYoutube:   redYoutube,
+            redYoutube:   [],
             redFacebook:  [],
             redInstagram: [],
             redTiktok:    [],
             subImagenes:  (function() {
-                // Columna N (índice 13): SubImagen — valores separados por coma
-                var rawSub = (f[13] || '').trim().replace(/^"+|"+$/g, '').trim();
+                // Columna M (índice 12): SubImagen — valores separados por coma
+                var rawSub = (f[12] || '').trim().replace(/^"+|"+$/g, '').trim();
                 return rawSub
                     ? rawSub.split(',').map(function(s){ return s.trim().replace(/^"+|"+$/g, ''); }).filter(Boolean)
                     : [];
@@ -362,7 +350,6 @@ function renderizarCatalogoCompleto() {
         card.setAttribute('data-precio-bazar',    String(parseInt(p.precioBazar,  10) || ''));
         card.setAttribute('data-tipo',            p.tipo  || 'arreglo');
         card.setAttribute('data-tipos',           (p.tipos || [p.tipo || 'arreglo']).join('|'));
-        card.setAttribute('data-subtags',         p.subtags || '');
         card.setAttribute('data-nombre',          p.nombre);
         card.setAttribute('data-imagenes',        JSON.stringify(p.imagenes || []));
         card.setAttribute('data-descripcion',     p.descripcion || '');
@@ -923,6 +910,45 @@ if (document.readyState === 'loading') {
     let galeriaVideoPrincipal = '';   // URL/embed del video principal del producto
     let galeriaIndice = 0;
 
+    // ── Extrae el ID de video de un link de YouTube (embed, watch, youtu.be, shorts) ──
+    function _extraerIdYoutube(url) {
+        if (!url) return null;
+        var m = String(url).match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
+        return m ? m[1] : null;
+    }
+
+    // ── Pantalla: Ver Video del producto ──
+    function abrirPantallaVideoProducto() {
+        var id = _extraerIdYoutube(galeriaVideoPrincipal);
+        if (!id) return;
+        var contenedor = document.getElementById('videoProductoContenedor');
+        if (contenedor) {
+            contenedor.innerHTML = '<iframe src="https://www.youtube.com/embed/' + id + '?rel=0&autoplay=1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+        }
+        var p = document.getElementById('pantallaVideoProducto');
+        if (!p) return;
+        p.classList.add('activo');
+        document.body.style.overflow = 'hidden';
+        history.pushState({ kukumitaModal: 'videoProducto' }, '');
+    }
+
+    function cerrarPantallaVideoProducto() {
+        var p = document.getElementById('pantallaVideoProducto');
+        if (p) p.classList.remove('activo');
+        var contenedor = document.getElementById('videoProductoContenedor');
+        if (contenedor) contenedor.innerHTML = ''; // detener reproducción
+        if (history.state && history.state.kukumitaModal === 'videoProducto') {
+            history.replaceState(null, '');
+        }
+    }
+    window.abrirPantallaVideoProducto = abrirPantallaVideoProducto;
+    window.cerrarPantallaVideoProducto = cerrarPantallaVideoProducto;
+
+    window.addEventListener('popstate', function () {
+        var p = document.getElementById('pantallaVideoProducto');
+        if (p && p.classList.contains('activo')) cerrarPantallaVideoProducto();
+    });
+
     function abrirModalProducto(card) {
         const nombre = card.getAttribute('data-nombre') || card.querySelector('h3')?.textContent || 'Producto';
         const descripcion = card.getAttribute('data-descripcion') || '';
@@ -933,8 +959,12 @@ if (document.readyState === 'loading') {
         const precioNum = card.getAttribute('data-precio') || '';
         const precioBazar = card.getAttribute('data-precio-bazar') || '';
 
-        // ── Video principal (si existe, va PRIMERO en la galería) ──
+        // ── Video principal del producto (se muestra vía botón "Ver Video", no en la galería) ──
         galeriaVideoPrincipal = (card.getAttribute('data-video') || '').trim();
+        const btnVerVideo = document.getElementById('mpBtnVerVideo');
+        if (btnVerVideo) {
+            btnVerVideo.style.display = _extraerIdYoutube(galeriaVideoPrincipal) ? 'block' : 'none';
+        }
 
         try {
             galeriaImagenes = imagenesJSON ? JSON.parse(imagenesJSON) : [];
@@ -976,40 +1006,15 @@ if (document.readyState === 'loading') {
         // Mostrar/ocultar fila contenedora
         if (filaCompleta) filaCompleta.style.display = (precioNum || precioBazar) ? 'flex' : 'none';
 
-        // Tags inline — SUB-ETIQUETAS (oferta/más vendido) + etiquetas de evento
+        // Tags inline — etiquetas de evento (se muestran directamente, ya no hay botón de despliegue)
         // La etiqueta PRINCIPAL se inyecta por inyectarEtiquetasModal()
         const tagsInline = document.getElementById('modalTagsInline');
         tagsInline.innerHTML = '';
-        tagsInline.style.display = 'none'; // colapsadas por defecto
+        tagsInline.style.display = 'none';
 
         // Limpiar también zona etiqueta principal
         const zonaPrincipal = document.getElementById('mpEtiquetaPrincipalZona');
         if (zonaPrincipal) { zonaPrincipal.innerHTML = ''; zonaPrincipal.style.display = 'none'; }
-
-        // Ocultar botón toggle hasta saber si hay sub-etiquetas
-        const btnToggleSub = document.getElementById('mpBtnMostrarSubetiquetas');
-        if (btnToggleSub) btnToggleSub.style.display = 'none';
-
-        // — Sub-etiquetas (desde data-subtags: cirio, tazón, stich, etc.) —
-        const dataForma = card.getAttribute('data-forma') || '';
-        const subtags = (card.getAttribute('data-subtags') || '').split('|').map(s => s.trim()).filter(Boolean);
-        let haySubetiquetas = false;
-        if (subtags.length > 0) {
-            haySubetiquetas = true;
-            const rowForma = document.createElement('div');
-            rowForma.style.cssText = 'display: flex; flex-wrap: wrap; gap: 5px; width: 100%; margin-bottom: 6px;';
-            const labelFm = document.createElement('div');
-            labelFm.textContent = 'Sub-etiquetas';
-            labelFm.style.cssText = 'font-size: 10px; font-weight: 700; color: #705c4f; text-transform: uppercase; letter-spacing: 0.5px; width: 100%; margin-bottom: 4px;';
-            rowForma.appendChild(labelFm);
-            subtags.forEach(tag => {
-                const spanForma = document.createElement('span');
-                spanForma.textContent = tag;
-                spanForma.style.cssText = 'background: #e8e0d7; color: #705c4f; font-size: 11px; padding: 3px 9px; border-radius: 12px; font-weight: 600;';
-                rowForma.appendChild(spanForma);
-            });
-            tagsInline.appendChild(rowForma);
-        }
 
         // — Etiquetas de Evento —
         const dataEvento = card.getAttribute('data-evento') || '';
@@ -1024,6 +1029,18 @@ if (document.readyState === 'loading') {
             'graduacion': 'Graduación',
             'primera-comunion': 'Primera Comunión', 'comunion': 'Primera Comunión',
             'fin-novenario': 'Fin de Novenario', 'novenario': 'Fin de Novenario',
+            'despedida-soltero': 'Despedida de Soltero',
+            'compromiso': 'Compromiso', 'cumpleanos': 'Cumpleaños',
+            'aniversario-bodas': 'Aniversario de Bodas',
+            'revelacion-genero': 'Revelación de Género',
+            'bienvenida-bebe': 'Bienvenida de Bebé',
+            'posada': 'Posada', 'navidad': 'Navidad', 'ano-nuevo': 'Año Nuevo',
+            'dia-madres': 'Día de las Madres', 'dia-padre': 'Día del Padre',
+            'san-valentin': 'Día de San Valentín', 'dia-nino': 'Día del Niño',
+            'dia-muertos': 'Día de Muertos',
+            'ordenacion-sacerdotal': 'Ordenación Sacerdotal',
+            'jubilacion': 'Jubilación', 'apertura-negocio': 'Apertura de Negocio',
+            'condolencias': 'Condolencias',
             'sin evento': '', 'sin-evento': ''
         };
         // Normalizar: quitar acentos y convertir a minúsculas para comparar
@@ -1042,7 +1059,6 @@ if (document.readyState === 'loading') {
         }
         const eventoSlots = dataEvento.split('|').filter(e => e && e !== 'sin' && e !== 'sin-evento');
         if (eventoSlots.length > 0) {
-            haySubetiquetas = true;
             const labelEv = document.createElement('div');
             labelEv.textContent = 'Etiquetas de Evento';
             labelEv.style.cssText = 'font-size: 10px; font-weight: 700; color: #4b6b94; text-transform: uppercase; letter-spacing: 0.5px; width: 100%; margin-bottom: 4px;';
@@ -1056,10 +1072,20 @@ if (document.readyState === 'loading') {
                 rowEv.appendChild(span);
             });
             tagsInline.appendChild(rowEv);
+            tagsInline.style.display = 'block';
         }
 
-        // Mostrar botón toggle solo si hay algo que desplegar
-        if (btnToggleSub) btnToggleSub.style.display = haySubetiquetas ? 'inline-block' : 'none';
+        // — Stock / Existencia (badge junto al número de producto, reemplaza al viejo botón "Ver sub-etiquetas") —
+        const stockBadge      = document.getElementById('mpStockBadge');
+        const stockBadgeTexto = document.getElementById('mpStockBadgeTexto');
+        if (stockBadge && stockBadgeTexto) {
+            if (existencia > 0) {
+                stockBadgeTexto.textContent = 'Quedan ' + existencia;
+                stockBadge.style.display = 'inline-flex';
+            } else {
+                stockBadge.style.display = 'none';
+            }
+        }
 
         // Descripción
         const descTexto = document.getElementById('modalDescripcionTexto');
@@ -1087,17 +1113,6 @@ if (document.readyState === 'loading') {
             dimZona.style.display = 'none';
         }
 
-        // ── Stock / Existencia ──
-        const existenciaZona  = document.getElementById('modalExistenciaZona');
-        const existenciaTexto = document.getElementById('modalExistenciaTexto');
-        if (existenciaZona && existenciaTexto) {
-            if (existencia > 0) {
-                existenciaTexto.textContent = existencia;
-                existenciaZona.style.display = 'block';
-            } else {
-                existenciaZona.style.display = 'none';
-            }
-        }
         const aditivosScroll = document.getElementById('modalAditivosScroll');
         const aditivosZona   = document.getElementById('modalAditivosZona');
         aditivosScroll.innerHTML = '';
@@ -1318,11 +1333,9 @@ if (document.readyState === 'loading') {
         }
         // Restaurar meta OG genéricos
         document.dispatchEvent(new CustomEvent('modalProductoCerrado'));
-        // Resetear sub-etiquetas a estado colapsado para el próximo producto
+        // Resetear etiquetas de evento a estado colapsado para el próximo producto
         var tagsInline = document.getElementById('modalTagsInline');
-        var btnToggle  = document.getElementById('mpBtnMostrarSubetiquetas');
         if (tagsInline) tagsInline.style.display = 'none';
-        if (btnToggle)  btnToggle.textContent = 'Ver sub-etiquetas ▾';
     }
 
     function renderizarGaleria() {
@@ -1333,33 +1346,6 @@ if (document.readyState === 'loading') {
 
         // Limpiar listener anterior
         track._scrollHandler && track.removeEventListener('scroll', track._scrollHandler);
-
-        // ── Slide 0: Video de YouTube (solo si el link es de YouTube) ──
-        let slideOffset = 0;
-        if (galeriaVideoPrincipal) {
-            const ytMatch = galeriaVideoPrincipal.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
-            if (ytMatch) {
-                const videoSlide = document.createElement('div');
-                videoSlide.className = 'modal-galeria-slide';
-                videoSlide.style.cssText = 'display:flex;align-items:center;justify-content:center;background:#000;';
-
-                const iframe = document.createElement('iframe');
-                iframe.src = 'https://www.youtube.com/embed/' + ytMatch[1] + '?rel=0';
-                iframe.style.cssText = 'width:100%;height:100%;border:0;';
-                iframe.setAttribute('allowfullscreen', '');
-                iframe.setAttribute('allow', 'autoplay; encrypted-media');
-
-                videoSlide.appendChild(iframe);
-                track.appendChild(videoSlide);
-
-                const dotV = document.createElement('div');
-                dotV.className = 'modal-dot activo';
-                dotV.onclick = () => irASlide(0);
-                dotsContainer.appendChild(dotV);
-                slideOffset = 1;
-            }
-            // Si el link no es de YouTube, se ignora y solo se muestran las imágenes
-        }
 
         galeriaImagenes.forEach((src, i) => {
             const slide = document.createElement('div');
@@ -1374,14 +1360,12 @@ if (document.readyState === 'loading') {
             track.appendChild(slide);
 
             const dot = document.createElement('div');
-            const dotIdx = i + slideOffset;
-            dot.className = 'modal-dot' + (dotIdx === 0 ? ' activo' : '');
-            dot.onclick = () => irASlide(dotIdx);
+            dot.className = 'modal-dot' + (i === 0 ? ' activo' : '');
+            dot.onclick = () => irASlide(i);
             dotsContainer.appendChild(dot);
         });
 
-        const totalSlides = galeriaImagenes.length + slideOffset;
-        dotsContainer.style.display = totalSlides <= 1 ? 'none' : 'flex';
+        dotsContainer.style.display = galeriaImagenes.length <= 1 ? 'none' : 'flex';
 
         actualizarNavegacion();
 
@@ -1397,8 +1381,7 @@ if (document.readyState === 'loading') {
 
     function irASlide(indice) {
         const track = document.getElementById('modalGaleriaTrack');
-        const _totalSlides = galeriaImagenes.length + (galeriaVideoPrincipal ? 1 : 0);
-        galeriaIndice = Math.max(0, Math.min(indice, _totalSlides - 1));
+        galeriaIndice = Math.max(0, Math.min(indice, galeriaImagenes.length - 1));
         track.scrollTo({ left: galeriaIndice * track.offsetWidth, behavior: 'smooth' });
         actualizarNavegacion();
     }
@@ -1408,7 +1391,7 @@ if (document.readyState === 'loading') {
     }
 
     function actualizarNavegacion() {
-        const total = galeriaImagenes.length + (galeriaVideoPrincipal ? 1 : 0);
+        const total = galeriaImagenes.length;
         document.getElementById('btnGalPrev').classList.toggle('oculto-nav', galeriaIndice === 0);
         document.getElementById('btnGalNext').classList.toggle('oculto-nav', galeriaIndice >= total - 1);
         document.getElementById('modalContador').textContent = total > 1 ? `${galeriaIndice + 1} / ${total}` : '';
@@ -1500,24 +1483,6 @@ if (document.readyState === 'loading') {
                 hint.className = 'card-hint-tap';
                 hint.textContent = 'Toca para ver detalles';
                 card.appendChild(hint);
-            }
-
-            // Sub-etiquetas debajo de la imagen desde data-subtags
-            const infoDiv = card.querySelector('.img-contenedor-dinamico');
-            if (infoDiv && !card.querySelector('.subtags-row')) {
-                const subtags = (card.getAttribute('data-subtags') || '').split('|').map(s => s.trim()).filter(Boolean);
-                if (subtags.length > 0) {
-                    const tagsRow = document.createElement('div');
-                    tagsRow.className = 'subtags-row';
-                    tagsRow.style.cssText = 'display: flex; flex-wrap: wrap; gap: 3px; padding: 5px 6px 2px 6px;';
-                    subtags.slice(0, 5).forEach(tag => {
-                        const t = document.createElement('span');
-                        t.textContent = tag;
-                        t.style.cssText = 'font-size: 9px; padding: 2px 6px; border-radius: 10px; font-weight: 600; background: #e8e0d7; color: #705c4f;';
-                        tagsRow.appendChild(t);
-                    });
-                    infoDiv.insertAdjacentElement('afterend', tagsRow);
-                }
             }
         });
 
@@ -1732,6 +1697,11 @@ if (document.readyState === 'loading') {
         ['vela','velas'],
         ['figura','figuras'],
         ['flores','flor'],
+        ['maceta','macetas'],
+        ['base','bases'],
+        ['porta-velas','portavelas','porta velas','portavela','porta vela','candelero','candeleros'],
+        ['religioso','religiosa','religiosos','religiosas'],
+        ['cirio','cirios'],
     ];
 
     // Dada una palabra normalizada, devuelve el grupo de variantes al que pertenece (o [la misma palabra])
@@ -1752,7 +1722,7 @@ if (document.readyState === 'loading') {
     }
 
     // Devuelve true si TODAS las palabras significativas del query aparecen
-    // en alguna parte del texto (nombre + tipo + subtags del producto).
+    // en alguna parte del texto (nombre + tipo del producto).
     // Tolerancia: acepta variantes ortográficas y sinónimos definidos en SINONIMOS.
     function coincideNombre(nombreCard, query, card) {
         if (!query || !query.trim()) return true;
@@ -1761,9 +1731,8 @@ if (document.readyState === 'loading') {
         var textoCompleto = normalizarTexto(nombreCard);
         if (card) {
             var tipos    = normalizarTexto(card.getAttribute('data-tipos')   || '');
-            var subtags  = normalizarTexto(card.getAttribute('data-subtags') || '');
             var tipo     = normalizarTexto(card.getAttribute('data-tipo')    || '');
-            textoCompleto += ' ' + tipos + ' ' + subtags + ' ' + tipo;
+            textoCompleto += ' ' + tipos + ' ' + tipo;
         }
 
         var palabras = palabrasBusqueda(query);
@@ -2572,6 +2541,11 @@ var _SINONIMOS_DRAWER = [
     ['vela','velas'],
     ['figura','figuras'],
     ['flores','flor'],
+    ['maceta','macetas'],
+    ['base','bases'],
+    ['porta-velas','portavelas','porta velas','portavela','porta vela','candelero','candeleros'],
+    ['religioso','religiosa','religiosos','religiosas'],
+    ['cirio','cirios'],
 ];
 function _expandirDrawer(palabra) {
     for (var i = 0; i < _SINONIMOS_DRAWER.length; i++) {
@@ -2583,7 +2557,6 @@ function _coincideDrawer(nombre, query, card) {
     var texto = _normDrawer(nombre);
     if (card) {
         texto += ' ' + _normDrawer(card.getAttribute('data-tipos') || '');
-        texto += ' ' + _normDrawer(card.getAttribute('data-subtags') || '');
     }
     var palabras = _normDrawer(query).split(/\s+/).filter(function(p){ return p.length >= 2; });
     if (!palabras.length) return true;
@@ -3376,17 +3349,7 @@ var TIPO_INFO = {
     etiquetas:    { cls: 'etiqueta',   label: '🏷️ Etiqueta' }
 };
 
-// ── Inyectar etiqueta principal (sobre el título) y sub-etiquetas (sobre evento) ──
-// ── Toggle sub-etiquetas en el modal de producto ──────────────────────────────
-function toggleSubetiquetasModal() {
-    var zona = document.getElementById('modalTagsInline');
-    var btn  = document.getElementById('mpBtnMostrarSubetiquetas');
-    if (!zona || !btn) return;
-    var abierto = zona.style.display !== 'none';
-    zona.style.display = abierto ? 'none' : 'block';
-    btn.textContent = abierto ? 'Ver sub-etiquetas ▾' : 'Ocultar sub-etiquetas ▴';
-}
-
+// ── Inyectar etiqueta principal (sobre el título) y etiquetas de evento ──
 function inyectarEtiquetasModal(card) {
     // 1. ETIQUETAS PRINCIPALES — lee data-tipos (puede haber varias separadas por |)
     var zonaPrincipal = document.getElementById('mpEtiquetaPrincipalZona');
@@ -4890,7 +4853,7 @@ window.filtrarPorFestividadCarrusel = function(btnPulsado, festividad) {
             var dataEvento = (card.getAttribute('data-evento') || '').toLowerCase();
             var slugs = dataEvento.split('|').map(function(s){ return s.trim(); }).filter(Boolean);
             var coincide = slugs.includes(slugFiltro) ||
-                           (card.getAttribute('data-subtags') || '').toLowerCase().indexOf(slugFiltro.replace(/-/g,' ')) !== -1;
+                           (card.getAttribute('data-nombre') || '').toLowerCase().indexOf(slugFiltro.replace(/-/g,' ')) !== -1;
             card.classList.toggle('oculto', !coincide);
             card.classList.remove('paginacion-oculto');
             if (coincide) hay = true;
@@ -4901,13 +4864,12 @@ window.filtrarPorFestividadCarrusel = function(btnPulsado, festividad) {
     }, 60);
 };
 
-// Normalizar texto para comparar sub-etiquetas de forma
+// Normalizar texto para comparar palabras de forma contra el nombre del producto
 function _normForma(txt) {
     return (txt || '').toLowerCase()
         .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quitar tildes
-        .replace(/[^a-z0-9\-]/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '');
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
 }
 
 window.filtrarPorFormaCarrusel = function(btnPulsado, forma) {
@@ -4933,12 +4895,14 @@ window.filtrarPorFormaCarrusel = function(btnPulsado, forma) {
     setTimeout(function() {
         var cards = document.querySelectorAll('#gridProductos .card-dinamica');
         var hay = false;
+        // La forma ya no vive en una columna aparte (SubEtiqueta) — se identifica
+        // directamente en el nombre del producto (columna A), con el mismo
+        // sistema de sinónimos que usa el buscador para tolerar variantes.
+        var formaNorm  = _normForma(forma);
+        var variantes  = (typeof _expandirDrawer === 'function') ? _expandirDrawer(formaNorm) : [formaNorm];
         cards.forEach(function(card) {
-            // Buscar en data-subtags (columna H = SubEtiqueta)
-            var subtags = (card.getAttribute('data-subtags') || '').toLowerCase();
-            var subtaguNorm = subtags.split('|').map(function(s){ return _normForma(s.trim()); });
-            var formaSlug = _normForma(forma);
-            var coincide = subtaguNorm.includes(formaSlug);
+            var nombreNorm = _normForma(card.getAttribute('data-nombre') || '');
+            var coincide = variantes.some(function(v) { return v && nombreNorm.indexOf(v) !== -1; });
             card.classList.toggle('oculto', !coincide);
             card.classList.remove('paginacion-oculto');
             if (coincide) hay = true;
@@ -5103,7 +5067,7 @@ var ADMIN_EMAILS = [
 ];
 
 // ✅ Apps Script publicado como aplicación web
-var ADMIN_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx3QmQW4IVx1dVD45DA-9nKdFiurzAs6KOqCcqu8Es0CgJk1aBG_DKj8lr9D3pqZfHh/exec';
+var ADMIN_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyIhS8jBCjbuooKz1y5NyJmhlBTBIyhiAoAxq3cnAU8wEYI1g9wXNsZqAnMLbWqbbjO/exec';
 
 // Estado interno del formulario
 var _adminImagenBase64 = null;   // base64 sin el encabezado data:
@@ -5272,10 +5236,21 @@ async function guardarProductoAdmin() {
     }
 
     var nombre          = ((document.getElementById('inputNombreProducto')          || {}).value || '').trim();
+    var descripcion     = ((document.getElementById('inputDescripcionProducto')     || {}).value || '').trim();
     var precio          = ((document.getElementById('inputPrecioProducto')          || {}).value || '').trim();
     var precioMayoreo   = ((document.getElementById('inputPrecioMayoreoProducto')   || {}).value || '').trim();
     var stock           = ((document.getElementById('inputStockProducto')           || {}).value || '').trim();
     var etiquetaPrincipal = ((document.getElementById('inputEtiquetaPrincipalProducto') || {}).value || '').trim();
+    var eventosSeleccionados = Array.prototype.slice.call(document.querySelectorAll('.chk-evento-producto:checked'))
+        .map(function (chk) { return chk.value; });
+    var eventoOtro = ((document.getElementById('inputEventoOtroProducto') || {}).value || '').trim();
+    if (eventoOtro) eventosSeleccionados.push(eventoOtro);
+    var etiquetaEvento = eventosSeleccionados.join('|');
+    var enOferta        = ((document.getElementById('inputEnOfertaProducto')   || {}).checked) ? 'si' : '';
+    var masVendido      = ((document.getElementById('inputMasVendidoProducto') || {}).checked) ? 'si' : '';
+    var alto            = ((document.getElementById('inputAltoProducto')  || {}).value || '').trim();
+    var ancho           = ((document.getElementById('inputAnchoProducto') || {}).value || '').trim();
+    var videoYoutube    = ((document.getElementById('inputVideoYoutubeProducto') || {}).value || '').trim();
 
     if (!nombre) {
         _statusAdmin('Escribe el nombre del producto.', true); return;
@@ -5288,6 +5263,9 @@ async function guardarProductoAdmin() {
     }
     if (stock !== '' && (isNaN(Number(stock)) || Number(stock) < 0)) {
         _statusAdmin('La existencia debe ser un número.', true); return;
+    }
+    if (videoYoutube !== '' && !/^https:\/\/(www\.)?youtube\.com\/embed\/[\w-]{11}(\?.*)?$/.test(videoYoutube)) {
+        _statusAdmin('El video debe ser un link embed de YouTube (youtube.com/embed/…).', true); return;
     }
     if (!_adminImagenBase64) {
         _statusAdmin('Agrega una imagen del producto.', true); return;
@@ -5305,10 +5283,17 @@ async function guardarProductoAdmin() {
         var cuerpo = {
             idToken:           idToken,
             nombre:            nombre,
+            descripcion:       descripcion,
             precio:            precio,
             precioMayoreo:     precioMayoreo,
             existencia:        stock,
             etiquetaPrincipal: etiquetaPrincipal,
+            etiquetaEvento:    etiquetaEvento,
+            enOferta:          enOferta,
+            masVendido:        masVendido,
+            alto:              alto,
+            ancho:             ancho,
+            video:             videoYoutube,
             imagenBase64:      _adminImagenBase64,
             imagenNombre:      _adminImagenNombre
         };
@@ -5326,12 +5311,23 @@ async function guardarProductoAdmin() {
         mostrarToast('✅ Producto agregado');
 
         // Limpiar formulario
-        ['inputNombreProducto', 'inputPrecioProducto', 'inputPrecioMayoreoProducto',
-         'inputStockProducto', 'inputEtiquetaPrincipalProducto']
+        ['inputNombreProducto', 'inputDescripcionProducto', 'inputPrecioProducto', 'inputPrecioMayoreoProducto',
+         'inputStockProducto', 'inputEtiquetaPrincipalProducto',
+         'inputAltoProducto', 'inputAnchoProducto', 'inputVideoYoutubeProducto']
             .forEach(function (id) {
                 var el = document.getElementById(id);
                 if (el) el.value = '';
             });
+        ['inputEnOfertaProducto', 'inputMasVendidoProducto']
+            .forEach(function (id) {
+                var el = document.getElementById(id);
+                if (el) el.checked = false;
+            });
+        document.querySelectorAll('.chk-evento-producto:checked').forEach(function (chk) {
+            chk.checked = false;
+        });
+        var _inputEventoOtro = document.getElementById('inputEventoOtroProducto');
+        if (_inputEventoOtro) _inputEventoOtro.value = '';
         quitarImagenProducto();
         _statusAdmin('✅ Guardado en la fila ' + data.fila, false);
 

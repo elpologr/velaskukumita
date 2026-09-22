@@ -385,18 +385,6 @@
         </div>
         <div class="pantalla-perfil-body">
 
-            <button class="btn-opcion-perfil" onclick="seleccionarImagenProducto()">
-                <span class="op-icono">🖼️</span>
-                <div>
-                    Agregar imagen
-                    <span class="op-sub">Se convierte a WebP y se sube a ImgBB</span>
-                </div>
-            </button>
-            <input type="file" id="inputImagenProducto" accept="image/*" style="display:none" onchange="procesarImagenProducto(event)">
-
-            <img id="previewImagenProducto" class="preview-imagen-producto" style="display:none;" alt="Vista previa del producto">
-            <a href="#" id="btnQuitarImagenProducto" class="link-quitar-imagen" style="display:none;" onclick="event.preventDefault(); quitarImagenProducto();">Quitar imagen</a>
-
             <div class="form-admin-producto">
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Nombre del producto</label>
@@ -411,8 +399,26 @@
                     <input id="inputPrecioMayoreoProducto" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Opcional">
                 </div>
                 <div class="campo-admin-producto">
-                    <label class="panel-nombre-label">Cantidad en stock</label>
-                    <input id="inputStockProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="0" step="1" placeholder="Ej. 20">
+                    <label class="panel-nombre-label">Descripción</label>
+                    <textarea id="inputDescripcionProducto" class="panel-nombre-input" rows="3" maxlength="500" placeholder="Opcional, describe el producto"></textarea>
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Video de YouTube</label>
+                    <input id="inputVideoYoutubeProducto" class="panel-nombre-input" type="url" placeholder="Opcional, ej. https://www.youtube.com/embed/XXXXXXXXXXX">
+                    <span style="font-size:11px; color:#9a8878;">Debe ser un link embed de YouTube (youtube.com/embed/…)</span>
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Imagen</label>
+                    <button class="btn-opcion-perfil" onclick="seleccionarImagenProducto()" type="button">
+                        <span class="op-icono">🖼️</span>
+                        <div>
+                            Agregar imagen
+                            <span class="op-sub">Se convierte a WebP y se sube a ImgBB</span>
+                        </div>
+                    </button>
+                    <input type="file" id="inputImagenProducto" accept="image/*" style="display:none" onchange="procesarImagenProducto(event)">
+                    <img id="previewImagenProducto" class="preview-imagen-producto" style="display:none;" alt="Vista previa del producto">
+                    <a href="#" id="btnQuitarImagenProducto" class="link-quitar-imagen" style="display:none;" onclick="event.preventDefault(); quitarImagenProducto();">Quitar imagen</a>
                 </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Etiqueta Principal</label>
@@ -426,10 +432,78 @@
                         <option value="Centros de Mesa">Centros de Mesa</option>
                     </select>
                 </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Etiqueta de Evento <span style="font-weight:400; color:#9a8878;">(opcional, puedes elegir varias)</span></label>
+                    <div class="grid-checks-evento" id="gridEventosProducto">
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="primera-comunion"><span>🙏 Primera Comunión</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="bautizo"><span>🕊️ Bautizo</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="boda"><span>💍 Boda</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="quince-anos"><span>👑 Quince Años</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="baby-shower"><span>🍼 Baby Shower</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="graduacion"><span>🎓 Graduación</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="aniversario-luctuoso"><span>🕯️ Aniv. Luctuoso</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="fin-novenario"><span>🌿 Fin de Novenario</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="despedida-soltera"><span>🥂 Despedida de Soltera</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="despedida-soltero"><span>🥃 Despedida de Soltero</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="confirmacion"><span>✝️ Confirmación</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="compromiso"><span>💎 Compromiso</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="cumpleanos"><span>🎂 Cumpleaños</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="aniversario-bodas"><span>💐 Aniversario de Bodas</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="revelacion-genero"><span>💙 Revelación de Género</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="bienvenida-bebe"><span>👶 Bienvenida de Bebé</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="posada"><span>🎉 Posada</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="navidad"><span>🎄 Navidad</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="ano-nuevo"><span>🎆 Año Nuevo</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="dia-madres"><span>💐 Día de las Madres</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="dia-padre"><span>👔 Día del Padre</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="san-valentin"><span>❤️ Día de San Valentín</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="dia-nino"><span>🧸 Día del Niño</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="dia-muertos"><span>💀 Día de Muertos</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="ordenacion-sacerdotal"><span>⛪ Ordenación Sacerdotal</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="jubilacion"><span>🎊 Jubilación</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="apertura-negocio"><span>🏪 Apertura de Negocio</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="condolencias"><span>🤍 Condolencias</span></label>
+                    </div>
+                    <input id="inputEventoOtroProducto" class="panel-nombre-input" type="text" maxlength="60" placeholder="¿Otro evento? Escríbelo aquí (opcional)" style="margin-top:8px;">
+                </div>
+                <div class="campo-admin-producto campo-admin-checkbox">
+                    <label class="check-admin-producto">
+                        <input id="inputEnOfertaProducto" type="checkbox">
+                        <span>En Oferta</span>
+                    </label>
+                    <label class="check-admin-producto">
+                        <input id="inputMasVendidoProducto" type="checkbox">
+                        <span>Más Vendido</span>
+                    </label>
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Alto</label>
+                    <input id="inputAltoProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 15 cm">
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Ancho</label>
+                    <input id="inputAnchoProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 8 cm">
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Cantidad en stock</label>
+                    <input id="inputStockProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="0" step="1" placeholder="Ej. 20">
+                </div>
             </div>
 
             <button class="btn-guardar-producto" id="btnGuardarProductoAdmin" onclick="guardarProductoAdmin()">💾 Guardar producto</button>
             <p class="status-admin-producto" id="statusAdminProducto"></p>
+        </div>
+    </div>
+
+    <!-- ══ PANTALLA: VIDEO DEL PRODUCTO ══ -->
+    <div class="pantalla-perfil pantalla-video-producto" id="pantallaVideoProducto">
+        <div class="pantalla-perfil-header">
+            <button class="btn-volver-perfil" onclick="cerrarPantallaVideoProducto()">‹</button>
+            <span class="pantalla-perfil-titulo">Video del producto</span>
+            <div style="width:42px;"></div>
+        </div>
+        <div class="pantalla-perfil-body pantalla-video-producto-body">
+            <div id="videoProductoContenedor" class="video-producto-contenedor"></div>
         </div>
     </div>
 
@@ -1642,6 +1716,9 @@
         <div class="modal-dots" id="modalDots"></div>
         <div class="modal-contador" id="modalContador"></div>
 
+        <!-- ── Botón Ver Video (ancho de la imagen) — solo si el producto tiene video ── -->
+        <button class="mp-btn-ver-video" id="mpBtnVerVideo" style="display:none;" onclick="abrirPantallaVideoProducto()">▶ Ver Video</button>
+
         <!-- ── INFO DEL PRODUCTO ── -->
         <div class="mp-info-zona">
 
@@ -1650,11 +1727,11 @@
                 <div id="mpEtiquetaPrincipalZona" style="display:none; flex-wrap:wrap; gap:6px; align-items:center; flex:1; min-width:0;">
                     <!-- etiquetas principales inyectadas por JS -->
                 </div>
-                <button id="mpBtnMostrarSubetiquetas" onclick="toggleSubetiquetasModal()" style="display:none; flex-shrink:0; background:#f0ebe5; color:#705c4f; border:1.5px solid #d4c5b8; border-radius:999px; padding:3px 11px; font-size:10px; font-weight:700; font-family:inherit; cursor:pointer; white-space:nowrap; transition:background 0.18s;">
-                    Ver sub-etiquetas ▾
-                </button>
-                <!-- Número de fila en Google Sheets — siempre visible, actualizado por JS -->
-                <span id="mpSheetRowBadge" title="Fila en Google Sheets"
+                <span id="mpStockBadge" style="display:none; flex-shrink:0; align-items:center; gap:4px; background:#e8f5e9; color:#2e7d32; border:1.5px solid #a5d6a7; border-radius:999px; padding:3px 11px; font-size:10px; font-weight:700; white-space:nowrap;">
+                    📦 <span id="mpStockBadgeTexto"></span>
+                </span>
+                <!-- Número de producto del catálogo — siempre visible, actualizado por JS -->
+                <span id="mpSheetRowBadge" title="Producto del catálogo"
                       style="display:none; flex-shrink:0; margin-left:auto; font-size:10px; font-weight:800; color:#9a8878; background:#f5f0eb; border:1.5px solid #e0d5cc; border-radius:8px; padding:3px 8px; letter-spacing:0.3px; white-space:nowrap; cursor:default; user-select:none; line-height:1.4;">
                 </span>
             </div>
@@ -1683,14 +1760,6 @@
                         <span style="font-size:10px; font-weight:700; color:#9a8878; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:2px; white-space:nowrap;">📐 Ancho</span>
                         <span id="modalAnchoTexto" style="font-size:0.95rem; font-weight:700; color:#4a3b32; white-space:nowrap;"></span>
                     </div>
-                </div>
-            </div>
-
-            <!-- 5. Stock / Existencia (inferior derecha, debajo de descripción) -->
-            <div id="modalExistenciaZona" style="display:none; text-align:right; margin: 4px 0 10px 0;">
-                <div style="display:inline-block; background:#eaf5ee; border:1.5px solid #b8dfc4; border-radius:10px; padding:7px 14px;">
-                    <span style="font-size:10px; font-weight:700; color:#3a7a52; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:2px; white-space:nowrap;">📦 Stock / Existencia</span>
-                    <span id="modalExistenciaTexto" style="font-size:0.95rem; font-weight:700; color:#1e5c38; white-space:nowrap;"></span>
                 </div>
             </div>
 
