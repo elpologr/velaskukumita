@@ -387,6 +387,19 @@
 
             <div class="form-admin-producto">
                 <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Imagen</label>
+                    <button class="btn-opcion-perfil" onclick="seleccionarImagenProducto()" type="button">
+                        <span class="op-icono">🖼️</span>
+                        <div>
+                            Agregar imagen
+                            <span class="op-sub">Se convierte a WebP y se sube a ImgBB</span>
+                        </div>
+                    </button>
+                    <input type="file" id="inputImagenProducto" accept="image/*" style="display:none" onchange="procesarImagenProducto(event)">
+                    <img id="previewImagenProducto" class="preview-imagen-producto" style="display:none;" alt="Vista previa del producto">
+                    <a href="#" id="btnQuitarImagenProducto" class="link-quitar-imagen" style="display:none;" onclick="event.preventDefault(); quitarImagenProducto();">Quitar imagen</a>
+                </div>
+                <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Nombre del producto</label>
                     <input id="inputNombreProducto" class="panel-nombre-input" type="text" placeholder="Ej. Vela aromática grande" maxlength="120">
                 </div>
@@ -406,19 +419,6 @@
                     <label class="panel-nombre-label">Video de YouTube</label>
                     <input id="inputVideoYoutubeProducto" class="panel-nombre-input" type="url" placeholder="Opcional, ej. https://www.youtube.com/embed/XXXXXXXXXXX">
                     <span style="font-size:11px; color:#9a8878;">Debe ser un link embed de YouTube (youtube.com/embed/…)</span>
-                </div>
-                <div class="campo-admin-producto">
-                    <label class="panel-nombre-label">Imagen</label>
-                    <button class="btn-opcion-perfil" onclick="seleccionarImagenProducto()" type="button">
-                        <span class="op-icono">🖼️</span>
-                        <div>
-                            Agregar imagen
-                            <span class="op-sub">Se convierte a WebP y se sube a ImgBB</span>
-                        </div>
-                    </button>
-                    <input type="file" id="inputImagenProducto" accept="image/*" style="display:none" onchange="procesarImagenProducto(event)">
-                    <img id="previewImagenProducto" class="preview-imagen-producto" style="display:none;" alt="Vista previa del producto">
-                    <a href="#" id="btnQuitarImagenProducto" class="link-quitar-imagen" style="display:none;" onclick="event.preventDefault(); quitarImagenProducto();">Quitar imagen</a>
                 </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Etiqueta Principal</label>
@@ -487,6 +487,11 @@
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Cantidad en stock</label>
                     <input id="inputStockProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="0" step="1" placeholder="Ej. 20">
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Posición en la hoja <span style="font-weight:400; color:#9a8878;">(opcional)</span></label>
+                    <input id="inputFilaProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="2" step="1" placeholder="Ej. 2 para que sea el primer producto">
+                    <span style="font-size:11px; color:#9a8878;">Si lo dejas vacío, el producto se agrega al final de la lista. Si eliges una fila, los productos que ya estén ahí se recorren una posición hacia abajo.</span>
                 </div>
             </div>
 

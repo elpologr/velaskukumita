@@ -1818,6 +1818,7 @@
             padding: 16px 16px 12px;
             border-bottom: 1px solid #e8ddd5;
             box-sizing: border-box;
+            flex-shrink: 0;
         }
         .btn-volver-perfil {
             background: none; border: none;
@@ -1833,6 +1834,11 @@
             display: flex; flex-direction: column;
             align-items: center; padding: 36px 24px 24px;
             width: 100%; box-sizing: border-box; gap: 14px;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
         }
         .pantalla-avatar-grande {
             width: 110px; height: 110px;

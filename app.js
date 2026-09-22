@@ -2442,6 +2442,7 @@ async function copiarURL() {
 }
 function cerrarPantallaPerfil() {
     document.getElementById('pantallaPerfil').classList.remove('activo');
+    document.body.style.overflow = '';
     if (history.state && history.state.kukumitaModal === 'perfil') {
         history.replaceState(null, '');
     }
@@ -5133,6 +5134,12 @@ function abrirPantallaAdminProductos() {
 function cerrarPantallaAdminProductos() {
     var p = document.getElementById('pantallaAdminProductos');
     if (p) p.classList.remove('activo');
+    // Si "Mi Perfil" sigue abierto debajo, mantenemos el scroll bloqueado;
+    // si no, lo restauramos.
+    var perfil = document.getElementById('pantallaPerfil');
+    if (!perfil || !perfil.classList.contains('activo')) {
+        document.body.style.overflow = '';
+    }
     if (history.state && history.state.kukumitaModal === 'adminProductos') {
         history.replaceState(null, '');
     }
@@ -5251,6 +5258,7 @@ async function guardarProductoAdmin() {
     var alto            = ((document.getElementById('inputAltoProducto')  || {}).value || '').trim();
     var ancho           = ((document.getElementById('inputAnchoProducto') || {}).value || '').trim();
     var videoYoutube    = ((document.getElementById('inputVideoYoutubeProducto') || {}).value || '').trim();
+    var filaDestino     = ((document.getElementById('inputFilaProducto') || {}).value || '').trim();
 
     if (!nombre) {
         _statusAdmin('Escribe el nombre del producto.', true); return;
@@ -5266,6 +5274,9 @@ async function guardarProductoAdmin() {
     }
     if (videoYoutube !== '' && !/^https:\/\/(www\.)?youtube\.com\/embed\/[\w-]{11}(\?.*)?$/.test(videoYoutube)) {
         _statusAdmin('El video debe ser un link embed de YouTube (youtube.com/embed/…).', true); return;
+    }
+    if (filaDestino !== '' && (isNaN(Number(filaDestino)) || !Number.isInteger(Number(filaDestino)) || Number(filaDestino) < 2)) {
+        _statusAdmin('La posición en la hoja debe ser un número entero de 2 en adelante.', true); return;
     }
     if (!_adminImagenBase64) {
         _statusAdmin('Agrega una imagen del producto.', true); return;
@@ -5294,6 +5305,7 @@ async function guardarProductoAdmin() {
             alto:              alto,
             ancho:             ancho,
             video:             videoYoutube,
+            filaDestino:       filaDestino,
             imagenBase64:      _adminImagenBase64,
             imagenNombre:      _adminImagenNombre
         };
@@ -5313,7 +5325,7 @@ async function guardarProductoAdmin() {
         // Limpiar formulario
         ['inputNombreProducto', 'inputDescripcionProducto', 'inputPrecioProducto', 'inputPrecioMayoreoProducto',
          'inputStockProducto', 'inputEtiquetaPrincipalProducto',
-         'inputAltoProducto', 'inputAnchoProducto', 'inputVideoYoutubeProducto']
+         'inputAltoProducto', 'inputAnchoProducto', 'inputVideoYoutubeProducto', 'inputFilaProducto']
             .forEach(function (id) {
                 var el = document.getElementById(id);
                 if (el) el.value = '';
