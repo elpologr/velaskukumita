@@ -1,0 +1,55 @@
+Servicios Integrados Corroborados
+
+--------------------------------------------------------------------
+1. CATÁLOGO DE PRODUCTOS
+--------------------------------------------------------------------
+✅ Implementado.
+- Los productos se cargan dinámicamente desde una hoja de Google
+  Sheets publicada como CSV (vía Google Visualization API / gviz).
+- Parser propio de CSV (soporta comas dentro de campos entre comillas).
+- Filtros, búsqueda con debounce, paginación y distintos modos de
+  catálogo (según el proyecto: Tienda / Bazar / Etiquetas, etc.).
+- Imágenes de producto alojadas externamente (imgbb).
+--------------------------------------------------------------------
+2. CARRITO DE COTIZACIÓN AUTOMÁTICA CON WHATSAPP
+--------------------------------------------------------------------
+✅ Implementado.
+- Carrito local (persistido en localStorage del navegador, NO en un
+  servidor).
+- Límite de 20 productos distintos y 99 piezas por producto.
+- Botón "Pedir cotización" arma un mensaje de WhatsApp con:
+  - Lista de productos, cantidad y precio unitario/subtotal.
+  - Total estimado.
+  - Un link compartible con los productos seleccionados (vía
+    parámetros en la URL).
+- Se abre wa.me con el mensaje pre-llenado hacia el número del
+  negocio.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

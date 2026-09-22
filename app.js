@@ -5103,7 +5103,7 @@ var ADMIN_EMAILS = [
 ];
 
 // ✅ Apps Script publicado como aplicación web
-var ADMIN_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzV9TqpBshVZXpFgSXeDj5a55INp9BOQh0P7CZmfDoAwoSasWNfrl3i8WlXHeLGyryA/exec';
+var ADMIN_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx3QmQW4IVx1dVD45DA-9nKdFiurzAs6KOqCcqu8Es0CgJk1aBG_DKj8lr9D3pqZfHh/exec';
 
 // Estado interno del formulario
 var _adminImagenBase64 = null;   // base64 sin el encabezado data:
@@ -5271,16 +5271,20 @@ async function guardarProductoAdmin() {
         return;
     }
 
-    var nombre = ((document.getElementById('inputNombreProducto') || {}).value || '').trim();
-    var precio = ((document.getElementById('inputPrecioProducto') || {}).value || '').trim();
-    var stock  = ((document.getElementById('inputStockProducto')  || {}).value || '').trim();
-    var codigo = ((document.getElementById('inputCodigoBarrasProducto') || {}).value || '').trim();
+    var nombre          = ((document.getElementById('inputNombreProducto')          || {}).value || '').trim();
+    var precio          = ((document.getElementById('inputPrecioProducto')          || {}).value || '').trim();
+    var precioMayoreo   = ((document.getElementById('inputPrecioMayoreoProducto')   || {}).value || '').trim();
+    var stock           = ((document.getElementById('inputStockProducto')           || {}).value || '').trim();
+    var etiquetaPrincipal = ((document.getElementById('inputEtiquetaPrincipalProducto') || {}).value || '').trim();
 
     if (!nombre) {
         _statusAdmin('Escribe el nombre del producto.', true); return;
     }
     if (precio === '' || isNaN(Number(precio)) || Number(precio) < 0) {
         _statusAdmin('Escribe un precio válido.', true); return;
+    }
+    if (precioMayoreo !== '' && (isNaN(Number(precioMayoreo)) || Number(precioMayoreo) < 0)) {
+        _statusAdmin('El precio de mayoreo debe ser un número válido.', true); return;
     }
     if (stock !== '' && (isNaN(Number(stock)) || Number(stock) < 0)) {
         _statusAdmin('La existencia debe ser un número.', true); return;
@@ -5299,13 +5303,14 @@ async function guardarProductoAdmin() {
         var idToken = await user.getIdToken(true);
 
         var cuerpo = {
-            idToken:      idToken,
-            nombre:       nombre,
-            precio:       precio,
-            existencia:   stock,
-            codigoBarras: codigo,
-            imagenBase64: _adminImagenBase64,
-            imagenNombre: _adminImagenNombre
+            idToken:           idToken,
+            nombre:            nombre,
+            precio:            precio,
+            precioMayoreo:     precioMayoreo,
+            existencia:        stock,
+            etiquetaPrincipal: etiquetaPrincipal,
+            imagenBase64:      _adminImagenBase64,
+            imagenNombre:      _adminImagenNombre
         };
 
         // text/plain evita el preflight CORS, que Apps Script no responde
@@ -5321,8 +5326,8 @@ async function guardarProductoAdmin() {
         mostrarToast('✅ Producto agregado');
 
         // Limpiar formulario
-        ['inputNombreProducto', 'inputPrecioProducto',
-         'inputStockProducto', 'inputCodigoBarrasProducto']
+        ['inputNombreProducto', 'inputPrecioProducto', 'inputPrecioMayoreoProducto',
+         'inputStockProducto', 'inputEtiquetaPrincipalProducto']
             .forEach(function (id) {
                 var el = document.getElementById(id);
                 if (el) el.value = '';

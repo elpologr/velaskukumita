@@ -407,12 +407,24 @@
                     <input id="inputPrecioProducto" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ej. 150">
                 </div>
                 <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Precio de mayoreo</label>
+                    <input id="inputPrecioMayoreoProducto" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Opcional">
+                </div>
+                <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Cantidad en stock</label>
                     <input id="inputStockProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="0" step="1" placeholder="Ej. 20">
                 </div>
                 <div class="campo-admin-producto">
-                    <label class="panel-nombre-label">Código de barras</label>
-                    <input id="inputCodigoBarrasProducto" class="panel-nombre-input" type="text" placeholder="Opcional">
+                    <label class="panel-nombre-label">Etiqueta Principal</label>
+                    <select id="inputEtiquetaPrincipalProducto" class="panel-nombre-input">
+                        <option value="">Selecciona una opción</option>
+                        <option value="Arreglos">Arreglos</option>
+                        <option value="Producto">Producto</option>
+                        <option value="Decoraciones">Decoraciones</option>
+                        <option value="Aditamentos">Aditamentos</option>
+                        <option value="Etiquetas">Etiquetas</option>
+                        <option value="Centros de Mesa">Centros de Mesa</option>
+                    </select>
                 </div>
             </div>
 
