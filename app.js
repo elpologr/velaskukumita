@@ -589,6 +589,11 @@ function cargarDesdeGoogleSheets() {
 
             var productos = csvAProductos(filas);
 
+            // ── Columna O (índice 14), fila 2 (índice 1): configuración del bazar ──
+            if (filas[1] && typeof filas[1][14] !== 'undefined') {
+                aplicarConfigBazar(filas[1][14]);
+            }
+
             if (productos.length === 0) {
                 mostrarEstadoCarga('La hoja está vacía o no tiene el formato correcto.', true);
                 return;
@@ -642,6 +647,92 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', cargarDesdeGoogleSheets);
 } else {
     cargarDesdeGoogleSheets();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CONFIGURACIÓN DE BAZAR DESDE GOOGLE SHEETS (columna O, fila 2)
+// ──────────────────────────────────────────────────────────────────────────────
+// Columna O (índice 14): fila 1 = título "dias bazar", fila 2 = los datos.
+// Formato de la celda en la fila 2 (única fila que se debe editar para
+// actualizar la fecha del próximo bazar):
+//   dias: 25, Mes: Sep, año:2026, horainicio: 8:00am, horafinal:9:00pm
+// ══════════════════════════════════════════════════════════════════════════════
+var _MESES_BAZAR = {
+    ene:{i:0,n:'enero'}, feb:{i:1,n:'febrero'}, mar:{i:2,n:'marzo'}, abr:{i:3,n:'abril'},
+    may:{i:4,n:'mayo'}, jun:{i:5,n:'junio'}, jul:{i:6,n:'julio'}, ago:{i:7,n:'agosto'},
+    sep:{i:8,n:'septiembre'}, set:{i:8,n:'septiembre'}, oct:{i:9,n:'octubre'},
+    nov:{i:10,n:'noviembre'}, dic:{i:11,n:'diciembre'}
+};
+var _DIAS_SEMANA_BAZAR = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+// Convierte el texto de la celda O2 en un objeto { dia, mesIndex, mesNombre, anio, horaInicio, horaFinal }
+function parsearConfigBazar(texto) {
+    if (!texto) return null;
+    texto = String(texto).replace(/["']/g, '');
+
+    function extraer(clave) {
+        var re = new RegExp(clave + '\\s*:\\s*([^,]+)', 'i');
+        var m = texto.match(re);
+        return m ? m[1].trim() : '';
+    }
+
+    var diaTxt  = extraer('d[ií]as?');
+    var mesTxt  = extraer('mes');
+    var anioTxt = extraer('a[ñn]o');
+    var horaIni = extraer('horainicio');
+    var horaFin = extraer('horafinal');
+
+    var dia    = parseInt(diaTxt, 10);
+    var anio   = parseInt(anioTxt, 10);
+    var mesKey = (mesTxt || '').toLowerCase().substring(0, 3);
+    var mesInfo = _MESES_BAZAR[mesKey];
+
+    if (!dia || !anio || !mesInfo) return null; // celda vacía o con formato inesperado
+
+    return {
+        dia: dia,
+        mesIndex: mesInfo.i,
+        mesNombre: mesInfo.n,
+        anio: anio,
+        horaInicio: horaIni || '',
+        horaFinal: horaFin || ''
+    };
+}
+
+// Aplica la configuración de bazar (fecha/hora) al modal y al contador regresivo
+function aplicarConfigBazar(rawTexto) {
+    var cfg = parsearConfigBazar(rawTexto);
+    if (!cfg) return; // si la celda O2 está vacía o mal escrita, se deja el contenido tal cual esté
+
+    var diaSemana = _DIAS_SEMANA_BAZAR[new Date(cfg.anio, cfg.mesIndex, cfg.dia).getDay()];
+    var mesAbrev  = cfg.mesNombre.substring(0, 3);
+
+    // Contador regresivo (definido en el <script> del modal de bazar)
+    if (typeof window._configurarFechaBazar === 'function') {
+        window._configurarFechaBazar(cfg.anio, cfg.mesIndex, cfg.dia);
+    }
+
+    // Recuadro del día dentro del modal
+    var contenedor = document.getElementById('bazarDiasContenedor');
+    if (contenedor) {
+        contenedor.innerHTML =
+            '<div style="flex:1; min-width:100px; display:flex; flex-direction:column; align-items:center; gap:4px; background:#fff; border-radius:10px; padding:10px 8px; border:1px solid #e8ddd5; text-align:center;">' +
+                '<span style="font-size:1.5rem;">🗓️</span>' +
+                '<p style="margin:0; font-size:0.82rem; font-weight:800; color:#362a22; line-height:1.3;">' + diaSemana + '<br>' + cfg.dia + ' ' + mesAbrev + '</p>' +
+                (cfg.horaInicio || cfg.horaFinal
+                    ? '<p style="margin:0; font-size:0.75rem; color:#8c7565; line-height:1.4;">' + cfg.horaInicio + '<br>— ' + cfg.horaFinal + '</p>'
+                    : '') +
+            '</div>';
+    }
+
+    // Texto del aviso
+    var aviso = document.getElementById('bazarAvisoTexto');
+    if (aviso) {
+        aviso.innerHTML = 'En este momento <strong>no nos encontramos en ningún bazar</strong>, pero estaremos vendiendo en bazar el día <strong style="color:#8c7565;">' +
+            diaSemana + ' ' + cfg.dia + ' de ' + cfg.mesNombre + ' de ' + cfg.anio + '</strong>' +
+            (cfg.horaInicio && cfg.horaFinal ? ', de <strong>' + cfg.horaInicio + '</strong> a <strong>' + cfg.horaFinal + '</strong>' : '') +
+            ':';
+    }
 }
 
 
