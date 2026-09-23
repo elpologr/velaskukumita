@@ -928,7 +928,7 @@ if (document.readyState === 'loading') {
         var p = document.getElementById('pantallaVideoProducto');
         if (!p) return;
         p.classList.add('activo');
-        document.body.style.overflow = 'hidden';
+        _bloquearScrollBody();
         history.pushState({ kukumitaModal: 'videoProducto' }, '');
     }
 
@@ -1290,7 +1290,7 @@ if (document.readyState === 'loading') {
         renderizarGaleria();
 
         document.getElementById('modalProducto').classList.add('abierto');
-        document.body.style.overflow = 'hidden';
+        _bloquearScrollBody();
         _modalActivo = 'producto';
         setTimeout(() => {
             const caja = document.querySelector('.modal-producto-caja');
@@ -1326,7 +1326,7 @@ if (document.readyState === 'loading') {
             modalEl.removeEventListener('wheel', modalEl._wheelHandler);
             delete modalEl._wheelHandler;
         }
-        document.body.style.overflow = '';
+        _desbloquearScrollBody();
         _modalActivo = null;
         if (history.state && history.state.modalAbierto) {
             history.replaceState(null, '');
@@ -1407,7 +1407,7 @@ if (document.readyState === 'loading') {
         zoomIndice = (indice !== undefined) ? indice : galeriaIndice;
         actualizarZoom();
         document.getElementById('zoomOverlay').classList.add('abierto');
-        document.body.style.overflow = 'hidden';
+        _bloquearScrollBody();
     }
 
     function cerrarZoomGaleria() {
@@ -2223,7 +2223,7 @@ function abrirPantallaPerfil() {
     document.getElementById('pantallaUsuarioNombre').textContent =
         localStorage.getItem('velas-nombre-usuario') || 'Mi cuenta';
     document.getElementById('pantallaPerfil').classList.add('activo');
-    document.body.style.overflow = 'hidden';
+    _bloquearScrollBody();
     _modalActivo = 'perfil';
     history.pushState({ kukumitaModal: 'perfil' }, '');
 }
@@ -2238,13 +2238,13 @@ function _abrirModalConHistorial(nombre, abrirFn) {
         history.pushState({ kukumitaModal: nombre }, '');
     }
     _modalActivo = nombre;
-    document.body.style.overflow = 'hidden';
+    _bloquearScrollBody();
     abrirFn();
 }
 
 function _cerrarModalConHistorial(cerrarFn) {
     _modalActivo = null;
-    document.body.style.overflow = '';
+    _desbloquearScrollBody();
     cerrarFn();
     // Si el estado del historial fue empujado por este modal, retrocedemos
     if (history.state && history.state.kukumitaModal) {
@@ -2258,7 +2258,7 @@ window.addEventListener('popstate', function(e) {
     var modalCantidad = document.getElementById('modalCantidad');
     if (modalCantidad && modalCantidad.classList.contains('abierto')) {
         modalCantidad.classList.remove('abierto');
-        document.body.style.overflow = '';
+        _desbloquearScrollBody();
         _modalActivo = null;
         _mcCardActual = null;
         return;
@@ -2274,6 +2274,7 @@ window.addEventListener('popstate', function(e) {
     var pantallaPerfil = document.getElementById('pantallaPerfil');
     if (pantallaPerfil && pantallaPerfil.classList.contains('activo')) {
         pantallaPerfil.classList.remove('activo');
+        _desbloquearScrollBody();
         _modalActivo = null;
         return;
     }
@@ -2281,7 +2282,7 @@ window.addEventListener('popstate', function(e) {
     var pantallaCarrito = document.getElementById('pantallaCarrito');
     if (pantallaCarrito && pantallaCarrito.classList.contains('activa')) {
         pantallaCarrito.classList.remove('activa');
-        document.body.style.overflow = '';
+        _desbloquearScrollBody();
         _modalActivo = null;
         // Restaurar burbuja al cerrar con botón atrás
         var burbujaBack = document.getElementById('burbujaCarrito');
@@ -2293,7 +2294,7 @@ window.addEventListener('popstate', function(e) {
     var pantallaFavoritos = document.getElementById('pantallaFavoritos');
     if (pantallaFavoritos && pantallaFavoritos.classList.contains('activa')) {
         pantallaFavoritos.classList.remove('activa');
-        document.body.style.overflow = '';
+        _desbloquearScrollBody();
         _modalActivo = null;
         return;
     }
@@ -2301,7 +2302,7 @@ window.addEventListener('popstate', function(e) {
     var modalProd = document.getElementById('modalProducto');
     if (modalProd && modalProd.classList.contains('abierto')) {
         modalProd.classList.remove('abierto');
-        document.body.style.overflow = 'auto';
+        _desbloquearScrollBody();
         _modalActivo = null;
         return;
     }
@@ -2309,7 +2310,7 @@ window.addEventListener('popstate', function(e) {
     var modalTienda = document.getElementById('modalTienda');
     if (modalTienda && modalTienda.classList.contains('abierto')) {
         modalTienda.classList.remove('abierto');
-        document.body.style.overflow = '';
+        _desbloquearScrollBody();
         _modalActivo = null;
         return;
     }
@@ -2317,7 +2318,7 @@ window.addEventListener('popstate', function(e) {
     var modalUber = document.getElementById('modalUber');
     if (modalUber && modalUber.classList.contains('abierto')) {
         modalUber.classList.remove('abierto');
-        document.body.style.overflow = '';
+        _desbloquearScrollBody();
         _modalActivo = null;
         return;
     }
@@ -2325,7 +2326,6 @@ window.addEventListener('popstate', function(e) {
     var modalBazar = document.getElementById('modalBazar');
     if (modalBazar && (modalBazar.style.display === 'flex' || modalBazar.classList.contains('abierto'))) {
         if (typeof cerrarModalBazar === 'function') cerrarModalBazar();
-        document.body.style.overflow = '';
         _modalActivo = null;
         return;
     }
@@ -2340,7 +2340,7 @@ window.addEventListener('popstate', function(e) {
     var modalEtiq = document.getElementById('modalInfoEtiqueta');
     if (modalEtiq && modalEtiq.classList.contains('abierto')) {
         modalEtiq.classList.remove('abierto');
-        document.body.style.overflow = '';
+        _desbloquearScrollBody();
         _modalActivo = null;
         return;
     }
@@ -2351,11 +2351,11 @@ function abrirModalUber() {
     history.pushState({ kukumitaModal: 'uber' }, '');
     _modalActivo = 'uber';
     document.getElementById('modalUber').classList.add('abierto');
-    document.body.style.overflow = 'hidden';
+    _bloquearScrollBody();
 }
 function cerrarModalUber() {
     document.getElementById('modalUber').classList.remove('abierto');
-    document.body.style.overflow = '';
+    _desbloquearScrollBody();
     _modalActivo = null;
     if (history.state && history.state.kukumitaModal === 'uber') {
         history.replaceState(null, '');
@@ -2367,11 +2367,11 @@ function abrirModalTienda() {
     history.pushState({ kukumitaModal: 'tienda' }, '');
     _modalActivo = 'tienda';
     document.getElementById('modalTienda').classList.add('abierto');
-    document.body.style.overflow = 'hidden';
+    _bloquearScrollBody();
 }
 function cerrarModalTienda() {
     document.getElementById('modalTienda').classList.remove('abierto');
-    document.body.style.overflow = '';
+    _desbloquearScrollBody();
     _modalActivo = null;
     if (history.state && history.state.kukumitaModal === 'tienda') {
         history.replaceState(null, '');
@@ -3113,7 +3113,7 @@ function abrirPantallaFavoritos() {
     if (drawer) drawer.classList.remove('abierto');
     renderizarFavoritos();
     document.getElementById('pantallaFavoritos').classList.add('activa');
-    document.body.style.overflow = 'hidden';
+    _bloquearScrollBody();
     _modalActivo = 'favoritos';
     // Siempre empujar una entrada propia al historial
     history.pushState({ kukumitaModal: 'favoritos' }, '');
@@ -3123,7 +3123,7 @@ function cerrarFavoritos() {
     var pantalla = document.getElementById('pantallaFavoritos');
     if (!pantalla || !pantalla.classList.contains('activa')) return;
     pantalla.classList.remove('activa');
-    document.body.style.overflow = '';
+    _desbloquearScrollBody();
     _modalActivo = null;
     if (history.state && history.state.kukumitaModal === 'favoritos') {
         history.replaceState(null, '');
@@ -3204,13 +3204,13 @@ _ready(syncBotonesLike);
 function abrirModalBazar() {
     var modal = document.getElementById('modalBazar');
     modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+    _bloquearScrollBody();
     if (typeof window._actualizarContadorBazar === 'function') window._actualizarContadorBazar();
 }
 function cerrarModalBazar() {
     var modal = document.getElementById('modalBazar');
     modal.style.display = 'none';
-    document.body.style.overflow = '';
+    _desbloquearScrollBody();
 }
 // Cierra al hacer clic en el fondo oscuro
 document.getElementById('modalBazar').addEventListener('click', function(e) {
@@ -3329,13 +3329,13 @@ document.getElementById('modalBazar').addEventListener('click', function(e) {
             lb = document.createElement('div');
             lb.id = 'lightboxFB';
             lb.style.cssText = 'display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.88); align-items:center; justify-content:center; padding:16px; box-sizing:border-box;';
-            lb.innerHTML = '<img id="lightboxFBImg" src="" referrerpolicy="no-referrer" crossorigin="anonymous" style="max-width:100%; max-height:92vh; border-radius:10px; object-fit:contain; box-shadow:0 8px 40px rgba(0,0,0,0.6);"><button onclick="document.getElementById(\'lightboxFB\').style.display=\'none\'; document.body.style.overflow=\'\';" style="position:fixed; top:14px; right:14px; width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,0.18); color:white; border:none; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);">✕</button>';
-            lb.addEventListener('click', function(e) { if (e.target === lb) { lb.style.display = 'none'; document.body.style.overflow = ''; } });
+            lb.innerHTML = '<img id="lightboxFBImg" src="" referrerpolicy="no-referrer" crossorigin="anonymous" style="max-width:100%; max-height:92vh; border-radius:10px; object-fit:contain; box-shadow:0 8px 40px rgba(0,0,0,0.6);"><button onclick="document.getElementById(\'lightboxFB\').style.display=\'none\'; _desbloquearScrollBody();" style="position:fixed; top:14px; right:14px; width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,0.18); color:white; border:none; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);">✕</button>';
+            lb.addEventListener('click', function(e) { if (e.target === lb) { lb.style.display = 'none'; _desbloquearScrollBody(); } });
             document.body.appendChild(lb);
         }
         document.getElementById('lightboxFBImg').src = src;
         lb.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
+        _bloquearScrollBody();
     }
 
     // Exponer función para agregar imágenes desde fuera si se necesita
@@ -3537,12 +3537,12 @@ function abrirModalInfoEtiqueta(card, tipo) {
     }
 
     document.getElementById('modalInfoEtiqueta').classList.add('abierto');
-    document.body.style.overflow = 'hidden';
+    _bloquearScrollBody();
 }
 
 function cerrarModalInfoEtiqueta() {
     document.getElementById('modalInfoEtiqueta').classList.remove('abierto');
-    document.body.style.overflow = '';
+    _desbloquearScrollBody();
 }
 document.getElementById('modalInfoEtiqueta').addEventListener('click', function(e) {
     if (e.target === this) cerrarModalInfoEtiqueta();
@@ -3555,13 +3555,13 @@ function abrirLightboxMV(src) {
         lb = document.createElement('div');
         lb.id = 'lightboxFB';
         lb.style.cssText = 'display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.88); align-items:center; justify-content:center; padding:16px; box-sizing:border-box;';
-        lb.innerHTML = '<img id="lightboxFBImg" src="" style="max-width:100%; max-height:92vh; border-radius:10px; object-fit:contain; box-shadow:0 8px 40px rgba(0,0,0,0.6);"><button onclick="document.getElementById(\'lightboxFB\').style.display=\'none\'; document.body.style.overflow=\'\';" style="position:fixed; top:14px; right:14px; width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,0.18); color:white; border:none; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);">✕</button>';
-        lb.addEventListener('click', function(e) { if (e.target === lb) { lb.style.display = 'none'; document.body.style.overflow = ''; } });
+        lb.innerHTML = '<img id="lightboxFBImg" src="" style="max-width:100%; max-height:92vh; border-radius:10px; object-fit:contain; box-shadow:0 8px 40px rgba(0,0,0,0.6);"><button onclick="document.getElementById(\'lightboxFB\').style.display=\'none\'; _desbloquearScrollBody();" style="position:fixed; top:14px; right:14px; width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,0.18); color:white; border:none; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);">✕</button>';
+        lb.addEventListener('click', function(e) { if (e.target === lb) { lb.style.display = 'none'; _desbloquearScrollBody(); } });
         document.body.appendChild(lb);
     }
     document.getElementById('lightboxFBImg').src = src;
     lb.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+    _bloquearScrollBody();
 }
 
 // ── Carruseles de Ofertas y Más Vendidos ─────────────────────────
@@ -3729,14 +3729,14 @@ function abrirModalCantidad(card) {
 
     actualizarBotonesMC();
     document.getElementById('modalCantidad').classList.add('abierto');
-    document.body.style.overflow = 'hidden';
+    _bloquearScrollBody();
     history.pushState({ kukumitaModal: 'cantidad' }, '');
     _modalActivo = 'cantidad';
 }
 
 function cerrarModalCantidad() {
     document.getElementById('modalCantidad').classList.remove('abierto');
-    document.body.style.overflow = '';
+    _desbloquearScrollBody();
     _modalActivo = null;
     _mcCardActual = null;
     if (history.state && history.state.kukumitaModal === 'cantidad') {
@@ -3830,7 +3830,7 @@ function abrirPantallaCarrito() {
     // Si ya estaba abierta no hacer doble pushState
     if (pantalla.classList.contains('activa')) return;
     pantalla.classList.add('activa');
-    document.body.style.overflow = 'hidden';
+    _bloquearScrollBody();
     _modalActivo = 'carrito';
     // Ocultar burbuja mientras el carrito está abierto
     var burbuja = document.getElementById('burbujaCarrito');
@@ -3842,7 +3842,7 @@ function cerrarPantallaCarrito() {
     var pantalla = document.getElementById('pantallaCarrito');
     if (!pantalla || !pantalla.classList.contains('activa')) return;
     pantalla.classList.remove('activa');
-    document.body.style.overflow = '';
+    _desbloquearScrollBody();
     _modalActivo = null;
     var burbuja = document.getElementById('burbujaCarrito');
     if (burbuja) { burbuja.style.removeProperty('display'); }
@@ -4128,11 +4128,11 @@ _ready(function() { _cargarHistorialUsados(); });
         }
         document.getElementById('detalleCuponContenido').innerHTML = html;
         _modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
+        _bloquearScrollBody();
     };
     window.cerrarDetalleCupon = function() {
         if (_modal) _modal.style.display = 'none';
-        document.body.style.overflow = '';
+        _desbloquearScrollBody();
     };
 })();
 
@@ -4393,12 +4393,12 @@ function abrirSubmenuCompartir(url, nombre) {
     var linkEl = document.getElementById('scLinkTexto');
     if (linkEl) linkEl.textContent = url;
     document.getElementById('submenuCompartir').classList.add('abierto');
-    document.body.style.overflow = 'hidden';
+    _bloquearScrollBody();
 }
 
 function cerrarSubmenuCompartir() {
     document.getElementById('submenuCompartir').classList.remove('abierto');
-    document.body.style.overflow = '';
+    _desbloquearScrollBody();
 }
 
 function copiarLinkProducto() {
