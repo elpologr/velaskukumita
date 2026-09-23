@@ -1855,6 +1855,13 @@
             width: 100% !important;
             overflow: hidden !important;
         }
+        /* El scrollbar visible de la ventana pertenece a <html> (documentElement),
+           no a <body>. Fijar solo el body no siempre basta para que ese scrollbar
+           deje de moverse, así que bloqueamos también <html>. */
+        html.scroll-bloqueado {
+            overflow: hidden !important;
+            height: 100% !important;
+        }
         .pantalla-avatar-grande {
             width: 110px; height: 110px;
             border-radius: 50%; object-fit: cover;

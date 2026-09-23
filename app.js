@@ -2903,6 +2903,7 @@ function _bloquearScrollBody() {
         _scrollYGuardado = window.scrollY || document.documentElement.scrollTop || 0;
         document.body.style.top = '-' + _scrollYGuardado + 'px';
         document.body.classList.add('scroll-bloqueado');
+        document.documentElement.classList.add('scroll-bloqueado');
     }
     _bloqueosScrollActivos++;
 }
@@ -2911,10 +2912,58 @@ function _desbloquearScrollBody() {
     _bloqueosScrollActivos = Math.max(0, _bloqueosScrollActivos - 1);
     if (_bloqueosScrollActivos === 0) {
         document.body.classList.remove('scroll-bloqueado');
+        document.documentElement.classList.remove('scroll-bloqueado');
         document.body.style.top = '';
         window.scrollTo(0, _scrollYGuardado);
     }
 }
+
+// ─── SCROLL INDEPENDIENTE PARA CADA PANTALLA COMPLETA ───
+// Detecta cuál pantalla está abierta ahora mismo y devuelve el elemento
+// que debe recibir el scroll (su "zona" real), no la página de fondo.
+function _contenedorScrollActivo() {
+    var el;
+    el = document.getElementById('pantallaAdminProductos');
+    if (el && el.classList.contains('activo')) return el.querySelector('.pantalla-perfil-body') || el;
+
+    el = document.getElementById('pantallaPerfil');
+    if (el && el.classList.contains('activo')) return el.querySelector('.pantalla-perfil-body') || el;
+
+    el = document.getElementById('pantallaFavoritos');
+    if (el && el.classList.contains('activa')) return el;
+
+    el = document.getElementById('pantallaCarrito');
+    if (el && el.classList.contains('activa')) return el;
+
+    return null;
+}
+
+// Igual que el redirector que ya existía para el modal de producto (_redirigirScrollModal),
+// pero global: cuando hay una pantalla completa abierta, cualquier rueda del mouse o
+// gesto táctil que no ocurra dentro de su zona scrollable real se redirige ahí,
+// en vez de dejar que se filtre y mueva la página del catálogo de fondo.
+function _redirigirScrollGlobal(e) {
+    var cont = _contenedorScrollActivo();
+    if (!cont || cont.contains(e.target)) return; // nada que hacer, o el evento ya va a la zona correcta
+    e.preventDefault();
+    cont.scrollTop += e.deltaY;
+}
+document.addEventListener('wheel', _redirigirScrollGlobal, { passive: false });
+
+var _ultimoTouchYGlobal = 0;
+document.addEventListener('touchstart', function (e) {
+    if (e.touches && e.touches.length) _ultimoTouchYGlobal = e.touches[0].clientY;
+}, { passive: true });
+document.addEventListener('touchmove', function (e) {
+    var cont = _contenedorScrollActivo();
+    if (!cont || cont.contains(e.target)) return;
+    e.preventDefault();
+    if (e.touches && e.touches.length) {
+        var actual = e.touches[0].clientY;
+        cont.scrollTop += (_ultimoTouchYGlobal - actual);
+        _ultimoTouchYGlobal = actual;
+    }
+}, { passive: false });
 
 // ─── ABRIR PANTALLA PERFIL (override con datos reales) ───
 function abrirPantallaPerfil() {
