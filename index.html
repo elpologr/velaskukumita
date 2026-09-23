@@ -1835,11 +1835,10 @@
         <!-- ── Botón cerrar flotante sobre la galería ── -->
         <button class="mp-cerrar-flotante" onclick="cerrarModalProducto()">✕</button>
 
-        <!-- ── Botón engranaje (editar producto) — solo visible para administradores, ver ADMIN_EMAILS en app.js ── -->
-        <button class="mp-btn-config" id="mpBtnConfigProducto" style="display:none;" title="Editar producto">⚙️</button>
-
         <!-- ── GALERÍA (primero, sin scroll para verla) ── -->
         <div class="mp-galeria-superior">
+            <!-- ── Botón engranaje (editar producto) — esquina superior derecha de la imagen, solo admins, ver ADMIN_EMAILS en app.js ── -->
+            <button class="mp-btn-config" id="mpBtnConfigProducto" style="display:none;" title="Editar producto">⚙️</button>
             <button class="modal-btn-nav modal-btn-prev" id="btnGalPrev" onclick="moverGaleria(-1)">&#8249;</button>
             <div class="modal-galeria-track" id="modalGaleriaTrack"></div>
             <button class="modal-btn-nav modal-btn-next" id="btnGalNext" onclick="moverGaleria(1)">&#8250;</button>

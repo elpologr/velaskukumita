@@ -925,20 +925,20 @@
         }
         .mp-cerrar-flotante:hover { background: rgba(0,0,0,0.72); }
 
-        /* Botón engranaje flotante sobre galería (editar producto, solo admins) */
+        /* Botón engranaje flotante sobre la imagen del producto (editar producto, solo admins) */
         .mp-btn-config {
             position: absolute;
-            top: 12px; left: 12px;
+            top: 12px; right: 54px;
             z-index: 20;
             width: 34px; height: 34px;
             border-radius: 50%;
-            background: rgba(140,117,101,0.75);
+            background: rgba(140,117,101,0.85);
             color: white; border: none;
             font-size: 16px; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
             transition: background 0.2s, transform 0.15s;
         }
-        .mp-btn-config:hover { background: rgba(140,117,101,0.95); }
+        .mp-btn-config:hover { background: rgba(140,117,101,1); }
         .mp-btn-config:active { transform: scale(0.92); }
 
         /* Galería superior — muestra la imagen completa sin recortar */

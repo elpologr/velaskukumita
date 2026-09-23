@@ -5166,7 +5166,7 @@ var ADMIN_EMAILS = [
 ];
 
 // ✅ Apps Script publicado como aplicación web
-var ADMIN_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyIhS8jBCjbuooKz1y5NyJmhlBTBIyhiAoAxq3cnAU8wEYI1g9wXNsZqAnMLbWqbbjO/exec';
+var ADMIN_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyc_MUkI2QfD5hSZwsk04lZSE6nGLsKeJOyteH93iwos5K-1ngrX28x7AK1Rm9s_D2R/exec';
 
 // Estado interno del formulario
 // _adminImagenesProducto: array de { base64, nombre, dataUrl }. El índice 0 es la imagen principal.
@@ -5189,8 +5189,11 @@ function _esAdminUI(user) {
 
 function actualizarBotonAdminProductos(user) {
     var btn = document.getElementById('btnAdminProductos');
-    if (!btn) return;
-    btn.style.display = _esAdminUI(user) ? 'flex' : 'none';
+    if (btn) btn.style.display = _esAdminUI(user) ? 'flex' : 'none';
+    // El botón engranaje del modal de producto se sincroniza con el mismo estado de sesión,
+    // así queda correcto aunque el modal ya estuviera abierto cuando cambia el login.
+    var btnCfg = document.getElementById('mpBtnConfigProducto');
+    if (btnCfg) btnCfg.style.display = _esAdminUI(user) ? 'flex' : 'none';
 }
 
 // Firebase permite varios listeners: este no interfiere con el que ya existe.
