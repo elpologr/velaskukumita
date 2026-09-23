@@ -947,6 +947,7 @@ if (document.readyState === 'loading') {
         if (p) p.classList.remove('activo');
         var contenedor = document.getElementById('videoProductoContenedor');
         if (contenedor) contenedor.innerHTML = ''; // detener reproducción
+        _desbloquearScrollBody();
         if (history.state && history.state.kukumitaModal === 'videoProducto') {
             history.replaceState(null, '');
         }
@@ -1441,6 +1442,7 @@ if (document.readyState === 'loading') {
 
     function cerrarZoomGaleria() {
         document.getElementById('zoomOverlay').classList.remove('abierto');
+        _desbloquearScrollBody();
     }
 
     function zoomNavegar(dir) {
@@ -1502,7 +1504,10 @@ if (document.readyState === 'loading') {
                 // Evitar duplicar listeners usando un flag
                 if (!imgContenedor._clickBound) {
                     imgContenedor._clickBound = true;
-                    imgContenedor.addEventListener('click', () => abrirModalProducto(card));
+                    imgContenedor.addEventListener('click', (e) => {
+                        e.stopPropagation(); // evita que el clic también dispare el listener de la tarjeta y abra el modal 2 veces
+                        abrirModalProducto(card);
+                    });
                 }
             }
 
