@@ -5232,16 +5232,11 @@ function cerrarPantallaAdminProductos() {
 //  3. IMAGEN: SELECCIÓN + CONVERSIÓN A WEBP
 // ─────────────────────────────────────────────────────────────
 function seleccionarImagenProducto() {
-    var input = document.getElementById('inputImagenProducto');
-    if (input) input.click();
-}
-
-function agregarMasImagenesProducto() {
     if (_adminImagenesProducto.length >= LIMITE_IMAGENES_PRODUCTO) {
         _statusAdmin('Ya alcanzaste el límite de ' + LIMITE_IMAGENES_PRODUCTO + ' imágenes.', true);
         return;
     }
-    var input = document.getElementById('inputMasImagenesProducto');
+    var input = document.getElementById('inputImagenProducto');
     if (input) input.click();
 }
 
@@ -5313,19 +5308,19 @@ function _actualizarContadorImagenesProducto() {
         contador.style.display = 'none';
         contador.textContent = '';
     }
-    var btnMas = document.getElementById('btnAgregarMasImagenesProducto');
-    if (btnMas) btnMas.style.display = (total > 0 && total < LIMITE_IMAGENES_PRODUCTO) ? 'flex' : 'none';
 }
 
-function _renderizarGaleriaExtraProducto() {
-    var cont = document.getElementById('galeriaImagenesExtraProducto');
+// Dibuja UNA miniatura por cada imagen agregada (todas iguales, incluida la
+// primera), justo debajo del botón "Agregar imagen", cada una con su ✕ para
+// quitarla por separado.
+function _renderizarGaleriaImagenesProducto() {
+    var cont = document.getElementById('galeriaImagenesProducto');
     if (!cont) return;
     cont.innerHTML = '';
-    // El índice 0 es la imagen principal (se muestra aparte); aquí van la 2ª en adelante.
-    for (var i = 1; i < _adminImagenesProducto.length; i++) {
+    for (var i = 0; i < _adminImagenesProducto.length; i++) {
         (function (idx) {
             var mini = document.createElement('div');
-            mini.className = 'miniatura-imagen-extra';
+            mini.className = 'miniatura-imagen-producto';
             var img = document.createElement('img');
             img.src = _adminImagenesProducto[idx].dataUrl;
             img.alt = 'Imagen ' + (idx + 1);
@@ -5335,41 +5330,37 @@ function _renderizarGaleriaExtraProducto() {
             btnX.className = 'btn-quitar-miniatura';
             btnX.textContent = '✕';
             btnX.title = 'Quitar esta imagen';
-            btnX.onclick = function () { quitarImagenExtraProducto(idx); };
+            btnX.onclick = function () { quitarImagenProducto(idx); };
             mini.appendChild(btnX);
             cont.appendChild(mini);
         })(i);
     }
 }
 
-function quitarImagenExtraProducto(idx) {
+// Quita una sola imagen por su posición en el arreglo (la ✕ de su miniatura).
+function quitarImagenProducto(idx) {
     _adminImagenesProducto.splice(idx, 1);
-    _renderizarGaleriaExtraProducto();
+    _renderizarGaleriaImagenesProducto();
     _actualizarContadorImagenesProducto();
+    _statusAdmin('', false);
 }
 
-// Actualiza la imagen principal grande (la primera del arreglo) según el estado actual.
-function _refrescarImagenPrincipalProducto() {
-    var wrap   = document.getElementById('wrapImagenPrincipalProducto');
-    var prev   = document.getElementById('previewImagenProducto');
-    var quitar = document.getElementById('btnQuitarImagenProducto');
-    if (_adminImagenesProducto.length > 0) {
-        if (wrap)   { wrap.style.display = 'block'; }
-        if (prev)   { prev.src = _adminImagenesProducto[0].dataUrl; }
-        if (quitar) { quitar.style.display = 'inline-block'; }
-    } else {
-        if (wrap)   { wrap.style.display = 'none'; }
-        if (prev)   { prev.src = ''; }
-        if (quitar) { quitar.style.display = 'none'; }
-    }
+// Vacía por completo el arreglo de imágenes (se usa al terminar de guardar el producto).
+function _limpiarImagenesProducto() {
+    _adminImagenesProducto = [];
+    var input = document.getElementById('inputImagenProducto');
+    if (input) { input.value = ''; }
+    _renderizarGaleriaImagenesProducto();
+    _actualizarContadorImagenesProducto();
+    _statusAdmin('', false);
 }
 
-// Convierte y AGREGA (nunca reemplaza) uno o varios archivos al arreglo de imágenes.
-// La usan tanto "Agregar imagen" (primera vez) como el botón "+" (siguientes veces),
-// así que da igual si el usuario elige las imágenes una por una o todas juntas:
-// cada una se suma a la lista y muestra su propia miniatura de inmediato.
-function _agregarArchivosImagenesProducto(listaArchivos) {
-    var archivos = Array.prototype.slice.call(listaArchivos || []);
+// Convierte y AGREGA (nunca reemplaza) uno o varios archivos al arreglo de
+// imágenes, sin importar si el usuario los elige uno por uno o varios juntos:
+// cada uno se suma a la lista y muestra su propia miniatura de inmediato.
+function procesarImagenProducto(event) {
+    var archivos = Array.prototype.slice.call(event.target.files || []);
+    event.target.value = '';
     if (!archivos.length) return;
 
     var espacioDisponible = LIMITE_IMAGENES_PRODUCTO - _adminImagenesProducto.length;
@@ -5395,8 +5386,7 @@ function _agregarArchivosImagenesProducto(listaArchivos) {
             _adminImagenesProducto.push(r);
             agregadas++;
         });
-        _refrescarImagenPrincipalProducto();
-        _renderizarGaleriaExtraProducto();
+        _renderizarGaleriaImagenesProducto();
         _actualizarContadorImagenesProducto();
 
         if (errores.length) {
@@ -5407,36 +5397,6 @@ function _agregarArchivosImagenesProducto(listaArchivos) {
             _statusAdmin('Se agregaron ' + agregadas + ' imagen(es). Total: ' + _adminImagenesProducto.length, false);
         }
     });
-}
-
-function procesarImagenProducto(event) {
-    var archivos = event.target.files;
-    event.target.value = '';
-    _agregarArchivosImagenesProducto(archivos);
-}
-
-// Maneja la selección de VARIAS imágenes a la vez desde el botón "+"
-function procesarImagenesExtraProducto(event) {
-    var archivos = event.target.files;
-    event.target.value = '';
-    _agregarArchivosImagenesProducto(archivos);
-}
-
-function quitarImagenProducto() {
-    _adminImagenesProducto = [];
-    var wrap   = document.getElementById('wrapImagenPrincipalProducto');
-    var prev   = document.getElementById('previewImagenProducto');
-    var quitar = document.getElementById('btnQuitarImagenProducto');
-    var input  = document.getElementById('inputImagenProducto');
-    var inputExtra = document.getElementById('inputMasImagenesProducto');
-    if (wrap)   { wrap.style.display = 'none'; }
-    if (prev)   { prev.src = ''; }
-    if (quitar) { quitar.style.display = 'none'; }
-    if (input)  { input.value = ''; }
-    if (inputExtra) { inputExtra.value = ''; }
-    _renderizarGaleriaExtraProducto();
-    _actualizarContadorImagenesProducto();
-    _statusAdmin('', false);
 }
 
 
@@ -5550,7 +5510,7 @@ async function guardarProductoAdmin() {
         });
         var _inputEventoOtro = document.getElementById('inputEventoOtroProducto');
         if (_inputEventoOtro) _inputEventoOtro.value = '';
-        quitarImagenProducto();
+        _limpiarImagenesProducto();
         var _avisoPosicion = '';
         if (filaDestino !== '' && String(data.fila) !== String(filaDestino)) {
             _avisoPosicion = ' ⚠️ Pediste la posición ' + filaDestino + ' pero se guardó en la ' + data.fila +
