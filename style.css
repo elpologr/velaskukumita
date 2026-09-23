@@ -683,6 +683,8 @@
 
         /* Texto "Más Imágenes" (solo visible si el producto tiene 2+ imágenes) */
         .modal-mas-imagenes-texto {
+            width: 100%;
+            box-sizing: border-box;
             text-align: center;
             font-size: 12px;
             font-weight: 600;

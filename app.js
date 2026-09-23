@@ -375,7 +375,7 @@ function renderizarCatalogoCompleto() {
         var img = document.createElement('img');
         img.src = p.imagen;
         img.alt = p.nombre;
-        img.style.cssText = 'width:100%; height:100%; object-fit:cover; object-position:top;';
+        img.style.cssText = 'width:100%; height:100%; object-fit:cover; object-position:center;';
         img.onerror = function() {
             if (typeof mostrarPlaceholder === 'function') mostrarPlaceholder(this);
         };
