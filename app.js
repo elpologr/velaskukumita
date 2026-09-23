@@ -5430,6 +5430,18 @@ function procesarImagenProducto(event) {
 // ─────────────────────────────────────────────────────────────
 //  4. GUARDAR PRODUCTO
 // ─────────────────────────────────────────────────────────────
+function seleccionarTodosEventosProducto() {
+    document.querySelectorAll('#gridEventosProducto .chk-evento-producto').forEach(function (chk) {
+        chk.checked = true;
+    });
+}
+
+function seleccionarTodosEventosProductoEdit() {
+    document.querySelectorAll('#gridEventosProductoEdit .chk-evento-producto-edit').forEach(function (chk) {
+        chk.checked = true;
+    });
+}
+
 async function guardarProductoAdmin() {
     if (_adminGuardando) return;
 

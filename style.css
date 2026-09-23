@@ -2009,6 +2009,19 @@
             box-sizing: border-box;
         }
         .campo-admin-producto { display: flex; flex-direction: column; gap: 6px; }
+        .fila-campos-dobles { display: flex; gap: 12px; }
+        .fila-campos-dobles .campo-admin-producto { flex: 1 1 0; min-width: 0; }
+        .btn-seleccionar-todo-eventos {
+            display: inline-flex; align-items: center; gap: 6px;
+            margin-bottom: 8px; padding: 7px 14px;
+            border: 1.5px solid #d4c5b8; border-radius: 8px;
+            background: #fff; color: #705c4f;
+            font-size: 12px; font-weight: 700; cursor: pointer;
+            font-family: inherit; transition: all 0.18s;
+        }
+        .btn-seleccionar-todo-eventos:hover { background: #f0e8e0; border-color: #8c7565; }
+        body.modo-oscuro .btn-seleccionar-todo-eventos { background: #1e1812; border-color: #4a3a2e; color: #e0d5cc; }
+        body.modo-oscuro .btn-seleccionar-todo-eventos:hover { background: #2a2218; }
         .campo-admin-checkbox { flex-direction: row; flex-wrap: wrap; gap: 18px; align-items: center; }
         .check-admin-producto {
             display: flex; align-items: center; gap: 8px;

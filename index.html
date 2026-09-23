@@ -403,13 +403,15 @@
                     <label class="panel-nombre-label">Nombre del producto</label>
                     <input id="inputNombreProducto" class="panel-nombre-input" type="text" placeholder="Ej. Vela aromática grande" maxlength="120">
                 </div>
-                <div class="campo-admin-producto">
-                    <label class="panel-nombre-label">Precio</label>
-                    <input id="inputPrecioProducto" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ej. 150">
-                </div>
-                <div class="campo-admin-producto">
-                    <label class="panel-nombre-label">Precio de mayoreo</label>
-                    <input id="inputPrecioMayoreoProducto" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Opcional">
+                <div class="fila-campos-dobles">
+                    <div class="campo-admin-producto">
+                        <label class="panel-nombre-label">Precio</label>
+                        <input id="inputPrecioProducto" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ej. 150">
+                    </div>
+                    <div class="campo-admin-producto">
+                        <label class="panel-nombre-label">Precio de mayoreo</label>
+                        <input id="inputPrecioMayoreoProducto" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Opcional">
+                    </div>
                 </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Descripción</label>
@@ -434,6 +436,7 @@
                 </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Etiqueta de Evento <span style="font-weight:400; color:#9a8878;">(opcional, puedes elegir varias)</span></label>
+                    <button type="button" class="btn-seleccionar-todo-eventos" onclick="seleccionarTodosEventosProducto()">✅ Seleccionar todas</button>
                     <div class="grid-checks-evento" id="gridEventosProducto">
                         <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="primera-comunion"><span>🙏 Primera Comunión</span></label>
                         <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="bautizo"><span>🕊️ Bautizo</span></label>
@@ -476,13 +479,15 @@
                         <span>Más Vendido</span>
                     </label>
                 </div>
-                <div class="campo-admin-producto">
-                    <label class="panel-nombre-label">Alto</label>
-                    <input id="inputAltoProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 15 cm">
-                </div>
-                <div class="campo-admin-producto">
-                    <label class="panel-nombre-label">Ancho</label>
-                    <input id="inputAnchoProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 8 cm">
+                <div class="fila-campos-dobles">
+                    <div class="campo-admin-producto">
+                        <label class="panel-nombre-label">Alto</label>
+                        <input id="inputAltoProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 15 cm">
+                    </div>
+                    <div class="campo-admin-producto">
+                        <label class="panel-nombre-label">Ancho</label>
+                        <input id="inputAnchoProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 8 cm">
+                    </div>
                 </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Cantidad en stock</label>
@@ -533,13 +538,15 @@
                     <label class="panel-nombre-label">Nombre del producto</label>
                     <input id="inputNombreProductoEdit" class="panel-nombre-input" type="text" placeholder="Ej. Vela aromática grande" maxlength="120">
                 </div>
-                <div class="campo-admin-producto">
-                    <label class="panel-nombre-label">Precio</label>
-                    <input id="inputPrecioProductoEdit" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ej. 150">
-                </div>
-                <div class="campo-admin-producto">
-                    <label class="panel-nombre-label">Precio de mayoreo</label>
-                    <input id="inputPrecioMayoreoProductoEdit" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Opcional">
+                <div class="fila-campos-dobles">
+                    <div class="campo-admin-producto">
+                        <label class="panel-nombre-label">Precio</label>
+                        <input id="inputPrecioProductoEdit" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ej. 150">
+                    </div>
+                    <div class="campo-admin-producto">
+                        <label class="panel-nombre-label">Precio de mayoreo</label>
+                        <input id="inputPrecioMayoreoProductoEdit" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Opcional">
+                    </div>
                 </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Descripción</label>
@@ -564,6 +571,7 @@
                 </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Etiqueta de Evento <span style="font-weight:400; color:#9a8878;">(opcional, puedes elegir varias)</span></label>
+                    <button type="button" class="btn-seleccionar-todo-eventos" onclick="seleccionarTodosEventosProductoEdit()">✅ Seleccionar todas</button>
                     <div class="grid-checks-evento" id="gridEventosProductoEdit">
                         <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="primera-comunion"><span>🙏 Primera Comunión</span></label>
                         <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="bautizo"><span>🕊️ Bautizo</span></label>
@@ -606,13 +614,15 @@
                         <span>Más Vendido</span>
                     </label>
                 </div>
-                <div class="campo-admin-producto">
-                    <label class="panel-nombre-label">Alto</label>
-                    <input id="inputAltoProductoEdit" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 15 cm">
-                </div>
-                <div class="campo-admin-producto">
-                    <label class="panel-nombre-label">Ancho</label>
-                    <input id="inputAnchoProductoEdit" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 8 cm">
+                <div class="fila-campos-dobles">
+                    <div class="campo-admin-producto">
+                        <label class="panel-nombre-label">Alto</label>
+                        <input id="inputAltoProductoEdit" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 15 cm">
+                    </div>
+                    <div class="campo-admin-producto">
+                        <label class="panel-nombre-label">Ancho</label>
+                        <input id="inputAnchoProductoEdit" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 8 cm">
+                    </div>
                 </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Cantidad en stock</label>
