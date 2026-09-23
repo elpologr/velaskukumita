@@ -2442,7 +2442,7 @@ async function copiarURL() {
 }
 function cerrarPantallaPerfil() {
     document.getElementById('pantallaPerfil').classList.remove('activo');
-    document.body.style.overflow = '';
+    _desbloquearScrollBody();
     if (history.state && history.state.kukumitaModal === 'perfil') {
         history.replaceState(null, '');
     }
@@ -2890,6 +2890,40 @@ function aplicarFotoPerfil(event) {
     }
 }
 
+// ─── BLOQUEO ROBUSTO DE SCROLL DE FONDO (iOS Safari necesita más que overflow:hidden) ───
+// En iOS, "overflow:hidden" en el body no siempre evita que el gesto de
+// arrastrar en un panel fixed "se filtre" y mueva la página de fondo
+// (invisible detrás del panel). La técnica que sí funciona en todos los
+// navegadores es fijar el body en su posición con position:fixed.
+var _scrollYGuardado = 0;
+var _bloqueosScrollActivos = 0; // contador: soporta paneles anidados (perfil + admin productos)
+
+function _bloquearScrollBody() {
+    if (_bloqueosScrollActivos === 0) {
+        _scrollYGuardado = window.scrollY || document.documentElement.scrollTop || 0;
+        document.body.style.position = 'fixed';
+        document.body.style.top = '-' + _scrollYGuardado + 'px';
+        document.body.style.left = '0';
+        document.body.style.right = '0';
+        document.body.style.width = '100%';
+        document.body.style.overflow = 'hidden';
+    }
+    _bloqueosScrollActivos++;
+}
+
+function _desbloquearScrollBody() {
+    _bloqueosScrollActivos = Math.max(0, _bloqueosScrollActivos - 1);
+    if (_bloqueosScrollActivos === 0) {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, _scrollYGuardado);
+    }
+}
+
 // ─── ABRIR PANTALLA PERFIL (override con datos reales) ───
 function abrirPantallaPerfil() {
     actualizarPantallaPerfil();
@@ -2901,10 +2935,11 @@ function abrirPantallaPerfil() {
     if (avatarEl && foto) avatarEl.src = foto;
     if (nombreEl) nombreEl.textContent = nombre;
     document.getElementById('pantallaPerfil').classList.add('activo');
-    document.body.style.overflow = 'hidden';
+    _bloquearScrollBody();
     _modalActivo = 'perfil';
     history.pushState({ kukumitaModal: 'perfil' }, '');
 }
+
 
 
 
@@ -5126,7 +5161,7 @@ function abrirPantallaAdminProductos() {
     var p = document.getElementById('pantallaAdminProductos');
     if (!p) return;
     p.classList.add('activo');
-    document.body.style.overflow = 'hidden';
+    _bloquearScrollBody();
     if (typeof _modalActivo !== 'undefined') _modalActivo = 'adminProductos';
     history.pushState({ kukumitaModal: 'adminProductos' }, '');
 }
@@ -5134,12 +5169,7 @@ function abrirPantallaAdminProductos() {
 function cerrarPantallaAdminProductos() {
     var p = document.getElementById('pantallaAdminProductos');
     if (p) p.classList.remove('activo');
-    // Si "Mi Perfil" sigue abierto debajo, mantenemos el scroll bloqueado;
-    // si no, lo restauramos.
-    var perfil = document.getElementById('pantallaPerfil');
-    if (!perfil || !perfil.classList.contains('activo')) {
-        document.body.style.overflow = '';
-    }
+    _desbloquearScrollBody();
     if (history.state && history.state.kukumitaModal === 'adminProductos') {
         history.replaceState(null, '');
     }

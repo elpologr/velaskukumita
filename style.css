@@ -1839,6 +1839,7 @@
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: contain;
+            touch-action: pan-y;
         }
         .pantalla-avatar-grande {
             width: 110px; height: 110px;
