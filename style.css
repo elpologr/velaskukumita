@@ -1841,6 +1841,20 @@
             overscroll-behavior: contain;
             touch-action: pan-y;
         }
+
+        /* Bloqueo de scroll de fondo (paneles Mi Perfil / Agregar producto).
+           Usa !important porque la media query "CORRECCIÓN DEFINITIVA MÓVIL"
+           más abajo en este archivo fuerza "position: relative !important"
+           en el body para pantallas < 768px, lo que anularía un estilo
+           inline normal puesto por JavaScript. Esta clase, por ser más
+           específica (body.scroll-bloqueado > body), gana siempre. */
+        body.scroll-bloqueado {
+            position: fixed !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            overflow: hidden !important;
+        }
         .pantalla-avatar-grande {
             width: 110px; height: 110px;
             border-radius: 50%; object-fit: cover;
