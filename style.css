@@ -1938,6 +1938,54 @@
             border-radius: 14px; border: 2px solid #d4c5b8;
             background: #eee; margin: -4px 0 -6px;
         }
+        /* ── Imagen principal + botón "+" para agregar más imágenes ── */
+        .galeria-imagen-principal-wrap {
+            position: relative;
+            width: 140px;
+            margin: -4px 0 4px;
+        }
+        .galeria-imagen-principal-wrap .preview-imagen-producto {
+            display: block; margin: 0;
+        }
+        .btn-agregar-mas-imagenes {
+            position: absolute;
+            bottom: -8px; right: -8px;
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            border: 2.5px solid #fdfbf7;
+            background: #362a22; color: #fff;
+            font-size: 20px; font-weight: 700; line-height: 1;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            transition: background 0.18s, transform 0.18s;
+        }
+        .btn-agregar-mas-imagenes:hover { background: #5c4d43; transform: scale(1.08); }
+        body.modo-oscuro .btn-agregar-mas-imagenes { border-color: #1a1410; }
+        /* ── Miniaturas de imágenes adicionales ── */
+        .galeria-imagenes-extra {
+            display: flex; flex-wrap: wrap; gap: 10px;
+            width: 100%; max-width: 380px;
+        }
+        .miniatura-imagen-extra {
+            position: relative;
+            width: 64px; height: 64px;
+            border-radius: 10px; overflow: hidden;
+            border: 1.5px solid #d4c5b8; background: #eee;
+        }
+        .miniatura-imagen-extra img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+        }
+        .miniatura-imagen-extra .btn-quitar-miniatura {
+            position: absolute; top: 2px; right: 2px;
+            width: 20px; height: 20px; border-radius: 50%;
+            border: none; background: rgba(0,0,0,0.65); color: #fff;
+            font-size: 12px; line-height: 1; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .miniatura-imagen-extra .btn-quitar-miniatura:hover { background: #c0392b; }
+        .contador-imagenes-producto {
+            font-size: 12px; color: #8c7565; font-weight: 600;
+        }
         .link-quitar-imagen {
             font-size: 13px; font-weight: 600; color: #c0392b;
             text-decoration: none; margin-bottom: 4px;
@@ -2213,6 +2261,33 @@
         height: 340px;
         overflow: hidden;
         border-radius: 6px;
+        position: relative;
+    }
+
+    /* ── Indicador "hay más fotos" (solo aparece si el producto tiene 2+ imágenes) ── */
+    .card-mas-imagenes {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 100%;
+        width: 26px;
+        background: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0.38) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        z-index: 4;
+    }
+    .card-mas-imagenes-flecha {
+        color: #fff;
+        font-size: 20px;
+        font-weight: 800;
+        line-height: 1;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    }
+    @media (max-width: 768px) {
+        .card-mas-imagenes { width: 20px; }
+        .card-mas-imagenes-flecha { font-size: 15px; }
     }
 
     /* 📱 RESPONSIVO: Ajuste automático para Celulares */

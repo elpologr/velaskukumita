@@ -380,6 +380,16 @@ function renderizarCatalogoCompleto() {
             if (typeof mostrarPlaceholder === 'function') mostrarPlaceholder(this);
         };
         imgContenedor.appendChild(img);
+
+        // ── Indicador de "hay más fotos" (solo si el producto tiene 2 o más imágenes) ──
+        if (p.imagenes && p.imagenes.length > 1) {
+            var masImagenesIndicador = document.createElement('div');
+            masImagenesIndicador.className = 'card-mas-imagenes';
+            masImagenesIndicador.setAttribute('aria-hidden', 'true');
+            masImagenesIndicador.innerHTML = '<span class="card-mas-imagenes-flecha">›</span>';
+            imgContenedor.appendChild(masImagenesIndicador);
+        }
+
         card.appendChild(imgContenedor);
 
         // ── Botón favorito (corazón) ──
@@ -5147,9 +5157,10 @@ var ADMIN_EMAILS = [
 var ADMIN_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyIhS8jBCjbuooKz1y5NyJmhlBTBIyhiAoAxq3cnAU8wEYI1g9wXNsZqAnMLbWqbbjO/exec';
 
 // Estado interno del formulario
-var _adminImagenBase64 = null;   // base64 sin el encabezado data:
-var _adminImagenNombre = null;
+// _adminImagenesProducto: array de { base64, nombre, dataUrl }. El índice 0 es la imagen principal.
+var _adminImagenesProducto = [];
 var _adminGuardando    = false;
+var LIMITE_IMAGENES_PRODUCTO = 50;
 
 
 // ─────────────────────────────────────────────────────────────
@@ -5225,6 +5236,15 @@ function seleccionarImagenProducto() {
     if (input) input.click();
 }
 
+function agregarMasImagenesProducto() {
+    if (_adminImagenesProducto.length >= LIMITE_IMAGENES_PRODUCTO) {
+        _statusAdmin('Ya alcanzaste el límite de ' + LIMITE_IMAGENES_PRODUCTO + ' imágenes.', true);
+        return;
+    }
+    var input = document.getElementById('inputMasImagenesProducto');
+    if (input) input.click();
+}
+
 function _statusAdmin(msg, esError) {
     var el = document.getElementById('statusAdminProducto');
     if (!el) return;
@@ -5232,71 +5252,182 @@ function _statusAdmin(msg, esError) {
     el.style.color = esError ? '#c0392b' : '';
 }
 
+// Convierte un archivo de imagen a WebP (o JPEG si el navegador no soporta WebP)
+// y devuelve una promesa con { base64, nombre, dataUrl }.
+function _convertirArchivoImagenProducto(archivo) {
+    return new Promise(function (resolve, reject) {
+        if (!/^image\//.test(archivo.type)) {
+            reject('El archivo no es una imagen.');
+            return;
+        }
+        if (archivo.size > 15 * 1024 * 1024) {
+            reject('La imagen supera 15 MB. Usa una más ligera.');
+            return;
+        }
+
+        var lector = new FileReader();
+        lector.onload = function (e) {
+            var img = new Image();
+            img.onload = function () {
+                // Redimensionar manteniendo proporción (lado mayor máx. 1400 px)
+                var MAX = 1400;
+                var w = img.naturalWidth, h = img.naturalHeight;
+                if (w > MAX || h > MAX) {
+                    if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
+                    else        { w = Math.round(w * MAX / h); h = MAX; }
+                }
+
+                var canvas = document.createElement('canvas');
+                canvas.width  = w;
+                canvas.height = h;
+                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+
+                var dataUrl = canvas.toDataURL('image/webp', 0.85);
+                var esWebp  = dataUrl.indexOf('data:image/webp') === 0;
+                // Si el navegador no soporta WebP, cae a JPEG
+                if (!esWebp) dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+                resolve({
+                    base64: dataUrl.split(',')[1],
+                    nombre: (archivo.name || 'producto').replace(/\.[^.]+$/, '') + (esWebp ? '.webp' : '.jpg'),
+                    dataUrl: dataUrl,
+                    esWebp: esWebp
+                });
+            };
+            img.onerror = function () { reject('No se pudo leer la imagen.'); };
+            img.src = e.target.result;
+        };
+        lector.onerror = function () { reject('No se pudo leer el archivo.'); };
+        lector.readAsDataURL(archivo);
+    });
+}
+
+function _actualizarContadorImagenesProducto() {
+    var contador = document.getElementById('contadorImagenesProducto');
+    if (!contador) return;
+    var total = _adminImagenesProducto.length;
+    if (total > 0) {
+        contador.style.display = 'inline-block';
+        contador.textContent = total + '/' + LIMITE_IMAGENES_PRODUCTO + ' imágenes';
+    } else {
+        contador.style.display = 'none';
+        contador.textContent = '';
+    }
+    var btnMas = document.getElementById('btnAgregarMasImagenesProducto');
+    if (btnMas) btnMas.style.display = (total > 0 && total < LIMITE_IMAGENES_PRODUCTO) ? 'flex' : 'none';
+}
+
+function _renderizarGaleriaExtraProducto() {
+    var cont = document.getElementById('galeriaImagenesExtraProducto');
+    if (!cont) return;
+    cont.innerHTML = '';
+    // El índice 0 es la imagen principal (se muestra aparte); aquí van la 2ª en adelante.
+    for (var i = 1; i < _adminImagenesProducto.length; i++) {
+        (function (idx) {
+            var mini = document.createElement('div');
+            mini.className = 'miniatura-imagen-extra';
+            var img = document.createElement('img');
+            img.src = _adminImagenesProducto[idx].dataUrl;
+            img.alt = 'Imagen ' + (idx + 1);
+            mini.appendChild(img);
+            var btnX = document.createElement('button');
+            btnX.type = 'button';
+            btnX.className = 'btn-quitar-miniatura';
+            btnX.textContent = '✕';
+            btnX.title = 'Quitar esta imagen';
+            btnX.onclick = function () { quitarImagenExtraProducto(idx); };
+            mini.appendChild(btnX);
+            cont.appendChild(mini);
+        })(i);
+    }
+}
+
+function quitarImagenExtraProducto(idx) {
+    _adminImagenesProducto.splice(idx, 1);
+    _renderizarGaleriaExtraProducto();
+    _actualizarContadorImagenesProducto();
+}
+
 function procesarImagenProducto(event) {
     var archivo = event.target.files && event.target.files[0];
     if (!archivo) return;
 
-    if (!/^image\//.test(archivo.type)) {
-        _statusAdmin('El archivo no es una imagen.', true);
-        return;
-    }
-    if (archivo.size > 15 * 1024 * 1024) {
-        _statusAdmin('La imagen supera 15 MB. Usa una más ligera.', true);
-        return;
-    }
-
     _statusAdmin('Convirtiendo a WebP…', false);
+    _convertirArchivoImagenProducto(archivo).then(function (resultado) {
+        _adminImagenesProducto[0] = resultado;
 
-    var lector = new FileReader();
-    lector.onload = function (e) {
-        var img = new Image();
-        img.onload = function () {
-            // Redimensionar manteniendo proporción (lado mayor máx. 1400 px)
-            var MAX = 1400;
-            var w = img.naturalWidth, h = img.naturalHeight;
-            if (w > MAX || h > MAX) {
-                if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
-                else        { w = Math.round(w * MAX / h); h = MAX; }
-            }
+        var wrap   = document.getElementById('wrapImagenPrincipalProducto');
+        var prev   = document.getElementById('previewImagenProducto');
+        var quitar = document.getElementById('btnQuitarImagenProducto');
+        if (wrap)   { wrap.style.display = 'block'; }
+        if (prev)   { prev.src = resultado.dataUrl; }
+        if (quitar) { quitar.style.display = 'inline-block'; }
+        _actualizarContadorImagenesProducto();
 
-            var canvas = document.createElement('canvas');
-            canvas.width  = w;
-            canvas.height = h;
-            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        var kb = Math.round(resultado.base64.length * 0.75 / 1024);
+        _statusAdmin('Imagen lista (' + (resultado.esWebp ? 'WebP' : 'JPEG') + ', ~' + kb + ' KB)', false);
+    }).catch(function (err) {
+        _statusAdmin(err, true);
+    });
+    event.target.value = '';
+}
 
-            var dataUrl = canvas.toDataURL('image/webp', 0.85);
-            var esWebp  = dataUrl.indexOf('data:image/webp') === 0;
-            // Si el navegador no soporta WebP, cae a JPEG
-            if (!esWebp) dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+// Maneja la selección de VARIAS imágenes a la vez desde el botón "+"
+function procesarImagenesExtraProducto(event) {
+    var archivos = Array.prototype.slice.call(event.target.files || []);
+    event.target.value = '';
+    if (!archivos.length) return;
 
-            _adminImagenBase64 = dataUrl.split(',')[1];
-            _adminImagenNombre = (archivo.name || 'producto')
-                .replace(/\.[^.]+$/, '') + (esWebp ? '.webp' : '.jpg');
+    var espacioDisponible = LIMITE_IMAGENES_PRODUCTO - _adminImagenesProducto.length;
+    if (espacioDisponible <= 0) {
+        _statusAdmin('Ya alcanzaste el límite de ' + LIMITE_IMAGENES_PRODUCTO + ' imágenes.', true);
+        return;
+    }
+    var sobraron = archivos.length > espacioDisponible;
+    archivos = archivos.slice(0, espacioDisponible);
 
-            var prev   = document.getElementById('previewImagenProducto');
-            var quitar = document.getElementById('btnQuitarImagenProducto');
-            if (prev)   { prev.src = dataUrl; prev.style.display = 'block'; }
-            if (quitar) { quitar.style.display = 'inline-block'; }
+    _statusAdmin('Convirtiendo ' + archivos.length + ' imagen(es)…', false);
 
-            var kb = Math.round(_adminImagenBase64.length * 0.75 / 1024);
-            _statusAdmin('Imagen lista (' + (esWebp ? 'WebP' : 'JPEG') + ', ~' + kb + ' KB)', false);
-        };
-        img.onerror = function () { _statusAdmin('No se pudo leer la imagen.', true); };
-        img.src = e.target.result;
-    };
-    lector.onerror = function () { _statusAdmin('No se pudo leer el archivo.', true); };
-    lector.readAsDataURL(archivo);
+    var promesas = archivos.map(function (archivo) {
+        return _convertirArchivoImagenProducto(archivo).catch(function (err) {
+            return { error: err, nombreArchivo: archivo.name };
+        });
+    });
+
+    Promise.all(promesas).then(function (resultados) {
+        var agregadas = 0, errores = [];
+        resultados.forEach(function (r) {
+            if (r && r.error) { errores.push(r.nombreArchivo + ': ' + r.error); return; }
+            _adminImagenesProducto.push(r);
+            agregadas++;
+        });
+        _renderizarGaleriaExtraProducto();
+        _actualizarContadorImagenesProducto();
+
+        if (errores.length) {
+            _statusAdmin('Se agregaron ' + agregadas + '. Fallaron: ' + errores.join(' / '), true);
+        } else if (sobraron) {
+            _statusAdmin('Se agregaron ' + agregadas + '. Llegaste al límite de ' + LIMITE_IMAGENES_PRODUCTO + '.', false);
+        } else {
+            _statusAdmin('Se agregaron ' + agregadas + ' imagen(es). Total: ' + _adminImagenesProducto.length, false);
+        }
+    });
 }
 
 function quitarImagenProducto() {
-    _adminImagenBase64 = null;
-    _adminImagenNombre = null;
+    _adminImagenesProducto = [];
+    var wrap   = document.getElementById('wrapImagenPrincipalProducto');
     var prev   = document.getElementById('previewImagenProducto');
     var quitar = document.getElementById('btnQuitarImagenProducto');
     var input  = document.getElementById('inputImagenProducto');
-    if (prev)   { prev.src = ''; prev.style.display = 'none'; }
+    var inputExtra = document.getElementById('inputMasImagenesProducto');
+    if (wrap)   { wrap.style.display = 'none'; }
+    if (prev)   { prev.src = ''; }
     if (quitar) { quitar.style.display = 'none'; }
     if (input)  { input.value = ''; }
+    if (inputExtra) { inputExtra.value = ''; }
+    _renderizarGaleriaExtraProducto();
+    _actualizarContadorImagenesProducto();
     _statusAdmin('', false);
 }
 
@@ -5349,7 +5480,7 @@ async function guardarProductoAdmin() {
     if (filaDestino !== '' && (isNaN(Number(filaDestino)) || !Number.isInteger(Number(filaDestino)) || Number(filaDestino) < 2)) {
         _statusAdmin('La posición en la hoja debe ser un número entero de 2 en adelante.', true); return;
     }
-    if (!_adminImagenBase64) {
+    if (!_adminImagenesProducto.length) {
         _statusAdmin('Agrega una imagen del producto.', true); return;
     }
 
@@ -5377,8 +5508,8 @@ async function guardarProductoAdmin() {
             ancho:             ancho,
             video:             videoYoutube,
             filaDestino:       filaDestino,
-            imagenBase64:      _adminImagenBase64,
-            imagenNombre:      _adminImagenNombre
+            imagenes:          _adminImagenesProducto.map(function (x) { return x.base64; }),
+            imagenesNombres:   _adminImagenesProducto.map(function (x) { return x.nombre; })
         };
 
         // text/plain evita el preflight CORS, que Apps Script no responde

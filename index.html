@@ -396,8 +396,14 @@
                         </div>
                     </button>
                     <input type="file" id="inputImagenProducto" accept="image/*" style="display:none" onchange="procesarImagenProducto(event)">
-                    <img id="previewImagenProducto" class="preview-imagen-producto" style="display:none;" alt="Vista previa del producto">
-                    <a href="#" id="btnQuitarImagenProducto" class="link-quitar-imagen" style="display:none;" onclick="event.preventDefault(); quitarImagenProducto();">Quitar imagen</a>
+                    <input type="file" id="inputMasImagenesProducto" accept="image/*" multiple style="display:none" onchange="procesarImagenesExtraProducto(event)">
+                    <div class="galeria-imagen-principal-wrap" style="display:none;" id="wrapImagenPrincipalProducto">
+                        <img id="previewImagenProducto" class="preview-imagen-producto" alt="Vista previa del producto">
+                        <button type="button" class="btn-agregar-mas-imagenes" id="btnAgregarMasImagenesProducto" onclick="agregarMasImagenesProducto()" title="Agregar más imágenes">+</button>
+                    </div>
+                    <div class="galeria-imagenes-extra" id="galeriaImagenesExtraProducto"></div>
+                    <span class="contador-imagenes-producto" id="contadorImagenesProducto" style="display:none;"></span>
+                    <a href="#" id="btnQuitarImagenProducto" class="link-quitar-imagen" style="display:none;" onclick="event.preventDefault(); quitarImagenProducto();">Quitar imagen(es)</a>
                 </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Nombre del producto</label>
