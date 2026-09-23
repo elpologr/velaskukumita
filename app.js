@@ -5348,34 +5348,28 @@ function quitarImagenExtraProducto(idx) {
     _actualizarContadorImagenesProducto();
 }
 
-function procesarImagenProducto(event) {
-    var archivo = event.target.files && event.target.files[0];
-    if (!archivo) return;
-
-    _statusAdmin('Convirtiendo a WebP…', false);
-    _convertirArchivoImagenProducto(archivo).then(function (resultado) {
-        _adminImagenesProducto[0] = resultado;
-
-        var wrap   = document.getElementById('wrapImagenPrincipalProducto');
-        var prev   = document.getElementById('previewImagenProducto');
-        var quitar = document.getElementById('btnQuitarImagenProducto');
+// Actualiza la imagen principal grande (la primera del arreglo) según el estado actual.
+function _refrescarImagenPrincipalProducto() {
+    var wrap   = document.getElementById('wrapImagenPrincipalProducto');
+    var prev   = document.getElementById('previewImagenProducto');
+    var quitar = document.getElementById('btnQuitarImagenProducto');
+    if (_adminImagenesProducto.length > 0) {
         if (wrap)   { wrap.style.display = 'block'; }
-        if (prev)   { prev.src = resultado.dataUrl; }
+        if (prev)   { prev.src = _adminImagenesProducto[0].dataUrl; }
         if (quitar) { quitar.style.display = 'inline-block'; }
-        _actualizarContadorImagenesProducto();
-
-        var kb = Math.round(resultado.base64.length * 0.75 / 1024);
-        _statusAdmin('Imagen lista (' + (resultado.esWebp ? 'WebP' : 'JPEG') + ', ~' + kb + ' KB)', false);
-    }).catch(function (err) {
-        _statusAdmin(err, true);
-    });
-    event.target.value = '';
+    } else {
+        if (wrap)   { wrap.style.display = 'none'; }
+        if (prev)   { prev.src = ''; }
+        if (quitar) { quitar.style.display = 'none'; }
+    }
 }
 
-// Maneja la selección de VARIAS imágenes a la vez desde el botón "+"
-function procesarImagenesExtraProducto(event) {
-    var archivos = Array.prototype.slice.call(event.target.files || []);
-    event.target.value = '';
+// Convierte y AGREGA (nunca reemplaza) uno o varios archivos al arreglo de imágenes.
+// La usan tanto "Agregar imagen" (primera vez) como el botón "+" (siguientes veces),
+// así que da igual si el usuario elige las imágenes una por una o todas juntas:
+// cada una se suma a la lista y muestra su propia miniatura de inmediato.
+function _agregarArchivosImagenesProducto(listaArchivos) {
+    var archivos = Array.prototype.slice.call(listaArchivos || []);
     if (!archivos.length) return;
 
     var espacioDisponible = LIMITE_IMAGENES_PRODUCTO - _adminImagenesProducto.length;
@@ -5401,6 +5395,7 @@ function procesarImagenesExtraProducto(event) {
             _adminImagenesProducto.push(r);
             agregadas++;
         });
+        _refrescarImagenPrincipalProducto();
         _renderizarGaleriaExtraProducto();
         _actualizarContadorImagenesProducto();
 
@@ -5412,6 +5407,19 @@ function procesarImagenesExtraProducto(event) {
             _statusAdmin('Se agregaron ' + agregadas + ' imagen(es). Total: ' + _adminImagenesProducto.length, false);
         }
     });
+}
+
+function procesarImagenProducto(event) {
+    var archivos = event.target.files;
+    event.target.value = '';
+    _agregarArchivosImagenesProducto(archivos);
+}
+
+// Maneja la selección de VARIAS imágenes a la vez desde el botón "+"
+function procesarImagenesExtraProducto(event) {
+    var archivos = event.target.files;
+    event.target.value = '';
+    _agregarArchivosImagenesProducto(archivos);
 }
 
 function quitarImagenProducto() {
