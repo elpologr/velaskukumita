@@ -1393,6 +1393,8 @@ if (document.readyState === 'loading') {
         });
 
         dotsContainer.style.display = galeriaImagenes.length <= 1 ? 'none' : 'flex';
+        const masImagenesTexto = document.getElementById('modalMasImagenesTexto');
+        if (masImagenesTexto) masImagenesTexto.style.display = galeriaImagenes.length <= 1 ? 'none' : 'block';
 
         actualizarNavegacion();
 

@@ -677,9 +677,19 @@
         }
         .modal-btn-nav { opacity: 0.85; }
         .modal-btn-nav:hover { background: rgba(44,31,24,0.9); }
-        .modal-btn-nav.oculto-nav { opacity: 0.3; pointer-events: none; background: rgba(120,120,120,0.5); }
+        .modal-btn-nav.oculto-nav { display: none; }
         .modal-btn-prev { left: 8px; }
         .modal-btn-next { right: 8px; }
+
+        /* Texto "Más Imágenes" (solo visible si el producto tiene 2+ imágenes) */
+        .modal-mas-imagenes-texto {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #8c7565;
+            margin-top: 10px;
+            display: none;
+        }
 
         /* Indicadores de puntos */
         .modal-dots {
