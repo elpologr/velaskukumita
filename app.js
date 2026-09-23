@@ -5543,7 +5543,12 @@ async function guardarProductoAdmin() {
         var _inputEventoOtro = document.getElementById('inputEventoOtroProducto');
         if (_inputEventoOtro) _inputEventoOtro.value = '';
         quitarImagenProducto();
-        _statusAdmin('✅ Guardado en la fila ' + data.fila, false);
+        var _avisoPosicion = '';
+        if (filaDestino !== '' && String(data.fila) !== String(filaDestino)) {
+            _avisoPosicion = ' ⚠️ Pediste la posición ' + filaDestino + ' pero se guardó en la ' + data.fila +
+                ' — probablemente falta volver a publicar (nueva versión) el Apps Script.';
+        }
+        _statusAdmin('✅ Guardado en la fila ' + data.fila + _avisoPosicion, !!_avisoPosicion);
 
         // Recargar catálogo para que aparezca de inmediato
         if (typeof cargarDesdeGoogleSheets === 'function') {
