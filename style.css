@@ -685,11 +685,11 @@
         .modal-mas-imagenes-texto {
             width: 100%;
             box-sizing: border-box;
-            text-align: center;
+            text-align: center !important;
             font-size: 12px;
             font-weight: 600;
             color: #8c7565;
-            margin-top: 10px;
+            margin: 10px auto 0;
             display: none;
         }
 
@@ -1236,7 +1236,7 @@
         .zoom-nav:hover { background: rgba(255,255,255,0.3); }
         .zoom-prev { left: 14px; }
         .zoom-next { right: 14px; }
-        .zoom-nav.oculto-zoom { opacity: 0.2; pointer-events: none; }
+        .zoom-nav.oculto-zoom { display: none; }
         .zoom-contador {
             position: absolute; bottom: 18px; left: 50%;
             transform: translateX(-50%);
