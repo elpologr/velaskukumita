@@ -500,6 +500,131 @@
         </div>
     </div>
 
+    <!-- ══ PANTALLA ADMIN: EDITAR PRODUCTO EXISTENTE (acceso restringido) ══ -->
+    <div class="pantalla-perfil pantalla-admin-productos" id="pantallaEditarProducto">
+        <div class="pantalla-perfil-header">
+            <button class="btn-volver-perfil" onclick="cerrarPantallaEditarProducto()">‹</button>
+            <span class="pantalla-perfil-titulo">Editar producto</span>
+            <div style="width:42px;"></div>
+        </div>
+        <div class="pantalla-perfil-body">
+
+            <div class="form-admin-producto">
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Imágenes</label>
+
+                    <span class="subtitulo-galeria-edicion" id="tituloGaleriaExistenteEdit" style="display:none;">Ya guardadas en el producto</span>
+                    <div class="galeria-imagenes-producto" id="galeriaImagenesExistentesEdit"></div>
+
+                    <button class="btn-opcion-perfil" onclick="seleccionarImagenProductoEdit()" type="button" style="margin-top:6px;">
+                        <span class="op-icono">🖼️</span>
+                        <div>
+                            Agregar más imágenes
+                            <span class="op-sub">Se agregan después de las actuales, sin borrarlas</span>
+                        </div>
+                    </button>
+                    <input type="file" id="inputImagenProductoEdit" accept="image/*" multiple style="display:none" onchange="procesarImagenProductoEdit(event)">
+
+                    <span class="subtitulo-galeria-edicion" id="tituloGaleriaNuevaEdit" style="display:none;">Nuevas (se subirán al guardar)</span>
+                    <div class="galeria-imagenes-producto" id="galeriaImagenesNuevasEdit"></div>
+                    <span class="contador-imagenes-producto" id="contadorImagenesEdit" style="display:none;"></span>
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Nombre del producto</label>
+                    <input id="inputNombreProductoEdit" class="panel-nombre-input" type="text" placeholder="Ej. Vela aromática grande" maxlength="120">
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Precio</label>
+                    <input id="inputPrecioProductoEdit" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ej. 150">
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Precio de mayoreo</label>
+                    <input id="inputPrecioMayoreoProductoEdit" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Opcional">
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Descripción</label>
+                    <textarea id="inputDescripcionProductoEdit" class="panel-nombre-input" rows="3" maxlength="500" placeholder="Opcional, describe el producto"></textarea>
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Video de YouTube</label>
+                    <input id="inputVideoYoutubeProductoEdit" class="panel-nombre-input" type="url" placeholder="Opcional, ej. https://www.youtube.com/embed/XXXXXXXXXXX">
+                    <span style="font-size:11px; color:#9a8878;">Debe ser un link embed de YouTube (youtube.com/embed/…)</span>
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Etiqueta Principal</label>
+                    <select id="inputEtiquetaPrincipalProductoEdit" class="panel-nombre-input">
+                        <option value="">Selecciona una opción</option>
+                        <option value="Arreglos">Arreglos</option>
+                        <option value="Producto">Producto</option>
+                        <option value="Decoraciones">Decoraciones</option>
+                        <option value="Aditamentos">Aditamentos</option>
+                        <option value="Etiquetas">Etiquetas</option>
+                        <option value="Centros de Mesa">Centros de Mesa</option>
+                    </select>
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Etiqueta de Evento <span style="font-weight:400; color:#9a8878;">(opcional, puedes elegir varias)</span></label>
+                    <div class="grid-checks-evento" id="gridEventosProductoEdit">
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="primera-comunion"><span>🙏 Primera Comunión</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="bautizo"><span>🕊️ Bautizo</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="boda"><span>💍 Boda</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="quince-anos"><span>👑 Quince Años</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="baby-shower"><span>🍼 Baby Shower</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="graduacion"><span>🎓 Graduación</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="aniversario-luctuoso"><span>🕯️ Aniv. Luctuoso</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="fin-novenario"><span>🌿 Fin de Novenario</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="despedida-soltera"><span>🥂 Despedida de Soltera</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="despedida-soltero"><span>🥃 Despedida de Soltero</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="confirmacion"><span>✝️ Confirmación</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="compromiso"><span>💎 Compromiso</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="cumpleanos"><span>🎂 Cumpleaños</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="aniversario-bodas"><span>💐 Aniversario de Bodas</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="revelacion-genero"><span>💙 Revelación de Género</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="bienvenida-bebe"><span>👶 Bienvenida de Bebé</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="posada"><span>🎉 Posada</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="navidad"><span>🎄 Navidad</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="ano-nuevo"><span>🎆 Año Nuevo</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="dia-madres"><span>💐 Día de las Madres</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="dia-padre"><span>👔 Día del Padre</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="san-valentin"><span>❤️ Día de San Valentín</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="dia-nino"><span>🧸 Día del Niño</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="dia-muertos"><span>💀 Día de Muertos</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="ordenacion-sacerdotal"><span>⛪ Ordenación Sacerdotal</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="jubilacion"><span>🎊 Jubilación</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="apertura-negocio"><span>🏪 Apertura de Negocio</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="condolencias"><span>🤍 Condolencias</span></label>
+                    </div>
+                    <input id="inputEventoOtroProductoEdit" class="panel-nombre-input" type="text" maxlength="60" placeholder="¿Otro evento? Escríbelo aquí (opcional)" style="margin-top:8px;">
+                </div>
+                <div class="campo-admin-producto campo-admin-checkbox">
+                    <label class="check-admin-producto">
+                        <input id="inputEnOfertaProductoEdit" type="checkbox">
+                        <span>En Oferta</span>
+                    </label>
+                    <label class="check-admin-producto">
+                        <input id="inputMasVendidoProductoEdit" type="checkbox">
+                        <span>Más Vendido</span>
+                    </label>
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Alto</label>
+                    <input id="inputAltoProductoEdit" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 15 cm">
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Ancho</label>
+                    <input id="inputAnchoProductoEdit" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 8 cm">
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Cantidad en stock</label>
+                    <input id="inputStockProductoEdit" class="panel-nombre-input" type="number" inputmode="numeric" min="0" step="1" placeholder="Ej. 20">
+                </div>
+            </div>
+
+            <button class="btn-guardar-producto" id="btnGuardarEdicionProducto" onclick="guardarEdicionProducto()">💾 Guardar cambios</button>
+            <p class="status-admin-producto" id="statusEdicionProducto"></p>
+        </div>
+    </div>
+
     <!-- ══ PANTALLA: VIDEO DEL PRODUCTO ══ -->
     <div class="pantalla-perfil pantalla-video-producto" id="pantallaVideoProducto">
         <div class="pantalla-perfil-header">
@@ -1709,6 +1834,9 @@
 
         <!-- ── Botón cerrar flotante sobre la galería ── -->
         <button class="mp-cerrar-flotante" onclick="cerrarModalProducto()">✕</button>
+
+        <!-- ── Botón engranaje (editar producto) — solo visible para administradores, ver ADMIN_EMAILS en app.js ── -->
+        <button class="mp-btn-config" id="mpBtnConfigProducto" style="display:none;" title="Editar producto">⚙️</button>
 
         <!-- ── GALERÍA (primero, sin scroll para verla) ── -->
         <div class="mp-galeria-superior">
