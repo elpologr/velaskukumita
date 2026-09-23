@@ -762,6 +762,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            object-position: top;
         }
 
         .oferta-placeholder {
@@ -825,6 +826,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            object-position: top;
         }
 
         .oferta-info-overlay {
@@ -1961,7 +1963,7 @@
             border: 1.5px solid #d4c5b8; background: #eee;
         }
         .miniatura-imagen-producto img {
-            width: 100%; height: 100%; object-fit: cover; display: block;
+            width: 100%; height: 100%; object-fit: cover; object-position: top; display: block;
         }
         .miniatura-imagen-producto .btn-quitar-miniatura {
             position: absolute; top: 2px; right: 2px;
@@ -2373,6 +2375,7 @@
             height: 57px;
             border-radius: 14px;
             object-fit: cover;
+            object-position: top;
             display: block;
             flex-shrink: 0;
         }
@@ -2519,7 +2522,7 @@
         }
         .fav-card:hover { transform: translateY(-3px); }
         body.modo-oscuro .fav-card { background: #1e1e1e; border-color: #333; }
-        .fav-card-img { width: 100%; aspect-ratio: 1; object-fit: cover; background: #f0eae4; }
+        .fav-card-img { width: 100%; aspect-ratio: 1; object-fit: cover; object-position: top; background: #f0eae4; }
         .fav-card-info { padding: 8px 10px 10px; }
         .fav-card-nombre { font-size: 0.82rem; font-weight: 700; color: #4a3b32; margin-bottom: 3px; }
         body.modo-oscuro .fav-card-nombre { color: #e0d5cc; }
@@ -2623,7 +2626,7 @@
         .drawer-rec-item:hover { background: #fdf6f0; border-color: #8c7565; }
         .drawer-rec-img {
             width: 44px; height: 44px; border-radius: 6px;
-            object-fit: cover; background: #eee; flex-shrink: 0;
+            object-fit: cover; object-position: top; background: #eee; flex-shrink: 0;
         }
         .drawer-rec-info { flex: 1; min-width: 0; }
         .drawer-rec-nombre {
@@ -2879,7 +2882,7 @@ body.modo-oscuro .btn-google-auth:hover { background: #3a2e26; }
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 .carrusel-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.10); }
-.carrusel-card-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; background: #f5f0eb; display: block; }
+.carrusel-card-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; object-position: top; background: #f5f0eb; display: block; }
 .carrusel-card-info { padding: 8px 10px 10px; }
 .carrusel-card-nombre { font-size: 0.78rem; font-weight: 700; color: #362a22; margin: 0 0 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .carrusel-card-precio { font-size: 0.82rem; font-weight: 700; color: #2e7d32; margin: 0; }
@@ -2945,7 +2948,7 @@ body.modo-oscuro .btn-google-auth:hover { background: #3a2e26; }
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
 }
 .modal-mv-img {
-    aspect-ratio: 1; border-radius: 10px; object-fit: cover;
+    aspect-ratio: 1; border-radius: 10px; object-fit: cover; object-position: top;
     width: 100%; background: #f5f0eb; border: 1px solid #e8ddd5;
     cursor: zoom-in; transition: transform 0.2s;
 }
@@ -3051,7 +3054,7 @@ body.modo-oscuro #pantallaCarrito { background: #1a1410; }
 }
 .cart-card:hover { transform: translateY(-3px); }
 body.modo-oscuro .cart-card { background: #1e1e1e; border-color: #333; }
-.cart-card-img { width: 100%; aspect-ratio: 1; object-fit: cover; background: #f0eae4; }
+.cart-card-img { width: 100%; aspect-ratio: 1; object-fit: cover; object-position: top; background: #f0eae4; }
 .cart-card-info { padding: 8px 10px 10px; }
 .cart-card-nombre { font-size: 0.82rem; font-weight: 700; color: #4a3b32; margin-bottom: 3px; }
 body.modo-oscuro .cart-card-nombre { color: #e0d5cc; }

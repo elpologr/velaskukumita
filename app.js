@@ -375,7 +375,7 @@ function renderizarCatalogoCompleto() {
         var img = document.createElement('img');
         img.src = p.imagen;
         img.alt = p.nombre;
-        img.style.cssText = 'width:100%; height:100%; object-fit:cover;';
+        img.style.cssText = 'width:100%; height:100%; object-fit:cover; object-position:top;';
         img.onerror = function() {
             if (typeof mostrarPlaceholder === 'function') mostrarPlaceholder(this);
         };
@@ -1043,7 +1043,7 @@ if (document.readyState === 'loading') {
             'compromiso': 'Compromiso', 'cumpleanos': 'Cumpleaños',
             'aniversario-bodas': 'Aniversario de Bodas',
             'revelacion-genero': 'Revelación de Género',
-            'bienvenida-bebe': 'Bienvenida de Bebé',
+            'religioso': 'Religioso',
             'posada': 'Posada', 'navidad': 'Navidad', 'ano-nuevo': 'Año Nuevo',
             'dia-madres': 'Día de las Madres', 'dia-padre': 'Día del Padre',
             'san-valentin': 'Día de San Valentín', 'dia-nino': 'Día del Niño',
@@ -1218,7 +1218,7 @@ if (document.readyState === 'loading') {
                     const imgEl = document.createElement('img');
                     imgEl.src = srcImagen;
                     imgEl.alt = nombreRel;
-                    imgEl.style.cssText = 'width:100%; height:100%; object-fit:cover; display:block;';
+                    imgEl.style.cssText = 'width:100%; height:100%; object-fit:cover; object-position:top; display:block;';
                     imgEl.onerror = function() {
                         wrap.innerHTML = '<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f9f5f2;gap:4px;">' +
                             '<span style="font-size:22px;">🕯️</span>' +
@@ -1595,7 +1595,7 @@ if (document.readyState === 'loading') {
                 const img = document.createElement('img');
                 img.src = imagenSrc;
                 img.alt = nombreProducto || 'Producto';
-                img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+                img.style.cssText = 'width:100%;height:100%;object-fit:cover;object-position:top;';
                 img.onerror = function() { imgWrap.style.display = 'none'; if (placeholder) placeholder.style.display = 'flex'; };
                 imgWrap.appendChild(img);
             }
