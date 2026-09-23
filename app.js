@@ -2901,12 +2901,8 @@ var _bloqueosScrollActivos = 0; // contador: soporta paneles anidados (perfil + 
 function _bloquearScrollBody() {
     if (_bloqueosScrollActivos === 0) {
         _scrollYGuardado = window.scrollY || document.documentElement.scrollTop || 0;
-        document.body.style.position = 'fixed';
         document.body.style.top = '-' + _scrollYGuardado + 'px';
-        document.body.style.left = '0';
-        document.body.style.right = '0';
-        document.body.style.width = '100%';
-        document.body.style.overflow = 'hidden';
+        document.body.classList.add('scroll-bloqueado');
     }
     _bloqueosScrollActivos++;
 }
@@ -2914,12 +2910,8 @@ function _bloquearScrollBody() {
 function _desbloquearScrollBody() {
     _bloqueosScrollActivos = Math.max(0, _bloqueosScrollActivos - 1);
     if (_bloqueosScrollActivos === 0) {
-        document.body.style.position = '';
+        document.body.classList.remove('scroll-bloqueado');
         document.body.style.top = '';
-        document.body.style.left = '';
-        document.body.style.right = '';
-        document.body.style.width = '';
-        document.body.style.overflow = '';
         window.scrollTo(0, _scrollYGuardado);
     }
 }
