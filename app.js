@@ -1016,7 +1016,7 @@ if (document.readyState === 'loading') {
         // Mostrar/ocultar fila contenedora
         if (filaCompleta) filaCompleta.style.display = (precioNum || precioBazar) ? 'flex' : 'none';
 
-        // Tags inline — etiquetas de evento (se muestran directamente, ya no hay botón de despliegue)
+        // Tags inline — etiquetas de evento (contraídas por defecto, se expanden al dar click en el texto)
         // La etiqueta PRINCIPAL se inyecta por inyectarEtiquetasModal()
         const tagsInline = document.getElementById('modalTagsInline');
         tagsInline.innerHTML = '';
@@ -1070,17 +1070,22 @@ if (document.readyState === 'loading') {
         const eventoSlots = dataEvento.split('|').filter(e => e && e !== 'sin' && e !== 'sin-evento');
         if (eventoSlots.length > 0) {
             const labelEv = document.createElement('div');
-            labelEv.textContent = 'Etiquetas de Evento';
-            labelEv.style.cssText = 'font-size: 10px; font-weight: 700; color: #4b6b94; text-transform: uppercase; letter-spacing: 0.5px; width: 100%; margin-bottom: 4px;';
+            labelEv.textContent = '🔽 Mostrar Filtros de Evento';
+            labelEv.style.cssText = 'font-size: 10px; font-weight: 700; color: #4b6b94; text-transform: uppercase; letter-spacing: 0.5px; width: 100%; margin-bottom: 4px; cursor: pointer; user-select: none;';
             tagsInline.appendChild(labelEv);
             const rowEv = document.createElement('div');
-            rowEv.style.cssText = 'display: flex; flex-wrap: wrap; gap: 5px; width: 100%;';
+            rowEv.style.cssText = 'display: none; flex-wrap: wrap; gap: 5px; width: 100%;';
             eventoSlots.forEach(slug => {
                 const span = document.createElement('span');
                 span.textContent = _lookupEvento(slug);
                 span.style.cssText = 'background: #e3edf7; color: #4b6b94; font-size: 11px; padding: 3px 9px; border-radius: 12px; font-weight: 600;';
                 rowEv.appendChild(span);
             });
+            labelEv.onclick = () => {
+                const expandido = rowEv.style.display !== 'none';
+                rowEv.style.display = expandido ? 'none' : 'flex';
+                labelEv.textContent = expandido ? '🔽 Mostrar Filtros de Evento' : '🔼 Ocultar Filtros de Evento';
+            };
             tagsInline.appendChild(rowEv);
             tagsInline.style.display = 'block';
         }
