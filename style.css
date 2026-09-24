@@ -2110,6 +2110,14 @@
         body.modo-oscuro .campo-zona-etiqueta {
             background: #4a2c2c; border-color: #6a3a3a;
         }
+        /* ── Zona de "Etiqueta de Evento": fondo azul claro pastel, mismo formato que Etiqueta Principal ── */
+        .campo-zona-etiqueta-evento {
+            background: #dceaf9; border: 1.5px solid #b8d4f0;
+            border-radius: 10px; padding: 10px 12px;
+        }
+        body.modo-oscuro .campo-zona-etiqueta-evento {
+            background: #22344a; border-color: #35516f;
+        }
         .fila-campos-dobles { display: flex; gap: 12px; }
         .fila-campos-dobles .campo-admin-producto { flex: 1 1 0; min-width: 0; }
 

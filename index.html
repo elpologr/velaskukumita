@@ -445,6 +445,21 @@
                     <input id="inputVideoYoutubeProducto" class="panel-nombre-input" type="url" placeholder="Opcional, ej. https://www.youtube.com/embed/XXXXXXXXXXX">
                     <span style="font-size:11px; color:#9a8878;">Debe ser un link embed de YouTube (youtube.com/embed/…)</span>
                 </div>
+                <div class="campo-admin-producto campo-admin-checkbox">
+                    <label class="check-admin-producto">
+                        <input id="inputEnOfertaProducto" type="checkbox">
+                        <span>En Oferta</span>
+                    </label>
+                    <label class="check-admin-producto">
+                        <input id="inputMasVendidoProducto" type="checkbox">
+                        <span>Más Vendido</span>
+                    </label>
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Posición en la hoja <span style="font-weight:400; color:#9a8878;">(opcional)</span></label>
+                    <input id="inputFilaProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="2" step="1" placeholder="Ej. 2 para que sea el primer producto">
+                    <span style="font-size:11px; color:#9a8878;">Si lo dejas vacío, el producto se agrega al final de la lista. Si eliges una fila, los productos que ya estén ahí se recorren una posición hacia abajo.</span>
+                </div>
                 </div>
                 <div class="form-admin-col">
                 <div class="campo-admin-producto campo-zona-etiqueta">
@@ -459,7 +474,7 @@
                         <label class="check-evento-producto"><input type="checkbox" class="chk-etiqueta-principal-producto" value="Centro de Mesa"><span>Centro de Mesa</span></label>
                     </div>
                 </div>
-                <div class="campo-admin-producto">
+                <div class="campo-admin-producto campo-zona-etiqueta-evento">
                     <label class="panel-nombre-label">Etiqueta de Evento <span style="font-weight:400; color:#9a8878;">(opcional, puedes elegir varias)</span></label>
                     <button type="button" class="btn-seleccionar-todo-eventos" onclick="seleccionarTodosEventosProducto()">✅ Seleccionar todas</button>
                     <div class="grid-checks-evento" id="gridEventosProducto">
@@ -494,24 +509,9 @@
                     </div>
                     <input id="inputEventoOtroProducto" class="panel-nombre-input" type="text" maxlength="60" placeholder="¿Otro evento? Escríbelo aquí (opcional)" style="margin-top:8px;">
                 </div>
-                <div class="campo-admin-producto campo-admin-checkbox">
-                    <label class="check-admin-producto">
-                        <input id="inputEnOfertaProducto" type="checkbox">
-                        <span>En Oferta</span>
-                    </label>
-                    <label class="check-admin-producto">
-                        <input id="inputMasVendidoProducto" type="checkbox">
-                        <span>Más Vendido</span>
-                    </label>
-                </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Cantidad en stock</label>
                     <input id="inputStockProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="0" step="1" placeholder="Ej. 20">
-                </div>
-                <div class="campo-admin-producto">
-                    <label class="panel-nombre-label">Posición en la hoja <span style="font-weight:400; color:#9a8878;">(opcional)</span></label>
-                    <input id="inputFilaProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="2" step="1" placeholder="Ej. 2 para que sea el primer producto">
-                    <span style="font-size:11px; color:#9a8878;">Si lo dejas vacío, el producto se agrega al final de la lista. Si eliges una fila, los productos que ya estén ahí se recorren una posición hacia abajo.</span>
                 </div>
                 </div>
               </div>
