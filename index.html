@@ -388,13 +388,24 @@
             <div class="form-admin-producto">
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Imagen</label>
-                    <button class="btn-opcion-perfil" onclick="seleccionarImagenProducto()" type="button">
-                        <span class="op-icono">🖼️</span>
-                        <div>
-                            Agregar imagen
-                            <span class="op-sub">Se convierte a WebP y se sube a ImgBB</span>
+                    <div class="fila-imagen-principal">
+                        <div class="miniatura-principal-wrap" id="miniaturaPrincipalWrap" style="display:none;">
+                            <div class="miniatura-principal" id="miniaturaPrincipal">
+                                <img id="miniaturaPrincipalImg" src="" alt="Imagen principal del producto" draggable="false">
+                                <div class="recorte-cuadro" id="recorteCuadro"></div>
+                                <button type="button" class="btn-config-miniatura" title="Elegir qué se ve en el catálogo" onclick="_abrirRecorteImagenPrincipal()">⋮</button>
+                                <button type="button" class="btn-quitar-miniatura btn-quitar-principal" title="Quitar esta imagen" onclick="quitarImagenProducto(0)">✕</button>
+                            </div>
+                            <span class="miniatura-principal-hint">Arrastra para elegir lo que se ve en el catálogo</span>
                         </div>
-                    </button>
+                        <button class="btn-opcion-perfil btn-agregar-imagen-producto" onclick="seleccionarImagenProducto()" type="button">
+                            <span class="op-icono">🖼️</span>
+                            <div>
+                                Agregar imagen
+                                <span class="op-sub">Se convierte a WebP y se sube a ImgBB</span>
+                            </div>
+                        </button>
+                    </div>
                     <input type="file" id="inputImagenProducto" accept="image/*" multiple style="display:none" onchange="procesarImagenProducto(event)">
                     <div class="galeria-imagenes-producto" id="galeriaImagenesProducto"></div>
                     <span class="contador-imagenes-producto" id="contadorImagenesProducto" style="display:none;"></span>
@@ -411,6 +422,16 @@
                     <div class="campo-admin-producto">
                         <label class="panel-nombre-label">Precio de mayoreo</label>
                         <input id="inputPrecioMayoreoProducto" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Opcional">
+                    </div>
+                </div>
+                <div class="fila-campos-dobles">
+                    <div class="campo-admin-producto">
+                        <label class="panel-nombre-label">Alto</label>
+                        <input id="inputAltoProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 15 cm">
+                    </div>
+                    <div class="campo-admin-producto">
+                        <label class="panel-nombre-label">Ancho</label>
+                        <input id="inputAnchoProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 8 cm">
                     </div>
                 </div>
                 <div class="campo-admin-producto">
@@ -478,16 +499,6 @@
                         <input id="inputMasVendidoProducto" type="checkbox">
                         <span>Más Vendido</span>
                     </label>
-                </div>
-                <div class="fila-campos-dobles">
-                    <div class="campo-admin-producto">
-                        <label class="panel-nombre-label">Alto</label>
-                        <input id="inputAltoProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 15 cm">
-                    </div>
-                    <div class="campo-admin-producto">
-                        <label class="panel-nombre-label">Ancho</label>
-                        <input id="inputAnchoProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 8 cm">
-                    </div>
                 </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Cantidad en stock</label>
@@ -2159,6 +2170,25 @@
             <button class="modal-etiqueta-cerrar" onclick="cerrarModalInfoEtiqueta()">✕</button>
         </div>
         <div class="modal-etiqueta-cuerpo" id="modalEtiquetaCuerpo"></div>
+    </div>
+</div>
+
+<!-- ══ MODAL: Elegir zona visible de una imagen (recorte para el catálogo) ══ -->
+<div class="overlay-recorte-imagen" id="overlayRecorteImagen" style="display:none;">
+    <div class="modal-recorte-imagen">
+        <div class="modal-recorte-header">
+            <span>Elegir qué se ve en el catálogo</span>
+            <button type="button" class="btn-cerrar-recorte" onclick="cerrarModalRecorteImagen()">✕</button>
+        </div>
+        <div class="recorte-grande" id="recorteGrandeCont">
+            <img id="recorteGrandeImg" src="" alt="Imagen a recortar" draggable="false">
+            <div class="recorte-cuadro" id="recorteGrandeCuadro"></div>
+        </div>
+        <p class="recorte-hint">Arrastra el recuadro para elegir qué parte de esta imagen se mostrará en las miniaturas cuadradas del catálogo</p>
+        <div class="recorte-botones">
+            <button type="button" class="panel-nombre-btn cancelar" onclick="cerrarModalRecorteImagen()">Cancelar</button>
+            <button type="button" class="panel-nombre-btn guardar" onclick="confirmarModalRecorteImagen()">✅ Usar esta zona</button>
+        </div>
     </div>
 </div>
 

@@ -1963,6 +1963,94 @@
 
         /* ── Panel Admin: Agregar producto ── */
         .pantalla-admin-productos { z-index: 3100; }
+        /* ── Botón "⋮" para configurar el recorte de cada miniatura (esquina superior izquierda) ── */
+        .btn-config-miniatura {
+            position: absolute; top: 2px; left: 2px;
+            width: 20px; height: 20px; border-radius: 50%;
+            border: none; background: rgba(0,0,0,0.65); color: #fff;
+            font-size: 13px; line-height: 1; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            letter-spacing: -1px;
+        }
+        .btn-config-miniatura:hover { background: #8c7565; }
+        /* ── Modal: elegir la zona visible de una imagen ── */
+        .overlay-recorte-imagen {
+            position: fixed; inset: 0; z-index: 3500;
+            background: rgba(0,0,0,0.6);
+            display: flex; align-items: center; justify-content: center;
+            padding: 16px; box-sizing: border-box;
+        }
+        .modal-recorte-imagen {
+            width: 100%; max-width: 420px;
+            background: #fdfaf7; border-radius: 16px;
+            padding: 16px; box-sizing: border-box;
+            display: flex; flex-direction: column; gap: 12px;
+            max-height: 92vh; overflow: auto;
+        }
+        .modal-recorte-header {
+            display: flex; align-items: center; justify-content: space-between;
+            font-weight: 700; color: #362a22; font-size: 15px;
+        }
+        .btn-cerrar-recorte {
+            width: 30px; height: 30px; border-radius: 50%;
+            border: none; background: #eee1d6; color: #362a22;
+            font-size: 14px; cursor: pointer;
+        }
+        .recorte-grande {
+            position: relative; width: 100%; height: min(58vh, 420px);
+            background: #1c1c1c; border-radius: 12px; overflow: hidden;
+            cursor: crosshair; touch-action: none; user-select: none;
+        }
+        .recorte-grande img {
+            width: 100%; height: 100%; object-fit: contain;
+            display: block; pointer-events: none;
+        }
+        .recorte-hint {
+            font-size: 12px; color: #8c7565; text-align: center; margin: 0;
+        }
+        .recorte-botones {
+            display: flex; gap: 10px;
+        }
+        .recorte-botones .panel-nombre-btn { flex: 1; }
+        body.modo-oscuro .modal-recorte-imagen { background: #2a2218; }
+        body.modo-oscuro .modal-recorte-header { color: #f5ede4; }
+        body.modo-oscuro .btn-cerrar-recorte { background: #3a2e26; color: #e8ddd5; }
+        /* ── Fila superior: miniatura grande de la 1a imagen + botón "Agregar imagen" ── */
+        .fila-imagen-principal {
+            display: flex; align-items: flex-start; gap: 12px;
+            width: 100%; max-width: 380px;
+        }
+        .fila-imagen-principal .btn-agregar-imagen-producto {
+            width: auto; flex: 1 1 auto; min-width: 0;
+            margin-left: auto; /* la empuja hacia la derecha cuando hay espacio libre */
+        }
+        .miniatura-principal-wrap {
+            flex: 0 0 auto;
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            width: 92px;
+        }
+        .miniatura-principal {
+            position: relative;
+            width: 92px; height: 128px; /* el doble de alto que las miniaturas normales (64px) */
+            border-radius: 12px; overflow: hidden;
+            border: 1.5px solid #8c7565; background: #efe7df;
+            cursor: crosshair; touch-action: none; user-select: none;
+        }
+        .miniatura-principal img {
+            width: 100%; height: 100%; object-fit: contain; object-position: center;
+            display: block; pointer-events: none; background: #efe7df;
+        }
+        /* El recuadro cuadrado que representa la zona visible en el catálogo (1:1) */
+        .recorte-cuadro {
+            position: absolute; left: 0; width: 100%; /* alto = mismo que el ancho → cuadrado */
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1.5px rgba(140,117,101,0.9), 0 0 0 999px rgba(0,0,0,0.35);
+            border-radius: 4px;
+            pointer-events: none;
+        }
+        .miniatura-principal-hint {
+            font-size: 10.5px; color: #a89080; text-align: center; line-height: 1.3;
+        }
         /* ── Miniaturas de todas las imágenes agregadas (misma fila, debajo del botón) ── */
         .galeria-imagenes-producto {
             display: flex; flex-wrap: wrap; gap: 10px;

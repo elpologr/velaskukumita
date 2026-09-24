@@ -248,6 +248,8 @@ function csvAProductos(filas) {
         // L=11 Ancho
         // M=12 SubImagen (URLs o nombres separados por coma)
         // N=13 existencia (número de piezas en stock)
+        // O=14 Configuración del bazar (fecha/hora) — NO tocar aquí, se lee aparte en aplicarConfigBazar()
+        // P=15 Enfoque de CADA imagen ("X,Y" en % por imagen, separados por "|"), alineado con la columna F
 
         // Video principal (E=4)
         var videoPrincipal = get(4).replace(/^"+|"+$/g, '').trim();
@@ -298,6 +300,11 @@ function csvAProductos(filas) {
             alto:         get(10),
             ancho:        get(11),
             existencia:   existencia,
+            enfoqueImagen: get(15),
+            // Enfoques por imagen, en el mismo orden que "imagenes" ("X,Y" o '' cada uno).
+            // Compatible con datos viejos: si solo hay un valor guardado (sin "|"),
+            // se toma como el enfoque de la 1a imagen nada más.
+            enfoquesImagenes: get(15) ? get(15).split('|') : [],
             redYoutube:   [],
             redFacebook:  [],
             redInstagram: [],
@@ -312,6 +319,21 @@ function csvAProductos(filas) {
         });
     }
     return productos;
+}
+
+// Convierte el valor guardado de enfoqueImagen ("X,Y" en %, ej. "50,20") en
+// un valor de CSS object-position listo para usar. Devuelve '' si no hay
+// nada guardado (en ese caso cada zona conserva su comportamiento de
+// siempre — no se toca nada por compatibilidad con productos existentes).
+function _objectPositionDesdeEnfoque(valor) {
+    if (!valor) return '';
+    var partes = String(valor).split(',');
+    var x = parseFloat(partes[0]);
+    var y = parseFloat(partes[1]);
+    if (isNaN(x) || isNaN(y)) return '';
+    x = Math.max(0, Math.min(100, x));
+    y = Math.max(0, Math.min(100, y));
+    return x + '% ' + y + '%';
 }
 
 // ── Mostrar estado de carga en el grid ──
@@ -352,6 +374,7 @@ function renderizarCatalogoCompleto() {
         card.setAttribute('data-tipos',           (p.tipos || [p.tipo || 'arreglo']).join('|'));
         card.setAttribute('data-nombre',          p.nombre);
         card.setAttribute('data-imagenes',        JSON.stringify(p.imagenes || []));
+        card.setAttribute('data-enfoques-imagenes', JSON.stringify(p.enfoquesImagenes || []));
         card.setAttribute('data-descripcion',     p.descripcion || '');
         card.setAttribute('data-alto',             p.alto || '');
         card.setAttribute('data-ancho',            p.ancho || '');
@@ -363,6 +386,7 @@ function renderizarCatalogoCompleto() {
         card.setAttribute('data-mas-vendido-imagenes', JSON.stringify(p.masVendidoImagenes || []));
         card.setAttribute('data-sub-imagenes', JSON.stringify(p.subImagenes || []));
         card.setAttribute('data-existencia',   String(p.existencia || 0));
+        card.setAttribute('data-enfoque-imagen', p.enfoqueImagen || '');
         card.setAttribute('data-red-youtube',     JSON.stringify(p.redYoutube   || []));
         card.setAttribute('data-red-facebook',    JSON.stringify(p.redFacebook  || []));
         card.setAttribute('data-red-instagram',   JSON.stringify(p.redInstagram || []));
@@ -375,7 +399,8 @@ function renderizarCatalogoCompleto() {
         var img = document.createElement('img');
         img.src = p.imagen;
         img.alt = p.nombre;
-        img.style.cssText = 'width:100%; height:100%; object-fit:cover; object-position:center;';
+        var _enfoqueCard = _objectPositionDesdeEnfoque(p.enfoqueImagen);
+        img.style.cssText = 'width:100%; height:100%; object-fit:cover; object-position:' + (_enfoqueCard || 'center') + ';';
         img.onerror = function() {
             if (typeof mostrarPlaceholder === 'function') mostrarPlaceholder(this);
         };
@@ -2379,6 +2404,15 @@ function _cerrarModalConHistorial(cerrarFn) {
 
 // Escucha el botón "atrás" del dispositivo
 window.addEventListener('popstate', function(e) {
+    // Modal de recorte de imagen — se abre encima de todo lo demás (admin,
+    // editar producto, etc.), así que debe revisarse antes que cualquier otro.
+    var overlayRecorte = document.getElementById('overlayRecorteImagen');
+    if (overlayRecorte && overlayRecorte.style.display && overlayRecorte.style.display !== 'none') {
+        overlayRecorte.style.display = 'none';
+        _desbloquearScrollBody();
+        _recorteModalOnGuardar = null;
+        return;
+    }
     // Modal de cantidad — debe revisarse primero
     var modalCantidad = document.getElementById('modalCantidad');
     if (modalCantidad && modalCantidad.classList.contains('abierto')) {
@@ -2386,6 +2420,24 @@ window.addEventListener('popstate', function(e) {
         _desbloquearScrollBody();
         _modalActivo = null;
         _mcCardActual = null;
+        return;
+    }
+    // Pantalla Editar Producto (se abre encima de Admin Productos: debe revisarse antes)
+    var pantallaEditarProd = document.getElementById('pantallaEditarProducto');
+    if (pantallaEditarProd && pantallaEditarProd.classList.contains('activo')) {
+        pantallaEditarProd.classList.remove('activo');
+        _desbloquearScrollBody();
+        var pAdminDebajoEditar = document.getElementById('pantallaAdminProductos');
+        _modalActivo = (pAdminDebajoEditar && pAdminDebajoEditar.classList.contains('activo')) ? 'adminProductos' : null;
+        return;
+    }
+    // Pantalla Admin Productos / Agregar producto (se abre encima de Mi Perfil: debe revisarse antes)
+    var pantallaAdminProd = document.getElementById('pantallaAdminProductos');
+    if (pantallaAdminProd && pantallaAdminProd.classList.contains('activo')) {
+        pantallaAdminProd.classList.remove('activo');
+        _desbloquearScrollBody();
+        var pPerfilDebajoAdmin = document.getElementById('pantallaPerfil');
+        _modalActivo = (pPerfilDebajoAdmin && pPerfilDebajoAdmin.classList.contains('activo')) ? 'perfil' : null;
         return;
     }
     // Drawer lateral
@@ -3035,12 +3087,48 @@ function _bloquearScrollBody() {
 
 function _desbloquearScrollBody() {
     _bloqueosScrollActivos = Math.max(0, _bloqueosScrollActivos - 1);
-    if (_bloqueosScrollActivos === 0) {
+    // Red de seguridad: además de fiarnos del contador, comprobamos en el DOM
+    // si realmente sigue habiendo alguna pantalla o modal abierto. Si el
+    // contador quedara desincronizado (por ejemplo, por un cierre que no pasó
+    // por _desbloquearScrollBody el número correcto de veces), esto evita que
+    // el scroll quede bloqueado "fantasma" hasta recargar la página.
+    if (_bloqueosScrollActivos === 0 || !_hayPantallaOModalAbierto()) {
+        _bloqueosScrollActivos = 0;
         document.body.classList.remove('scroll-bloqueado');
         document.documentElement.classList.remove('scroll-bloqueado');
         document.body.style.top = '';
         window.scrollTo(0, _scrollYGuardado);
     }
+}
+
+// Comprueba en el DOM (no en contadores) si alguna pantalla completa o modal
+// sigue realmente abierto. Se usa como red de seguridad para nunca dejar el
+// scroll bloqueado quando ya no hay nada abierto que lo justifique.
+function _hayPantallaOModalAbierto() {
+    var pantallasConClaseActivo = ['pantallaPerfil', 'pantallaAdminProductos', 'pantallaEditarProducto', 'pantallaVideoProducto'];
+    for (var i = 0; i < pantallasConClaseActivo.length; i++) {
+        var el = document.getElementById(pantallasConClaseActivo[i]);
+        if (el && el.classList.contains('activo')) return true;
+    }
+    var pantallasConClaseActiva = ['pantallaCarrito', 'pantallaFavoritos'];
+    for (var j = 0; j < pantallasConClaseActiva.length; j++) {
+        var el2 = document.getElementById(pantallasConClaseActiva[j]);
+        if (el2 && el2.classList.contains('activa')) return true;
+    }
+    var modalesConClaseAbierto = ['modalCantidad', 'modalProducto', 'modalTienda', 'modalUber', 'modalQR', 'modalInfoEtiqueta'];
+    for (var k = 0; k < modalesConClaseAbierto.length; k++) {
+        var el3 = document.getElementById(modalesConClaseAbierto[k]);
+        if (el3 && el3.classList.contains('abierto')) return true;
+    }
+    var drawerEl = document.getElementById('drawer');
+    if (drawerEl && drawerEl.classList.contains('activo')) return true;
+    var overlayRecorte = document.getElementById('overlayRecorteImagen');
+    if (overlayRecorte && overlayRecorte.style.display && overlayRecorte.style.display !== 'none') return true;
+    var modalBazarEl = document.getElementById('modalBazar');
+    if (modalBazarEl && (modalBazarEl.style.display === 'flex' || modalBazarEl.classList.contains('abierto'))) return true;
+    var lightboxEl = document.getElementById('lightboxFB');
+    if (lightboxEl && lightboxEl.style.display && lightboxEl.style.display !== 'none') return true;
+    return false;
 }
 
 // ─── SCROLL INDEPENDIENTE PARA CADA PANTALLA COMPLETA ───
@@ -3069,7 +3157,20 @@ function _contenedorScrollActivo() {
 // en vez de dejar que se filtre y mueva la página del catálogo de fondo.
 function _redirigirScrollGlobal(e) {
     var cont = _contenedorScrollActivo();
-    if (!cont || cont.contains(e.target)) return; // nada que hacer, o el evento ya va a la zona correcta
+    if (!cont) {
+        // Red de seguridad: si ninguna pantalla/modal está realmente abierta
+        // pero el body quedó marcado como "scroll-bloqueado" (contador
+        // desincronizado), lo liberamos aquí mismo, en el primer intento de
+        // scroll, en vez de obligar a recargar la página.
+        if (document.body.classList.contains('scroll-bloqueado') && !_hayPantallaOModalAbierto()) {
+            _bloqueosScrollActivos = 0;
+            document.body.classList.remove('scroll-bloqueado');
+            document.documentElement.classList.remove('scroll-bloqueado');
+            document.body.style.top = '';
+        }
+        return;
+    }
+    if (cont.contains(e.target)) return; // el evento ya va a la zona correcta
     e.preventDefault();
     cont.scrollTop += e.deltaY;
 }
@@ -3328,12 +3429,15 @@ function renderizarFavoritos() {
         var precio = prod ? ('$' + (prod.precioBazar || prod.precioNormal || '') + ' MXN') : '';
         var imgSrc = prod ? (prod.imagen || (prod.imagenes && prod.imagenes[0]) || '') :
                     (card ? ((card.querySelector('img') || {}).src || '') : '');
+        var _enfoqueFav = _objectPositionDesdeEnfoque(prod ? prod.enfoqueImagen :
+                    (card ? card.getAttribute('data-enfoque-imagen') : ''));
+        var _estiloFav = _enfoqueFav ? ' style="object-position:' + _enfoqueFav + ';"' : '';
 
         var div = document.createElement('div');
         div.className = 'fav-card';
         div.innerHTML =
             '<button class="btn-quitar-fav" onclick="quitarFavorito(' + idxProd + ')">✕</button>' +
-            (imgSrc ? '<img class="fav-card-img" src="' + imgSrc + '" alt="' + (nombre||'') + '">' :
+            (imgSrc ? '<img class="fav-card-img" src="' + imgSrc + '" alt="' + (nombre||'') + '"' + _estiloFav + '>' :
                       '<div class="fav-card-img" style="background:#f0eae4;display:flex;align-items:center;justify-content:center;font-size:2rem;">🕯️</div>') +
             '<div class="fav-card-info">' +
             '<div class="fav-card-nombre">' + (nombre || 'Producto') + '</div>' +
@@ -3785,6 +3889,8 @@ function construirCarrusel(tipo) {
         var precioBazar = card.getAttribute('data-precio-bazar') || '';
         var imgEl = card.querySelector('.img-contenedor-dinamico img');
         var imgSrc = imgEl ? imgEl.getAttribute('src') : '';
+        var _enfoqueCarrusel = _objectPositionDesdeEnfoque(card.getAttribute('data-enfoque-imagen'));
+        var _estiloCarrusel = _enfoqueCarrusel ? ' style="object-position:' + _enfoqueCarrusel + ';"' : '';
 
         var precioMostrar = precioBazar || precio;
         var esOferta = tipo === 'ofertas';
@@ -3792,7 +3898,7 @@ function construirCarrusel(tipo) {
         var cardEl = document.createElement('div');
         cardEl.className = 'carrusel-card';
         cardEl.innerHTML =
-            '<img class="carrusel-card-img" src="' + imgSrc + '" alt="' + nombre + '" loading="lazy" onerror="this.style.background=\'#f5f0eb\'; this.style.height=\'120px\';">' +
+            '<img class="carrusel-card-img" src="' + imgSrc + '" alt="' + nombre + '"' + _estiloCarrusel + ' loading="lazy" onerror="this.style.background=\'#f5f0eb\'; this.style.height=\'120px\';">' +
             '<div class="carrusel-card-info">' +
                 '<div class="carrusel-card-badge' + (esOferta ? '' : ' mv') + '">' + (esOferta ? '🏷️ Oferta' : '🏆 Top') + '</div>' +
                 '<div class="carrusel-card-nombre" title="' + nombre + '">' + nombre + '</div>' +
@@ -3938,6 +4044,7 @@ function confirmarAgregarCarrito() {
     var imagenes = [];
     try { imagenes = JSON.parse(card.getAttribute('data-imagenes') || '[]'); } catch(e) {}
     var imgSrc = imagenes[0] || (card.querySelector('.img-contenedor-dinamico img')?.getAttribute('src')) || '';
+    var enfoqueImg = card.getAttribute('data-enfoque-imagen') || '';
     var precioFinal = parseFloat(precioBazar || precioNum) || 0;
 
     // Verificar si ya está en el carrito
@@ -3952,7 +4059,7 @@ function confirmarAgregarCarrito() {
             cerrarModalCantidad();
             return;
         }
-        carrito.push({ nombre: nombre, precio: precioFinal, img: imgSrc, cantidad: _mcCantidadActual });
+        carrito.push({ nombre: nombre, precio: precioFinal, img: imgSrc, enfoque: enfoqueImg, cantidad: _mcCantidadActual });
         mostrarToast('✅ ' + nombre + ' añadido al carrito');
     }
 
@@ -4074,8 +4181,10 @@ function renderizarCarrito() {
         var div = document.createElement('div');
         div.className = 'cart-card';
 
+        var _enfoqueCart = _objectPositionDesdeEnfoque(item.enfoque);
+        var _estiloCart = _enfoqueCart ? ' style="object-position:' + _enfoqueCart + ';"' : '';
         var imgHtml = item.img
-            ? '<img class="cart-card-img" src="' + item.img + '" alt="' + item.nombre + '" onerror="this.style.background=\'#f0eae4\'; this.src=\'\';">'
+            ? '<img class="cart-card-img" src="' + item.img + '" alt="' + item.nombre + '"' + _estiloCart + ' onerror="this.style.background=\'#f0eae4\'; this.src=\'\';">'
             : '<div class="cart-card-img" style="background:#f0eae4; display:flex; align-items:center; justify-content:center; font-size:2rem;">🕯️</div>';
 
         var subtotal = item.precio ? '$' + (item.precio * item.cantidad).toFixed(0) + ' MXN' : '';
@@ -5428,14 +5537,14 @@ function _actualizarContadorImagenesProducto() {
     }
 }
 
-// Dibuja UNA miniatura por cada imagen agregada (todas iguales, incluida la
-// primera), justo debajo del botón "Agregar imagen", cada una con su ✕ para
-// quitarla por separado.
+// Dibuja UNA miniatura por cada imagen agregada A PARTIR DE LA SEGUNDA
+// (la primera se muestra aparte, más grande, junto al botón "Agregar imagen"
+// — ver _renderizarMiniaturaPrincipal), cada una con su ✕ para quitarla.
 function _renderizarGaleriaImagenesProducto() {
     var cont = document.getElementById('galeriaImagenesProducto');
     if (!cont) return;
     cont.innerHTML = '';
-    for (var i = 0; i < _adminImagenesProducto.length; i++) {
+    for (var i = 1; i < _adminImagenesProducto.length; i++) {
         (function (idx) {
             var mini = document.createElement('div');
             mini.className = 'miniatura-imagen-producto';
@@ -5443,6 +5552,19 @@ function _renderizarGaleriaImagenesProducto() {
             img.src = _adminImagenesProducto[idx].dataUrl;
             img.alt = 'Imagen ' + (idx + 1);
             mini.appendChild(img);
+            var btnConfig = document.createElement('button');
+            btnConfig.type = 'button';
+            btnConfig.className = 'btn-config-miniatura';
+            btnConfig.textContent = '⋮';
+            btnConfig.title = 'Elegir qué se ve en el catálogo';
+            btnConfig.onclick = function () {
+                var item = _adminImagenesProducto[idx];
+                abrirModalRecorteImagen(item.dataUrl, item.enfoqueX, item.enfoqueY, function (x, y) {
+                    item.enfoqueX = x; item.enfoqueY = y;
+                    if (idx === 0) _actualizarPosicionRecorteCuadro();
+                });
+            };
+            mini.appendChild(btnConfig);
             var btnX = document.createElement('button');
             btnX.type = 'button';
             btnX.className = 'btn-quitar-miniatura';
@@ -5453,9 +5575,240 @@ function _renderizarGaleriaImagenesProducto() {
             cont.appendChild(mini);
         })(i);
     }
+    _renderizarMiniaturaPrincipal();
 }
 
-// Quita una sola imagen por su posición en el arreglo (la ✕ de su miniatura).
+// ─────────────────────────────────────────────────────────────
+//  RECORTE DE LA IMAGEN PRINCIPAL (índice 0)
+// Muestra la 1a imagen completa (sin recortar) en un recuadro más alto,
+// y encima un recuadro CUADRADO que el usuario arrastra con el mouse o el
+// dedo para elegir qué zona se verá en las miniaturas cuadradas del
+// catálogo (tarjetas, favoritos, carrito, carruseles). Esa elección se
+// guarda como un punto de enfoque (enfoqueX/enfoqueY, 0–100%) y se manda
+// al servidor como "enfoqueImagen" al publicar el producto.
+// Abre el modal genérico de recorte para la imagen 0 (la miniatura grande).
+// Útil sobre todo si esa imagen es horizontal, ya que el arrastre directo
+// sobre la miniatura solo mueve el recuadro verticalmente.
+function _abrirRecorteImagenPrincipal() {
+    var item = _adminImagenesProducto[0];
+    if (!item) return;
+    abrirModalRecorteImagen(item.dataUrl, item.enfoqueX, item.enfoqueY, function (x, y) {
+        item.enfoqueX = x; item.enfoqueY = y;
+        _actualizarPosicionRecorteCuadro();
+    });
+}
+
+function _renderizarMiniaturaPrincipal() {
+    var wrap = document.getElementById('miniaturaPrincipalWrap');
+    var img  = document.getElementById('miniaturaPrincipalImg');
+    if (!wrap || !img) return;
+    var principal = _adminImagenesProducto[0];
+    if (!principal) {
+        wrap.style.display = 'none';
+        return;
+    }
+    wrap.style.display = 'flex';
+    img.src = principal.dataUrl;
+    // Cuando la imagen ya cargó, recién ahí conocemos su tamaño renderizado
+    // real dentro del recuadro (por el object-fit:contain), así que
+    // posicionamos el recuadro de recorte hasta ese momento.
+    img.onload = function () { _actualizarPosicionRecorteCuadro(); };
+    // Si ya estaba cargada (misma imagen), posicionar de inmediato también
+    _actualizarPosicionRecorteCuadro();
+}
+
+// Calcula, dado el punto de enfoque (0–100%) guardado en la imagen 0,
+// dónde debe quedar el recuadro cuadrado dentro del contenedor.
+function _actualizarPosicionRecorteCuadro() {
+    var cont = document.getElementById('miniaturaPrincipal');
+    var cuadro = document.getElementById('recorteCuadro');
+    var principal = _adminImagenesProducto[0];
+    if (!cont || !cuadro || !principal) return;
+
+    var altoCont = cont.clientHeight || 128;
+    var ladoCuadro = cont.clientWidth || 92; // el cuadro mide lo mismo que el ancho del recuadro grande
+    cuadro.style.height = ladoCuadro + 'px';
+
+    var enfoqueY = (typeof principal.enfoqueY === 'number') ? principal.enfoqueY : 0;
+    var maxTop = Math.max(0, altoCont - ladoCuadro);
+    var top = (enfoqueY / 100) * maxTop;
+    cuadro.style.top = top + 'px';
+}
+
+// Convierte la posición Y del mouse/touch (relativa al contenedor) en un
+// valor de enfoqueY (0–100) y actualiza el recuadro en tiempo real.
+function _arrastrarRecorteCuadro(clientY) {
+    var cont = document.getElementById('miniaturaPrincipal');
+    var cuadro = document.getElementById('recorteCuadro');
+    var principal = _adminImagenesProducto[0];
+    if (!cont || !cuadro || !principal) return;
+
+    var rect = cont.getBoundingClientRect();
+    var ladoCuadro = cont.clientWidth || 92;
+    var maxTop = Math.max(0, rect.height - ladoCuadro);
+    var topDeseado = (clientY - rect.top) - (ladoCuadro / 2);
+    topDeseado = Math.max(0, Math.min(maxTop, topDeseado));
+
+    var enfoqueY = maxTop > 0 ? (topDeseado / maxTop) * 100 : 0;
+    principal.enfoqueY = Math.round(enfoqueY);
+    if (typeof principal.enfoqueX !== 'number') principal.enfoqueX = 50;
+    cuadro.style.top = topDeseado + 'px';
+}
+
+(function _inicializarArrastreRecorteCuadro() {
+    var arrastrando = false;
+
+    function iniciar(e) {
+        if (!_adminImagenesProducto[0]) return;
+        arrastrando = true;
+        var y = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+        _arrastrarRecorteCuadro(y);
+        e.preventDefault();
+    }
+    function mover(e) {
+        if (!arrastrando) return;
+        var y = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+        _arrastrarRecorteCuadro(y);
+        e.preventDefault();
+    }
+    function soltar() { arrastrando = false; }
+
+    // Delegado sobre document (no hace falta esperar a que exista el
+    // elemento: funciona aunque la miniatura se cree/oculte dinámicamente).
+    document.addEventListener('mousedown', function (e) {
+        if (e.target.closest && e.target.closest('#miniaturaPrincipal')) iniciar(e);
+    });
+    document.addEventListener('touchstart', function (e) {
+        if (e.target.closest && e.target.closest('#miniaturaPrincipal')) iniciar(e);
+    }, { passive: false });
+    document.addEventListener('mousemove', mover);
+    document.addEventListener('touchmove', mover, { passive: false });
+    document.addEventListener('mouseup', soltar);
+    document.addEventListener('touchend', soltar);
+})();
+
+// ─────────────────────────────────────────────────────────────
+//  MODAL GENÉRICO: elegir la zona visible de CUALQUIER imagen
+// Reutilizable desde "Agregar producto" y "Editar producto": recibe la
+// imagen a mostrar (dataUrl o URL), el enfoque actual (o nada, y usa el
+// valor por defecto) y una función que se llama con el nuevo enfoque
+// cuando el usuario confirma. No sabe nada de dónde viene la imagen ni
+// dónde se va a guardar el resultado — eso lo decide quien lo abre.
+// ─────────────────────────────────────────────────────────────
+var _recorteModalOnGuardar = null;
+var _recorteModalEnfoqueX = 50;
+var _recorteModalEnfoqueY = 0;
+
+function abrirModalRecorteImagen(srcImagen, enfoqueXActual, enfoqueYActual, onGuardar) {
+    _recorteModalOnGuardar = onGuardar;
+    _recorteModalEnfoqueX = (typeof enfoqueXActual === 'number') ? enfoqueXActual : 50;
+    _recorteModalEnfoqueY = (typeof enfoqueYActual === 'number') ? enfoqueYActual : 0;
+    var overlay = document.getElementById('overlayRecorteImagen');
+    var img = document.getElementById('recorteGrandeImg');
+    if (!overlay || !img) return;
+    img.src = srcImagen;
+    overlay.style.display = 'flex';
+    _bloquearScrollBody();
+    history.pushState({ kukumitaModal: 'recorteImagen' }, '');
+    var posicionar = function () { _actualizarPosicionRecorteGrande(); };
+    if (img.complete) posicionar();
+    img.onload = posicionar;
+    // Recalcular también tras el primer frame por si el layout aún no estaba listo
+    setTimeout(posicionar, 0);
+}
+
+function cerrarModalRecorteImagen() {
+    var overlay = document.getElementById('overlayRecorteImagen');
+    if (overlay) overlay.style.display = 'none';
+    _desbloquearScrollBody();
+    _recorteModalOnGuardar = null;
+    if (history.state && history.state.kukumitaModal === 'recorteImagen') {
+        history.replaceState(null, '');
+    }
+}
+
+function confirmarModalRecorteImagen() {
+    if (_recorteModalOnGuardar) _recorteModalOnGuardar(_recorteModalEnfoqueX, _recorteModalEnfoqueY);
+    cerrarModalRecorteImagen();
+}
+
+// Calcula el rectángulo real que ocupa la imagen dentro del recuadro
+// (con object-fit:contain puede haber franjas vacías a los lados o
+// arriba/abajo), y el tamaño del cuadrado de recorte dentro de ese rectángulo.
+function _limitesImagenRecorteGrande() {
+    var cont = document.getElementById('recorteGrandeCont');
+    var img = document.getElementById('recorteGrandeImg');
+    if (!cont || !img || !img.naturalWidth || !img.naturalHeight) return null;
+    var boxW = cont.clientWidth, boxH = cont.clientHeight;
+    if (!boxW || !boxH) return null;
+    var escala = Math.min(boxW / img.naturalWidth, boxH / img.naturalHeight);
+    var dispW = img.naturalWidth * escala, dispH = img.naturalHeight * escala;
+    var offsetX = (boxW - dispW) / 2, offsetY = (boxH - dispH) / 2;
+    var lado = Math.min(dispW, dispH);
+    return { dispW: dispW, dispH: dispH, offsetX: offsetX, offsetY: offsetY, lado: lado };
+}
+
+function _actualizarPosicionRecorteGrande() {
+    var lim = _limitesImagenRecorteGrande();
+    var cuadro = document.getElementById('recorteGrandeCuadro');
+    if (!lim || !cuadro) return;
+    cuadro.style.width = lim.lado + 'px';
+    cuadro.style.height = lim.lado + 'px';
+    var maxLeftRel = Math.max(0, lim.dispW - lim.lado);
+    var maxTopRel  = Math.max(0, lim.dispH - lim.lado);
+    cuadro.style.left = (lim.offsetX + (_recorteModalEnfoqueX / 100) * maxLeftRel) + 'px';
+    cuadro.style.top  = (lim.offsetY + (_recorteModalEnfoqueY / 100) * maxTopRel) + 'px';
+}
+
+// Convierte una posición de mouse/touch (coordenadas de pantalla) en el
+// nuevo enfoqueX/enfoqueY, y mueve el cuadro en tiempo real.
+function _arrastrarRecorteGrande(clientX, clientY) {
+    var lim = _limitesImagenRecorteGrande();
+    var cont = document.getElementById('recorteGrandeCont');
+    var cuadro = document.getElementById('recorteGrandeCuadro');
+    if (!lim || !cont || !cuadro) return;
+    var rect = cont.getBoundingClientRect();
+    var x = clientX - rect.left, y = clientY - rect.top;
+    var maxLeftRel = Math.max(0, lim.dispW - lim.lado);
+    var maxTopRel  = Math.max(0, lim.dispH - lim.lado);
+    var leftDeseado = Math.max(0, Math.min(maxLeftRel, x - lim.lado / 2 - lim.offsetX));
+    var topDeseado  = Math.max(0, Math.min(maxTopRel,  y - lim.lado / 2 - lim.offsetY));
+    _recorteModalEnfoqueX = maxLeftRel > 0 ? Math.round((leftDeseado / maxLeftRel) * 100) : 50;
+    _recorteModalEnfoqueY = maxTopRel  > 0 ? Math.round((topDeseado  / maxTopRel ) * 100) : 50;
+    cuadro.style.left = (lim.offsetX + leftDeseado) + 'px';
+    cuadro.style.top  = (lim.offsetY + topDeseado) + 'px';
+}
+
+(function _inicializarArrastreRecorteGrande() {
+    var arrastrando = false;
+    function iniciar(e) {
+        if (!document.getElementById('recorteGrandeCont')) return;
+        arrastrando = true;
+        var p = (e.touches && e.touches[0]) ? e.touches[0] : e;
+        _arrastrarRecorteGrande(p.clientX, p.clientY);
+        e.preventDefault();
+    }
+    function mover(e) {
+        if (!arrastrando) return;
+        var p = (e.touches && e.touches[0]) ? e.touches[0] : e;
+        _arrastrarRecorteGrande(p.clientX, p.clientY);
+        e.preventDefault();
+    }
+    function soltar() { arrastrando = false; }
+
+    document.addEventListener('mousedown', function (e) {
+        if (e.target.closest && e.target.closest('#recorteGrandeCont')) iniciar(e);
+    });
+    document.addEventListener('touchstart', function (e) {
+        if (e.target.closest && e.target.closest('#recorteGrandeCont')) iniciar(e);
+    }, { passive: false });
+    document.addEventListener('mousemove', mover);
+    document.addEventListener('touchmove', mover, { passive: false });
+    document.addEventListener('mouseup', soltar);
+    document.addEventListener('touchend', soltar);
+})();
+
+
 function quitarImagenProducto(idx) {
     _adminImagenesProducto.splice(idx, 1);
     _renderizarGaleriaImagenesProducto();
@@ -5501,6 +5854,11 @@ function procesarImagenProducto(event) {
         var agregadas = 0, errores = [];
         resultados.forEach(function (r) {
             if (r && r.error) { errores.push(r.nombreArchivo + ': ' + r.error); return; }
+            // Punto de enfoque por defecto (centrado, pegado arriba) — el usuario
+            // puede ajustarlo arrastrando sobre la miniatura grande si esta imagen
+            // termina siendo la primera (índice 0).
+            r.enfoqueX = 50;
+            r.enfoqueY = 0;
             _adminImagenesProducto.push(r);
             agregadas++;
         });
@@ -5607,7 +5965,11 @@ async function guardarProductoAdmin() {
             video:             videoYoutube,
             filaDestino:       filaDestino,
             imagenes:          _adminImagenesProducto.map(function (x) { return x.base64; }),
-            imagenesNombres:   _adminImagenesProducto.map(function (x) { return x.nombre; })
+            imagenesNombres:   _adminImagenesProducto.map(function (x) { return x.nombre; }),
+            // Punto de enfoque de CADA imagen ("X,Y" en %), mismo orden que "imagenes".
+            enfoques:          _adminImagenesProducto.map(function (x) {
+                                    return (typeof x.enfoqueX === 'number') ? (x.enfoqueX + ',' + x.enfoqueY) : '';
+                                })
         };
 
         // text/plain evita el preflight CORS, que Apps Script no responde
@@ -5666,12 +6028,13 @@ async function guardarProductoAdmin() {
 // ─────────────────────────────────────────────────────────────
 //  5. BOTÓN ATRÁS DEL CELULAR
 // ─────────────────────────────────────────────────────────────
-window.addEventListener('popstate', function () {
-    var p = document.getElementById('pantallaAdminProductos');
-    if (p && p.classList.contains('activo')) cerrarPantallaAdminProductos();
-    var pe = document.getElementById('pantallaEditarProducto');
-    if (pe && pe.classList.contains('activo')) cerrarPantallaEditarProducto();
-});
+// NOTA: el manejo del botón "atrás" para Admin Productos y Editar Producto
+// ahora vive en el ÚNICO listener de 'popstate' centralizado (más arriba,
+// junto al resto de pantallas/modales). Tener dos listeners de 'popstate'
+// separados e independientes causaba que ambos reaccionaran al mismo evento
+// sin saber uno del otro, lo que en ciertas combinaciones dejaba el contador
+// interno de bloqueo de scroll (_bloqueosScrollActivos) desincronizado y el
+// scroll de fondo bloqueado permanentemente hasta recargar la página.
 
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -5688,8 +6051,9 @@ window.addEventListener('popstate', function () {
 // ═══════════════════════════════════════════════════════════════════════════
 
 var _editFilaActual        = null;  // número de fila en Sheets del producto que se está editando
-var _editImagenesExistentes = [];   // URLs que YA estaban en el producto (solo lectura aquí)
-var _editImagenesNuevas     = [];   // { base64, nombre, dataUrl } — se suben y se agregan al guardar
+var _editImagenesExistentes = [];   // URLs que YA estaban en el producto (se pueden quitar con ✕, pero no se re-suben)
+var _editEnfoquesExistentes = [];   // { x, y } por cada URL en _editImagenesExistentes, mismo índice
+var _editImagenesNuevas     = [];   // { base64, nombre, dataUrl, enfoqueX, enfoqueY } — se suben y se agregan al guardar
 var _editGuardando          = false;
 
 function abrirEdicionProducto(card) {
@@ -5710,10 +6074,20 @@ function abrirEdicionProducto(card) {
     // Cerrar el modal de producto para dejar ver la pantalla de edición
     if (typeof cerrarModalProducto === 'function') cerrarModalProducto();
 
-    // ── Prellenar imágenes existentes (solo lectura) ──
+    // ── Prellenar imágenes existentes (se pueden quitar con ✕ y configurar con ⋮) ──
     try {
         _editImagenesExistentes = JSON.parse(card.getAttribute('data-imagenes') || '[]');
     } catch (e) { _editImagenesExistentes = []; }
+    var _enfoquesGuardados = [];
+    try {
+        _enfoquesGuardados = JSON.parse(card.getAttribute('data-enfoques-imagenes') || '[]');
+    } catch (e) { _enfoquesGuardados = []; }
+    _editEnfoquesExistentes = _editImagenesExistentes.map(function (_, idx) {
+        var val = _enfoquesGuardados[idx] || '';
+        var partes = val ? val.split(',') : [];
+        var x = parseFloat(partes[0]), y = parseFloat(partes[1]);
+        return { x: isNaN(x) ? 50 : x, y: isNaN(y) ? 0 : y };
+    });
     _editImagenesNuevas = [];
     _renderizarGaleriaExistentesEdit();
     _renderizarGaleriaNuevasEdit();
@@ -5793,7 +6167,9 @@ function _statusEdit(msg, esError) {
     el.style.color = esError ? '#c0392b' : '';
 }
 
-// Dibuja las miniaturas de las imágenes que YA tenía el producto (sin ✕: no se borran desde aquí)
+// Dibuja las miniaturas de las imágenes que YA tenía el producto, cada una
+// con su ✕ en la esquina superior derecha para quitarla (se aplica al
+// guardar los cambios; no borra nada en la hoja hasta ese momento).
 function _renderizarGaleriaExistentesEdit() {
     var cont = document.getElementById('galeriaImagenesExistentesEdit');
     var titulo = document.getElementById('tituloGaleriaExistenteEdit');
@@ -5806,9 +6182,38 @@ function _renderizarGaleriaExistentesEdit() {
         img.src = url;
         img.alt = 'Imagen actual ' + (idx + 1);
         mini.appendChild(img);
+        var btnConfig = document.createElement('button');
+        btnConfig.type = 'button';
+        btnConfig.className = 'btn-config-miniatura';
+        btnConfig.textContent = '⋮';
+        btnConfig.title = 'Elegir qué se ve en el catálogo';
+        btnConfig.onclick = function () {
+            var enfoque = _editEnfoquesExistentes[idx] || { x: 50, y: 0 };
+            abrirModalRecorteImagen(url, enfoque.x, enfoque.y, function (x, y) {
+                _editEnfoquesExistentes[idx] = { x: x, y: y };
+            });
+        };
+        mini.appendChild(btnConfig);
+        var btnX = document.createElement('button');
+        btnX.type = 'button';
+        btnX.className = 'btn-quitar-miniatura';
+        btnX.textContent = '✕';
+        btnX.title = 'Quitar esta imagen';
+        btnX.onclick = function () { quitarImagenExistenteEdit(idx); };
+        mini.appendChild(btnX);
         cont.appendChild(mini);
     });
     if (titulo) titulo.style.display = _editImagenesExistentes.length ? 'block' : 'none';
+}
+
+// Quita una imagen YA GUARDADA (por su posición en el arreglo). El cambio
+// solo se aplica de verdad al presionar "Guardar cambios".
+function quitarImagenExistenteEdit(idx) {
+    _editImagenesExistentes.splice(idx, 1);
+    _editEnfoquesExistentes.splice(idx, 1);
+    _renderizarGaleriaExistentesEdit();
+    _actualizarContadorImagenesEdit();
+    _statusEdit('', false);
 }
 
 // Dibuja las miniaturas de las imágenes NUEVAS (con ✕, aún no se han subido)
@@ -5825,6 +6230,18 @@ function _renderizarGaleriaNuevasEdit() {
             img.src = _editImagenesNuevas[idx].dataUrl;
             img.alt = 'Imagen nueva ' + (idx + 1);
             mini.appendChild(img);
+            var btnConfig = document.createElement('button');
+            btnConfig.type = 'button';
+            btnConfig.className = 'btn-config-miniatura';
+            btnConfig.textContent = '⋮';
+            btnConfig.title = 'Elegir qué se ve en el catálogo';
+            btnConfig.onclick = function () {
+                var item = _editImagenesNuevas[idx];
+                abrirModalRecorteImagen(item.dataUrl, item.enfoqueX, item.enfoqueY, function (x, y) {
+                    item.enfoqueX = x; item.enfoqueY = y;
+                });
+            };
+            mini.appendChild(btnConfig);
             var btnX = document.createElement('button');
             btnX.type = 'button';
             btnX.className = 'btn-quitar-miniatura';
@@ -5896,6 +6313,8 @@ function procesarImagenProductoEdit(event) {
         var agregadas = 0, errores = [];
         resultados.forEach(function (r) {
             if (r && r.error) { errores.push(r.nombreArchivo + ': ' + r.error); return; }
+            r.enfoqueX = 50;
+            r.enfoqueY = 0;
             _editImagenesNuevas.push(r);
             agregadas++;
         });
@@ -5955,6 +6374,9 @@ async function guardarEdicionProducto() {
     if (videoYoutube !== '' && !/^https:\/\/(www\.)?youtube\.com\/embed\/[\w-]{11}(\?.*)?$/.test(videoYoutube)) {
         _statusEdit('El video debe ser un link embed de YouTube (youtube.com/embed/…).', true); return;
     }
+    if (_editImagenesExistentes.length + _editImagenesNuevas.length === 0) {
+        _statusEdit('El producto debe tener al menos una imagen.', true); return;
+    }
 
     var btn = document.getElementById('btnGuardarEdicionProducto');
     _editGuardando = true;
@@ -5981,7 +6403,15 @@ async function guardarEdicionProducto() {
             ancho:             ancho,
             video:             videoYoutube,
             imagenesNuevas:        _editImagenesNuevas.map(function (x) { return x.base64; }),
-            imagenesNuevasNombres: _editImagenesNuevas.map(function (x) { return x.nombre; })
+            imagenesNuevasNombres: _editImagenesNuevas.map(function (x) { return x.nombre; }),
+            // Las que quedaron (ya guardadas) después de quitar las que el usuario
+            // marcó con ✕. El servidor las cruza contra lo que hay en la hoja
+            // por seguridad, y a estas les agrega las nuevas subidas.
+            imagenesExistentes:    _editImagenesExistentes.slice(),
+            // Enfoque ("X,Y" en %) de cada imagen, en el MISMO ORDEN que las
+            // listas de arriba, para que el servidor arme la lista final alineada.
+            enfoquesExistentes:    _editEnfoquesExistentes.map(function (e) { return e ? (e.x + ',' + e.y) : ''; }),
+            enfoquesNuevos:        _editImagenesNuevas.map(function (x) { return x.enfoqueX + ',' + x.enfoqueY; })
         };
 
         var resp = await fetch(ADMIN_ENDPOINT, {
