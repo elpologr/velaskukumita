@@ -5739,7 +5739,14 @@ function _limitesImagenRecorteGrande() {
     var cont = document.getElementById('recorteGrandeCont');
     var img = document.getElementById('recorteGrandeImg');
     if (!cont || !img || !img.naturalWidth || !img.naturalHeight) return null;
-    var boxW = cont.clientWidth, boxH = cont.clientHeight;
+    // Se usa getBoundingClientRect() (valores con decimales) en vez de
+    // clientWidth/clientHeight (redondeados a enteros) para que el tamaño
+    // aquí calculado coincida EXACTO con el que usa _arrastrarRecorteGrande()
+    // al leer la posición del click/touch. Si no coinciden, el recuadro se
+    // desfasa uno o varios píxeles respecto al punto donde se dio clic,
+    // sobre todo con zoom del navegador o pantallas de alta densidad.
+    var contRect = cont.getBoundingClientRect();
+    var boxW = contRect.width, boxH = contRect.height;
     if (!boxW || !boxH) return null;
     var escala = Math.min(boxW / img.naturalWidth, boxH / img.naturalHeight);
     var dispW = img.naturalWidth * escala, dispH = img.naturalHeight * escala;
@@ -5885,6 +5892,18 @@ function seleccionarTodosEventosProducto() {
     });
 }
 
+function seleccionarTodasEtiquetasPrincipalProducto() {
+    document.querySelectorAll('#gridEtiquetaPrincipalProducto .chk-etiqueta-principal-producto').forEach(function (chk) {
+        chk.checked = true;
+    });
+}
+
+function seleccionarTodasEtiquetasPrincipalProductoEdit() {
+    document.querySelectorAll('#gridEtiquetaPrincipalProductoEdit .chk-etiqueta-principal-producto-edit').forEach(function (chk) {
+        chk.checked = true;
+    });
+}
+
 function seleccionarTodosEventosProductoEdit() {
     document.querySelectorAll('#gridEventosProductoEdit .chk-evento-producto-edit').forEach(function (chk) {
         chk.checked = true;
@@ -5905,7 +5924,8 @@ async function guardarProductoAdmin() {
     var precio          = ((document.getElementById('inputPrecioProducto')          || {}).value || '').trim();
     var precioMayoreo   = ((document.getElementById('inputPrecioMayoreoProducto')   || {}).value || '').trim();
     var stock           = ((document.getElementById('inputStockProducto')           || {}).value || '').trim();
-    var etiquetaPrincipal = ((document.getElementById('inputEtiquetaPrincipalProducto') || {}).value || '').trim();
+    var etiquetaPrincipal = Array.prototype.slice.call(document.querySelectorAll('.chk-etiqueta-principal-producto:checked'))
+        .map(function (chk) { return chk.value; }).join('|');
     var eventosSeleccionados = Array.prototype.slice.call(document.querySelectorAll('.chk-evento-producto:checked'))
         .map(function (chk) { return chk.value; });
     var eventoOtro = ((document.getElementById('inputEventoOtroProducto') || {}).value || '').trim();
@@ -5986,7 +6006,7 @@ async function guardarProductoAdmin() {
 
         // Limpiar formulario
         ['inputNombreProducto', 'inputDescripcionProducto', 'inputPrecioProducto', 'inputPrecioMayoreoProducto',
-         'inputStockProducto', 'inputEtiquetaPrincipalProducto',
+         'inputStockProducto',
          'inputAltoProducto', 'inputAnchoProducto', 'inputVideoYoutubeProducto', 'inputFilaProducto']
             .forEach(function (id) {
                 var el = document.getElementById(id);
@@ -5997,6 +6017,9 @@ async function guardarProductoAdmin() {
                 var el = document.getElementById(id);
                 if (el) el.checked = false;
             });
+        document.querySelectorAll('.chk-etiqueta-principal-producto:checked').forEach(function (chk) {
+            chk.checked = false;
+        });
         document.querySelectorAll('.chk-evento-producto:checked').forEach(function (chk) {
             chk.checked = false;
         });
@@ -6103,18 +6126,12 @@ function abrirEdicionProducto(card) {
     _setValorEdit('inputAnchoProductoEdit',          card.getAttribute('data-ancho') || '');
     _setValorEdit('inputStockProductoEdit',          card.getAttribute('data-existencia') || '');
 
-    // ── Etiqueta principal ──
-    var tipoData = (card.getAttribute('data-tipo') || '').trim().toLowerCase();
-    var selectTipo = document.getElementById('inputEtiquetaPrincipalProductoEdit');
-    if (selectTipo) {
-        var coincide = false;
-        Array.prototype.forEach.call(selectTipo.options, function (opt) {
-            var esMatch = opt.value.trim().toLowerCase() === tipoData;
-            opt.selected = esMatch;
-            if (esMatch) coincide = true;
-        });
-        if (!coincide) selectTipo.value = '';
-    }
+    // ── Etiqueta principal (una o varias) ──
+    var tiposCard = (card.getAttribute('data-tipos') || card.getAttribute('data-tipo') || '')
+        .split('|').map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean);
+    document.querySelectorAll('.chk-etiqueta-principal-producto-edit').forEach(function (chk) {
+        chk.checked = tiposCard.indexOf(chk.value.trim().toLowerCase()) !== -1;
+    });
 
     // ── Etiquetas de evento (checkboxes + campo "otro" para lo que no coincida) ──
     var eventosCard = (card.getAttribute('data-evento') || '').split('|').map(function (s) { return s.trim(); }).filter(Boolean);
@@ -6349,7 +6366,8 @@ async function guardarEdicionProducto() {
     var precio          = ((document.getElementById('inputPrecioProductoEdit')          || {}).value || '').trim();
     var precioMayoreo   = ((document.getElementById('inputPrecioMayoreoProductoEdit')   || {}).value || '').trim();
     var stock           = ((document.getElementById('inputStockProductoEdit')           || {}).value || '').trim();
-    var etiquetaPrincipal = ((document.getElementById('inputEtiquetaPrincipalProductoEdit') || {}).value || '').trim();
+    var etiquetaPrincipal = Array.prototype.slice.call(document.querySelectorAll('.chk-etiqueta-principal-producto-edit:checked'))
+        .map(function (chk) { return chk.value; }).join('|');
     var eventosSeleccionados = Array.prototype.slice.call(document.querySelectorAll('.chk-evento-producto-edit:checked'))
         .map(function (chk) { return chk.value; });
     var eventoOtro = ((document.getElementById('inputEventoOtroProductoEdit') || {}).value || '').trim();

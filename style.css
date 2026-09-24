@@ -2096,9 +2096,43 @@
             display: flex; flex-direction: column; gap: 14px;
             box-sizing: border-box;
         }
+        /* En móvil, los wrappers de columna no deben afectar el layout:
+           sus hijos fluyen directo dentro de .form-admin-producto, igual
+           que antes de agregar las columnas de escritorio. */
+        .form-admin-producto-grid,
+        .form-admin-col { display: contents; }
         .campo-admin-producto { display: flex; flex-direction: column; gap: 6px; }
+        /* ── Zona de "Etiqueta Principal": fondo rojo claro pastel para identificarla a la vista ── */
+        .campo-zona-etiqueta {
+            background: #fbe1e1; border: 1.5px solid #f3c6c6;
+            border-radius: 10px; padding: 10px 12px;
+        }
+        body.modo-oscuro .campo-zona-etiqueta {
+            background: #4a2c2c; border-color: #6a3a3a;
+        }
         .fila-campos-dobles { display: flex; gap: 12px; }
         .fila-campos-dobles .campo-admin-producto { flex: 1 1 0; min-width: 0; }
+
+        /* ── Pantalla "Agregar producto" en escritorio: 2 columnas para no
+           tener que hacer tanto scroll. Solo aplica en pantallas grandes;
+           en celular queda exactamente igual que antes (una sola columna). ── */
+        @media (min-width: 768px) {
+            #pantallaAdminProductos .pantalla-perfil-body { padding-top: 24px; }
+            #pantallaAdminProductos .form-admin-producto { max-width: 860px; }
+            #pantallaAdminProductos .form-admin-producto-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 0 28px;
+                align-items: start;
+            }
+            #pantallaAdminProductos .form-admin-col {
+                display: flex; flex-direction: column; gap: 14px;
+            }
+            /* Más columnas para los checks de evento: con más ancho
+               horizontal disponible, ocupan menos alto. */
+            #pantallaAdminProductos .grid-checks-evento { grid-template-columns: 1fr 1fr 1fr; }
+            #pantallaAdminProductos .btn-guardar-producto { max-width: 860px; }
+        }
         .btn-seleccionar-todo-eventos {
             display: inline-flex; align-items: center; gap: 6px;
             margin-bottom: 8px; padding: 7px 14px;

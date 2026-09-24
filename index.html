@@ -30,7 +30,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600;1,700&family=Playfair+Display:ital,wght@0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
     <!-- Estilos externos -->
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="stylesheet" href="style.css?v=6">
 
     <!-- Estilos botones de modo catálogo -->
     <style>
@@ -386,6 +386,8 @@
         <div class="pantalla-perfil-body">
 
             <div class="form-admin-producto">
+              <div class="form-admin-producto-grid">
+                <div class="form-admin-col">
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Imagen</label>
                     <div class="fila-imagen-principal">
@@ -443,17 +445,19 @@
                     <input id="inputVideoYoutubeProducto" class="panel-nombre-input" type="url" placeholder="Opcional, ej. https://www.youtube.com/embed/XXXXXXXXXXX">
                     <span style="font-size:11px; color:#9a8878;">Debe ser un link embed de YouTube (youtube.com/embed/…)</span>
                 </div>
-                <div class="campo-admin-producto">
-                    <label class="panel-nombre-label">Etiqueta Principal</label>
-                    <select id="inputEtiquetaPrincipalProducto" class="panel-nombre-input">
-                        <option value="">Selecciona una opción</option>
-                        <option value="Arreglos">Arreglos</option>
-                        <option value="Producto">Producto</option>
-                        <option value="Decoraciones">Decoraciones</option>
-                        <option value="Aditamentos">Aditamentos</option>
-                        <option value="Etiquetas">Etiquetas</option>
-                        <option value="Centros de Mesa">Centros de Mesa</option>
-                    </select>
+                </div>
+                <div class="form-admin-col">
+                <div class="campo-admin-producto campo-zona-etiqueta">
+                    <label class="panel-nombre-label">Etiqueta Principal <span style="font-weight:400; color:#9a8878;">(elige una o varias)</span></label>
+                    <button type="button" class="btn-seleccionar-todo-eventos" onclick="seleccionarTodasEtiquetasPrincipalProducto()">✅ Seleccionar todas</button>
+                    <div class="grid-checks-evento" id="gridEtiquetaPrincipalProducto">
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-etiqueta-principal-producto" value="Arreglos"><span>Arreglos</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-etiqueta-principal-producto" value="Producto"><span>Producto</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-etiqueta-principal-producto" value="Decoraciones"><span>Decoraciones</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-etiqueta-principal-producto" value="Aditamentos"><span>Aditamentos</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-etiqueta-principal-producto" value="Etiquetas"><span>Etiquetas</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-etiqueta-principal-producto" value="Centro de Mesa"><span>Centro de Mesa</span></label>
+                    </div>
                 </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Etiqueta de Evento <span style="font-weight:400; color:#9a8878;">(opcional, puedes elegir varias)</span></label>
@@ -509,6 +513,8 @@
                     <input id="inputFilaProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="2" step="1" placeholder="Ej. 2 para que sea el primer producto">
                     <span style="font-size:11px; color:#9a8878;">Si lo dejas vacío, el producto se agrega al final de la lista. Si eliges una fila, los productos que ya estén ahí se recorren una posición hacia abajo.</span>
                 </div>
+                </div>
+              </div>
             </div>
 
             <button class="btn-guardar-producto" id="btnGuardarProductoAdmin" onclick="guardarProductoAdmin()">💾 Guardar producto</button>
@@ -568,17 +574,17 @@
                     <input id="inputVideoYoutubeProductoEdit" class="panel-nombre-input" type="url" placeholder="Opcional, ej. https://www.youtube.com/embed/XXXXXXXXXXX">
                     <span style="font-size:11px; color:#9a8878;">Debe ser un link embed de YouTube (youtube.com/embed/…)</span>
                 </div>
-                <div class="campo-admin-producto">
-                    <label class="panel-nombre-label">Etiqueta Principal</label>
-                    <select id="inputEtiquetaPrincipalProductoEdit" class="panel-nombre-input">
-                        <option value="">Selecciona una opción</option>
-                        <option value="Arreglos">Arreglos</option>
-                        <option value="Producto">Producto</option>
-                        <option value="Decoraciones">Decoraciones</option>
-                        <option value="Aditamentos">Aditamentos</option>
-                        <option value="Etiquetas">Etiquetas</option>
-                        <option value="Centros de Mesa">Centros de Mesa</option>
-                    </select>
+                <div class="campo-admin-producto campo-zona-etiqueta">
+                    <label class="panel-nombre-label">Etiqueta Principal <span style="font-weight:400; color:#9a8878;">(elige una o varias)</span></label>
+                    <button type="button" class="btn-seleccionar-todo-eventos" onclick="seleccionarTodasEtiquetasPrincipalProductoEdit()">✅ Seleccionar todas</button>
+                    <div class="grid-checks-evento" id="gridEtiquetaPrincipalProductoEdit">
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-etiqueta-principal-producto-edit" value="Arreglos"><span>Arreglos</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-etiqueta-principal-producto-edit" value="Producto"><span>Producto</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-etiqueta-principal-producto-edit" value="Decoraciones"><span>Decoraciones</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-etiqueta-principal-producto-edit" value="Aditamentos"><span>Aditamentos</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-etiqueta-principal-producto-edit" value="Etiquetas"><span>Etiquetas</span></label>
+                        <label class="check-evento-producto"><input type="checkbox" class="chk-etiqueta-principal-producto-edit" value="Centro de Mesa"><span>Centro de Mesa</span></label>
+                    </div>
                 </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Etiqueta de Evento <span style="font-weight:400; color:#9a8878;">(opcional, puedes elegir varias)</span></label>
@@ -2329,7 +2335,7 @@
 </div>
 
     <!-- JavaScript externo -->
-    <script src="app.js?v=5"></script>
+    <script src="app.js?v=6"></script>
 
     <!-- ── AUTO-FIX MÓVIL: detecta y elimina cualquier elemento que desborde el viewport ── -->
     <script>
