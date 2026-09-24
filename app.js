@@ -5378,7 +5378,7 @@ var ADMIN_EMAILS = [
 ];
 
 // ✅ Apps Script publicado como aplicación web
-var ADMIN_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyc_MUkI2QfD5hSZwsk04lZSE6nGLsKeJOyteH93iwos5K-1ngrX28x7AK1Rm9s_D2R/exec';
+var ADMIN_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwkN9g2PBlbawzoZ1GWqcrkDE5kWcxZJP8Op3k_djlDGclqcvkKmHuOpsqHryCyOizO/exec';
 
 // Estado interno del formulario
 // _adminImagenesProducto: array de { base64, nombre, dataUrl }. El índice 0 es la imagen principal.
