@@ -30,7 +30,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600;1,700&family=Playfair+Display:ital,wght@0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
     <!-- Estilos externos -->
-    <link rel="stylesheet" href="style.css?v=9">
+    <link rel="stylesheet" href="style.css?v=10">
 
     <!-- Estilos botones de modo catálogo -->
     <style>
@@ -471,13 +471,15 @@
                     <textarea id="inputDescripcionProducto" class="panel-nombre-input" rows="3" maxlength="500" placeholder="Opcional, describe el producto"></textarea>
                 </div>
                 <div class="campo-admin-producto campo-admin-checkbox">
-                    <label class="check-admin-producto">
+                    <label class="pill-btn pill-btn-admin-toggle">
                         <input id="inputEnOfertaProducto" type="checkbox" onchange="_toggleZonaOfertaProducto()">
-                        <span>En Oferta</span>
+                        <span style="font-size:2.25rem; line-height:1;">🏷️</span>
+                        <span class="pill-btn-label">En Oferta</span>
                     </label>
-                    <label class="check-admin-producto">
+                    <label class="pill-btn pill-btn-admin-toggle">
                         <input id="inputMasVendidoProducto" type="checkbox">
-                        <span>Más Vendido</span>
+                        <span style="font-size:2.25rem; line-height:1;">🏆</span>
+                        <span class="pill-btn-label">Más Vendido</span>
                     </label>
                 </div>
                 <div class="campo-admin-producto" id="zonaPrecioOfertaProducto" style="display:none;">
@@ -629,13 +631,15 @@
                     <textarea id="inputDescripcionProductoEdit" class="panel-nombre-input" rows="3" maxlength="500" placeholder="Opcional, describe el producto"></textarea>
                 </div>
                 <div class="campo-admin-producto campo-admin-checkbox">
-                    <label class="check-admin-producto">
+                    <label class="pill-btn pill-btn-admin-toggle">
                         <input id="inputEnOfertaProductoEdit" type="checkbox" onchange="_toggleZonaOfertaProductoEdit()">
-                        <span>En Oferta</span>
+                        <span style="font-size:2.25rem; line-height:1;">🏷️</span>
+                        <span class="pill-btn-label">En Oferta</span>
                     </label>
-                    <label class="check-admin-producto">
+                    <label class="pill-btn pill-btn-admin-toggle">
                         <input id="inputMasVendidoProductoEdit" type="checkbox">
-                        <span>Más Vendido</span>
+                        <span style="font-size:2.25rem; line-height:1;">🏆</span>
+                        <span class="pill-btn-label">Más Vendido</span>
                     </label>
                 </div>
                 <div class="campo-admin-producto" id="zonaPrecioOfertaProductoEdit" style="display:none;">

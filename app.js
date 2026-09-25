@@ -412,12 +412,21 @@ function renderizarCatalogoCompleto() {
         };
         imgContenedor.appendChild(img);
 
-        // ── Indicador de "hay más fotos" (solo si el producto tiene 2 o más imágenes) ──
+        // ── Botón "hay más fotos" (solo si el producto tiene 2 o más imágenes) ──
+        // Al tocarlo, cambia el <img> principal a la SIGUIENTE imagen del producto.
+        // No se precarga nada: cada imagen se pide al servidor justo cuando el
+        // usuario la pide, tocando este botón (ver _cambiarImagenCard()).
         if (p.imagenes && p.imagenes.length > 1) {
-            var masImagenesIndicador = document.createElement('div');
+            var masImagenesIndicador = document.createElement('button');
+            masImagenesIndicador.type = 'button';
             masImagenesIndicador.className = 'card-mas-imagenes';
-            masImagenesIndicador.setAttribute('aria-hidden', 'true');
+            masImagenesIndicador.setAttribute('aria-label', 'Ver otra foto de ' + p.nombre);
             masImagenesIndicador.innerHTML = '<span class="card-mas-imagenes-flecha">›</span>';
+            masImagenesIndicador.addEventListener('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                _cambiarImagenCard(card, img);
+            });
             imgContenedor.appendChild(masImagenesIndicador);
         }
 
@@ -519,6 +528,30 @@ function renderizarCatalogoCompleto() {
     });
     // Sincronizar corazones con favoritos guardados
     if (typeof syncBotonesLike === 'function') syncBotonesLike();
+}
+
+// ── Botón "hay más fotos" de las cards del catálogo (fuera del modal del
+// producto): avanza a la SIGUIENTE imagen del producto, pidiéndola al vuelo.
+// No se precargan las demás fotos de ningún producto: cada <img> de card
+// solo tiene un src (el de la imagen principal) hasta que el usuario toca
+// este botón, momento en el que recién se cambia el src y el navegador pide
+// esa imagen puntual — así el catálogo sigue siendo liviano aunque cada
+// producto tenga varias fotos.
+function _cambiarImagenCard(card, imgEl) {
+    var imagenes;
+    try { imagenes = JSON.parse(card.getAttribute('data-imagenes') || '[]'); } catch (e) { imagenes = []; }
+    if (!imagenes.length) return;
+
+    var enfoques;
+    try { enfoques = JSON.parse(card.getAttribute('data-enfoques-imagenes') || '[]'); } catch (e) { enfoques = []; }
+
+    var idxActual = parseInt(card.getAttribute('data-img-actual'), 10);
+    if (isNaN(idxActual)) idxActual = 0;
+    var idxSiguiente = (idxActual + 1) % imagenes.length;
+
+    card.setAttribute('data-img-actual', String(idxSiguiente));
+    imgEl.src = imagenes[idxSiguiente];
+    imgEl.style.objectPosition = _objectPositionDesdeEnfoque(enfoques[idxSiguiente]) || 'center';
 }
 
 // ══════════════════════════════════════════════════════════════════════════════

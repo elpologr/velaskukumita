@@ -2194,9 +2194,8 @@
             #pantallaAdminProductos .form-admin-col {
                 display: flex; flex-direction: column; gap: 14px;
             }
-            /* Más columnas para los checks de evento: con más ancho
-               horizontal disponible, ocupan menos alto. */
-            #pantallaAdminProductos .grid-checks-evento { grid-template-columns: 1fr 1fr 1fr; }
+            /* La cuadrícula de etiquetas ya es de 3 columnas siempre (ver
+               .grid-checks-evento), así que aquí no hace falta nada extra. */
             #pantallaAdminProductos .btn-guardar-producto { max-width: 860px; }
         }
         /* ── Pantalla "Editar producto" (menú de configuración de cada
@@ -2215,7 +2214,6 @@
             #pantallaEditarProducto .form-admin-col {
                 display: flex; flex-direction: column; gap: 14px;
             }
-            #pantallaEditarProducto .grid-checks-evento { grid-template-columns: 1fr 1fr 1fr; }
             #pantallaEditarProducto .btn-guardar-producto { max-width: 860px; }
         }
         .btn-seleccionar-todo-eventos {
@@ -2230,30 +2228,65 @@
         body.modo-oscuro .btn-seleccionar-todo-eventos { background: #1e1812; border-color: #4a3a2e; color: #e0d5cc; }
         body.modo-oscuro .btn-seleccionar-todo-eventos:hover { background: #2a2218; }
         .campo-admin-checkbox { flex-direction: row; flex-wrap: wrap; gap: 18px; align-items: center; }
-        .check-admin-producto {
-            display: flex; align-items: center; gap: 8px;
-            font-size: 13px; font-weight: 700; color: #705c4f;
-            cursor: pointer; user-select: none;
+        /* Botones "En Oferta" / "Más Vendido": mismo look que los botones
+           🏷️ Ofertas / 🏆 Más Vendidos de la pantalla principal (clase
+           .pill-btn), pero como <label> envolviendo un checkbox real, y con
+           azul claro (en vez de café) para marcar que están seleccionados. */
+        .pill-btn-admin-toggle { position: relative; }
+        .pill-btn-admin-toggle input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+            pointer-events: none;
         }
-        .check-admin-producto input[type="checkbox"] {
-            width: 18px; height: 18px; accent-color: #8c7565; cursor: pointer; margin: 0;
+        .pill-btn-admin-toggle:has(input:checked) {
+            background: #cfe4fb;
+            border-color: #7fb3ec;
+            color: #1d5fa8;
+            box-shadow: 0 2px 8px rgba(74,144,217,0.25);
         }
-        body.modo-oscuro .check-admin-producto { color: #e0d5cc; }
+        body.modo-oscuro .pill-btn-admin-toggle:has(input:checked) {
+            background: #2a4a6e;
+            border-color: #4b8fd1;
+            color: #bcd9f7;
+        }
         .grid-checks-evento {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px;
-            padding: 10px; border: 1px solid #e8ddd5; border-radius: 10px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0;
+            border: 1px solid #e8ddd5;
+            border-radius: 10px;
             background: #fff;
+            overflow: hidden;
         }
         .check-evento-producto {
-            display: flex; align-items: center; gap: 6px;
+            position: relative;
+            display: flex; align-items: center; justify-content: center;
+            gap: 6px;
             font-size: 12px; font-weight: 600; color: #705c4f;
-            cursor: pointer; user-select: none; line-height: 1.2;
+            cursor: pointer; user-select: none; line-height: 1.25;
+            text-align: center;
+            padding: 10px 6px;
+            border-right: 1px solid #e8ddd5;
+            border-bottom: 1px solid #e8ddd5;
+            transition: background 0.15s, color 0.15s;
         }
+        .check-evento-producto:nth-child(3n) { border-right: none; }
+        .check-evento-producto:nth-last-child(-n+3) { border-bottom: none; }
+        .check-evento-producto:hover { background: #f7f2ec; }
         .check-evento-producto input[type="checkbox"] {
-            width: 15px; height: 15px; accent-color: #4b6b94; cursor: pointer; margin: 0; flex-shrink: 0;
+            position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; flex-shrink: 0;
+        }
+        .check-evento-producto:has(input:checked) {
+            background: #cfe4fb;
+            color: #1d5fa8;
+            font-weight: 700;
         }
         body.modo-oscuro .grid-checks-evento { background: #241d15; border-color: #3a3028; }
-        body.modo-oscuro .check-evento-producto { color: #e0d5cc; }
+        body.modo-oscuro .check-evento-producto { color: #e0d5cc; border-color: #3a3028; }
+        body.modo-oscuro .check-evento-producto:hover { background: #2a2218; }
+        body.modo-oscuro .check-evento-producto:has(input:checked) { background: #2a4a6e; color: #bcd9f7; }
         .btn-guardar-producto {
             width: 100%; max-width: 380px;
             padding: 15px 20px;
@@ -2493,7 +2526,10 @@
         position: relative;
     }
 
-    /* ── Indicador "hay más fotos" (solo aparece si el producto tiene 2+ imágenes) ── */
+    /* ── Botón "hay más fotos" (solo aparece si el producto tiene 2+ imágenes) ──
+       Es un <button> real: al tocarlo cambia a la siguiente imagen del
+       producto SIN precargar las demás (la imagen se pide al navegador justo
+       en ese momento, cambiando el src del <img>). */
     .card-mas-imagenes {
         position: absolute;
         top: 0;
@@ -2504,8 +2540,20 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        pointer-events: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+        pointer-events: auto;
         z-index: 4;
+        transition: background 0.18s;
+    }
+    .card-mas-imagenes:hover,
+    .card-mas-imagenes:focus-visible {
+        background: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0.55) 100%);
+    }
+    .card-mas-imagenes:active {
+        background: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%);
     }
     .card-mas-imagenes-flecha {
         color: #fff;
