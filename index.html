@@ -30,7 +30,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600;1,700&family=Playfair+Display:ital,wght@0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
     <!-- Estilos externos -->
-    <link rel="stylesheet" href="style.css?v=6">
+    <link rel="stylesheet" href="style.css?v=7">
 
     <!-- Estilos botones de modo catálogo -->
     <style>
@@ -289,11 +289,30 @@
                 Velas Kukumita <strong>no asume responsabilidad</strong> por el tratamiento de datos que Google o Firebase realicen en el marco de sus propios servicios, de conformidad con la legislación aplicable en materia de protección de datos, que establece que el responsable no responde por los actos de terceros que actúen con base en sus propios términos de servicio.
             </p>
 
-            <h2 class="privacidad-seccion-titulo">7. Derechos ARCO</h2>
+            <h2 class="privacidad-seccion-titulo">7. Precios, imágenes y disponibilidad del catálogo</h2>
+            <p class="privacidad-parrafo">
+                Los precios, descripciones, medidas e imágenes que se muestran en este sitio web tienen <strong>carácter informativo y de referencia</strong>, y se presentan con base en el catálogo cargado por el equipo de Velas Kukumita en una hoja de cálculo administrada de forma manual. Al no tratarse de un sistema automatizado de facturación, <strong>no puede garantizarse en todo momento una correspondencia exacta entre el precio o la imagen mostrados y el producto físico</strong>, debido a factores humanos y operativos como los siguientes:
+            </p>
+            <ul class="privacidad-lista">
+                <li><strong>Errores de captura o dedazos</strong> al escribir un precio, medida o al asociar una imagen a un producto.</li>
+                <li><strong>Desfase temporal en la actualización de precios</strong>: cuando el costo de la materia prima (principalmente la cera) sufre variaciones repentinas, el ajuste del precio de todo el catálogo no es instantáneo y puede tardar hasta <strong>algunos días hábiles</strong> en reflejarse correctamente en la página.</li>
+                <li><strong>Imágenes de referencia</strong> que, por variaciones propias de la elaboración artesanal (cada pieza es hecha a mano), pueden presentar ligeras diferencias de color, acabado o proporción respecto al producto entregado.</li>
+            </ul>
+            <p class="privacidad-parrafo">
+                Por lo anterior, cualquier precio que se muestre en el sitio y que resulte <strong>notoria y evidentemente desproporcionado</strong> respecto al valor real del producto (por ejemplo, una vela o arreglo de dimensiones considerables ofertado a un precio manifiestamente inferior al costo de sus materiales y elaboración) será considerado un <strong>error de captura y no una oferta válida ni vinculante</strong>. En dichos casos, Velas Kukumita se reserva el derecho de <strong>no procesar el pedido al precio erróneo mostrado</strong> y, en su lugar, ofrecer al cliente una <strong>cotización previa con el precio real y correcto del producto</strong>, antes de confirmar cualquier venta.
+            </p>
+            <p class="privacidad-parrafo">
+                Los precios publicados en el catálogo digital constituyen, en consecuencia, una <strong>invitación a cotizar y no una oferta en firme</strong>. La venta se perfecciona únicamente hasta que el cliente y Velas Kukumita <strong>confirmen de manera expresa, vía WhatsApp</strong> (botón disponible en distintas secciones de la página), el precio final, la disponibilidad y las características definitivas del producto solicitado. Recomendamos ampliamente a todo cliente confirmar el precio real del producto directamente con el fabricante antes de realizar cualquier pago, transferencia o depósito.
+            </p>
+            <p class="privacidad-parrafo">
+                Esta política tiene como único fin evitar perjuicios económicos derivados de errores humanos involuntarios en la administración del catálogo, y en ningún caso pretende inducir a error al consumidor de manera deliberada. Ante cualquier discrepancia de precio o imagen, el cliente será notificado de forma oportuna y podrá optar libremente por continuar con la compra al precio correcto o cancelar su pedido sin costo alguno.
+            </p>
+
+            <h2 class="privacidad-seccion-titulo">8. Derechos ARCO</h2>
             <p class="privacidad-parrafo">Tienes derecho a <strong>Acceder, Rectificar, Cancelar u Oponerte</strong> al tratamiento de tus datos personales. Para ejercerlos, envíanos un correo a <strong>velaskukumita@gmail.com</strong> indicando tu nombre, el dato que deseas corregir o eliminar, y una copia de identificación oficial.</p>
             <p class="privacidad-parrafo">Daremos respuesta en un plazo máximo de <strong>20 días hábiles</strong>, conforme a lo establecido por la LFPDPPP.</p>
 
-            <h2 class="privacidad-seccion-titulo">8. Cambios a este aviso</h2>
+            <h2 class="privacidad-seccion-titulo">9. Cambios a este aviso</h2>
             <p class="privacidad-parrafo">Nos reservamos el derecho de actualizar este aviso en cualquier momento. Cualquier modificación será publicada en esta misma página con una nueva fecha de actualización.</p>
 
             <div class="privacidad-aceptar-bloque">
@@ -400,15 +419,26 @@
                             </div>
                             <span class="miniatura-principal-hint">Arrastra para elegir lo que se ve en el catálogo</span>
                         </div>
-                        <button class="btn-opcion-perfil btn-agregar-imagen-producto" onclick="seleccionarImagenProducto()" type="button">
-                            <span class="op-icono">🖼️</span>
-                            <div>
-                                Agregar imagen
-                                <span class="op-sub">Se convierte a WebP y se sube a ImgBB</span>
+                        <div class="selector-imagen-wrap">
+                            <button class="btn-opcion-perfil btn-agregar-imagen-producto" onclick="toggleMenuImagenProducto(event)" type="button">
+                                <span class="op-icono">🖼️</span>
+                                <div>
+                                    Agregar imagen
+                                    <span class="op-sub">Se convierte a WebP y se sube a ImgBB</span>
+                                </div>
+                            </button>
+                            <div class="menu-seleccion-imagen" id="menuSeleccionImagenProducto">
+                                <button type="button" onclick="dispararInputImagen('inputImagenProductoCamara')">
+                                    <span class="op-icono">📷</span> Tomar foto
+                                </button>
+                                <button type="button" onclick="dispararInputImagen('inputImagenProducto')">
+                                    <span class="op-icono">🖼️</span> Elegir de la galería
+                                </button>
                             </div>
-                        </button>
+                        </div>
                     </div>
                     <input type="file" id="inputImagenProducto" accept="image/*" multiple style="display:none" onchange="procesarImagenProducto(event)">
+                    <input type="file" id="inputImagenProductoCamara" accept="image/*" capture="environment" style="display:none" onchange="procesarImagenProducto(event)">
                     <div class="galeria-imagenes-producto" id="galeriaImagenesProducto"></div>
                     <span class="contador-imagenes-producto" id="contadorImagenesProducto" style="display:none;"></span>
                 </div>
@@ -440,14 +470,9 @@
                     <label class="panel-nombre-label">Descripción</label>
                     <textarea id="inputDescripcionProducto" class="panel-nombre-input" rows="3" maxlength="500" placeholder="Opcional, describe el producto"></textarea>
                 </div>
-                <div class="campo-admin-producto">
-                    <label class="panel-nombre-label">Video de YouTube</label>
-                    <input id="inputVideoYoutubeProducto" class="panel-nombre-input" type="url" placeholder="Opcional, ej. https://www.youtube.com/embed/XXXXXXXXXXX">
-                    <span style="font-size:11px; color:#9a8878;">Debe ser un link embed de YouTube (youtube.com/embed/…)</span>
-                </div>
                 <div class="campo-admin-producto campo-admin-checkbox">
                     <label class="check-admin-producto">
-                        <input id="inputEnOfertaProducto" type="checkbox">
+                        <input id="inputEnOfertaProducto" type="checkbox" onchange="_toggleZonaOfertaProducto()">
                         <span>En Oferta</span>
                     </label>
                     <label class="check-admin-producto">
@@ -455,10 +480,16 @@
                         <span>Más Vendido</span>
                     </label>
                 </div>
-                <div class="campo-admin-producto">
+                <div class="campo-admin-producto" id="zonaPrecioOfertaProducto" style="display:none;">
+                    <label class="panel-nombre-label">Precio de oferta</label>
+                    <input id="inputPrecioOfertaProducto" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ej. 120 (debe ser menor al precio original)">
+                    <span style="font-size:11px; color:#9a8878;">Se muestra debajo del precio original, y este queda marcado con una ✕ mientras la oferta esté activa.</span>
+                </div>
+                <div class="campo-admin-producto campo-zona-posicion-sheet">
                     <label class="panel-nombre-label">Posición en la hoja <span style="font-weight:400; color:#9a8878;">(opcional)</span></label>
                     <input id="inputFilaProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="2" step="1" placeholder="Ej. 2 para que sea el primer producto">
                     <span style="font-size:11px; color:#9a8878;">Si lo dejas vacío, el producto se agrega al final de la lista. Si eliges una fila, los productos que ya estén ahí se recorren una posición hacia abajo.</span>
+                    <span id="infoFilasOcupadasSheet"></span>
                 </div>
                 </div>
                 <div class="form-admin-col">
@@ -513,6 +544,11 @@
                     <label class="panel-nombre-label">Cantidad en stock</label>
                     <input id="inputStockProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="0" step="1" placeholder="Ej. 20">
                 </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Video de YouTube</label>
+                    <input id="inputVideoYoutubeProducto" class="panel-nombre-input" type="url" placeholder="Opcional, ej. https://www.youtube.com/embed/XXXXXXXXXXX">
+                    <span style="font-size:11px; color:#9a8878;">Debe ser un link embed de YouTube (youtube.com/embed/…)</span>
+                </div>
                 </div>
               </div>
             </div>
@@ -532,20 +568,33 @@
         <div class="pantalla-perfil-body">
 
             <div class="form-admin-producto">
+              <div class="form-admin-producto-grid">
+                <div class="form-admin-col">
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Imágenes</label>
 
                     <span class="subtitulo-galeria-edicion" id="tituloGaleriaExistenteEdit" style="display:none;">Ya guardadas en el producto</span>
                     <div class="galeria-imagenes-producto" id="galeriaImagenesExistentesEdit"></div>
 
-                    <button class="btn-opcion-perfil" onclick="seleccionarImagenProductoEdit()" type="button" style="margin-top:6px;">
-                        <span class="op-icono">🖼️</span>
-                        <div>
-                            Agregar más imágenes
-                            <span class="op-sub">Se agregan después de las actuales, sin borrarlas</span>
+                    <div class="selector-imagen-wrap" style="margin-top:6px;">
+                        <button class="btn-opcion-perfil" onclick="toggleMenuImagenProductoEdit(event)" type="button">
+                            <span class="op-icono">🖼️</span>
+                            <div>
+                                Agregar más imágenes
+                                <span class="op-sub">Se agregan después de las actuales, sin borrarlas</span>
+                            </div>
+                        </button>
+                        <div class="menu-seleccion-imagen" id="menuSeleccionImagenProductoEdit">
+                            <button type="button" onclick="dispararInputImagen('inputImagenProductoCamaraEdit')">
+                                <span class="op-icono">📷</span> Tomar foto
+                            </button>
+                            <button type="button" onclick="dispararInputImagen('inputImagenProductoEdit')">
+                                <span class="op-icono">🖼️</span> Elegir de la galería
+                            </button>
                         </div>
-                    </button>
+                    </div>
                     <input type="file" id="inputImagenProductoEdit" accept="image/*" multiple style="display:none" onchange="procesarImagenProductoEdit(event)">
+                    <input type="file" id="inputImagenProductoCamaraEdit" accept="image/*" capture="environment" style="display:none" onchange="procesarImagenProductoEdit(event)">
 
                     <span class="subtitulo-galeria-edicion" id="tituloGaleriaNuevaEdit" style="display:none;">Nuevas (se subirán al guardar)</span>
                     <div class="galeria-imagenes-producto" id="galeriaImagenesNuevasEdit"></div>
@@ -565,15 +614,51 @@
                         <input id="inputPrecioMayoreoProductoEdit" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Opcional">
                     </div>
                 </div>
+                <div class="fila-campos-dobles">
+                    <div class="campo-admin-producto">
+                        <label class="panel-nombre-label">Alto</label>
+                        <input id="inputAltoProductoEdit" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 15 cm">
+                    </div>
+                    <div class="campo-admin-producto">
+                        <label class="panel-nombre-label">Ancho</label>
+                        <input id="inputAnchoProductoEdit" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 8 cm">
+                    </div>
+                </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Descripción</label>
                     <textarea id="inputDescripcionProductoEdit" class="panel-nombre-input" rows="3" maxlength="500" placeholder="Opcional, describe el producto"></textarea>
                 </div>
-                <div class="campo-admin-producto">
-                    <label class="panel-nombre-label">Video de YouTube</label>
-                    <input id="inputVideoYoutubeProductoEdit" class="panel-nombre-input" type="url" placeholder="Opcional, ej. https://www.youtube.com/embed/XXXXXXXXXXX">
-                    <span style="font-size:11px; color:#9a8878;">Debe ser un link embed de YouTube (youtube.com/embed/…)</span>
+                <div class="campo-admin-producto campo-admin-checkbox">
+                    <label class="check-admin-producto">
+                        <input id="inputEnOfertaProductoEdit" type="checkbox" onchange="_toggleZonaOfertaProductoEdit()">
+                        <span>En Oferta</span>
+                    </label>
+                    <label class="check-admin-producto">
+                        <input id="inputMasVendidoProductoEdit" type="checkbox">
+                        <span>Más Vendido</span>
+                    </label>
                 </div>
+                <div class="campo-admin-producto" id="zonaPrecioOfertaProductoEdit" style="display:none;">
+                    <label class="panel-nombre-label">Precio de oferta</label>
+                    <input id="inputPrecioOfertaProductoEdit" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ej. 120 (debe ser menor al precio original)">
+                    <span style="font-size:11px; color:#9a8878;">Se muestra debajo del precio original, y este queda marcado con una ✕ mientras la oferta esté activa.</span>
+                </div>
+                <div class="campo-admin-producto campo-zona-posicion-sheet">
+                    <label class="panel-nombre-label">Reubicar en la hoja <span style="font-weight:400; color:#9a8878;">(opcional)</span></label>
+                    <span style="font-size:11px; color:#9a8878;">Fila actual: <strong id="filaActualProductoEdit"></strong></span>
+                    <input id="inputFilaMoverProductoEdit" class="panel-nombre-input" type="number" inputmode="numeric" min="2" step="1" placeholder="Ej. 5 para moverlo a la fila 5" style="margin-top:6px;">
+                    <span style="font-size:11px; color:#9a8878;">Si esa fila ya tiene otro producto, simplemente intercambian de lugar. Se aplica al instante, sin necesidad de presionar "Guardar cambios".</span>
+                    <button type="button" class="btn-opcion-perfil" id="btnMoverProductoEdit" onclick="moverProductoEdit()" style="margin-top:8px;">
+                        <span class="op-icono">🔀</span>
+                        <div>
+                            Mover a esa posición
+                            <span class="op-sub">Cambia la fila del producto en Google Sheets</span>
+                        </div>
+                    </button>
+                    <p class="status-admin-producto" id="statusMoverProducto"></p>
+                </div>
+                </div>
+                <div class="form-admin-col">
                 <div class="campo-admin-producto campo-zona-etiqueta">
                     <label class="panel-nombre-label">Etiqueta Principal <span style="font-weight:400; color:#9a8878;">(elige una o varias)</span></label>
                     <button type="button" class="btn-seleccionar-todo-eventos" onclick="seleccionarTodasEtiquetasPrincipalProductoEdit()">✅ Seleccionar todas</button>
@@ -586,7 +671,7 @@
                         <label class="check-evento-producto"><input type="checkbox" class="chk-etiqueta-principal-producto-edit" value="Centro de Mesa"><span>Centro de Mesa</span></label>
                     </div>
                 </div>
-                <div class="campo-admin-producto">
+                <div class="campo-admin-producto campo-zona-etiqueta-evento">
                     <label class="panel-nombre-label">Etiqueta de Evento <span style="font-weight:400; color:#9a8878;">(opcional, puedes elegir varias)</span></label>
                     <button type="button" class="btn-seleccionar-todo-eventos" onclick="seleccionarTodosEventosProductoEdit()">✅ Seleccionar todas</button>
                     <div class="grid-checks-evento" id="gridEventosProductoEdit">
@@ -621,30 +706,17 @@
                     </div>
                     <input id="inputEventoOtroProductoEdit" class="panel-nombre-input" type="text" maxlength="60" placeholder="¿Otro evento? Escríbelo aquí (opcional)" style="margin-top:8px;">
                 </div>
-                <div class="campo-admin-producto campo-admin-checkbox">
-                    <label class="check-admin-producto">
-                        <input id="inputEnOfertaProductoEdit" type="checkbox">
-                        <span>En Oferta</span>
-                    </label>
-                    <label class="check-admin-producto">
-                        <input id="inputMasVendidoProductoEdit" type="checkbox">
-                        <span>Más Vendido</span>
-                    </label>
-                </div>
-                <div class="fila-campos-dobles">
-                    <div class="campo-admin-producto">
-                        <label class="panel-nombre-label">Alto</label>
-                        <input id="inputAltoProductoEdit" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 15 cm">
-                    </div>
-                    <div class="campo-admin-producto">
-                        <label class="panel-nombre-label">Ancho</label>
-                        <input id="inputAnchoProductoEdit" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 8 cm">
-                    </div>
-                </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Cantidad en stock</label>
                     <input id="inputStockProductoEdit" class="panel-nombre-input" type="number" inputmode="numeric" min="0" step="1" placeholder="Ej. 20">
                 </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Video de YouTube</label>
+                    <input id="inputVideoYoutubeProductoEdit" class="panel-nombre-input" type="url" placeholder="Opcional, ej. https://www.youtube.com/embed/XXXXXXXXXXX">
+                    <span style="font-size:11px; color:#9a8878;">Debe ser un link embed de YouTube (youtube.com/embed/…)</span>
+                </div>
+                </div>
+              </div>
             </div>
 
             <button class="btn-guardar-producto" id="btnGuardarEdicionProducto" onclick="guardarEdicionProducto()">💾 Guardar cambios</button>
@@ -1526,10 +1598,10 @@
         </div>
 
         <!-- ===== BUSCA POR EVENTO, FORMA Y FESTIVIDAD ===== -->
-        <div style="padding: 0 0 8px 0; display:flex; flex-direction:column; align-items:center; gap:0;">
+        <div class="filtros-efe-wrap" style="padding: 0 0 8px 0; display:flex; flex-direction:column; align-items:center; gap:0;">
 
             <!-- ── FILTRAR POR EVENTO ── -->
-            <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
+            <div class="filtros-efe-col" style="width:100%; display:flex; flex-direction:column; align-items:center;">
                 <p id="btnToggleEventos" onclick="togglePanelEventos()" style="text-align:center; font-size:1.1rem; font-weight:800; color:#5c4d43; margin:8px 0 0; letter-spacing:0.3px; cursor:pointer; user-select:none; padding:10px 16px; border-radius:999px; border:2px solid #e0d5cc; background:#fff; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 5px rgba(0,0,0,0.07); transition:background 0.16s, border-color 0.16s;">🎉 Filtrar por Evento <span id="iconToggleEventos" style="font-size:0.85rem; font-weight:400;">▼</span></p>
                 <div id="panelEventoCarrusel" style="display:none; overflow:hidden; width:100%;">
                     <div style="height:10px;"></div>
@@ -1557,7 +1629,7 @@
             </div>
 
             <!-- ── FILTRAR POR FORMA ── -->
-            <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
+            <div class="filtros-efe-col" style="width:100%; display:flex; flex-direction:column; align-items:center;">
                 <p id="btnToggleFormas" onclick="togglePanelFormas()" style="text-align:center; font-size:1.1rem; font-weight:800; color:#5c4d43; margin:8px 0 0; letter-spacing:0.3px; cursor:pointer; user-select:none; padding:10px 16px; border-radius:999px; border:2px solid #e0d5cc; background:#fff; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 5px rgba(0,0,0,0.07); transition:background 0.16s, border-color 0.16s;">🔷 Filtrar por Forma <span id="iconToggleFormas" style="font-size:0.85rem; font-weight:400;">▼</span></p>
                 <div id="panelFormaCarrusel" style="display:none; overflow:hidden; width:100%;">
                     <div style="height:10px;"></div>
@@ -1576,7 +1648,7 @@
             </div>
 
             <!-- ── FILTRAR POR FESTIVIDAD ── -->
-            <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
+            <div class="filtros-efe-col" style="width:100%; display:flex; flex-direction:column; align-items:center;">
                 <p id="btnToggleFestividades" onclick="togglePanelFestividades()" style="text-align:center; font-size:1.1rem; font-weight:800; color:#5c4d43; margin:8px 0 0; letter-spacing:0.3px; cursor:pointer; user-select:none; padding:10px 16px; border-radius:999px; border:2px solid #e0d5cc; background:#fff; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 5px rgba(0,0,0,0.07); transition:background 0.16s, border-color 0.16s;">🎊 Filtrar por Festividad <span id="iconToggleFestividades" style="font-size:0.85rem; font-weight:400;">▼</span></p>
                 <div id="panelFestividadCarrusel" style="display:none; overflow:hidden; width:100%;">
                     <div style="height:10px;"></div>
@@ -1951,7 +2023,11 @@
             <div id="mpPrecioFilaCompleta" style="display:none; padding: 10px 0 2px 0; border-top: 1px solid #f0eae4; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;">
                 <div id="mpPrecioOriginalFila" style="display:none; flex:1; min-width:100px;">
                     <span style="font-size:10px; font-weight:600; letter-spacing:0.4px; color:#9a8878; text-transform:uppercase; display:block; margin-bottom:4px;">Precio por pieza</span>
-                    <span class="mp-precio-valor" id="modalPrecioSuperior"></span>
+                    <span class="mp-precio-original-wrap">
+                        <span class="mp-precio-valor" id="modalPrecioSuperior"></span>
+                        <span class="mp-precio-original-x" id="mpPrecioOriginalX">✕</span>
+                    </span>
+                    <span class="mp-precio-valor mp-precio-valor-oferta" id="modalPrecioOferta"></span>
                 </div>
                 <div id="mpPrecioBazarFila" style="display:none; flex:1; min-width:100px; text-align:right;">
                     <span style="font-size:9px; font-weight:700; letter-spacing:0.3px; color:#1a7a3a; text-transform:uppercase; display:block; margin-bottom:2px;">Precio Mayoreo</span>

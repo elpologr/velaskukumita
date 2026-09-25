@@ -250,6 +250,7 @@ function csvAProductos(filas) {
         // N=13 existencia (número de piezas en stock)
         // O=14 Configuración del bazar (fecha/hora) — NO tocar aquí, se lee aparte en aplicarConfigBazar()
         // P=15 Enfoque de CADA imagen ("X,Y" en % por imagen, separados por "|"), alineado con la columna F
+        // Q=16 Precio de Oferta (opcional; solo se muestra si "en oferta" = si)
 
         // Video principal (E=4)
         var videoPrincipal = get(4).replace(/^"+|"+$/g, '').trim();
@@ -274,6 +275,9 @@ function csvAProductos(filas) {
         // Existencia (N=13)
         var existencia = parseInt(get(13).replace(/[^0-9]/g, '')) || 0;
 
+        // Precio de Oferta (Q=16)
+        var precioOferta = parseFloat(get(16).replace(/[^0-9.]/g, '')) || 0;
+
         productos.push({
             id:           i,
             nombre:       get(0),
@@ -296,6 +300,7 @@ function csvAProductos(filas) {
             etiquetas:    tiposArray,
             aditivos:     [],
             oferta:       enOferta,
+            precioOferta: precioOferta,
             masVendido:   masVendido,
             alto:         get(10),
             ancho:        get(11),
@@ -370,6 +375,7 @@ function renderizarCatalogoCompleto() {
         card.setAttribute('data-evento',          p.eventos || '');
         card.setAttribute('data-precio',          String(parseInt(p.precioNormal, 10) || 0));
         card.setAttribute('data-precio-bazar',    String(parseInt(p.precioBazar,  10) || ''));
+        card.setAttribute('data-precio-oferta',   String(parseFloat(p.precioOferta) || ''));
         card.setAttribute('data-tipo',            p.tipo  || 'arreglo');
         card.setAttribute('data-tipos',           (p.tipos || [p.tipo || 'arreglo']).join('|'));
         card.setAttribute('data-nombre',          p.nombre);
@@ -1085,6 +1091,8 @@ function aplicarConfigBazar(rawTexto) {
         const imagenesJSON = card.getAttribute('data-imagenes');
         const precioNum = card.getAttribute('data-precio') || '';
         const precioBazar = card.getAttribute('data-precio-bazar') || '';
+        const precioOferta = card.getAttribute('data-precio-oferta') || '';
+        const ofertaActivaPrecio = card.getAttribute('data-oferta') === '1';
 
         // ── Video principal del producto (se muestra vía botón "Ver Video", no en la galería) ──
         galeriaVideoPrincipal = (card.getAttribute('data-video') || '').trim();
@@ -1117,6 +1125,8 @@ function aplicarConfigBazar(rawTexto) {
         const bazarFila       = document.getElementById('mpPrecioBazarFila');
         const bazarValor      = document.getElementById('mpPrecioBazarValor');
         const filaCompleta    = document.getElementById('mpPrecioFilaCompleta');
+        const ofertaValor     = document.getElementById('modalPrecioOferta');
+        const originalX       = document.getElementById('mpPrecioOriginalX');
 
         if (precioNum) {
             precioBadge.textContent = '$' + precioNum + ' MXN';
@@ -1130,6 +1140,19 @@ function aplicarConfigBazar(rawTexto) {
         } else {
             bazarFila.style.display = 'none';
         }
+        // Segundo precio (oferta): solo se muestra si la oferta está activa
+        // Y el producto tiene un precio de oferta guardado. En ese caso el
+        // precio original queda marcado con una ✕ roja encima.
+        const mostrarPrecioOferta = ofertaActivaPrecio && !!precioOferta;
+        if (ofertaValor) {
+            if (mostrarPrecioOferta) {
+                ofertaValor.textContent = '$' + precioOferta + ' MXN';
+                ofertaValor.style.display = 'block';
+            } else {
+                ofertaValor.style.display = 'none';
+            }
+        }
+        if (originalX) originalX.style.display = mostrarPrecioOferta ? 'block' : 'none';
         // Mostrar/ocultar fila contenedora
         if (filaCompleta) filaCompleta.style.display = (precioNum || precioBazar) ? 'flex' : 'none';
 
@@ -5456,16 +5479,57 @@ function cerrarPantallaAdminProductos() {
 
 
 // ─────────────────────────────────────────────────────────────
-//  3. IMAGEN: SELECCIÓN + CONVERSIÓN A WEBP
+//  3. IMAGEN: SELECCIÓN (Tomar foto / Galería) + CONVERSIÓN A WEBP
 // ─────────────────────────────────────────────────────────────
-function seleccionarImagenProducto() {
+function toggleMenuImagenProducto(e) {
+    if (e) e.stopPropagation();
     if (_adminImagenesProducto.length >= LIMITE_IMAGENES_PRODUCTO) {
         _statusAdmin('Ya alcanzaste el límite de ' + LIMITE_IMAGENES_PRODUCTO + ' imágenes.', true);
         return;
     }
-    var input = document.getElementById('inputImagenProducto');
+    _alternarMenuImagen('menuSeleccionImagenProducto');
+}
+
+function toggleMenuImagenProductoEdit(e) {
+    if (e) e.stopPropagation();
+    var total = _editImagenesExistentes.length + _editImagenesNuevas.length;
+    if (total >= LIMITE_IMAGENES_PRODUCTO) {
+        _statusEdit('Ya alcanzaste el límite de ' + LIMITE_IMAGENES_PRODUCTO + ' imágenes.', true);
+        return;
+    }
+    _alternarMenuImagen('menuSeleccionImagenProductoEdit');
+}
+
+// Abre el menú pedido (y cierra cualquier otro que estuviera abierto).
+function _alternarMenuImagen(id) {
+    var menu = document.getElementById(id);
+    if (!menu) return;
+    var yaAbierto = menu.classList.contains('abierto');
+    _cerrarMenusImagenProducto();
+    if (!yaAbierto) menu.classList.add('abierto');
+}
+
+function _cerrarMenusImagenProducto() {
+    ['menuSeleccionImagenProducto', 'menuSeleccionImagenProductoEdit'].forEach(function (id) {
+        var m = document.getElementById(id);
+        if (m) m.classList.remove('abierto');
+    });
+}
+
+// Dispara el input de archivo elegido (cámara o galería) y cierra el menú.
+function dispararInputImagen(inputId) {
+    _cerrarMenusImagenProducto();
+    var input = document.getElementById(inputId);
     if (input) input.click();
 }
+
+// Cierra los menús si el usuario toca fuera de ellos.
+document.addEventListener('click', function (e) {
+    var wraps = document.querySelectorAll('.selector-imagen-wrap');
+    var dentro = false;
+    wraps.forEach(function (w) { if (w.contains(e.target)) dentro = true; });
+    if (!dentro) _cerrarMenusImagenProducto();
+});
 
 function _statusAdmin(msg, esError) {
     var el = document.getElementById('statusAdminProducto');
@@ -5828,6 +5892,8 @@ function _limpiarImagenesProducto() {
     _adminImagenesProducto = [];
     var input = document.getElementById('inputImagenProducto');
     if (input) { input.value = ''; }
+    var inputCamara = document.getElementById('inputImagenProductoCamara');
+    if (inputCamara) { inputCamara.value = ''; }
     _renderizarGaleriaImagenesProducto();
     _actualizarContadorImagenesProducto();
     _statusAdmin('', false);
@@ -5910,6 +5976,18 @@ function seleccionarTodosEventosProductoEdit() {
     });
 }
 
+// Muestra/oculta el campo de precio de oferta según el checkbox "En Oferta"
+function _toggleZonaOfertaProducto() {
+    var chk = document.getElementById('inputEnOfertaProducto');
+    var zona = document.getElementById('zonaPrecioOfertaProducto');
+    if (zona) zona.style.display = (chk && chk.checked) ? 'block' : 'none';
+}
+function _toggleZonaOfertaProductoEdit() {
+    var chk = document.getElementById('inputEnOfertaProductoEdit');
+    var zona = document.getElementById('zonaPrecioOfertaProductoEdit');
+    if (zona) zona.style.display = (chk && chk.checked) ? 'block' : 'none';
+}
+
 async function guardarProductoAdmin() {
     if (_adminGuardando) return;
 
@@ -5937,6 +6015,7 @@ async function guardarProductoAdmin() {
     var ancho           = ((document.getElementById('inputAnchoProducto') || {}).value || '').trim();
     var videoYoutube    = ((document.getElementById('inputVideoYoutubeProducto') || {}).value || '').trim();
     var filaDestino     = ((document.getElementById('inputFilaProducto') || {}).value || '').trim();
+    var precioOferta    = ((document.getElementById('inputPrecioOfertaProducto') || {}).value || '').trim();
 
     if (!nombre) {
         _statusAdmin('Escribe el nombre del producto.', true); return;
@@ -5955,6 +6034,12 @@ async function guardarProductoAdmin() {
     }
     if (filaDestino !== '' && (isNaN(Number(filaDestino)) || !Number.isInteger(Number(filaDestino)) || Number(filaDestino) < 2)) {
         _statusAdmin('La posición en la hoja debe ser un número entero de 2 en adelante.', true); return;
+    }
+    if (precioOferta !== '' && (isNaN(Number(precioOferta)) || Number(precioOferta) < 0)) {
+        _statusAdmin('El precio de oferta debe ser un número válido.', true); return;
+    }
+    if (precioOferta !== '' && precio !== '' && Number(precioOferta) >= Number(precio)) {
+        _statusAdmin('El precio de oferta debe ser menor al precio original.', true); return;
     }
     if (!_adminImagenesProducto.length) {
         _statusAdmin('Agrega una imagen del producto.', true); return;
@@ -5984,6 +6069,7 @@ async function guardarProductoAdmin() {
             ancho:             ancho,
             video:             videoYoutube,
             filaDestino:       filaDestino,
+            precioOferta:      precioOferta,
             imagenes:          _adminImagenesProducto.map(function (x) { return x.base64; }),
             imagenesNombres:   _adminImagenesProducto.map(function (x) { return x.nombre; }),
             // Punto de enfoque de CADA imagen ("X,Y" en %), mismo orden que "imagenes".
@@ -6007,7 +6093,8 @@ async function guardarProductoAdmin() {
         // Limpiar formulario
         ['inputNombreProducto', 'inputDescripcionProducto', 'inputPrecioProducto', 'inputPrecioMayoreoProducto',
          'inputStockProducto',
-         'inputAltoProducto', 'inputAnchoProducto', 'inputVideoYoutubeProducto', 'inputFilaProducto']
+         'inputAltoProducto', 'inputAnchoProducto', 'inputVideoYoutubeProducto', 'inputFilaProducto',
+         'inputPrecioOfertaProducto']
             .forEach(function (id) {
                 var el = document.getElementById(id);
                 if (el) el.value = '';
@@ -6017,6 +6104,7 @@ async function guardarProductoAdmin() {
                 var el = document.getElementById(id);
                 if (el) el.checked = false;
             });
+        _toggleZonaOfertaProducto();
         document.querySelectorAll('.chk-etiqueta-principal-producto:checked').forEach(function (chk) {
             chk.checked = false;
         });
@@ -6078,6 +6166,7 @@ var _editImagenesExistentes = [];   // URLs que YA estaban en el producto (se pu
 var _editEnfoquesExistentes = [];   // { x, y } por cada URL en _editImagenesExistentes, mismo índice
 var _editImagenesNuevas     = [];   // { base64, nombre, dataUrl, enfoqueX, enfoqueY } — se suben y se agregan al guardar
 var _editGuardando          = false;
+var _editMoviendo           = false;  // true mientras se está reubicando el producto de fila (botón "Mover a esa posición")
 
 function abrirEdicionProducto(card) {
     var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
@@ -6093,6 +6182,13 @@ function abrirEdicionProducto(card) {
         return;
     }
     _editFilaActual = filaSheets;
+
+    // ── Reubicación de fila: mostrar la fila actual y limpiar el campo/estado ──
+    var _spanFilaActualEdit = document.getElementById('filaActualProductoEdit');
+    if (_spanFilaActualEdit) _spanFilaActualEdit.textContent = filaSheets;
+    var _inputMoverEdit = document.getElementById('inputFilaMoverProductoEdit');
+    if (_inputMoverEdit) _inputMoverEdit.value = '';
+    _statusMoverProducto('', false);
 
     // Cerrar el modal de producto para dejar ver la pantalla de edición
     if (typeof cerrarModalProducto === 'function') cerrarModalProducto();
@@ -6125,6 +6221,7 @@ function abrirEdicionProducto(card) {
     _setValorEdit('inputAltoProductoEdit',           card.getAttribute('data-alto') || '');
     _setValorEdit('inputAnchoProductoEdit',          card.getAttribute('data-ancho') || '');
     _setValorEdit('inputStockProductoEdit',          card.getAttribute('data-existencia') || '');
+    _setValorEdit('inputPrecioOfertaProductoEdit',   card.getAttribute('data-precio-oferta') || '');
 
     // ── Etiqueta principal (una o varias) ──
     var tiposCard = (card.getAttribute('data-tipos') || card.getAttribute('data-tipo') || '')
@@ -6150,6 +6247,7 @@ function abrirEdicionProducto(card) {
     // ── Oferta / Más vendido ──
     var chkOferta = document.getElementById('inputEnOfertaProductoEdit');
     if (chkOferta) chkOferta.checked = card.getAttribute('data-oferta') === '1';
+    _toggleZonaOfertaProductoEdit();
     var chkMV = document.getElementById('inputMasVendidoProductoEdit');
     if (chkMV) chkMV.checked = card.getAttribute('data-mas-vendido') === '1';
 
@@ -6293,15 +6391,9 @@ function _actualizarContadorImagenesEdit() {
     }
 }
 
-function seleccionarImagenProductoEdit() {
-    var total = _editImagenesExistentes.length + _editImagenesNuevas.length;
-    if (total >= LIMITE_IMAGENES_PRODUCTO) {
-        _statusEdit('Ya alcanzaste el límite de ' + LIMITE_IMAGENES_PRODUCTO + ' imágenes.', true);
-        return;
-    }
-    var input = document.getElementById('inputImagenProductoEdit');
-    if (input) input.click();
-}
+// (La apertura del selector de imágenes de edición ahora la maneja
+// toggleMenuImagenProductoEdit(), arriba — con las opciones de
+// Tomar foto / Elegir de la galería.)
 
 // Convierte y AGREGA (a la galería de "nuevas") uno o varios archivos,
 // reutilizando el mismo conversor a WebP que usa el alta de productos.
@@ -6378,6 +6470,7 @@ async function guardarEdicionProducto() {
     var alto            = ((document.getElementById('inputAltoProductoEdit')  || {}).value || '').trim();
     var ancho           = ((document.getElementById('inputAnchoProductoEdit') || {}).value || '').trim();
     var videoYoutube    = ((document.getElementById('inputVideoYoutubeProductoEdit') || {}).value || '').trim();
+    var precioOferta    = ((document.getElementById('inputPrecioOfertaProductoEdit') || {}).value || '').trim();
 
     if (!nombre) { _statusEdit('Escribe el nombre del producto.', true); return; }
     if (precio === '' || isNaN(Number(precio)) || Number(precio) < 0) {
@@ -6391,6 +6484,12 @@ async function guardarEdicionProducto() {
     }
     if (videoYoutube !== '' && !/^https:\/\/(www\.)?youtube\.com\/embed\/[\w-]{11}(\?.*)?$/.test(videoYoutube)) {
         _statusEdit('El video debe ser un link embed de YouTube (youtube.com/embed/…).', true); return;
+    }
+    if (precioOferta !== '' && (isNaN(Number(precioOferta)) || Number(precioOferta) < 0)) {
+        _statusEdit('El precio de oferta debe ser un número válido.', true); return;
+    }
+    if (precioOferta !== '' && precio !== '' && Number(precioOferta) >= Number(precio)) {
+        _statusEdit('El precio de oferta debe ser menor al precio original.', true); return;
     }
     if (_editImagenesExistentes.length + _editImagenesNuevas.length === 0) {
         _statusEdit('El producto debe tener al menos una imagen.', true); return;
@@ -6420,6 +6519,7 @@ async function guardarEdicionProducto() {
             alto:              alto,
             ancho:             ancho,
             video:             videoYoutube,
+            precioOferta:      precioOferta,
             imagenesNuevas:        _editImagenesNuevas.map(function (x) { return x.base64; }),
             imagenesNuevasNombres: _editImagenesNuevas.map(function (x) { return x.nombre; }),
             // Las que quedaron (ya guardadas) después de quitar las que el usuario
@@ -6456,5 +6556,91 @@ async function guardarEdicionProducto() {
     } finally {
         _editGuardando = false;
         if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar cambios'; }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────
+//  REUBICAR PRODUCTO A OTRA FILA (botón "Mover a esa posición")
+// ─────────────────────────────────────────────────────────────
+// Es una acción independiente de "Guardar cambios": se aplica al instante.
+// Si la fila destino ya tiene otro producto, el servidor simplemente
+// INTERCAMBIA los dos productos de lugar (ver moverProducto() en Codigo.gs).
+function _statusMoverProducto(msg, esError) {
+    var el = document.getElementById('statusMoverProducto');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.style.color = esError ? '#c0392b' : '';
+}
+
+async function moverProductoEdit() {
+    if (_editMoviendo) return;
+
+    var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+    if (!_esAdminUI(user)) {
+        _statusMoverProducto('Tu sesión no está autorizada.', true);
+        return;
+    }
+    if (!_editFilaActual) {
+        _statusMoverProducto('No se pudo identificar el producto.', true);
+        return;
+    }
+
+    var filaDestino = ((document.getElementById('inputFilaMoverProductoEdit') || {}).value || '').trim();
+    if (filaDestino === '' || isNaN(Number(filaDestino)) || !Number.isInteger(Number(filaDestino)) || Number(filaDestino) < 2) {
+        _statusMoverProducto('Escribe una fila válida (número entero de 2 en adelante).', true);
+        return;
+    }
+    if (Number(filaDestino) === Number(_editFilaActual)) {
+        _statusMoverProducto('El producto ya está en esa fila.', true);
+        return;
+    }
+
+    var btn = document.getElementById('btnMoverProductoEdit');
+    _editMoviendo = true;
+    if (btn) btn.disabled = true;
+    _statusMoverProducto('Moviendo producto…', false);
+
+    try {
+        var idToken = await user.getIdToken(true);
+
+        var cuerpo = {
+            accion:      'mover',
+            idToken:     idToken,
+            filaEditar:  _editFilaActual,
+            filaDestino: filaDestino
+        };
+
+        var resp = await fetch(ADMIN_ENDPOINT, {
+            method:  'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body:    JSON.stringify(cuerpo)
+        });
+
+        var data = await resp.json();
+        if (!data.ok) throw new Error(data.error || 'Error del servidor');
+
+        _editFilaActual = String(data.fila);
+        var spanFilaActual = document.getElementById('filaActualProductoEdit');
+        if (spanFilaActual) spanFilaActual.textContent = _editFilaActual;
+        var inputMover = document.getElementById('inputFilaMoverProductoEdit');
+        if (inputMover) inputMover.value = '';
+
+        var aviso = data.intercambiado
+            ? (' (intercambió lugar con "' + data.nombreIntercambiado + '")')
+            : '';
+        mostrarToast('✅ Producto movido a la fila ' + data.fila);
+        _statusMoverProducto('✅ Ahora está en la fila ' + data.fila + aviso, false);
+
+        // Recargar catálogo para que el orden se refleje de inmediato
+        if (typeof cargarDesdeGoogleSheets === 'function') {
+            setTimeout(cargarDesdeGoogleSheets, 1200);
+        }
+
+    } catch (err) {
+        console.error('Error moviendo producto:', err);
+        _statusMoverProducto('❌ ' + (err.message || 'No se pudo mover'), true);
+    } finally {
+        _editMoviendo = false;
+        if (btn) btn.disabled = false;
     }
 }

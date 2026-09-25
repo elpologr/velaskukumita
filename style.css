@@ -1093,6 +1093,24 @@
             color: #362a22; line-height: 1;
         }
         body.modo-oscuro .mp-precio-valor { color: #f0e8e0; }
+        .mp-precio-original-wrap {
+            position: relative; display: inline-block; line-height: 1;
+        }
+        .mp-precio-original-x {
+            display: none;
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #e53935; font-size: 1.5em; font-weight: 900;
+            line-height: 1; pointer-events: none;
+            text-shadow: 0 0 4px rgba(255,255,255,0.85), 0 0 4px rgba(255,255,255,0.85);
+        }
+        body.modo-oscuro .mp-precio-original-x {
+            text-shadow: 0 0 4px rgba(30,20,15,0.9), 0 0 4px rgba(30,20,15,0.9);
+        }
+        .mp-precio-valor-oferta {
+            display: none;
+            margin-top: 0;
+        }
         .mp-precio-bloque-mayoreo { align-items: flex-end; flex-shrink: 0; }
         .mp-precio-etiqueta-mayoreo {
             font-size: 9px; font-weight: 700;
@@ -1915,6 +1933,28 @@
         .btn-opcion-perfil:hover { background: #f5ede5; border-color: #8c7565; color: #5c4d43; }
         .btn-opcion-perfil .op-icono { font-size: 24px; }
         .btn-opcion-perfil .op-sub { font-size: 12px; font-weight: 400; color: #a89080; display: block; margin-top: 2px; }
+        .selector-imagen-wrap { position: relative; width: 100%; max-width: 380px; }
+        .menu-seleccion-imagen {
+            display: none;
+            position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+            z-index: 40;
+            background: #fdfaf7; border: 1.5px solid #e8ddd5; border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(54, 42, 34, 0.16);
+            overflow: hidden;
+        }
+        .menu-seleccion-imagen.abierto { display: block; }
+        .menu-seleccion-imagen button {
+            display: flex; align-items: center; gap: 10px;
+            width: 100%; padding: 14px 18px;
+            background: none; border: none; border-bottom: 1px solid #f0eae4;
+            font-size: 15px; font-weight: 600; color: #362a22;
+            cursor: pointer; text-align: left;
+        }
+        .menu-seleccion-imagen button:last-child { border-bottom: none; }
+        .menu-seleccion-imagen button:hover { background: #f5ede5; }
+        body.modo-oscuro .menu-seleccion-imagen { background: #2a2218; border-color: #3a3028; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+        body.modo-oscuro .menu-seleccion-imagen button { color: #d0c0b0; border-bottom-color: #3a3028; }
+        body.modo-oscuro .menu-seleccion-imagen button:hover { background: #3a2e26; color: #f0e8e0; }
         .btn-cerrar-sesion-perfil {
             display: flex; align-items: center; gap: 14px;
             width: 100%; max-width: 380px;
@@ -2140,6 +2180,25 @@
                horizontal disponible, ocupan menos alto. */
             #pantallaAdminProductos .grid-checks-evento { grid-template-columns: 1fr 1fr 1fr; }
             #pantallaAdminProductos .btn-guardar-producto { max-width: 860px; }
+        }
+        /* ── Pantalla "Editar producto" (menú de configuración de cada
+           producto) en escritorio: mismo acomodo de 2 columnas que
+           "Agregar producto", para aprovechar mejor el espacio en pantallas
+           grandes. En celular queda igual que antes (una sola columna). ── */
+        @media (min-width: 768px) {
+            #pantallaEditarProducto .pantalla-perfil-body { padding-top: 24px; }
+            #pantallaEditarProducto .form-admin-producto { max-width: 860px; }
+            #pantallaEditarProducto .form-admin-producto-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 0 28px;
+                align-items: start;
+            }
+            #pantallaEditarProducto .form-admin-col {
+                display: flex; flex-direction: column; gap: 14px;
+            }
+            #pantallaEditarProducto .grid-checks-evento { grid-template-columns: 1fr 1fr 1fr; }
+            #pantallaEditarProducto .btn-guardar-producto { max-width: 860px; }
         }
         .btn-seleccionar-todo-eventos {
             display: inline-flex; align-items: center; gap: 6px;
