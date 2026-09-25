@@ -30,7 +30,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600;1,700&family=Playfair+Display:ital,wght@0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
     <!-- Estilos externos -->
-    <link rel="stylesheet" href="style.css?v=10">
+    <link rel="stylesheet" href="style.css?v=11">
 
     <!-- Estilos botones de modo catálogo -->
     <style>
@@ -994,10 +994,10 @@
                 <span class="btn-tienda-bazar-texto" style="font-family:'Playfair Display', Georgia, serif; font-style:normal; font-size:1.45rem; letter-spacing:1px;">Búscanos en Tienda</span>
             </a>
             <!-- Botón bazar grande tipo píldora con imagen opcional -->
-            <a id="btnBazarPrincipal" href="#" onclick="event.preventDefault(); abrirModalBazar()" class="btn-tienda-bazar"
-               style="display:inline-flex; align-items:center; gap:10px; background:#8c7565; color:white; text-decoration:none; border-radius:999px; padding:28px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(140,117,101,0.3); transition:all 0.25s; cursor:pointer; border:none; justify-content:center; flex:1; min-width:140px; max-width:300px;">
-                <span id="btnBazarImgWrap" class="btn-tienda-bazar-icono" style="width:80px; height:80px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:2.8rem;">🗓️</span>
-                <span class="btn-tienda-bazar-texto" style="font-family:'Playfair Display', Georgia, serif; font-style:normal; font-size:1.45rem; letter-spacing:1px;">Búscanos en Bazar</span>
+            <a id="btnBazarPrincipal" href="#" onclick="event.preventDefault(); abrirModalBazar()" class="btn-tienda-bazar btn-bazar-conimagen"
+               style="display:inline-flex; align-items:center; gap:10px; background:#8c7565 center/cover no-repeat; color:white; text-decoration:none; border-radius:999px; padding:28px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(140,117,101,0.3); transition:all 0.25s; cursor:pointer; border:none; justify-content:center; flex:1; min-width:140px; max-width:300px; position:relative; overflow:hidden; isolation:isolate;">
+                <span id="btnBazarImgWrap" class="btn-tienda-bazar-icono" style="width:80px; height:80px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; font-size:2.8rem; position:relative; z-index:2; border:2px solid rgba(255,255,255,0.5);">🗓️</span>
+                <span class="btn-tienda-bazar-texto" style="font-family:'Playfair Display', Georgia, serif; font-style:normal; font-size:1.45rem; letter-spacing:1px; position:relative; z-index:2; text-shadow:0 1px 4px rgba(0,0,0,0.45);">Búscanos en Bazar</span>
             </a>
         </div>
         <p style="font-size:0.78rem; color:#3F2C25; font-family:'Playfair Display', Georgia, serif; font-style:normal; margin:10px 0 0; letter-spacing:0.3px;">↑ Ver próximas fechas, ubicaciones y horarios</p>
@@ -2060,7 +2060,7 @@
 <div class="modal-auth-overlay" id="modalGoogleAuth">
     <div class="modal-auth-caja">
         <button class="modal-auth-cerrar" onclick="cerrarModalGoogle()">✕</button>
-        <div class="modal-auth-logo">🕯️</div>
+        <img class="modal-auth-logo" src="imagenes/logo-velas-kukumita.webp" alt="Velas Kukumita">
         <h2 class="modal-auth-titulo">Bienvenida a Kukumita</h2>
         <p class="modal-auth-sub">Inicia sesión para guardar tus favoritos y hacer pedidos</p>
         <button class="btn-google-auth" onclick="iniciarSesionGoogle()">
@@ -2143,9 +2143,11 @@
         <div style="position:relative; width:100%; background:#1a1008; flex-shrink:0; overflow:hidden; border-radius:20px 20px 0 0;">
             <!-- Botón cerrar flotante -->
             <button onclick="cerrarModalBazar()" style="position:absolute; top:12px; right:12px; z-index:20; width:34px; height:34px; border-radius:50%; background:rgba(0,0,0,0.48); color:white; border:none; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
+            <!-- Botón engranaje — editar información del bazar (solo visible para administradores autorizados) -->
+            <button id="btnBazarAdminConfig" onclick="abrirPantallaAdminBazar()" title="Editar información del bazar" style="display:none; position:absolute; top:12px; left:12px; z-index:20; width:34px; height:34px; border-radius:50%; background:rgba(0,0,0,0.48); color:white; border:none; font-size:16px; cursor:pointer; align-items:center; justify-content:center;">⚙️</button>
             <!-- Imagen bazar.webp -->
             <div style="width:100%; max-height:280px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
-                <img src="imagenes/bazar.webp" alt="Velas Kukumita en Bazar"
+                <img id="bazarImgSuperior" src="imagenes/bazar.webp" alt="Velas Kukumita en Bazar"
                      style="width:100%; height:280px; object-fit:cover; display:block;"
                      onerror="this.parentElement.innerHTML='<div style=\'width:100%;height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#3d2b1f,#6b4c37);\'><div style=\'font-size:5rem;\'>🏪</div><p style=\'color:rgba(255,255,255,0.7);font-size:1rem;font-style:italic;letter-spacing:2px;font-family:Cormorant Garamond,Georgia,serif;margin-top:12px;\'>Velas Kukumita en Bazar</p></div>'">
             </div>
@@ -2171,7 +2173,7 @@
                 </p>
                 <!-- Recuadro del día de bazar — se llena dinámicamente desde la columna O de la hoja de Google Sheets -->
                 <div id="bazarDiasContenedor" style="display:flex; gap:8px; margin-bottom:12px; overflow-x:auto; scrollbar-width:none; padding-bottom:2px;"></div>
-                <p style="font-size:0.88rem; color:#5c4d43; line-height:1.65; margin:0; background:#fdf3ec; border-left:3px solid #8c7565; padding:10px 12px; border-radius:0 8px 8px 0;">
+                <p id="bazarDescBajaTexto" style="font-size:0.88rem; color:#5c4d43; line-height:1.65; margin:0; background:#fdf3ec; border-left:3px solid #8c7565; padding:10px 12px; border-radius:0 8px 8px 0;">
                     ¡Los esperamos allá! Y si tienes un pedido pendiente te lo podemos entregar ahí. También aprovecha los <strong>precios de mayoreo</strong> que podrás notar en los productos de la página, entre precio original y precio mayoreo.
                 </p>
             </div>
@@ -2183,6 +2185,87 @@
             <button onclick="cerrarModalBazar()" style="width:100%; padding:16px; background:#8c7565; color:white; border:none; border-radius:12px; font-size:1rem; font-weight:700; cursor:pointer; margin-top:4px; transition:background 0.2s; font-family:inherit;">
                 Cerrar
             </button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PANEL ADMIN: EDITAR INFORMACIÓN DEL BAZAR
+     Solo visible para los correos en ADMIN_EMAILS (ver el engranaje ⚙️
+     dentro del submenú de "Búscanos en Bazar"). Guarda en la columna O
+     de la hoja de Google Sheets (filas 2 a 10), a través del mismo
+     Apps Script que ya usa el panel de productos.
+══════════════════════════════════════════════ -->
+<div id="modalAdminBazar" style="display:none; position:fixed; inset:0; z-index:10020; background:rgba(0,0,0,0.72); backdrop-filter:blur(4px); align-items:flex-end; justify-content:center; padding:0;">
+    <div style="background:#fff; border-radius:20px 20px 0 0; width:100%; max-width:600px; height:92vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,0.35); display:flex; flex-direction:column; position:relative;">
+        <div class="pantalla-perfil-header" style="position:sticky; top:0; z-index:5;">
+            <button class="btn-volver-perfil" onclick="cerrarPantallaAdminBazar()">‹</button>
+            <span class="pantalla-perfil-titulo">Editar información del bazar</span>
+            <div style="width:42px;"></div>
+        </div>
+        <div class="pantalla-perfil-body" style="padding:16px 16px 32px;">
+            <div class="form-admin-producto">
+                <div class="fila-campos-dobles">
+                    <div class="campo-admin-producto">
+                        <label class="panel-nombre-label">Día</label>
+                        <input id="inputBazarDia" class="panel-nombre-input" type="number" inputmode="numeric" min="1" max="31" step="1" placeholder="Ej. 25">
+                    </div>
+                    <div class="campo-admin-producto">
+                        <label class="panel-nombre-label">Mes</label>
+                        <select id="inputBazarMes" class="panel-nombre-input">
+                            <option value="enero">Enero</option>
+                            <option value="febrero">Febrero</option>
+                            <option value="marzo">Marzo</option>
+                            <option value="abril">Abril</option>
+                            <option value="mayo">Mayo</option>
+                            <option value="junio">Junio</option>
+                            <option value="julio">Julio</option>
+                            <option value="agosto">Agosto</option>
+                            <option value="septiembre">Septiembre</option>
+                            <option value="octubre">Octubre</option>
+                            <option value="noviembre">Noviembre</option>
+                            <option value="diciembre">Diciembre</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="fila-campos-dobles">
+                    <div class="campo-admin-producto">
+                        <label class="panel-nombre-label">Año</label>
+                        <input id="inputBazarAnio" class="panel-nombre-input" type="number" inputmode="numeric" min="2024" max="2100" step="1" placeholder="Ej. 2026">
+                    </div>
+                    <div class="campo-admin-producto">
+                        <label class="panel-nombre-label">Lugar</label>
+                        <input id="inputBazarLugar" class="panel-nombre-input" type="text" maxlength="120" placeholder="Opcional, ej. Poliforum">
+                    </div>
+                </div>
+                <div class="fila-campos-dobles">
+                    <div class="campo-admin-producto">
+                        <label class="panel-nombre-label">Hora de inicio</label>
+                        <input id="inputBazarHoraInicio" class="panel-nombre-input" type="text" maxlength="20" placeholder="Ej. 8:00am">
+                    </div>
+                    <div class="campo-admin-producto">
+                        <label class="panel-nombre-label">Hora final</label>
+                        <input id="inputBazarHoraFinal" class="panel-nombre-input" type="text" maxlength="20" placeholder="Ej. 9:00pm">
+                    </div>
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Imagen (link directo, ej. i.ibb.co)</label>
+                    <input id="inputBazarImagen" class="panel-nombre-input" type="url" placeholder="https://i.ibb.co/…/imagen.webp">
+                    <span style="font-size:11px; color:#9a8878;">Se usa como fondo del botón "Búscanos en Bazar" y como foto de arriba del submenu.</span>
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Descripción del aviso</label>
+                    <textarea id="inputBazarAviso" class="panel-nombre-input" rows="4" maxlength="600" style="resize:vertical; font-family:inherit;"></textarea>
+                    <span style="font-size:11px; color:#9a8878;">Puedes usar estos textos y se reemplazan solos: (dia de la semana y numero del dia del mes), (mes), (Año), (Lugar), (Hora inicial), (Hora Final).</span>
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Descripción baja</label>
+                    <textarea id="inputBazarDescBaja" class="panel-nombre-input" rows="4" maxlength="600" style="resize:vertical; font-family:inherit;"></textarea>
+                    <span style="font-size:11px; color:#9a8878;">El texto que aparece debajo del aviso, con fondo color crema.</span>
+                </div>
+            </div>
+            <button class="btn-guardar-producto" id="btnGuardarConfigBazar" onclick="guardarConfigBazarAdmin()">💾 Guardar cambios</button>
+            <p class="status-admin-producto" id="statusAdminBazar"></p>
         </div>
     </div>
 </div>
@@ -2435,7 +2518,7 @@
 </div>
 
     <!-- JavaScript externo -->
-    <script src="app.js?v=7"></script>
+    <script src="app.js?v=9"></script>
 
     <!-- ── AUTO-FIX MÓVIL: detecta y elimina cualquier elemento que desborde el viewport ── -->
     <script>

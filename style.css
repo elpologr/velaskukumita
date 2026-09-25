@@ -3106,7 +3106,7 @@
     display: flex; align-items: center; justify-content: center;
 }
 .modal-auth-cerrar:hover { background: #d9cfc8; }
-.modal-auth-logo { font-size: 40px; margin-bottom: 8px; }
+.modal-auth-logo { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px; display: block; box-shadow: 0 2px 10px rgba(0,0,0,0.12); }
 .modal-auth-titulo { font-size: 20px; font-weight: 700; color: #362a22; margin: 0 0 4px; }
 .modal-auth-sub { font-size: 13px; color: #9a8878; margin: 0 0 24px; }
 .btn-google-auth {
@@ -4232,4 +4232,19 @@ body.modo-oscuro .btn-privacidad-drawer:hover { background: #3a2e26 !important; 
     .btn-tienda-bazar-texto {
         font-size: 0.92rem !important;
     }
+}
+
+/* ===== Botón "Búscanos en Bazar" con foto de fondo (columna O de Sheets) =====
+   El botón de Tienda se queda con color sólido + pin 📍; el de Bazar ahora
+   muestra como fondo la misma foto del bazar (la que se ve dentro del
+   submenu), con un degradado oscuro encima para que el texto en blanco
+   siga siendo legible sobre cualquier imagen. Así ambos botones se ven
+   claramente diferentes entre sí. */
+.btn-bazar-conimagen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(30,20,14,0.62), rgba(30,20,14,0.42));
+    z-index: 1;
+    pointer-events: none;
 }

@@ -653,9 +653,20 @@ function cargarDesdeGoogleSheets() {
 
             var productos = csvAProductos(filas);
 
-            // ── Columna O (índice 14), fila 2 (índice 1): configuración del bazar ──
-            if (filas[1] && typeof filas[1][14] !== 'undefined') {
-                aplicarConfigBazar(filas[1][14]);
+            // ── Columna O (índice 14), filas 2 a 9: configuración del bazar ──
+            // Cada dato vive ahora en su propia fila (ver comentario completo
+            // más abajo, junto a parsearConfigBazar). Se juntan todas las filas
+            // no vacías de la columna O y se le pasan juntas al parser, que
+            // busca cada etiqueta ("Día:", "Mes:", etc.) sin importar en cuál
+            // fila esté.
+            var _filasConfigBazar = [];
+            for (var _fb = 1; _fb <= 9; _fb++) { // filas 2 a 10 de la hoja
+                if (filas[_fb] && typeof filas[_fb][14] !== 'undefined' && filas[_fb][14]) {
+                    _filasConfigBazar.push(filas[_fb][14]);
+                }
+            }
+            if (_filasConfigBazar.length) {
+                aplicarConfigBazar(_filasConfigBazar.join('\n'));
             }
 
             if (productos.length === 0) {
@@ -718,12 +729,39 @@ if (document.readyState === 'loading') {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// CONFIGURACIÓN DE BAZAR DESDE GOOGLE SHEETS (columna O, fila 2)
+// CONFIGURACIÓN DE BAZAR DESDE GOOGLE SHEETS (columna O, filas 2 a 10)
 // ──────────────────────────────────────────────────────────────────────────────
-// Columna O (índice 14): fila 1 = título "dias bazar", fila 2 = los datos.
-// Formato de la celda en la fila 2 (única fila que se debe editar para
-// actualizar la fecha del próximo bazar):
-//   dias: 25, Mes: Sep, año:2026, horainicio: 8:00am, horafinal:9:00pm
+// Columna O (índice 14). Cada dato va en su propia fila:
+//   Fila 1  (encabezado, no se lee): Info Bazar
+//   Fila 2:  Día: 25
+//   Fila 3:  Mes: Septiembre
+//   Fila 4:  Año: 2026
+//   Fila 5:  Hora de Inicio: 8:00am
+//   Fila 6:  Hora Final: 9:00pm
+//   Fila 7:  Lugar: Poliforum                (opcional, puede quedar vacío)
+//   Fila 8:  Imagen: https://i.ibb.co/99rDcJzS/poliforum.webp
+//   Fila 9:  Descripcion del Aviso: En este momento no nos encontramos en
+//            ningún bazar, pero estaremos vendiendo en bazar el día
+//            (dia de la semana y numero del dia del mes) de (mes) de (Año)
+//            en (Lugar), de (Hora inicial) a (Hora Final):
+//   Fila 10: Descripcion baja: ¡Los esperamos allá!...
+//
+// La "Imagen" es la foto que se usa tanto de fondo del botón "Búscanos en
+// Bazar" como dentro del submenu/modal del bazar. "Descripcion del Aviso" y
+// "Descripcion baja" son los dos textos del submenu — ambos totalmente
+// editables desde la hoja. Dentro de "Descripcion del Aviso" se pueden usar
+// estos textos entre paréntesis y la página los reemplaza automáticamente
+// por el dato real (ver _rellenarPlantillaAvisoBazar más abajo):
+//   (dia de la semana y numero del dia del mes), (mes), (Año), (Lugar),
+//   (Hora inicial), (Hora Final)
+//
+// El parser busca cada etiqueta ("Día:", "Mes:", etc.) sin importar en cuál
+// de esas filas esté exactamente, así que el orden no es crítico — pero para
+// mantenerlo simple, usa siempre una etiqueta por fila como en el ejemplo.
+// Todo esto también se puede editar sin tocar la hoja directamente: dentro
+// del submenu de "Búscanos en Bazar" hay un botón ⚙️ visible solo para los
+// correos admin (ADMIN_EMAILS), que abre un formulario y guarda los cambios
+// en estas mismas filas a través del Apps Script.
 // ══════════════════════════════════════════════════════════════════════════════
 var _MESES_BAZAR = {
     ene:{i:0,n:'enero'}, feb:{i:1,n:'febrero'}, mar:{i:2,n:'marzo'}, abr:{i:3,n:'abril'},
@@ -733,29 +771,54 @@ var _MESES_BAZAR = {
 };
 var _DIAS_SEMANA_BAZAR = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 
-// Convierte el texto de la celda O2 en un objeto { dia, mesIndex, mesNombre, anio, horaInicio, horaFinal }
+// Última configuración de bazar aplicada con éxito — se usa para pre-llenar
+// el formulario de administración cuando el admin toca el engranaje ⚙️.
+var _configBazarActual = null;
+
+// Escapa HTML básico (se usa antes de insertar texto libre de la hoja con innerHTML)
+function _escapeHtmlBazar(str) {
+    return String(str || '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Convierte el texto combinado de las celdas O2..O10 en un objeto
+// { dia, mesIndex, mesNombre, anio, horaInicio, horaFinal, lugar, imagen, avisoTexto, descripcionBaja }
 function parsearConfigBazar(texto) {
     if (!texto) return null;
     texto = String(texto).replace(/["']/g, '');
 
+    // Cada fila puede venir separada por salto de línea (varias celdas) o por
+    // coma (formato viejo, todo en una sola celda) — el valor se corta en lo
+    // que venga primero. Para los dos textos largos (aviso y descripción
+    // baja) se corta solo en el salto de línea, para no partir el texto si
+    // el admin usa comas dentro de su redacción.
     function extraer(clave) {
-        var re = new RegExp(clave + '\\s*:\\s*([^,]+)', 'i');
+        var re = new RegExp(clave + '\\s*:\\s*([^,\\n]+)', 'i');
+        var m = texto.match(re);
+        return m ? m[1].trim() : '';
+    }
+    function extraerLinea(clave) {
+        var re = new RegExp(clave + '\\s*:\\s*([^\\n]+)', 'i');
         var m = texto.match(re);
         return m ? m[1].trim() : '';
     }
 
-    var diaTxt  = extraer('d[ií]as?');
-    var mesTxt  = extraer('mes');
-    var anioTxt = extraer('a[ñn]o');
-    var horaIni = extraer('horainicio');
-    var horaFin = extraer('horafinal');
+    var diaTxt    = extraer('d[ií]as?');
+    var mesTxt    = extraer('mes');
+    var anioTxt   = extraer('a[ñn]o');
+    var horaIni   = extraer('hora\\s*(?:de\\s*)?inicio');
+    var horaFin   = extraer('hora\\s*final');
+    var lugarTxt  = extraerLinea('lugar');
+    var imagenTxt = extraerLinea('imagen');
+    var avisoTxt      = extraerLinea('descripci[oó]n\\s*del\\s*aviso');
+    var descBajaTxt   = extraerLinea('descripci[oó]n\\s*baja');
 
     var dia    = parseInt(diaTxt, 10);
     var anio   = parseInt(anioTxt, 10);
     var mesKey = (mesTxt || '').toLowerCase().substring(0, 3);
     var mesInfo = _MESES_BAZAR[mesKey];
 
-    if (!dia || !anio || !mesInfo) return null; // celda vacía o con formato inesperado
+    if (!dia || !anio || !mesInfo) return null; // celdas vacías o con formato inesperado
 
     return {
         dia: dia,
@@ -763,14 +826,54 @@ function parsearConfigBazar(texto) {
         mesNombre: mesInfo.n,
         anio: anio,
         horaInicio: horaIni || '',
-        horaFinal: horaFin || ''
+        horaFinal: horaFin || '',
+        lugar: (lugarTxt || '').trim(),
+        imagen: (imagenTxt || '').trim(),
+        avisoTexto: (avisoTxt || '').trim(),
+        descripcionBaja: (descBajaTxt || '').trim()
     };
 }
 
-// Aplica la configuración de bazar (fecha/hora) al modal y al contador regresivo
+// Sustituye los textos entre paréntesis de la plantilla de "Descripcion del
+// Aviso" por los datos reales, resaltando en <strong> cada dato sustituido
+// (igual que se veía antes, cuando el texto estaba fijo en el código). Si
+// falta "Lugar" o alguna hora, quita con cuidado ese pedacito de la frase
+// para no dejar "en , de a" con huecos raros.
+function _rellenarPlantillaAvisoBazar(cfg, diaSemana) {
+    var plantilla = _escapeHtmlBazar(cfg.avisoTexto);
+
+    var diaCompleto = diaSemana + ' ' + cfg.dia;
+    plantilla = plantilla.replace(
+        /\(\s*dia\s+de\s+la\s+semana\s+y\s+n[uú]mero\s+del\s+dia\s+del\s+mes\s*\)/i,
+        '<strong style="color:#8c7565;">' + diaCompleto + '</strong>'
+    );
+    plantilla = plantilla.replace(/\(\s*mes\s*\)/i, '<strong>' + cfg.mesNombre + '</strong>');
+    plantilla = plantilla.replace(/\(\s*a[ñn]o\s*\)/i, '<strong>' + cfg.anio + '</strong>');
+
+    if (cfg.lugar) {
+        plantilla = plantilla.replace(/\(\s*lugar\s*\)/i, '<strong>' + _escapeHtmlBazar(cfg.lugar) + '</strong>');
+    } else {
+        // Sin lugar definido: se quita "en (Lugar)" completo (con el espacio de antes)
+        plantilla = plantilla.replace(/\s*en\s*\(\s*lugar\s*\)/i, '');
+    }
+
+    if (cfg.horaInicio && cfg.horaFinal) {
+        plantilla = plantilla.replace(/\(\s*hora\s+inicial\s*\)/i, '<strong>' + cfg.horaInicio + '</strong>');
+        plantilla = plantilla.replace(/\(\s*hora\s+final\s*\)/i, '<strong>' + cfg.horaFinal + '</strong>');
+    } else {
+        // Sin horas definidas: se quita ", de (Hora inicial) a (Hora Final)" completo
+        plantilla = plantilla.replace(/,?\s*de\s*\(\s*hora\s+inicial\s*\)\s*a\s*\(\s*hora\s+final\s*\)/i, '');
+    }
+
+    return plantilla;
+}
+
+// Aplica la configuración de bazar (fecha/hora/textos/imagen) al modal, al
+// botón "Búscanos en Bazar" y al contador regresivo
 function aplicarConfigBazar(rawTexto) {
     var cfg = parsearConfigBazar(rawTexto);
-    if (!cfg) return; // si la celda O2 está vacía o mal escrita, se deja el contenido tal cual esté
+    if (!cfg) return; // si las celdas están vacías o con formato inesperado, se deja el contenido tal cual esté
+    _configBazarActual = cfg;
 
     var diaSemana = _DIAS_SEMANA_BAZAR[new Date(cfg.anio, cfg.mesIndex, cfg.dia).getDay()];
     var mesAbrev  = cfg.mesNombre.substring(0, 3);
@@ -793,13 +896,42 @@ function aplicarConfigBazar(rawTexto) {
             '</div>';
     }
 
-    // Texto del aviso
+    // Texto del aviso — viene de la fila "Descripcion del Aviso:" de la
+    // columna O; se le rellenan los datos reales en los textos entre
+    // paréntesis. Si esa fila viene vacía, se deja un texto por defecto
+    // razonable para que el submenu nunca se quede en blanco.
     var aviso = document.getElementById('bazarAvisoTexto');
     if (aviso) {
-        aviso.innerHTML = 'En este momento <strong>no nos encontramos en ningún bazar</strong>, pero estaremos vendiendo en bazar el día <strong style="color:#8c7565;">' +
-            diaSemana + ' ' + cfg.dia + ' de ' + cfg.mesNombre + ' de ' + cfg.anio + '</strong>' +
-            (cfg.horaInicio && cfg.horaFinal ? ', de <strong>' + cfg.horaInicio + '</strong> a <strong>' + cfg.horaFinal + '</strong>' : '') +
-            ':';
+        if (cfg.avisoTexto) {
+            aviso.innerHTML = _rellenarPlantillaAvisoBazar(cfg, diaSemana);
+        } else {
+            aviso.innerHTML = 'En este momento <strong>no nos encontramos en ningún bazar</strong>, pero estaremos vendiendo en bazar el día <strong style="color:#8c7565;">' +
+                diaSemana + ' ' + cfg.dia + ' de ' + cfg.mesNombre + ' de ' + cfg.anio + '</strong>' +
+                (cfg.lugar ? ' en <strong>' + _escapeHtmlBazar(cfg.lugar) + '</strong>' : '') +
+                (cfg.horaInicio && cfg.horaFinal ? ', de <strong>' + cfg.horaInicio + '</strong> a <strong>' + cfg.horaFinal + '</strong>' : '') +
+                ':';
+        }
+    }
+
+    // Descripción baja — viene de la fila "Descripcion baja:" de la columna
+    // O. Si viene vacía, se deja el texto por defecto que ya traía la página.
+    var descBaja = document.getElementById('bazarDescBajaTexto');
+    if (descBaja && cfg.descripcionBaja) {
+        descBaja.textContent = cfg.descripcionBaja;
+    }
+
+    // ── Imagen del bazar (fila "Imagen:" de la columna O) ──
+    // Se usa en dos lugares: la foto grande de arriba del submenu, y el
+    // fondo del botón "Búscanos en Bazar" de la pantalla principal. Si la
+    // celda está vacía se dejan las imágenes por defecto tal como estaban.
+    if (cfg.imagen) {
+        var imgSuperior = document.getElementById('bazarImgSuperior');
+        if (imgSuperior) imgSuperior.src = cfg.imagen;
+
+        var btnBazar = document.getElementById('btnBazarPrincipal');
+        if (btnBazar) {
+            btnBazar.style.backgroundImage = "url('" + cfg.imagen.replace(/'/g, "\\'") + "')";
+        }
     }
 }
 
@@ -3186,6 +3318,8 @@ function _hayPantallaOModalAbierto() {
     if (overlayRecorte && overlayRecorte.style.display && overlayRecorte.style.display !== 'none') return true;
     var modalBazarEl = document.getElementById('modalBazar');
     if (modalBazarEl && (modalBazarEl.style.display === 'flex' || modalBazarEl.classList.contains('abierto'))) return true;
+    var modalAdminBazarEl = document.getElementById('modalAdminBazar');
+    if (modalAdminBazarEl && modalAdminBazarEl.style.display === 'flex') return true;
     var lightboxEl = document.getElementById('lightboxFB');
     if (lightboxEl && lightboxEl.style.display && lightboxEl.style.display !== 'none') return true;
     return false;
@@ -3560,6 +3694,165 @@ document.getElementById('modalBazar').addEventListener('click', function(e) {
     style.textContent = '@media (min-width:600px) { #modalBazar { align-items:center !important; padding:16px !important; } #modalBazar > div { border-radius:16px !important; height:auto !important; max-height:92vh !important; } }';
     document.head.appendChild(style);
 })();
+
+
+// ─────────────────────────────────────────────────────────────
+//  PANEL ADMIN: EDITAR INFORMACIÓN DEL BAZAR (columna O, filas 2-10)
+//  Solo se dibuja/abre para los correos en ADMIN_EMAILS — la seguridad real
+//  está en el Apps Script, igual que en el resto del panel admin (ver el
+//  aviso grande al inicio del "MÓDULO ADMIN — AGREGAR PRODUCTO").
+// ─────────────────────────────────────────────────────────────
+var _adminBazarGuardando = false;
+
+function abrirPantallaAdminBazar() {
+    var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+    if (!_esAdminUI(user)) {
+        mostrarToast('No tienes permiso para acceder a esta sección');
+        return;
+    }
+    var modal = document.getElementById('modalAdminBazar');
+    if (!modal) return;
+
+    // Pre-llenar el formulario con la última configuración leída de la hoja
+    var cfg = _configBazarActual;
+    var elDia    = document.getElementById('inputBazarDia');
+    var elMes    = document.getElementById('inputBazarMes');
+    var elAnio   = document.getElementById('inputBazarAnio');
+    var elLugar  = document.getElementById('inputBazarLugar');
+    var elHIni   = document.getElementById('inputBazarHoraInicio');
+    var elHFin   = document.getElementById('inputBazarHoraFinal');
+    var elImagen = document.getElementById('inputBazarImagen');
+    var elAviso  = document.getElementById('inputBazarAviso');
+    var elDescB  = document.getElementById('inputBazarDescBaja');
+
+    if (cfg) {
+        if (elDia)    elDia.value    = cfg.dia || '';
+        if (elMes)    elMes.value    = cfg.mesNombre || 'enero';
+        if (elAnio)   elAnio.value   = cfg.anio || '';
+        if (elLugar)  elLugar.value  = cfg.lugar || '';
+        if (elHIni)   elHIni.value   = cfg.horaInicio || '';
+        if (elHFin)   elHFin.value   = cfg.horaFinal || '';
+        if (elImagen) elImagen.value = cfg.imagen || '';
+        if (elAviso)  elAviso.value  = cfg.avisoTexto || '';
+        if (elDescB)  elDescB.value  = cfg.descripcionBaja || '';
+    }
+
+    modal.style.display = 'flex';
+    _bloquearScrollBody();
+    _statusAdminBazar('', false);
+}
+
+function cerrarPantallaAdminBazar() {
+    var modal = document.getElementById('modalAdminBazar');
+    if (modal) modal.style.display = 'none';
+    _desbloquearScrollBody();
+}
+
+function _statusAdminBazar(msg, esError) {
+    var el = document.getElementById('statusAdminBazar');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.style.color = esError ? '#c0392b' : '#4a7c4a';
+}
+
+async function guardarConfigBazarAdmin() {
+    if (_adminBazarGuardando) return;
+
+    var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+    if (!_esAdminUI(user)) {
+        _statusAdminBazar('Tu sesión no está autorizada.', true);
+        return;
+    }
+
+    var dia    = ((document.getElementById('inputBazarDia')         || {}).value || '').trim();
+    var mes    = ((document.getElementById('inputBazarMes')         || {}).value || '').trim();
+    var anio   = ((document.getElementById('inputBazarAnio')        || {}).value || '').trim();
+    var lugar  = ((document.getElementById('inputBazarLugar')       || {}).value || '').trim();
+    var hIni   = ((document.getElementById('inputBazarHoraInicio')  || {}).value || '').trim();
+    var hFin   = ((document.getElementById('inputBazarHoraFinal')   || {}).value || '').trim();
+    var imagen = ((document.getElementById('inputBazarImagen')      || {}).value || '').trim();
+    var aviso  = ((document.getElementById('inputBazarAviso')       || {}).value || '').trim();
+    var descB  = ((document.getElementById('inputBazarDescBaja')    || {}).value || '').trim();
+
+    if (dia === '' || isNaN(Number(dia)) || Number(dia) < 1 || Number(dia) > 31) {
+        _statusAdminBazar('Escribe un día válido (1 a 31).', true); return;
+    }
+    if (anio === '' || isNaN(Number(anio)) || Number(anio) < 2024) {
+        _statusAdminBazar('Escribe un año válido.', true); return;
+    }
+    if (!mes) {
+        _statusAdminBazar('Elige el mes.', true); return;
+    }
+    if (!aviso) {
+        _statusAdminBazar('Escribe la descripción del aviso.', true); return;
+    }
+
+    var btn = document.getElementById('btnGuardarConfigBazar');
+    _adminBazarGuardando = true;
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Guardando…'; }
+    _statusAdminBazar('Guardando en la hoja…', false);
+
+    try {
+        var idToken = await user.getIdToken(true);
+
+        var cuerpo = {
+            idToken:         idToken,
+            accion:          'bazar',
+            dia:             dia,
+            mes:             mes,
+            anio:            anio,
+            horaInicio:      hIni,
+            horaFinal:       hFin,
+            lugar:           lugar,
+            imagen:          imagen,
+            avisoTexto:      aviso,
+            descripcionBaja: descB
+        };
+
+        var resp = await fetch(ADMIN_ENDPOINT, {
+            method:  'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body:    JSON.stringify(cuerpo)
+        });
+
+        var data = await resp.json();
+        if (!data.ok) throw new Error(data.error || 'Error del servidor');
+
+        mostrarToast('✅ Información del bazar actualizada');
+        _statusAdminBazar('✅ Guardado correctamente.', false);
+
+        // Actualización optimista inmediata (sin esperar a que Sheets/CSV se
+        // refresque), armando el mismo formato de texto que se lee de la
+        // columna O, para que el submenu se vea al toque con los cambios.
+        var textoOptimista = [
+            'Día: ' + dia,
+            'Mes: ' + mes,
+            'Año: ' + anio,
+            'Hora de Inicio: ' + hIni,
+            'Hora Final: ' + hFin,
+            'Lugar: ' + lugar,
+            'Imagen: ' + imagen,
+            'Descripcion del Aviso: ' + aviso,
+            'Descripcion baja: ' + descB
+        ].join('\n');
+        aplicarConfigBazar(textoOptimista);
+
+        // Y además se recarga el catálogo (que vuelve a leer la hoja) para
+        // que quede sincronizado con lo que de verdad terminó guardado.
+        if (typeof cargarDesdeGoogleSheets === 'function') {
+            setTimeout(cargarDesdeGoogleSheets, 1500);
+        }
+
+        setTimeout(cerrarPantallaAdminBazar, 900);
+
+    } catch (err) {
+        console.error('Error guardando configuración de bazar:', err);
+        _statusAdminBazar('❌ ' + (err.message || 'No se pudo guardar'), true);
+    } finally {
+        _adminBazarGuardando = false;
+        if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar cambios'; }
+    }
+}
 
 
 
@@ -5484,6 +5777,9 @@ function actualizarBotonAdminProductos(user) {
     // así queda correcto aunque el modal ya estuviera abierto cuando cambia el login.
     var btnCfg = document.getElementById('mpBtnConfigProducto');
     if (btnCfg) btnCfg.style.display = _esAdminUI(user) ? 'flex' : 'none';
+    // Engranaje de "Editar información del bazar", dentro del submenu de bazar.
+    var btnCfgBazar = document.getElementById('btnBazarAdminConfig');
+    if (btnCfgBazar) btnCfgBazar.style.display = _esAdminUI(user) ? 'flex' : 'none';
 }
 
 // Firebase permite varios listeners: este no interfiere con el que ya existe.
