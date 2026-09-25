@@ -3712,15 +3712,33 @@ function inyectarEtiquetasModal(card) {
     }
 
     // ── Badge número de fila en Google Sheets (esquina derecha, misma altura) ──
+    // Visible para todos como "número de catálogo"; SOLO los 4 correos admin
+    // (ADMIN_EMAILS) pueden tocarlo para reubicar el producto de fila.
     var filaSheets = card.getAttribute('data-sheet-row') || '';
     var badge = document.getElementById('mpSheetRowBadge');
     if (badge) {
         if (filaSheets) {
             badge.textContent = '# ' + filaSheets;
-            badge.title = 'Fila ' + filaSheets + ' en Google Sheets';
             badge.style.display = 'inline-block';
+
+            var _userBadgeFila    = (typeof auth !== 'undefined') ? auth.currentUser : null;
+            var _esAdminBadgeFila = (typeof _esAdminUI === 'function') ? _esAdminUI(_userBadgeFila) : false;
+
+            if (_esAdminBadgeFila) {
+                badge.title = 'Fila ' + filaSheets + ' en Google Sheets — toca para reubicar';
+                badge.classList.add('mp-sheet-row-badge--admin');
+                badge.onclick = function (e) {
+                    e.stopPropagation();
+                    _abrirMoverProductoDesdeModal(card);
+                };
+            } else {
+                badge.title = 'Fila ' + filaSheets + ' en Google Sheets';
+                badge.classList.remove('mp-sheet-row-badge--admin');
+                badge.onclick = null;
+            }
         } else {
             badge.style.display = 'none';
+            badge.onclick = null;
         }
     }
 
@@ -5401,7 +5419,7 @@ var ADMIN_EMAILS = [
 ];
 
 // ✅ Apps Script publicado como aplicación web
-var ADMIN_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwkN9g2PBlbawzoZ1GWqcrkDE5kWcxZJP8Op3k_djlDGclqcvkKmHuOpsqHryCyOizO/exec';
+var ADMIN_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxYKRnP8nFG_zj5mewFAJlSAYyvyis3FvVzuvhKv_iRYJvLg0OYHASqJatxmALqTWU7/exec';
 
 // Estado interno del formulario
 // _adminImagenesProducto: array de { base64, nombre, dataUrl }. El índice 0 es la imagen principal.
@@ -6565,6 +6583,89 @@ async function guardarEdicionProducto() {
 // Es una acción independiente de "Guardar cambios": se aplica al instante.
 // Si la fila destino ya tiene otro producto, el servidor simplemente
 // INTERCAMBIA los dos productos de lugar (ver moverProducto() en Codigo.gs).
+// ─────────────────────────────────────────────────────────────
+//  REUBICAR PRODUCTO DESDE EL BADGE "# fila" DEL SUBMENU (atajo rápido)
+// ─────────────────────────────────────────────────────────────
+// Mismo mecanismo que moverProductoEdit() (intercambio de filas en el
+// Apps Script), pero disparado directamente desde el badge de número de
+// fila en el modal de producto, sin necesidad de abrir "Editar producto".
+// Solo los 4 correos en ADMIN_EMAILS pueden ver/usar esto (ver
+// inyectarEtiquetasModal()).
+function _abrirMoverProductoDesdeModal(card) {
+    var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+    if (!_esAdminUI(user)) return; // el badge ya está oculto/no-clickeable para no-admins
+
+    var filaActual = card.getAttribute('data-sheet-row') || '';
+    if (!filaActual) return;
+
+    var entrada = window.prompt(
+        'Este producto está en la fila ' + filaActual + ' de Google Sheets.\n\n' +
+        '¿A qué fila lo quieres mover? Si esa fila ya tiene otro producto, ' +
+        'simplemente intercambian de lugar.',
+        ''
+    );
+    if (entrada === null) return; // canceló
+    entrada = entrada.trim();
+
+    if (entrada === '' || isNaN(Number(entrada)) || !Number.isInteger(Number(entrada)) || Number(entrada) < 2) {
+        mostrarToast('❌ Escribe un número de fila válido (2 en adelante)');
+        return;
+    }
+    if (Number(entrada) === Number(filaActual)) {
+        mostrarToast('Ya está en esa fila');
+        return;
+    }
+
+    _ejecutarMoverProductoRapido(card, filaActual, entrada);
+}
+
+async function _ejecutarMoverProductoRapido(card, filaOrigen, filaDestino) {
+    var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+    if (!_esAdminUI(user)) return;
+
+    var badge = document.getElementById('mpSheetRowBadge');
+    var textoOriginal = badge ? badge.textContent : '';
+    if (badge) badge.textContent = '…';
+
+    try {
+        var idToken = await user.getIdToken(true);
+        var cuerpo = {
+            accion:      'mover',
+            idToken:     idToken,
+            filaEditar:  filaOrigen,
+            filaDestino: filaDestino
+        };
+
+        var resp = await fetch(ADMIN_ENDPOINT, {
+            method:  'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body:    JSON.stringify(cuerpo)
+        });
+        var data = await resp.json();
+        if (!data.ok) throw new Error(data.error || 'Error del servidor');
+
+        card.setAttribute('data-sheet-row', String(data.fila));
+        if (badge) {
+            badge.textContent = '# ' + data.fila;
+            badge.title = 'Fila ' + data.fila + ' en Google Sheets — toca para reubicar';
+        }
+
+        var aviso = data.intercambiado
+            ? (' (intercambió lugar con "' + data.nombreIntercambiado + '")')
+            : '';
+        mostrarToast('✅ Movido a la fila ' + data.fila + aviso);
+
+        if (typeof cargarDesdeGoogleSheets === 'function') {
+            setTimeout(cargarDesdeGoogleSheets, 1200);
+        }
+
+    } catch (err) {
+        console.error('Error moviendo producto:', err);
+        if (badge) badge.textContent = textoOriginal;
+        mostrarToast('❌ ' + (err.message || 'No se pudo mover'));
+    }
+}
+
 function _statusMoverProducto(msg, esError) {
     var el = document.getElementById('statusMoverProducto');
     if (!el) return;

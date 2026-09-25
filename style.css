@@ -1934,7 +1934,10 @@
         .btn-opcion-perfil .op-icono { font-size: 24px; }
         .btn-opcion-perfil .op-sub { font-size: 12px; font-weight: 400; color: #a89080; display: block; margin-top: 2px; }
         .selector-imagen-wrap { position: relative; width: 100%; max-width: 380px; }
-        .menu-seleccion-imagen {
+        .mp-sheet-row-badge--admin { cursor: pointer !important; transition: background 0.15s, border-color 0.15s, transform 0.1s; }
+        .mp-sheet-row-badge--admin:hover { background: #ece1d6 !important; border-color: #8c7565 !important; }
+        .mp-sheet-row-badge--admin:active { transform: scale(0.95); }
+        body.modo-oscuro .mp-sheet-row-badge--admin:hover { background: #3a2e26 !important; border-color: #8c7565 !important; }        .menu-seleccion-imagen {
             display: none;
             position: absolute; top: calc(100% + 6px); left: 0; right: 0;
             z-index: 40;
