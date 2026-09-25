@@ -3624,6 +3624,130 @@ body.modo-oscuro .cart-total-valor { color: #f0e8e0; }
     cursor: default;
     transform: none;
 }
+
+/* ══════════════════════════════════════════════════════
+   PERFILES "TAMBIÉN VENDEMOS YESO" (Fer / Polo)
+   Antes eran estilos inline sin media query, por lo que en
+   pantallas angostas se apilaban uno debajo del otro. Ahora
+   se fuerza una sola fila siempre (como en PC) y se encogen
+   un poco en móvil para que siempre quepan lado a lado.
+   ══════════════════════════════════════════════════════ */
+.yeso-perfiles-fila {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 10px;
+}
+.yeso-perfil-col {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 190px;
+}
+.yeso-perfil-link {
+    display: block;
+    margin: 0 auto 10px;
+    width: 130px;
+    max-width: 100%;
+    cursor: pointer;
+}
+.yeso-perfil-img {
+    width: 100%;
+    height: 130px;
+    border-radius: 16px;
+    object-fit: cover;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.16);
+    display: block;
+    transition: transform 0.22s, box-shadow 0.22s;
+}
+.yeso-perfil-link:hover .yeso-perfil-img {
+    transform: scale(1.04);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.22);
+}
+.yeso-perfil-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    background: linear-gradient(135deg,#8c7565,#5c4d43);
+    color: white;
+    text-decoration: none;
+    border-radius: 999px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    font-family: inherit;
+    box-shadow: 0 4px 14px rgba(92,77,67,0.3);
+    transition: all 0.22s;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+    line-height: 1.25;
+}
+.yeso-perfil-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 22px rgba(92,77,67,0.42);
+}
+.yeso-perfil-img2-wrap {
+    margin-top: 10px;
+    width: 130px;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+.yeso-perfil-img2 {
+    width: 100%;
+    height: 130px;
+    border-radius: 16px;
+    object-fit: cover;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.16);
+    display: block;
+}
+/* En móvil: misma fila, un poco más chico para que siempre quepan las 2 columnas */
+@media (max-width: 767px) {
+    .yeso-perfiles-fila { gap: 6px; }
+    .yeso-perfil-link, .yeso-perfil-img2-wrap {
+        width: 108px;
+    }
+    .yeso-perfil-img, .yeso-perfil-img2 {
+        height: 108px;
+    }
+    .yeso-perfil-btn {
+        padding: 8px 6px;
+        font-size: 0.7rem;
+        gap: 4px;
+    }
+}
+@media (max-width: 360px) {
+    .yeso-perfiles-fila { gap: 4px; }
+    .yeso-perfil-link, .yeso-perfil-img2-wrap {
+        width: 92px;
+    }
+    .yeso-perfil-img, .yeso-perfil-img2 {
+        height: 92px;
+    }
+    .yeso-perfil-btn {
+        font-size: 0.64rem;
+        padding: 7px 4px;
+    }
+}
+
+/* ══════════════════════════════════════════════════════
+   AVISO "FILAS OCUPADAS" (panel Agregar producto → Posición en la hoja)
+   ══════════════════════════════════════════════════════ */
+#infoFilasOcupadasSheet {
+    display: block;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f3ede6;
+    border: 1.5px dashed #d9c9b8;
+    border-radius: 10px;
+    font-size: 12px;
+    color: #6b5a4a;
+    line-height: 1.5;
+}
+#infoFilasOcupadasSheet:empty { display: none; }
+#infoFilasOcupadasSheet strong { color: #3F2C25; }
 /* ── Botones corazón y carrito: tamaño reducido en móvil ── */
 @media (max-width: 768px) {
     .btn-like {

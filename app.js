@@ -639,6 +639,10 @@ function cargarDesdeGoogleSheets() {
             // Disparar evento para que otros sistemas (paginación, filtros) se enteren
             document.dispatchEvent(new CustomEvent('catalogoCargado'));
 
+            // Refrescar el aviso de "filas ocupadas" del panel Agregar producto,
+            // por si estaba abierto o el admin lo abre después.
+            if (typeof _actualizarInfoFilasOcupadas === 'function') _actualizarInfoFilasOcupadas();
+
             // Marcar que la carga inicial ya terminó (evita scroll automático al top)
             setTimeout(function() { window._cargaInicialCompletada = true; }, 500);
 
@@ -5472,6 +5476,32 @@ if (typeof auth !== 'undefined' && auth.onAuthStateChanged) {
 // ─────────────────────────────────────────────────────────────
 //  2. ABRIR / CERRAR LA PANTALLA
 // ─────────────────────────────────────────────────────────────
+// Le dice al admin, en el campo "Posición en la hoja", cuántos
+// productos hay actualmente y cuál sería la siguiente fila libre
+// (se recalcula cada vez que se abre el panel y cada vez que se
+// recarga el catálogo desde Sheets).
+function _actualizarInfoFilasOcupadas() {
+    var el = document.getElementById('infoFilasOcupadasSheet');
+    if (!el) return;
+
+    var total = (typeof listaProductos !== 'undefined') ? listaProductos.length : 0;
+    if (!total) {
+        el.innerHTML = '';
+        return;
+    }
+
+    var maxFila = 1; // fila 1 = encabezados
+    listaProductos.forEach(function (p) {
+        var fila = p.id + 1;
+        if (fila > maxFila) maxFila = fila;
+    });
+    var siguienteFila = maxFila + 1;
+
+    el.innerHTML = '📊 Actualmente hay <strong>' + total + '</strong> producto' + (total === 1 ? '' : 's') +
+        ' ocupando las filas 2–' + maxFila + ' de la hoja. La siguiente fila disponible es la <strong>' +
+        siguienteFila + '</strong>.';
+}
+
 function abrirPantallaAdminProductos() {
     var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
     if (!_esAdminUI(user)) {
@@ -5482,6 +5512,7 @@ function abrirPantallaAdminProductos() {
     if (!p) return;
     p.classList.add('activo');
     _bloquearScrollBody();
+    _actualizarInfoFilasOcupadas();
     if (typeof _modalActivo !== 'undefined') _modalActivo = 'adminProductos';
     history.pushState({ kukumitaModal: 'adminProductos' }, '');
 }
