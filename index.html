@@ -30,7 +30,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600;1,700&family=Playfair+Display:ital,wght@0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
     <!-- Estilos externos -->
-    <link rel="stylesheet" href="style.css?v=8">
+    <link rel="stylesheet" href="style.css?v=9">
 
     <!-- Estilos botones de modo catálogo -->
     <style>
@@ -2411,8 +2411,39 @@
     </div>
 </div>
 
+<!-- ══════════════════════════════════════════════════════
+     SUBMENU MOVER PRODUCTO DE FILA (SOLO ADMINS)
+     ══════════════════════════════════════════════════════ -->
+
+<div id="submenuMoverProducto">
+    <div class="mp-caja">
+        <div class="sc-header">
+            <h3>📦 Mover producto de fila</h3>
+            <button class="sc-cerrar" onclick="cerrarSubmenuMoverProducto()">✕</button>
+        </div>
+
+        <div class="mp-cuerpo">
+            <p class="mp-texto-actual">Este producto está en la fila <strong id="mpFilaActualTexto">—</strong> de Google Sheets.</p>
+            <p class="mp-texto-ayuda">¿A qué fila lo quieres mover? Si esa fila ya tiene otro producto, simplemente intercambian de lugar.</p>
+
+            <div class="mp-input-zona">
+                <span class="mp-input-hash">#</span>
+                <input type="number" id="mpInputFilaDestino" class="mp-input-fila" placeholder="Ej. 15" min="2" inputmode="numeric"
+                    onkeydown="if(event.key==='Enter'){ event.preventDefault(); confirmarMoverProducto(); }">
+            </div>
+
+            <div id="mpMoverError" class="mp-error" style="display:none;"></div>
+
+            <div class="mp-acciones">
+                <button type="button" class="mp-btn-cancelar" onclick="cerrarSubmenuMoverProducto()">Cancelar</button>
+                <button type="button" class="mp-btn-confirmar" id="mpBtnConfirmarMover" onclick="confirmarMoverProducto()">✅ Mover</button>
+            </div>
+        </div>
+    </div>
+</div>
+
     <!-- JavaScript externo -->
-    <script src="app.js?v=6"></script>
+    <script src="app.js?v=7"></script>
 
     <!-- ── AUTO-FIX MÓVIL: detecta y elimina cualquier elemento que desborde el viewport ── -->
     <script>

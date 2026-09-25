@@ -3510,6 +3510,120 @@ body.modo-oscuro .cart-total-valor { color: #f0e8e0; }
 .sc-btn-whatsapp { background: linear-gradient(135deg, #25d366, #128c7e); }
 .sc-btn-facebook { background: linear-gradient(135deg, #1877f2, #0d5bba); }
 .sc-btn-instagram { background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+
+/* ══════════════════════════════════════════════════════
+   SUBMENU MOVER PRODUCTO DE FILA (reemplaza al window.prompt)
+   ══════════════════════════════════════════════════════ */
+#submenuMoverProducto {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 30000;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    align-items: flex-end;
+    justify-content: center;
+}
+#submenuMoverProducto.abierto { display: flex; }
+.mp-caja {
+    background: #fff;
+    border-radius: 24px 24px 0 0;
+    width: 100%;
+    max-width: 440px;
+    padding: 0 0 28px;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.22);
+    animation: slideUpCart 0.3s cubic-bezier(.4,0,.2,1);
+}
+@media (min-width:540px) {
+    #submenuMoverProducto { align-items: center; }
+    .mp-caja { border-radius: 20px; margin-bottom: 0; }
+}
+.mp-cuerpo { padding: 18px 20px 0; }
+.mp-texto-actual {
+    font-size: 14px;
+    color: #362a22;
+    margin: 0 0 6px;
+    line-height: 1.4;
+}
+.mp-texto-actual strong { color: #8c7565; font-size: 15px; }
+.mp-texto-ayuda {
+    font-size: 12.5px;
+    color: #8c7565;
+    margin: 0 0 16px;
+    line-height: 1.45;
+}
+.mp-input-zona {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8f4f0;
+    border: 2px solid #e0d5cc;
+    border-radius: 14px;
+    padding: 6px 6px 6px 16px;
+    transition: border-color 0.2s;
+}
+.mp-input-zona:focus-within { border-color: #8c7565; }
+.mp-input-hash {
+    font-size: 18px;
+    font-weight: 800;
+    color: #b0a090;
+}
+.mp-input-fila {
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-family: inherit;
+    font-size: 18px;
+    font-weight: 700;
+    color: #362a22;
+    padding: 12px 8px;
+    min-width: 0;
+    -moz-appearance: textfield;
+}
+.mp-input-fila::-webkit-outer-spin-button,
+.mp-input-fila::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.mp-error {
+    color: #c0392b;
+    font-size: 12.5px;
+    font-weight: 700;
+    margin: 10px 2px 0;
+}
+.mp-acciones {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+.mp-btn-cancelar, .mp-btn-confirmar {
+    flex: 1;
+    border: none;
+    border-radius: 14px;
+    padding: 13px 14px;
+    font-size: 14px;
+    font-weight: 800;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.2s, opacity 0.2s, transform 0.15s;
+}
+.mp-btn-cancelar {
+    background: #f0eae4;
+    color: #5c4d43;
+}
+.mp-btn-cancelar:hover { background: #e0d5cc; }
+.mp-btn-confirmar {
+    background: #8c7565;
+    color: #fff;
+}
+.mp-btn-confirmar:hover { background: #5c4d43; }
+.mp-btn-confirmar:active, .mp-btn-cancelar:active { transform: scale(0.97); }
+.mp-btn-confirmar:disabled {
+    opacity: 0.6;
+    cursor: default;
+    transform: none;
+}
 /* ── Botones corazón y carrito: tamaño reducido en móvil ── */
 @media (max-width: 768px) {
     .btn-like {

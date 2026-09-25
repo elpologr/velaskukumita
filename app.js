@@ -6698,7 +6698,12 @@ async function guardarEdicionProducto() {
 // Apps Script), pero disparado directamente desde el badge de número de
 // fila en el modal de producto, sin necesidad de abrir "Editar producto".
 // Solo los 4 correos en ADMIN_EMAILS pueden ver/usar esto (ver
-// inyectarEtiquetasModal()).
+// inyectarEtiquetasModal()). En vez de un window.prompt (se ve como el
+// navegador y desentona con el diseño del sitio), abre un submenú propio
+// con la misma estética que "Compartir producto" (ver #submenuMoverProducto).
+var _mpCardActual       = null; // <card> del producto que se está reubicando
+var _mpFilaActualGlobal = null; // fila actual de ese producto en Sheets
+
 function _abrirMoverProductoDesdeModal(card) {
     var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
     if (!_esAdminUI(user)) return; // el badge ya está oculto/no-clickeable para no-admins
@@ -6706,26 +6711,64 @@ function _abrirMoverProductoDesdeModal(card) {
     var filaActual = card.getAttribute('data-sheet-row') || '';
     if (!filaActual) return;
 
-    var entrada = window.prompt(
-        'Este producto está en la fila ' + filaActual + ' de Google Sheets.\n\n' +
-        '¿A qué fila lo quieres mover? Si esa fila ya tiene otro producto, ' +
-        'simplemente intercambian de lugar.',
-        ''
-    );
-    if (entrada === null) return; // canceló
-    entrada = entrada.trim();
+    _mpCardActual       = card;
+    _mpFilaActualGlobal = filaActual;
+
+    var textoFila = document.getElementById('mpFilaActualTexto');
+    if (textoFila) textoFila.textContent = filaActual;
+
+    var input = document.getElementById('mpInputFilaDestino');
+    if (input) input.value = '';
+
+    var err = document.getElementById('mpMoverError');
+    if (err) err.style.display = 'none';
+
+    var btn = document.getElementById('mpBtnConfirmarMover');
+    if (btn) { btn.disabled = false; btn.textContent = '✅ Mover'; }
+
+    var modal = document.getElementById('submenuMoverProducto');
+    if (!modal) return;
+    modal.classList.add('abierto');
+    _bloquearScrollBody();
+    setTimeout(function () { if (input) input.focus(); }, 250);
+}
+
+function cerrarSubmenuMoverProducto() {
+    var modal = document.getElementById('submenuMoverProducto');
+    if (modal) modal.classList.remove('abierto');
+    _desbloquearScrollBody();
+}
+
+function confirmarMoverProducto() {
+    var input = document.getElementById('mpInputFilaDestino');
+    var err   = document.getElementById('mpMoverError');
+    var entrada = input ? input.value.trim() : '';
+
+    var mostrarError = function (msg) {
+        if (err) { err.textContent = msg; err.style.display = 'block'; }
+    };
 
     if (entrada === '' || isNaN(Number(entrada)) || !Number.isInteger(Number(entrada)) || Number(entrada) < 2) {
-        mostrarToast('❌ Escribe un número de fila válido (2 en adelante)');
+        mostrarError('❌ Escribe un número de fila válido (2 en adelante).');
         return;
     }
-    if (Number(entrada) === Number(filaActual)) {
-        mostrarToast('Ya está en esa fila');
+    if (Number(entrada) === Number(_mpFilaActualGlobal)) {
+        mostrarError('Ya está en esa fila.');
         return;
     }
+    if (err) err.style.display = 'none';
 
+    var card        = _mpCardActual;
+    var filaActual  = _mpFilaActualGlobal;
+    cerrarSubmenuMoverProducto();
     _ejecutarMoverProductoRapido(card, filaActual, entrada);
 }
+
+// Cerrar el submenú de mover producto al hacer clic en el fondo
+_ready(function () {
+    var _mp = document.getElementById('submenuMoverProducto');
+    if (_mp) _mp.addEventListener('click', function (e) { if (e.target === this) cerrarSubmenuMoverProducto(); });
+});
 
 async function _ejecutarMoverProductoRapido(card, filaOrigen, filaDestino) {
     var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
