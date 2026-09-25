@@ -2105,6 +2105,13 @@
             border-radius: 10px; overflow: hidden;
             border: 1.5px solid #d4c5b8; background: #eee;
         }
+        #galeriaImagenesProducto .miniatura-imagen-producto {
+            cursor: grab; touch-action: none; user-select: none;
+        }
+        #galeriaImagenesProducto .miniatura-imagen-producto.arrastrando-imagen {
+            cursor: grabbing; opacity: 0.85; z-index: 50;
+            box-shadow: 0 6px 16px rgba(54, 42, 34, 0.35);
+        }
         .miniatura-imagen-producto img {
             width: 100%; height: 100%; object-fit: cover; object-position: top; display: block;
         }
@@ -2116,6 +2123,14 @@
             display: flex; align-items: center; justify-content: center;
         }
         .miniatura-imagen-producto .btn-quitar-miniatura:hover { background: #c0392b; }
+        .btn-hacer-principal-miniatura {
+            position: absolute; bottom: 2px; left: 2px;
+            width: 20px; height: 20px; border-radius: 50%;
+            border: none; background: rgba(0,0,0,0.65); color: #fff;
+            font-size: 11px; line-height: 1; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-hacer-principal-miniatura:hover { background: #d4a017; }
         .contador-imagenes-producto {
             font-size: 12px; color: #8c7565; font-weight: 600;
         }

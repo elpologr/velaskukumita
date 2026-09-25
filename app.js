@@ -5499,10 +5499,23 @@ function cerrarPantallaAdminProductos() {
 // ─────────────────────────────────────────────────────────────
 //  3. IMAGEN: SELECCIÓN (Tomar foto / Galería) + CONVERSIÓN A WEBP
 // ─────────────────────────────────────────────────────────────
+// Detecta si estamos en una pantalla "de escritorio" (mismo criterio que ya
+// usa el resto del panel admin para su layout de 2 columnas: min-width 768px).
+function _esPantallaPC() {
+    return !!(window.matchMedia && window.matchMedia('(min-width: 768px)').matches);
+}
+
 function toggleMenuImagenProducto(e) {
     if (e) e.stopPropagation();
     if (_adminImagenesProducto.length >= LIMITE_IMAGENES_PRODUCTO) {
         _statusAdmin('Ya alcanzaste el límite de ' + LIMITE_IMAGENES_PRODUCTO + ' imágenes.', true);
+        return;
+    }
+    // En PC no tiene sentido "Tomar foto" (no hay cámara que abrir de esa
+    // forma), así que ahí nos saltamos el menú y vamos directo al explorador
+    // de archivos del equipo, para no perder un clic extra al subir varias.
+    if (_esPantallaPC()) {
+        dispararInputImagen('inputImagenProducto');
         return;
     }
     _alternarMenuImagen('menuSeleccionImagenProducto');
@@ -5513,6 +5526,10 @@ function toggleMenuImagenProductoEdit(e) {
     var total = _editImagenesExistentes.length + _editImagenesNuevas.length;
     if (total >= LIMITE_IMAGENES_PRODUCTO) {
         _statusEdit('Ya alcanzaste el límite de ' + LIMITE_IMAGENES_PRODUCTO + ' imágenes.', true);
+        return;
+    }
+    if (_esPantallaPC()) {
+        dispararInputImagen('inputImagenProductoEdit');
         return;
     }
     _alternarMenuImagen('menuSeleccionImagenProductoEdit');
@@ -5630,9 +5647,11 @@ function _renderizarGaleriaImagenesProducto() {
         (function (idx) {
             var mini = document.createElement('div');
             mini.className = 'miniatura-imagen-producto';
+            mini.setAttribute('data-img-idx', String(idx));
             var img = document.createElement('img');
             img.src = _adminImagenesProducto[idx].dataUrl;
             img.alt = 'Imagen ' + (idx + 1);
+            img.draggable = false;
             mini.appendChild(img);
             var btnConfig = document.createElement('button');
             btnConfig.type = 'button';
@@ -5654,10 +5673,99 @@ function _renderizarGaleriaImagenesProducto() {
             btnX.title = 'Quitar esta imagen';
             btnX.onclick = function () { quitarImagenProducto(idx); };
             mini.appendChild(btnX);
+            // Botón para volverla la imagen principal (posición 1) de un toque,
+            // sin necesidad de arrastrarla hasta arriba.
+            var btnPrincipal = document.createElement('button');
+            btnPrincipal.type = 'button';
+            btnPrincipal.className = 'btn-hacer-principal-miniatura';
+            btnPrincipal.textContent = '⭐';
+            btnPrincipal.title = 'Usar como imagen principal';
+            btnPrincipal.onclick = function () { _moverImagenProducto(idx, 0); };
+            mini.appendChild(btnPrincipal);
+            // Arrastrar (mouse o dedo) para reordenar entre las demás miniaturas.
+            mini.addEventListener('pointerdown', function (e) {
+                _iniciarArrastreImagenProducto(e, idx);
+            });
             cont.appendChild(mini);
         })(i);
     }
     _renderizarMiniaturaPrincipal();
+}
+
+// ─────────────────────────────────────────────────────────────
+//  ARRASTRAR PARA REORDENAR LAS IMÁGENES (Agregar producto)
+// ─────────────────────────────────────────────────────────────
+// Mantener presionada una miniatura y arrastrarla sobre otra: la imagen se
+// INSERTA en esa posición y las demás se recorren un lugar (no es un
+// intercambio, es "mover", igual que reordenar cualquier lista).
+var _dragImgProducto = null; // { idx, el, startX, startY, moved }
+
+function _iniciarArrastreImagenProducto(e, idx) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (e.target && e.target.closest && e.target.closest('button')) return; // no interferir con ⋮ / ✕ / ⭐
+    var el = e.currentTarget;
+    _dragImgProducto = { idx: idx, el: el, startX: e.clientX, startY: e.clientY, moved: false };
+    try { el.setPointerCapture(e.pointerId); } catch (err) {}
+    el.addEventListener('pointermove', _moverArrastreImagenProducto);
+    el.addEventListener('pointerup', _soltarArrastreImagenProducto);
+    el.addEventListener('pointercancel', _cancelarArrastreImagenProducto);
+}
+
+function _moverArrastreImagenProducto(e) {
+    if (!_dragImgProducto) return;
+    var dx = e.clientX - _dragImgProducto.startX;
+    var dy = e.clientY - _dragImgProducto.startY;
+    if (!_dragImgProducto.moved && Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+    _dragImgProducto.moved = true;
+    _dragImgProducto.el.classList.add('arrastrando-imagen');
+    _dragImgProducto.el.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+}
+
+function _soltarArrastreImagenProducto(e) {
+    if (!_dragImgProducto) return;
+    var drag = _dragImgProducto;
+    _limpiarArrastreImagenProducto(drag);
+    _dragImgProducto = null;
+
+    if (drag.moved) {
+        var visibilidadPrevia = drag.el.style.visibility;
+        drag.el.style.visibility = 'hidden'; // para no detectarse a sí misma como blanco
+        var destino = document.elementFromPoint(e.clientX, e.clientY);
+        drag.el.style.visibility = visibilidadPrevia;
+        var slotDestino = destino ? destino.closest('[data-img-idx]') : null;
+        if (slotDestino) {
+            var destIdx = parseInt(slotDestino.getAttribute('data-img-idx'), 10);
+            if (!isNaN(destIdx) && destIdx !== drag.idx) {
+                _moverImagenProducto(drag.idx, destIdx);
+            }
+        }
+    }
+}
+
+function _cancelarArrastreImagenProducto() {
+    if (!_dragImgProducto) return;
+    _limpiarArrastreImagenProducto(_dragImgProducto);
+    _dragImgProducto = null;
+}
+
+function _limpiarArrastreImagenProducto(drag) {
+    drag.el.classList.remove('arrastrando-imagen');
+    drag.el.style.transform = '';
+    drag.el.removeEventListener('pointermove', _moverArrastreImagenProducto);
+    drag.el.removeEventListener('pointerup', _soltarArrastreImagenProducto);
+    drag.el.removeEventListener('pointercancel', _cancelarArrastreImagenProducto);
+}
+
+// Saca la imagen de fromIdx y la vuelve a insertar en toIdx: todas las que
+// quedaban entre ambas posiciones se recorren un lugar (no se intercambian).
+function _moverImagenProducto(fromIdx, toIdx) {
+    if (fromIdx === toIdx) return;
+    if (fromIdx < 0 || fromIdx >= _adminImagenesProducto.length) return;
+    if (toIdx < 0) toIdx = 0;
+    if (toIdx > _adminImagenesProducto.length - 1) toIdx = _adminImagenesProducto.length - 1;
+    var item = _adminImagenesProducto.splice(fromIdx, 1)[0];
+    _adminImagenesProducto.splice(toIdx, 0, item);
+    _renderizarGaleriaImagenesProducto();
 }
 
 // ─────────────────────────────────────────────────────────────
