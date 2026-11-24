@@ -30,7 +30,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600;1,700&family=Playfair+Display:ital,wght@0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
     <!-- Estilos externos -->
-    <link rel="stylesheet" href="style.css?v=11">
+    <link rel="stylesheet" href="style.css?v=12">
     <link rel="stylesheet" href="mesas.css?v=1">
 
     <!-- Estilos botones de modo catálogo -->
@@ -989,22 +989,22 @@
         <!-- Botones en su propia línea, debajo del botón de Yesos -->
         <div style="display:flex; flex-wrap:wrap; gap:14px; justify-content:center; padding: 0 12px; box-sizing:border-box; width:100%;">
             <!-- Botón Búscanos en Tienda -->
-            <a href="#" onclick="event.preventDefault(); abrirModalTienda()" class="btn-tienda-bazar btn-tienda-mapa"
-               style="display:inline-flex; align-items:center; gap:10px; text-decoration:none; border-radius:999px; padding:14px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; transition:all 0.25s; cursor:pointer; justify-content:center; flex:1; min-width:140px; max-width:300px;">
+            <a href="#" onclick="event.preventDefault(); abrirModalTienda()" class="btn-tienda-bazar"
+               style="display:inline-flex; align-items:center; gap:10px; background-color:#f1ede4; background-image:radial-gradient(ellipse 70px 26px at 6% 100%, #aadaff 0 98%, transparent 100%), radial-gradient(ellipse 80px 30px at 80% 8%, #c5e8c5 0 98%, transparent 100%), linear-gradient(112deg, transparent 0 44%, #e0c36a 44% 45%, #ffe08a 45% 52%, #e0c36a 52% 53%, transparent 53%), linear-gradient(0deg, transparent 0 58%, #dadce0 58% 59%, #fff 59% 71%, #dadce0 71% 72%, transparent 72%), linear-gradient(0deg, transparent 0 20%, #e3dfd6 20% 23%, transparent 23%), linear-gradient(90deg, transparent 0 20%, #dadce0 20% 20.8%, #fff 20.8% 25%, #dadce0 25% 25.8%, transparent 25.8%), linear-gradient(90deg, transparent 0 66%, #dadce0 66% 66.6%, #fff 66.6% 69%, #dadce0 69% 69.6%, transparent 69.6%); background-repeat:no-repeat; color:#3c4043; text-shadow:0 0 4px #fff, 0 0 2px #fff; text-decoration:none; border-radius:999px; padding:12px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; border:2px solid #5c4d43; box-shadow:0 4px 14px rgba(63,44,37,0.35); transition:all 0.25s; cursor:pointer; justify-content:center; flex:1; min-width:140px; max-width:340px;">
                 <span class="btn-tienda-bazar-icono" style="width:40px; height:40px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.9); box-shadow:0 1px 4px rgba(60,64,67,0.35); display:flex; align-items:center; justify-content:center; font-size:1.4rem;">📍</span>
-                <span class="btn-tienda-bazar-texto" style="font-family:'Playfair Display', Georgia, serif; font-style:normal; font-size:1.45rem; letter-spacing:1px;">Búscanos en Tienda</span>
+                <span class="btn-tienda-bazar-texto" style="font-family:'Playfair Display', Georgia, serif; font-style:normal; font-size:1.2rem; letter-spacing:0.5px;">Búscanos en Tienda</span>
             </a>
             <!-- Botón bazar grande tipo píldora con imagen opcional -->
             <a id="btnBazarPrincipal" href="#" onclick="event.preventDefault(); abrirModalBazar()" class="btn-tienda-bazar btn-bazar-conimagen"
-               style="display:inline-flex; align-items:center; gap:10px; background:#8c7565 center/cover no-repeat; color:white; text-decoration:none; border-radius:999px; padding:14px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(140,117,101,0.3); transition:all 0.25s; cursor:pointer; border:none; justify-content:center; flex:1; min-width:140px; max-width:300px; position:relative; overflow:hidden; isolation:isolate;">
+               style="display:inline-flex; align-items:center; gap:10px; background:#8c7565 center/cover no-repeat; color:white; text-decoration:none; border-radius:999px; padding:12px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; box-shadow:0 4px 14px rgba(63,44,37,0.35); transition:all 0.25s; cursor:pointer; border:2px solid #3F2C25; justify-content:center; flex:1; min-width:140px; max-width:340px; position:relative; overflow:hidden; isolation:isolate;">
                 <span id="btnBazarImgWrap" class="btn-tienda-bazar-icono" style="width:40px; height:40px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; font-size:1.4rem; position:relative; z-index:2; border:2px solid rgba(255,255,255,0.5);">🗓️</span>
-                <span class="btn-tienda-bazar-texto" style="font-family:'Playfair Display', Georgia, serif; font-style:normal; font-size:1.45rem; letter-spacing:1px; position:relative; z-index:2; text-shadow:0 1px 4px rgba(0,0,0,0.45);">Búscanos en Bazar</span>
+                <span class="btn-tienda-bazar-texto" style="font-family:'Playfair Display', Georgia, serif; font-style:normal; font-size:1.2rem; letter-spacing:0.5px; position:relative; z-index:2; text-shadow:0 1px 4px rgba(0,0,0,0.45);">Búscanos en Bazar</span>
             </a>
             <!-- Botón Ver nuestras Mesas (mesas.js) — público: cualquiera puede verlas -->
             <a href="#" onclick="event.preventDefault(); abrirMesas()" class="btn-tienda-bazar btn-mesas-velas"
-               style="display:inline-flex; align-items:center; gap:10px; background:linear-gradient(135deg,#2a2018,#4a3628); color:#fbefdc; text-decoration:none; border-radius:999px; padding:14px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; border:1px solid rgba(245,196,107,0.6); box-shadow:0 4px 18px rgba(42,32,24,0.35); transition:all 0.25s; cursor:pointer; justify-content:center; flex:1; min-width:140px; max-width:300px;">
+               style="display:inline-flex; align-items:center; gap:10px; background:linear-gradient(135deg,#2a2018,#4a3628); color:#fbefdc; text-decoration:none; border-radius:999px; padding:12px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; border:2px solid #f5c46b; box-shadow:0 4px 14px rgba(63,44,37,0.35); transition:all 0.25s; cursor:pointer; justify-content:center; flex:1; min-width:140px; max-width:340px;">
                 <span class="btn-tienda-bazar-icono" style="width:40px; height:40px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(245,196,107,0.18); display:flex; align-items:center; justify-content:center; font-size:1.4rem;">🕯️</span>
-                <span class="btn-tienda-bazar-texto" style="font-family:'Playfair Display', Georgia, serif; font-style:normal; font-size:1.45rem; letter-spacing:1px;">Ver nuestras Mesas</span>
+                <span class="btn-tienda-bazar-texto" style="font-family:'Playfair Display', Georgia, serif; font-style:normal; font-size:1.2rem; letter-spacing:0.5px;">Ver nuestras Mesas</span>
             </a>
         </div>
         <p style="font-size:0.78rem; color:#3F2C25; font-family:'Playfair Display', Georgia, serif; font-style:normal; margin:10px 0 0; letter-spacing:0.3px;">↑ Ver próximas fechas, ubicaciones, horarios y nuestras mesas</p>
