@@ -31,6 +31,7 @@
 
     <!-- Estilos externos -->
     <link rel="stylesheet" href="style.css?v=11">
+    <link rel="stylesheet" href="mesas.css?v=1">
 
     <!-- Estilos botones de modo catálogo -->
     <style>
@@ -988,19 +989,25 @@
         <!-- Botones en su propia línea, debajo del botón de Yesos -->
         <div style="display:flex; flex-wrap:wrap; gap:14px; justify-content:center; padding: 0 12px; box-sizing:border-box; width:100%;">
             <!-- Botón Búscanos en Tienda -->
-            <a href="#" onclick="event.preventDefault(); abrirModalTienda()" class="btn-tienda-bazar"
-               style="display:inline-flex; align-items:center; gap:10px; background:#5c4d43; color:white; text-decoration:none; border-radius:999px; padding:28px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(92,77,67,0.3); transition:all 0.25s; cursor:pointer; border:none; justify-content:center; flex:1; min-width:140px; max-width:300px;">
-                <span class="btn-tienda-bazar-icono" style="width:80px; height:80px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:2.8rem;">📍</span>
+            <a href="#" onclick="event.preventDefault(); abrirModalTienda()" class="btn-tienda-bazar btn-tienda-mapa"
+               style="display:inline-flex; align-items:center; gap:10px; text-decoration:none; border-radius:999px; padding:14px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; transition:all 0.25s; cursor:pointer; justify-content:center; flex:1; min-width:140px; max-width:300px;">
+                <span class="btn-tienda-bazar-icono" style="width:40px; height:40px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.9); box-shadow:0 1px 4px rgba(60,64,67,0.35); display:flex; align-items:center; justify-content:center; font-size:1.4rem;">📍</span>
                 <span class="btn-tienda-bazar-texto" style="font-family:'Playfair Display', Georgia, serif; font-style:normal; font-size:1.45rem; letter-spacing:1px;">Búscanos en Tienda</span>
             </a>
             <!-- Botón bazar grande tipo píldora con imagen opcional -->
             <a id="btnBazarPrincipal" href="#" onclick="event.preventDefault(); abrirModalBazar()" class="btn-tienda-bazar btn-bazar-conimagen"
-               style="display:inline-flex; align-items:center; gap:10px; background:#8c7565 center/cover no-repeat; color:white; text-decoration:none; border-radius:999px; padding:28px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(140,117,101,0.3); transition:all 0.25s; cursor:pointer; border:none; justify-content:center; flex:1; min-width:140px; max-width:300px; position:relative; overflow:hidden; isolation:isolate;">
-                <span id="btnBazarImgWrap" class="btn-tienda-bazar-icono" style="width:80px; height:80px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; font-size:2.8rem; position:relative; z-index:2; border:2px solid rgba(255,255,255,0.5);">🗓️</span>
+               style="display:inline-flex; align-items:center; gap:10px; background:#8c7565 center/cover no-repeat; color:white; text-decoration:none; border-radius:999px; padding:14px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; box-shadow:0 4px 18px rgba(140,117,101,0.3); transition:all 0.25s; cursor:pointer; border:none; justify-content:center; flex:1; min-width:140px; max-width:300px; position:relative; overflow:hidden; isolation:isolate;">
+                <span id="btnBazarImgWrap" class="btn-tienda-bazar-icono" style="width:40px; height:40px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; font-size:1.4rem; position:relative; z-index:2; border:2px solid rgba(255,255,255,0.5);">🗓️</span>
                 <span class="btn-tienda-bazar-texto" style="font-family:'Playfair Display', Georgia, serif; font-style:normal; font-size:1.45rem; letter-spacing:1px; position:relative; z-index:2; text-shadow:0 1px 4px rgba(0,0,0,0.45);">Búscanos en Bazar</span>
             </a>
+            <!-- Botón Ver nuestras Mesas (mesas.js) — público: cualquiera puede verlas -->
+            <a href="#" onclick="event.preventDefault(); abrirMesas()" class="btn-tienda-bazar btn-mesas-velas"
+               style="display:inline-flex; align-items:center; gap:10px; background:linear-gradient(135deg,#2a2018,#4a3628); color:#fbefdc; text-decoration:none; border-radius:999px; padding:14px 24px; font-size:1.1rem; font-weight:700; font-family:inherit; border:1px solid rgba(245,196,107,0.6); box-shadow:0 4px 18px rgba(42,32,24,0.35); transition:all 0.25s; cursor:pointer; justify-content:center; flex:1; min-width:140px; max-width:300px;">
+                <span class="btn-tienda-bazar-icono" style="width:40px; height:40px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(245,196,107,0.18); display:flex; align-items:center; justify-content:center; font-size:1.4rem;">🕯️</span>
+                <span class="btn-tienda-bazar-texto" style="font-family:'Playfair Display', Georgia, serif; font-style:normal; font-size:1.45rem; letter-spacing:1px;">Ver nuestras Mesas</span>
+            </a>
         </div>
-        <p style="font-size:0.78rem; color:#3F2C25; font-family:'Playfair Display', Georgia, serif; font-style:normal; margin:10px 0 0; letter-spacing:0.3px;">↑ Ver próximas fechas, ubicaciones y horarios</p>
+        <p style="font-size:0.78rem; color:#3F2C25; font-family:'Playfair Display', Georgia, serif; font-style:normal; margin:10px 0 0; letter-spacing:0.3px;">↑ Ver próximas fechas, ubicaciones, horarios y nuestras mesas</p>
         <!-- Separador zona botones tienda/bazar -->
         <div style="width:100%; height:3px; background:linear-gradient(90deg,transparent,#3F2C25,transparent); margin:18px 0 0;"></div>
     </div>
@@ -2519,6 +2526,7 @@
 
     <!-- JavaScript externo -->
     <script src="app.js?v=10"></script>
+<script src="mesas.js?v=1"></script>
 
     <!-- ── AUTO-FIX MÓVIL: detecta y elimina cualquier elemento que desborde el viewport ── -->
     <script>
