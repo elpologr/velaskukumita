@@ -5405,6 +5405,8 @@ window.togglePanelEventos = function() {
     panel.style.display = visible ? 'none' : 'block';
     if (icono) icono.textContent = visible ? '▼' : '▲';
     if (btn) btn.style.borderColor = visible ? '#e0d5cc' : '#8c7565';
+    var col = btn ? btn.closest('.filtros-efe-col') : null;
+    if (col) col.classList.toggle('abierto', !visible);
 };
 
 // ── Botón "Filtros de productos": abre / cierra el panel con Evento, Forma, Festividad y Etiquetas ──
@@ -5427,6 +5429,8 @@ window.togglePanelFormas = function() {
     panel.style.display = visible ? 'none' : 'block';
     if (icono) icono.textContent = visible ? '▼' : '▲';
     if (btn) btn.style.borderColor = visible ? '#e0d5cc' : '#8c7565';
+    var col = btn ? btn.closest('.filtros-efe-col') : null;
+    if (col) col.classList.toggle('abierto', !visible);
 };
 
 // ── Filtrar por Festividad (carrusel) ──
@@ -5439,6 +5443,8 @@ window.togglePanelFestividades = function() {
     panel.style.display = visible ? 'none' : 'block';
     if (icono) icono.textContent = visible ? '▼' : '▲';
     if (btn) btn.style.borderColor = visible ? '#e0d5cc' : '#8c7565';
+    var col = btn ? btn.closest('.filtros-efe-col') : null;
+    if (col) col.classList.toggle('abierto', !visible);
 };
 
 // ── Scroll suave al grid de productos ──

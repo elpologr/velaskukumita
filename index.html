@@ -273,6 +273,49 @@
         width: 30px !important;
         height: 30px !important;
     }
+
+    /* ── Panel "Filtros de productos": botones cuadrados y zonas desplegables pegadas a su botón ── */
+    #panelFiltrosProductos { padding: 6px 8px 4px; }
+    #panelFiltrosProductos .filtros-efe-col {
+        max-width: 640px;
+        margin: 0 auto 16px !important;   /* separación entre un filtro y otro */
+    }
+    /* Botón de cada filtro: cuadrado y a todo lo ancho de su zona */
+    #panelFiltrosProductos .filtros-efe-col > p[id^="btnToggle"] {
+        display: flex !important;
+        justify-content: center;
+        width: 100%;
+        box-sizing: border-box;
+        margin: 0 !important;
+        border-radius: 10px !important;
+    }
+    /* Abierto: el botón y su zona forman un solo bloque, sin separación */
+    #panelFiltrosProductos .filtros-efe-col.abierto > p[id^="btnToggle"] {
+        border-radius: 10px 10px 0 0 !important;
+        border-color: #8c7565 !important;
+        border-bottom-color: #efe6dd !important;
+    }
+    #panelFiltrosProductos .filtros-efe-col.abierto > div {
+        box-sizing: border-box;
+        border: 2px solid #8c7565;
+        border-top: 0;
+        border-radius: 0 0 10px 10px;
+        background: #fff;
+    }
+    /* Sin el espacio de 10px que separaba la zona de su botón */
+    #panelFiltrosProductos .filtros-efe-col > div > div[style*="height:10px"] { display: none; }
+    /* Botones de opciones (Primera Comunión, Bautizo, Boda…): cuadrados y más juntos */
+    #panelFiltrosProductos .btn-evento-carrusel {
+        border-radius: 8px;
+        padding: 10px 14px;
+        box-shadow: none;
+    }
+    #panelFiltrosProductos #eventoCarrusel,
+    #panelFiltrosProductos #formaCarrusel,
+    #panelFiltrosProductos #festividadCarrusel {
+        gap: 6px !important;
+        padding: 10px 10px !important;
+    }
     </style>
 </head>
 <body>
@@ -2116,7 +2159,7 @@
 </div>
 
     <!-- JavaScript externo -->
-    <script src="app.js?v=14"></script>
+    <script src="app.js?v=15"></script>
 <script src="mesas.js?v=4"></script>
 
     <!-- ── AUTO-FIX MÓVIL: detecta y elimina cualquier elemento que desborde el viewport ── -->
