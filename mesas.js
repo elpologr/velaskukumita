@@ -1,8 +1,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// VELAS KUKÚMITA — Mesas (vista isométrica PÚBLICA)
+// VELAS KUKÚMITA — Mesas (vista 2.5D PÚBLICA)
 // Se carga DESPUÉS de app.js (usa: auth, _esAdminUI, mostrarToast, SHEET_ID y ADMIN_ENDPOINT).
 //
-// PASO 1: las mesas con vista isométrica y un texto por mesa.
+// PASO 1: las mesas con vista 2.5D (cámara inclinada: se ve la cara de arriba y el grosor del frente) y un texto por mesa.
 //   · Cualquier visitante puede ver las mesas, moverse (arrastrar, pellizcar, rueda) y tocar una
 //     mesa para acercarla y leer su texto. No puede cambiar nada.
 //   · Solo los administradores (_esAdminUI) ven el botón «✏️ Editar» para escribir el texto de cada mesa.
@@ -25,9 +25,9 @@
     var G = 3;                   // hueco entre mesas a lo ancho (columnas)
     var GF = 6;                  // hueco entre una mesa y la de arriba (filas): ahí se escribe el texto de cada mesa
     var MESAS_C = NC / MC, MESAS_F = NF / MF;   // 10 × 4 = 40 mesas
-    var TW = 80, TH = 40;        // ancho y alto de una celda en pantalla (proyección isométrica 2:1)
+    var TW = 64, TH = 40;        // ancho y alto de una celda en pantalla (vista 2.5D: TH < TW da la sensación de inclinación)
     var M = 1.5;
-    var DEPTH = 40;              // grosor del tablero
+    var DEPTH = 28;              // grosor del tablero (la cara frontal que se ve)
     var MAX_ESCALA = 4;
     var MAX_TEXTO = 500;         // máximo de letras por mesa (el servidor lo vuelve a limitar)
     var CACHE_KEY = 'velas_mesas_textos_v1';
@@ -44,7 +44,7 @@
     var root = null, cv = null;
 
     function $(id) { return document.getElementById(id); }
-    function proj(c, r) { return [(c - r) * TW / 2, (c + r) * TH / 2]; }
+    function proj(c, r) { return [c * TW, r * TH]; }   // 2.5D: columnas → X, filas → Y (acortada por la inclinación)
     function clave(mr, mc) { return mr + ',' + mc; }
     function numeroMesa(mr, mc) { return mr * MESAS_C + mc + 1; }
     function norm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim(); }
@@ -171,17 +171,17 @@
         cv.height = Math.round(S.h * S.dpr);
     }
     function ajustarVista() {
-        var bw = (AC + AF + 4 * M) * TW / 2;
-        var yArriba = -(M + GF / 2) * TH, yAbajo = (AC + AF + 2 * M) * TH / 2 + DEPTH + 30;
+        var bw = (AC + 2 * M) * TW;
+        var yArriba = -(M + GF / 2) * TH, yAbajo = (AF + M) * TH + DEPTH + 30;
         var k = Math.min(S.w * 0.94 / bw, S.h * 0.94 / (yAbajo - yArriba));
         S.fitEscala = k; S.minEscala = k * 0.7;
         S.scale = k;
-        S.ox = S.w / 2 - (AC - AF) * TW / 4 * k;   // centra la mesa aunque no sea cuadrada
+        S.ox = S.w / 2 - (AC * TW / 2) * k;   // centra el conjunto de mesas
         S.oy = S.h / 2 - (yArriba + yAbajo) / 2 * k;
     }
     function limitarVista() {
         // Evita irse al vacío: el centro de la pantalla se queda dentro de la mesa
-        var xmin = -AF * TW / 2 - TW, xmax = AC * TW / 2 + TW, ymin = -(GF / 2 + 1) * TH, ymax = (AC + AF) * TH / 2 + DEPTH + TH;
+        var xmin = -TW, xmax = AC * TW + TW, ymin = -(GF / 2 + 1) * TH, ymax = AF * TH + DEPTH + TH;
         var cx = (S.w / 2 - S.ox) / S.scale, cy = (S.h / 2 - S.oy) / S.scale;
         cx = Math.max(xmin, Math.min(xmax, cx)); cy = Math.max(ymin, Math.min(ymax, cy));
         S.ox = S.w / 2 - cx * S.scale; S.oy = S.h / 2 - cy * S.scale;
@@ -297,7 +297,7 @@
     }
     function mesaEn(sx, sy) {
         var wx = (sx - S.ox) / S.scale, wy = (sy - S.oy) / S.scale;
-        var mc = idxCol(wy / TH + wx / TW), mr = idxFila(wy / TH - wx / TW);
+        var mc = idxCol(wx / TW), mr = idxFila(wy / TH);
         return (mc >= 0 && mr >= 0) ? { mr: mr, mc: mc } : null;
     }
     function seleccionarEn(sx, sy) {
@@ -492,8 +492,12 @@
                 var sel = !!(S.sel && S.sel.mr === mr && S.sel.mc === mc);
                 var x0 = mc * (MC + G), x1 = x0 + MC, y0 = mr * (MF + GF), y1 = y0 + MF;
                 var A = proj(x0, y0), B = proj(x1, y0), C = proj(x1, y1), D = proj(x0, y1);
-                poli(ctx, [D, C, [C[0], C[1] + DEPTH], [D[0], D[1] + DEPTH]], '#0a0705');          // costado izquierdo
-                poli(ctx, [C, B, [B[0], B[1] + DEPTH], [C[0], C[1] + DEPTH]], '#150e0a');          // costado derecho
+                // sombra suave que cae hacia abajo, para que la mesa «se despegue» del fondo
+                poli(ctx, [[D[0] - 6, D[1] + DEPTH * 0.4], [C[0] + 6, C[1] + DEPTH * 0.4], [C[0] + 14, C[1] + DEPTH + 14], [D[0] - 14, D[1] + DEPTH + 14]], 'rgba(0,0,0,0.38)');
+                // frente de la mesa (el grosor): degradado de madera oscura
+                var gr = ctx.createLinearGradient(0, D[1], 0, D[1] + DEPTH);
+                gr.addColorStop(0, sel ? '#4a3322' : '#3a2819'); gr.addColorStop(1, '#0a0705');
+                poli(ctx, [D, C, [C[0], C[1] + DEPTH], [D[0], D[1] + DEPTH]], gr);
                 poli(ctx, [A, B, C, D], sel ? '#2a1d14' : '#1a130e');                              // cara superior
                 ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.lineTo(C[0], C[1]); ctx.lineTo(D[0], D[1]); ctx.closePath();
                 ctx.strokeStyle = sel ? '#f5c46b' : 'rgba(245,196,107,0.65)';
@@ -551,7 +555,7 @@
                 var o = proj(xa, ya), alto;
                 ctx.fillStyle = vacio ? 'rgba(255,243,220,0.35)' : '#fff3dc';
                 ctx.save();
-                ctx.transform(TW / 2, TH / 2, -TW / 2, TH / 2, o[0], o[1]);   // el plano del piso: 1 unidad = 1 celda
+                ctx.transform(TW, 0, 0, TH, o[0], o[1]);   // el plano del piso: 1 unidad = 1 celda (la letra se acorta con la inclinación)
                 ctx.scale(0.01, 0.01);                                       // ahora 1 unidad = 1/100 de celda
                 ctx.font = '600 ' + tam + 'px "Playfair Display", Georgia, serif';
                 var lineas = partirTexto(ctx, texto, MC * 100 - 60, 3);
