@@ -1368,7 +1368,7 @@
         .cp-red::before {
             content: ''; position: absolute; inset: 0; z-index: -2;
             background: url('imagenes/logo-velas-kukumita.webp') center/cover no-repeat;
-            opacity: 0.55; mix-blend-mode: soft-light;
+            opacity: 0.8; mix-blend-mode: normal;   /* más visible: sube el 0.8 hacia 1 para verlo aún más claro */
         }
         /* Brillo suave para dar profundidad */
         .cp-red::after {
@@ -1380,6 +1380,11 @@
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
         }
         .cp-red span { text-shadow: 0 1px 4px rgba(0,0,0,0.45); }
+        /* Nombre de la página, justo debajo del nombre de la red */
+        .cp-red .cp-pagina {
+            margin-top: -5px; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.2px;
+            color: #fff; opacity: 0.95; text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+        }
         /* Pegatinas */
         .cp-st {
             position: absolute; z-index: -1; font-style: normal; line-height: 1;
