@@ -6,7 +6,7 @@
 //   · Cualquier visitante puede ver las mesas, moverse (arrastrar, pellizcar, rueda) y tocar una
 //     mesa para acercarla y leer su texto. No puede cambiar nada.
 //   · Solo los administradores (_esAdminUI) ven el botón «✏️ Editar» para escribir el texto de cada mesa.
-//     El servidor lo vuelve a comprobar con el token de Firebase (acción «mesaTexto» en codigp.gs),
+//     El servidor lo vuelve a comprobar con el token de Firebase (acción «mesaTexto» en codigo.gs),
 //     así que ocultar el botón no es la seguridad: la seguridad real está en el Apps Script.
 //
 // Dónde viven los datos: pestaña «Mesas» de la misma hoja de Google (SHEET_ID). Se lee como CSV vía gviz
@@ -15,6 +15,11 @@
 //
 // Se dibuja en <canvas> (muchas celdas en HTML serían demasiado pesadas). Pasos siguientes: piezas
 // (productos) sobre las celdas, que abrirán el submenú de producto con carrito y favoritos.
+//
+// CELDAS CON PRODUCTO (igual que la Mesa de Yesos Polo): cada mesa chica tiene una cuadrícula de 20 × 15 celdas y cada
+// celda guarda UN producto del catálogo. El público ve los productos en sus celdas y los abre al tocarlos; los
+// administradores, en modo «Editar», eligen una celda, le asignan o quitan un producto y pueden moverlo a otra celda.
+// Las celdas viven en la pestaña «MesasCeldas» de la misma hoja (la escribe el Apps Script, acción «mesaCeldas»).
 // ══════════════════════════════════════════════════════════════════════════════
 (function () {
     'use strict';
@@ -44,7 +49,9 @@
     var S = {
         textos: {}, recientes: {}, sel: null, editando: false, cola: Promise.resolve(),
         scale: 0.05, ox: 0, oy: 0, w: 0, h: 0, dpr: 1, minEscala: 0.03, fitEscala: 0.05,
-        raf: 0, anim: 0, abierta: false, ajustada: false
+        raf: 0, anim: 0, abierta: false, ajustada: false,
+        celdas: {}, ver: 0, cel: null, mover: null, sucias: {}, recientesC: {}, guardaTimer: 0, celdasTs: 0, celKey: '',
+        movil: false, cur: 0   // movil: se muestra una sola mesa a la vez; cur: número de mesa actual (0 = la primera, arriba a la izquierda)
     };
     var root = null, cv = null;
 
@@ -74,6 +81,45 @@
         return (typeof _esAdminUI === 'function') && _esAdminUI(u);
     }
     function endpoint() { return window.ADMIN_ENDPOINT || ENDPOINT_RESPALDO; }
+
+    // ── Modo móvil: una sola mesa a la vez (las 40 mesas con todos sus productos hacían ir lento el lienzo) ──
+    // Celulares y tabletas táctiles: se dibuja solo la mesa actual y se cambia de mesa con las flechas ‹ ›.
+    // En computadora se ven todas las mesas, igual que antes.
+    var TOTAL_MESAS = MESAS_C * MESAS_F;
+    function esMovil() {
+        return !!(window.matchMedia && window.matchMedia('(max-width: 768px), (hover: none) and (pointer: coarse)').matches);
+    }
+    function dibujable(mr, mc) { return !S.movil || (mr * MESAS_C + mc) === S.cur; }
+    function actualizarNav() {
+        if (!root) return;
+        var info = $('mesasNavInfo'); if (!info) return;
+        info.textContent = 'Mesa ' + (S.cur + 1) + ' de ' + TOTAL_MESAS;
+        $('mesasPrev').disabled = S.cur <= 0;
+        $('mesasNext').disabled = S.cur >= TOTAL_MESAS - 1;
+    }
+    // Pasa a la mesa número i (0 = primera). La primera siempre es la de arriba a la izquierda.
+    function irAMesa(i, inmediato) {
+        i = Math.max(0, Math.min(TOTAL_MESAS - 1, i));
+        autoguardarSiHayCambios();
+        S.cur = i;
+        var mr = Math.floor(i / MESAS_C), mc = i % MESAS_C;
+        S.sel = { mr: mr, mc: mc };
+        S.cel = null;
+        actualizarNav();
+        actualizarPanel(true);
+        centrarMesa(mr, mc, inmediato);
+        pedirDibujo();
+    }
+    // Revisa si el aparato cambió de modo (por ejemplo, al girar una tableta) y acomoda la vista
+    function actualizarModo() {
+        var m = esMovil();
+        if (root) root.classList.toggle('movil', m);
+        if (m === S.movil) return false;
+        S.movil = m;
+        if (m) { S.sel = { mr: Math.floor(S.cur / MESAS_C), mc: S.cur % MESAS_C }; }
+        else { S.sel = null; }
+        return true;
+    }
 
     // ── Administrador: botón «Editar» ──
     function actualizarAdmin() {
@@ -129,21 +175,50 @@
                 '<div class="mesas-caption" id="mesasCaption"></div>' +
                 '<div class="mesas-panel-admin" id="mesasPanelAdmin">' +
                     '<div class="mesas-panel-titulo" id="mesasPanelTitulo"></div>' +
-                    '<textarea id="mesasTexto" class="mesas-texto" rows="3" maxlength="' + MAX_TEXTO + '" placeholder="Texto de esta mesa…"></textarea>' +
-                    '<div class="mesas-fila">' +
-                        '<button type="button" class="mesas-btn principal" id="mesasGuardar">Guardar texto</button>' +
-                        '<button type="button" class="mesas-btn peligro" id="mesasQuitar">Quitar texto</button>' +
+                    '<div class="mesas-celda" id="mesasCelda">' +
+                        '<div class="mesas-celda-titulo" id="mesasCeldaTitulo"></div>' +
+                        '<div class="mesas-celda-actual" id="mesasCeldaActual"></div>' +
+                        '<input type="search" id="mesasCeldaBuscar" class="mesas-buscar" placeholder="Buscar producto para esta celda…" autocomplete="off">' +
+                        '<div class="mesas-celda-lista" id="mesasCeldaLista"></div>' +
+                        '<div class="mesas-fila">' +
+                            '<button type="button" class="mesas-btn" id="mesasCeldaMover">↔ Mover</button>' +
+                            '<button type="button" class="mesas-btn peligro" id="mesasCeldaQuitar">Quitar producto</button>' +
+                        '</div>' +
+                        '<div class="mesas-fila">' +
+                            '<button type="button" class="mesas-btn" id="mesasLlenarMesa">⚡ Llenar esta mesa</button>' +
+                            '<button type="button" class="mesas-btn" id="mesasLlenarTodas">⚡ Llenar todas</button>' +
+                        '</div>' +
                     '</div>' +
+                    '<details class="mesas-detalle" id="mesasTextoDet">' +
+                        '<summary>📝 Texto de la mesa</summary>' +
+                        '<textarea id="mesasTexto" class="mesas-texto" rows="3" maxlength="' + MAX_TEXTO + '" placeholder="Texto de esta mesa…"></textarea>' +
+                        '<div class="mesas-fila">' +
+                            '<button type="button" class="mesas-btn principal" id="mesasGuardar">Guardar texto</button>' +
+                            '<button type="button" class="mesas-btn peligro" id="mesasQuitar">Quitar texto</button>' +
+                        '</div>' +
+                    '</details>' +
                     '<div class="mesas-estado" id="mesasEstado"></div>' +
                 '</div>' +
+            '</div>' +
+            '<div class="mesas-nav" id="mesasNav">' +
+                '<button type="button" id="mesasPrev" aria-label="Mesa anterior">‹</button>' +
+                '<div class="mesas-nav-info" id="mesasNavInfo"></div>' +
+                '<button type="button" id="mesasNext" aria-label="Mesa siguiente">›</button>' +
             '</div>';
         document.body.appendChild(root);
+        actualizarModo();
+        actualizarNav();
         cv = $('mesasCanvas');
 
         $('mesasVolver').addEventListener('click', cerrarMesas);
         $('mesasMas').addEventListener('click', function () { zoomCentro(1.4); });
         $('mesasMenos').addEventListener('click', function () { zoomCentro(1 / 1.4); });
-        $('mesasAjustar').addEventListener('click', function () { deseleccionar(); ajustarVista(); pedirDibujo(); });
+        $('mesasAjustar').addEventListener('click', function () {
+            if (S.movil) { irAMesa(S.cur); return; }   // en móvil: vuelve a encuadrar la mesa actual
+            deseleccionar(); ajustarVista(); pedirDibujo();
+        });
+        $('mesasPrev').addEventListener('click', function () { irAMesa(S.cur - 1); });
+        $('mesasNext').addEventListener('click', function () { irAMesa(S.cur + 1); });
         $('mesasEditar').addEventListener('click', function () { alternarEdicion(); });
         $('mesasGuardar').addEventListener('click', function () {
             if (!S.sel) return;
@@ -154,9 +229,36 @@
             $('mesasTexto').value = '';
             enviar(S.sel.mr, S.sel.mc, '', false);
         });
-        window.addEventListener('resize', function () { if (S.abierta) { medir(); pedirDibujo(); } });
+        $('mesasCeldaBuscar').addEventListener('input', pintarListaCelda);
+        $('mesasCeldaQuitar').addEventListener('click', quitarCelda);
+        $('mesasCeldaMover').addEventListener('click', alternarMover);
+        $('mesasLlenarMesa').addEventListener('click', function () {
+            if (!S.sel) return;
+            var n = llenarMesa(S.sel.mr, S.sel.mc);
+            estado(n < 0 ? 'Esta mesa no tiene un texto reconocible (por ejemplo «$50 Pesos», «Más Vendido» o «Centros de Mesa»).' : n ? '✔ Se pusieron ' + n + ' productos en celdas vacías.' : 'No había productos nuevos que poner (o la mesa ya está llena).', n < 0);
+            actualizarCelda(); pedirDibujo();
+        });
+        $('mesasLlenarTodas').addEventListener('click', function () {
+            if (!window.confirm('Se llenarán las celdas vacías de todas las mesas con los productos que les tocan según su texto («$50 Pesos», «Más Vendido», «Centros de Mesa»). No se borra nada. ¿Continuar?')) return;
+            var total = 0;
+            for (var mr = 0; mr < MESAS_F; mr++) for (var mc = 0; mc < MESAS_C; mc++) { var n = llenarMesa(mr, mc); if (n > 0) total += n; }
+            estado(total ? '✔ Se pusieron ' + total + ' productos en total.' : 'No había productos nuevos que poner.');
+            actualizarCelda(); pedirDibujo();
+        });
+        document.addEventListener('visibilitychange', function () { if (document.hidden) { clearTimeout(S.guardaTimer); guardarCeldasPendientes(); } });
+        window.addEventListener('resize', function () {
+            if (!S.abierta) return;
+            var wAnt = S.w, cambio = actualizarModo();
+            medir();
+            if (cambio) { ajustarVista(); actualizarNav(); actualizarPanel(true); }
+            else if (S.movil && Math.abs(S.w - wAnt) > 1) irAMesa(S.cur, true);   // giró el aparato: se vuelve a encuadrar la mesa
+            pedirDibujo();
+        });
         document.addEventListener('keydown', function (e) {
             if (S.abierta && e.key === 'Escape' && document.activeElement && document.activeElement.tagName !== 'TEXTAREA') cerrarMesas();
+            if (S.abierta && S.movil && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') && document.activeElement && !/^(TEXTAREA|INPUT)$/.test(document.activeElement.tagName)) {
+                irAMesa(S.cur + (e.key === 'ArrowRight' ? 1 : -1));
+            }
         });
         engancharGestos();
         catEnganchar();
@@ -170,21 +272,25 @@
         document.body.style.overflow = 'hidden';
         document.body.classList.add('mesas-abierta');   // sube los paneles de edición por encima de las mesas (ver mesas.css)
         S.abierta = true;
+        if (actualizarModo()) S.ajustada = false;
         actualizarAdmin();
         catRender();
         requestAnimationFrame(function () {
             medir();
             if (!S.ajustada) { ajustarVista(); S.ajustada = true; }
+            actualizarNav();
             actualizarPanel();
             pedirDibujo();
         });
         cargarTextos();
+        cargarCeldas();
     }
     window.abrirMesas = abrirMesas;
 
     function cerrarMesas() {
         if (!root || !S.abierta) return;
         autoguardarSiHayCambios();
+        clearTimeout(S.guardaTimer); guardarCeldasPendientes();   // lo que falte por guardar de las celdas se manda ya
         if (S.editando) alternarEdicion(false);
         root.classList.remove('abierta');
         document.body.classList.remove('mesas-abierta');
@@ -217,10 +323,18 @@
         S.scale = k;
         S.ox = S.w / 2 - (AC * TW / 2) * k;   // centra el conjunto de mesas
         S.oy = S.h / 2 - (yArriba + yAbajo) / 2 * k;
+        if (S.movil) {   // móvil: en vez de todas las mesas, se encuadra la mesa actual (la primera al abrir)
+            S.sel = { mr: Math.floor(S.cur / MESAS_C), mc: S.cur % MESAS_C };
+            centrarMesa(S.sel.mr, S.sel.mc, true);
+        }
     }
     function limitarVista() {
         // Evita irse al vacío: el centro de la pantalla se queda dentro de la mesa
         var xmin = -TW, xmax = AC * TW + TW, ymin = proj(0, -(GF / 2 + 1))[1], ymax = proj(0, AF)[1] + DEPTH + TH;
+        if (S.movil) {   // móvil: el centro de la pantalla se queda dentro de la mesa actual (con un poco de margen)
+            var b = limitesMesa(Math.floor(S.cur / MESAS_C), S.cur % MESAS_C), mx = (b.x1 - b.x0) * 0.1, my = (b.y1 - b.y0) * 0.1;
+            xmin = b.x0 - mx; xmax = b.x1 + mx; ymin = b.y0 - my; ymax = b.y1 + my;
+        }
         var cx = (S.w / 2 - S.ox) / S.scale, cy = (S.h / 2 - S.oy) / S.scale;
         cx = Math.max(xmin, Math.min(xmax, cx)); cy = Math.max(ymin, Math.min(ymax, cy));
         S.ox = S.w / 2 - cx * S.scale; S.oy = S.h / 2 - cy * S.scale;
@@ -249,16 +363,27 @@
         S.anim = requestAnimationFrame(paso);
     }
     // Espacio de abajo que tapa el texto (público) o el panel de edición (administrador)
-    function reservado() { return S.editando ? 250 : 140; }
-    function centrarMesa(mr, mc) {
+    function reservado() { return S.editando ? Math.max(250, Math.round(S.h * 0.5)) : 140; }
+    // Rectángulo (en coordenadas de la vista) que ocupa una mesa, con su texto de arriba y su grosor
+    function limitesMesa(mr, mc) {
         var xa = mc * (MC + G), ya = mr * (MF + GF);
         var pts = [proj(xa, ya - 5), proj(xa + MC, ya - 5), proj(xa + MC, ya + MF), proj(xa, ya + MF)];
         var x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
         pts.forEach(function (p) { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1] + DEPTH); });
+        return { x0: x0, x1: x1, y0: y0, y1: y1 };
+    }
+    function centrarMesa(mr, mc, inmediato) {
+        var b = limitesMesa(mr, mc), x0 = b.x0, x1 = b.x1, y0 = b.y0, y1 = b.y1;
         var libre = Math.max(180, S.h - reservado());
         var k = Math.min(S.w * 0.92 / (x1 - x0), libre * 0.92 / (y1 - y0));
+        if (S.movil) { S.fitEscala = k; S.minEscala = k * 0.6; }   // en móvil no se puede alejar tanto como para perder la mesa
         k = Math.max(S.minEscala, Math.min(MAX_ESCALA, k));
-        animarA(k, S.w / 2 - (x0 + x1) / 2 * k, libre / 2 - (y0 + y1) / 2 * k);
+        var ox = S.w / 2 - (x0 + x1) / 2 * k, oy = libre / 2 - (y0 + y1) / 2 * k;
+        if (inmediato) {
+            cancelAnimationFrame(S.anim);
+            S.scale = k; S.ox = ox; S.oy = oy;
+            pedirDibujo();
+        } else animarA(k, ox, oy);
     }
 
     // ── Gestos: arrastrar, pellizcar, rueda y toque ──
@@ -338,27 +463,48 @@
         var wx = (sx - S.ox) / S.scale, wy = (sy - S.oy) / S.scale;
         var f = invProj(wx, wy); if (!f) return null;
         var mc = idxCol(f[0]), mr = idxFila(f[1]);
-        return (mc >= 0 && mr >= 0) ? { mr: mr, mc: mc } : null;
+        if (!(mc >= 0 && mr >= 0)) return null;
+        if (S.movil && (mr * MESAS_C + mc) !== S.cur) return null;   // en móvil solo existe la mesa actual
+        return { mr: mr, mc: mc };
     }
     function seleccionarEn(sx, sy) {
         var m = mesaEn(sx, sy);
-        if (!m) { if (S.sel) deseleccionar(); return; }
-        if (!S.editando) {   // si la pieza ya se ve lo bastante grande, se abre el producto; si no, primero se acerca la mesa
-            var pz = piezaEn(sx, sy, m.mr, m.mc);
-            if (pz && pz.w * S.scale >= 48) { catAbrirProducto(pz.p); return; }
+        if (!m) { if (S.sel && !S.movil) deseleccionar(); return; }   // en móvil la mesa actual siempre queda seleccionada
+        var misma = !!(S.sel && S.sel.mr === m.mr && S.sel.mc === m.mc);
+        var pz = piezaEn(sx, sy, m.mr, m.mc);
+        if (!S.editando) {
+            // Público: si la celda ya se ve lo bastante grande se abre el producto; si no, primero se acerca (la mesa y luego la pieza)
+            if (pz && pz.p) {
+                if (pz.w * S.scale >= 40) { catAbrirProducto(pz.p); return; }
+                if (misma) { acercarAPieza(pz); return; }
+            }
+            seleccionarMesa(m.mr, m.mc);
+            return;
         }
-        seleccionarMesa(m.mr, m.mc);
+        // Administrador: se elige la celda tocada (o la mesa, si se toca su texto)
+        var ce = celdaEn(sx, sy, m.mr, m.mc, pz);
+        if (S.mover) { if (ce) moverCelda(S.mover, ce); return; }
+        if (!misma) seleccionarMesa(m.mr, m.mc);
+        S.cel = ce;
+        actualizarCelda();
+        pedirDibujo();
+    }
+    // Acerca la vista a una pieza para que se vea lo bastante grande como para tocarla
+    function acercarAPieza(pz) {
+        var k2 = Math.min(MAX_ESCALA, Math.max(S.scale, 56 / pz.w)), libre = Math.max(180, S.h - reservado());
+        animarA(k2, S.w / 2 - pz.x * k2, libre / 2 - (pz.y - pz.w / 2) * k2);
     }
     function seleccionarMesa(mr, mc) {
         if (!(S.sel && S.sel.mr === mr && S.sel.mc === mc)) autoguardarSiHayCambios();
         S.sel = { mr: mr, mc: mc };
+        S.cel = null;
         actualizarPanel(true);
         centrarMesa(mr, mc);
         pedirDibujo();
     }
     function deseleccionar() {
         autoguardarSiHayCambios();
-        S.sel = null;
+        S.sel = null; S.cel = null;
         actualizarPanel(true);
         pedirDibujo();
     }
@@ -383,6 +529,7 @@
             $('mesasGuardar').disabled = !S.sel;
             $('mesasQuitar').disabled = !S.sel || !txt;
             if (cambioDeMesa || document.activeElement !== ta) ta.value = txt;
+            actualizarCelda();
         }
     }
     function alternarEdicion(forzar) {
@@ -390,6 +537,7 @@
         if (nuevo && !esAdmin()) return;
         if (!nuevo) autoguardarSiHayCambios();
         S.editando = nuevo;
+        if (!nuevo) { S.cel = null; S.mover = null; }
         var b = $('mesasEditar');
         b.classList.toggle('activo', nuevo);
         b.textContent = nuevo ? '✅ Listo' : '✏️ Editar';
@@ -431,7 +579,6 @@
             if (!d.ok) throw new Error(d.error || 'Error del servidor');
             var k = clave(mr, mc);
             if (texto) S.textos[k] = texto; else delete S.textos[k];
-            PZ.textos = null;   // el nombre de la mesa cambió: se vuelven a repartir los productos
             S.recientes[k] = { t: texto, ts: Date.now() };   // la hoja tarda unos minutos en reflejarlo por CSV
             guardarCache();
             estado('✅ Guardado.');
@@ -441,7 +588,7 @@
             return true;
         }).catch(function (e) {
             var m = String((e && e.message) || e);
-            if (/Falta el nombre/i.test(m)) m = 'el Apps Script todavía no tiene la acción de mesas: pega el codigp.gs nuevo y publícalo otra vez.';
+            if (/Falta el nombre/i.test(m)) m = 'el Apps Script todavía no tiene la acción de mesas: pega el codigo.gs nuevo y publícalo otra vez.';
             estado('No se pudo guardar: ' + m, true);
             return false;
         });
@@ -502,6 +649,10 @@
         try {
             var o = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
             if (o && typeof o === 'object' && !Object.keys(S.textos).length) S.textos = o;
+        } catch (e) { /* sin copia guardada */ }
+        try {
+            var c = JSON.parse(localStorage.getItem('velas_mesas_celdas_v1') || 'null');
+            if (c && typeof c === 'object' && !Object.keys(S.celdas).length) { S.celdas = c; S.ver++; }
         } catch (e) { /* sin copia guardada */ }
     }
     function guardarCache() {
@@ -662,18 +813,154 @@
         document.addEventListener('catalogoCargado', function () { catRender(); pedirDibujo(); });   // cuando la hoja termina de cargar o se recarga
     }
 
-    // ── Productos sobre las mesas ──
-    // Cada mesa se vincula con sus productos por el NOMBRE que tiene (el texto de la mesa):
-    //   · «$50 Pesos» (empieza con un precio) → todos los productos cuyo precio es exactamente $50
-    //   · «Más Vendido»                      → los productos marcados como más vendidos
-    //   · «Centros de Mesa»                  → los productos con la etiqueta principal Centro de Mesa
-    // Si una mesa 39 o 40 todavía no tiene texto, se asumen Centros de Mesa y Más Vendido respectivamente.
-    // Como se calcula con la lista de productos, un producto nuevo (o con otro precio) cambia de mesa solo.
-    var PZ = { textos: null, lista: null, mapa: {} };
-    var PZ_DISPOSICIONES = [[5, 3], [6, 4], [8, 5]];   // [columnas, filas] de piezas por mesa, según cuántos productos haya (máx. 40)
-    var PZ_ANCHO = 0.8;                                 // ancho de cada pieza respecto a su espacio (1 = ocupa todo)
+    // ── Celdas con producto ──
+    // Cada mesa chica es una cuadrícula de 20 × 15 celdas y cada celda puede tener UN producto del catálogo. Se guarda como
+    // vínculo {n: nombre, i: primera imagen}; para encontrarlo después se compara primero la imagen y, si cambió, el nombre
+    // (igual que en la Mesa de Yesos Polo). Clave de cada celda: «fila,columna» contando desde la esquina de la mesa grande.
+    var HOJA_CELDAS = 'MesasCeldas';
+    var UMBRAL_IMG = 10;      // ancho de celda (px en pantalla) desde el cual se carga la imagen del producto
+    var UMBRAL_PRECIO = 60;   // desde este ancho se muestra el precio sobre la pieza
+    var PZ_ANCHO = 0.9;       // ancho de cada pieza respecto a su celda
+    var PZ_THUMB = 192;       // las imágenes se guardan en memoria como miniaturas cuadradas de este tamaño
     var PZ_IMG = {};
+    var CZ = { ver: -1, lista: null, mapa: {} };
 
+    function catalogo() { return (typeof listaProductos !== 'undefined' && listaProductos && listaProductos.length) ? listaProductos : []; }
+    function productoDeVinculo(v) {
+        if (!v) return null;
+        var L = catalogo(), i;
+        if (v.i) for (i = 0; i < L.length; i++) { if (L[i].imagen === v.i) return L[i]; }
+        if (v.n) for (i = 0; i < L.length; i++) { if (L[i].nombre === v.n) return L[i]; }
+        return null;
+    }
+    function mesaDeCelda(r, c) { return { mr: Math.floor(r / MF), mc: Math.floor(c / MC) }; }
+    // Reparte las celdas guardadas por mesa (ordenadas de atrás hacia adelante) y las enlaza con el catálogo
+    function czIndexar() {
+        var lista = (typeof listaProductos !== 'undefined') ? listaProductos : null;
+        if (CZ.ver === S.ver && CZ.lista === lista) return;
+        CZ.ver = S.ver; CZ.lista = lista; CZ.mapa = {};
+        var porImg = {}, porNombre = {};
+        catalogo().forEach(function (p) {
+            if (p.imagen && !porImg[p.imagen]) porImg[p.imagen] = p;
+            if (p.nombre && !porNombre[p.nombre]) porNombre[p.nombre] = p;
+        });
+        Object.keys(S.celdas).forEach(function (k) {
+            var q = k.split(','), r = +q[0], c = +q[1], v = S.celdas[k];
+            if (!(r >= 0 && r < NF && c >= 0 && c < NC) || !v) return;
+            var mk = clave(Math.floor(r / MF), Math.floor(c / MC));
+            (CZ.mapa[mk] = CZ.mapa[mk] || []).push({ r: r, c: c, lr: r % MF, lc: c % MC, v: v, p: (v.i && porImg[v.i]) || (v.n && porNombre[v.n]) || null });
+        });
+        Object.keys(CZ.mapa).forEach(function (mk) { CZ.mapa[mk].sort(function (a, b) { return a.r - b.r || a.c - b.c; }); });
+    }
+    function celdasMesa(mr, mc) { czIndexar(); return CZ.mapa[clave(mr, mc)] || []; }
+    // El público no ve celdas cuyo producto ya no existe en el catálogo (el administrador sí, con una alerta)
+    function esVisible(it) { return !!(it.p || S.editando || !catalogo().length); }
+    function urlDe(it) { return (it.p && it.p.imagen) || it.v.i || ''; }
+    // Posición de una pieza (en coordenadas de la vista): x = centro, y = donde se apoya, w = ancho (y alto)
+    function posCelda(mr, mc, lc, lr) {
+        var fy = mr * (MF + GF) + lr + 0.85, P = proj(mc * (MC + G) + lc + 0.5, fy);
+        return { x: P[0], y: P[1], w: PZ_ANCHO * TW * esc(fy) };
+    }
+    function piezaEn(sx, sy, mr, mc) {
+        var wx = (sx - S.ox) / S.scale, wy = (sy - S.oy) / S.scale, lst = celdasMesa(mr, mc);
+        for (var i = lst.length - 1; i >= 0; i--) {   // de adelante hacia atrás
+            var it = lst[i]; if (!esVisible(it)) continue;
+            var P = posCelda(mr, mc, it.lc, it.lr);
+            if (Math.abs(wx - P.x) <= P.w / 2 && wy <= P.y && wy >= P.y - P.w) return { it: it, p: it.p, x: P.x, y: P.y, w: P.w };
+        }
+        return null;
+    }
+    // Celda tocada: la pieza que se ve ahí o, si no hay, la celda del piso bajo el dedo (null si se toca fuera de la cuadrícula)
+    function celdaEn(sx, sy, mr, mc, pz) {
+        if (pz) return { r: pz.it.r, c: pz.it.c };
+        var f = invProj((sx - S.ox) / S.scale, (sy - S.oy) / S.scale); if (!f) return null;
+        var lc = Math.floor(f[0] - mc * (MC + G)), lr = Math.floor(f[1] - mr * (MF + GF));
+        if (lc < 0 || lc >= MC || lr < 0 || lr >= MF) return null;
+        return { r: mr * MF + lr, c: mc * MC + lc };
+    }
+
+    // Editar celdas (administradores) ──
+    function marcarSucia(mr, mc) {
+        S.sucias[clave(mr, mc)] = true; S.ver++;
+        try { localStorage.setItem('velas_mesas_celdas_v1', JSON.stringify(S.celdas)); } catch (e) { /* sin almacenamiento */ }
+        clearTimeout(S.guardaTimer);
+        S.guardaTimer = setTimeout(guardarCeldasPendientes, 1200);   // junta varios cambios seguidos en un solo envío
+        estado('Guardando…');
+    }
+    function actualizarCelda() {
+        var caja = $('mesasCelda'); if (!caja) return;
+        var ce = S.cel, k = ce ? clave(ce.r, ce.c) : '', v = ce ? S.celdas[k] : null, p = v ? productoDeVinculo(v) : null;
+        $('mesasCeldaTitulo').textContent = S.mover ? '↔ Moviendo… toca la celda de destino'
+            : ce ? '🔲 Celda: fila ' + (ce.r % MF + 1) + ', columna ' + (ce.c % MC + 1)
+            : S.sel ? 'Toca una celda de la mesa' : 'Toca una mesa';
+        $('mesasCeldaActual').textContent = !ce ? '' : !v ? 'Vacía. Busca un producto para ponerlo aquí.'
+            : p ? '✔ ' + p.nombre + (p.precioNormal ? ' · $' + p.precioNormal : '')
+            : '⚠ ' + v.n + ' (ya no aparece en el catálogo)';
+        $('mesasCeldaBuscar').disabled = !ce;
+        $('mesasCeldaQuitar').disabled = !v;
+        $('mesasCeldaMover').disabled = !S.mover && !v;
+        $('mesasCeldaMover').textContent = S.mover ? '✖ Cancelar mover' : '↔ Mover';
+        $('mesasLlenarMesa').disabled = !S.sel;
+        if (S.celKey !== k) { S.celKey = k; $('mesasCeldaBuscar').value = ''; pintarListaCelda(); }
+    }
+    function pintarListaCelda() {
+        var cont = $('mesasCeldaLista'); if (!cont) return;
+        var q = norm($('mesasCeldaBuscar').value.trim());
+        cont.innerHTML = '';
+        if (!q) { cont.style.display = 'none'; return; }   // la lista solo aparece al escribir
+        var L = catProductos();
+        cont.style.display = 'block';
+        if (!L.length) { cont.textContent = 'El catálogo todavía no ha cargado (o está vacío).'; return; }
+        var hallados = L.filter(function (p) { return norm(p.nombre).indexOf(q) !== -1; });
+        if (!hallados.length) { cont.textContent = 'Sin resultados.'; return; }
+        hallados.slice(0, 30).forEach(function (p) {
+            var b = h('button', 'mesas-celda-item'); b.type = 'button';
+            if (p.imagen) { var im = document.createElement('img'); im.loading = 'lazy'; im.alt = ''; im.src = p.imagen; b.appendChild(im); }
+            var sp = h('span', '', p.nombre), sm = h('small', '', p.precioNormal ? '$' + p.precioNormal : '');
+            sp.appendChild(sm); b.appendChild(sp);
+            b.addEventListener('click', function () { asignarProducto(p); });
+            cont.appendChild(b);
+        });
+        if (hallados.length > 30) cont.appendChild(h('div', 'mesas-celda-mas', '…y ' + (hallados.length - 30) + ' más. Escribe más letras para acotar.'));
+    }
+    function asignarProducto(p) {
+        if (!S.cel) return;
+        S.celdas[clave(S.cel.r, S.cel.c)] = { n: p.nombre, i: p.imagen || '' };
+        var m = mesaDeCelda(S.cel.r, S.cel.c); marcarSucia(m.mr, m.mc);
+        $('mesasCeldaBuscar').value = ''; pintarListaCelda();
+        actualizarCelda(); pedirDibujo();
+    }
+    function quitarCelda() {
+        if (!S.cel) return;
+        delete S.celdas[clave(S.cel.r, S.cel.c)];
+        var m = mesaDeCelda(S.cel.r, S.cel.c); marcarSucia(m.mr, m.mc);
+        actualizarCelda(); pedirDibujo();
+    }
+    function alternarMover() {
+        if (S.mover) S.mover = null;
+        else if (S.cel && S.celdas[clave(S.cel.r, S.cel.c)]) { S.mover = { r: S.cel.r, c: S.cel.c }; estado('Toca la celda donde quieres ponerlo. Si ya hay un producto ahí, se intercambian.'); }
+        actualizarCelda(); pedirDibujo();
+    }
+    // Mueve el producto de la celda a a la celda b (si b ya tiene uno, se intercambian). Puede ser de otra mesa.
+    function moverCelda(a, b) {
+        var ka = clave(a.r, a.c), kb = clave(b.r, b.c), va = S.celdas[ka], vb = S.celdas[kb];
+        S.mover = null;
+        if (ka !== kb && va) {
+            if (vb) S.celdas[ka] = vb; else delete S.celdas[ka];
+            S.celdas[kb] = va;
+            var ma = mesaDeCelda(a.r, a.c), mb = mesaDeCelda(b.r, b.c);
+            marcarSucia(ma.mr, ma.mc);
+            if (ma.mr !== mb.mr || ma.mc !== mb.mc) marcarSucia(mb.mr, mb.mc);
+        }
+        S.cel = { r: b.r, c: b.c };
+        actualizarCelda(); pedirDibujo();
+    }
+
+    // Llenado automático: usa el TEXTO de la mesa para saber qué productos le tocan (solo en celdas vacías, sin repetir los que ya están)
+    //   · «$50 Pesos» (empieza con un precio) → productos cuyo precio es exactamente $50
+    //   · «Más Vendido»                      → productos marcados como más vendidos
+    //   · «Centros de Mesa»                  → productos con la etiqueta principal Centro de Mesa
+    // Si una mesa 39 o 40 todavía no tiene texto, se asumen Centros de Mesa y Más Vendido respectivamente.
     function reglaMesa(mr, mc) {
         var crudo = String(S.textos[clave(mr, mc)] || '').trim(), t = norm(crudo), n = numeroMesa(mr, mc);
         var m = /^\$\s*(\d+(?:\.\d+)?)/.exec(crudo) || /^(\d+(?:\.\d+)?)\s*pesos/i.exec(crudo);
@@ -686,90 +973,184 @@
     }
     function pzEsCentros(p) { return (p.tipos || []).some(function (t) { return /centros?[ -]de[ -]mesa/.test(norm(t)); }); }
     function pzEsVendido(p) { return !!p.masVendido || (p.tipos || []).some(function (t) { return /vendido/.test(norm(t)); }); }
-    function pzIndexar() {
-        var lista = (typeof listaProductos !== 'undefined') ? listaProductos : null;
-        if (PZ.textos === S.textos && PZ.lista === lista) return;   // nada cambió desde la última vez
-        PZ.textos = S.textos; PZ.lista = lista; PZ.mapa = {};
-        var prods = catProductos();
-        for (var mr = 0; mr < MESAS_F; mr++) {
-            for (var mc = 0; mc < MESAS_C; mc++) {
-                var r = reglaMesa(mr, mc); if (!r) continue;
-                var arr = prods.filter(function (p) {
-                    if (r.tipo === 'precio') return Math.abs((parseFloat(p.precioNormal) || 0) - r.valor) < 0.001;
-                    return r.tipo === 'vendido' ? pzEsVendido(p) : pzEsCentros(p);
-                });
-                if (arr.length) PZ.mapa[clave(mr, mc)] = arr;
+    // Devuelve cuántos productos puso (-1 si la mesa no tiene una regla reconocible)
+    function llenarMesa(mr, mc) {
+        var r = reglaMesa(mr, mc); if (!r) return -1;
+        var ya = {};
+        celdasMesa(mr, mc).forEach(function (it) { if (it.p) ya[it.p.id] = 1; });
+        var pend = catProductos().filter(function (p) {
+            if (ya[p.id]) return false;
+            if (r.tipo === 'precio') return Math.abs((parseFloat(p.precioNormal) || 0) - r.valor) < 0.001;
+            return r.tipo === 'vendido' ? pzEsVendido(p) : pzEsCentros(p);
+        });
+        var n = 0;
+        for (var lr = 0; lr < MF && n < pend.length; lr++) {
+            for (var lc = 0; lc < MC && n < pend.length; lc++) {
+                var k = clave(mr * MF + lr, mc * MC + lc);
+                if (S.celdas[k]) continue;
+                var p = pend[n++]; S.celdas[k] = { n: p.nombre, i: p.imagen || '' };
             }
         }
+        if (n) marcarSucia(mr, mc);
+        return n;
     }
-    // Posición de cada pieza sobre la mesa (en coordenadas de la vista): x = centro, y = donde se apoya, w = ancho (y alto)
-    function piezasMesa(mr, mc) {
-        pzIndexar();
-        var lst = PZ.mapa[clave(mr, mc)]; if (!lst) return [];
-        var n = lst.length, L = PZ_DISPOSICIONES[PZ_DISPOSICIONES.length - 1], i;
-        for (i = 0; i < PZ_DISPOSICIONES.length; i++) { if (PZ_DISPOSICIONES[i][0] * PZ_DISPOSICIONES[i][1] >= n) { L = PZ_DISPOSICIONES[i]; break; } }
-        var cols = L[0], filas = L[1], cap = cols * filas, extra = n > cap ? n - cap + 1 : 0;
-        var mostrar = extra ? cap - 1 : n, out = [];
-        var x0 = mc * (MC + G), y0 = mr * (MF + GF);
-        for (i = 0; i < (extra ? cap : n); i++) {
-            var cx = x0 + (i % cols + 0.5) * (MC / cols), fy = y0 + (Math.floor(i / cols) + 1) * (MF / filas) - 0.3;
-            var P = proj(cx, fy);
-            out.push({ p: i < mostrar ? lst[i] : null, mas: i < mostrar ? 0 : extra, x: P[0], y: P[1], w: PZ_ANCHO * (MC / cols) * TW * esc(fy) });
-        }
-        return out;
+
+    // Guardar (solo administradores; el servidor lo vuelve a comprobar con el token): se manda cada mesa cambiada completa
+    function guardarCeldasPendientes() {
+        var ks = Object.keys(S.sucias);
+        if (!ks.length) return S.cola;
+        S.sucias = {};
+        var pack = {};
+        ks.forEach(function (k) { var q = k.split(','); pack[k] = { mr: +q[0], mc: +q[1], celdas: [] }; });
+        Object.keys(S.celdas).forEach(function (k) {
+            var q = k.split(','), r = +q[0], c = +q[1], t = pack[clave(Math.floor(r / MF), Math.floor(c / MC))], v = S.celdas[k];
+            if (t && v) t.celdas.push([r % MF, c % MC, v.n || '', v.i || '']);
+        });
+        var mesas = ks.map(function (k) { return pack[k]; });
+        S.cola = S.cola.then(function () { return enviarCeldasYa(mesas); });
+        return S.cola;
     }
-    function piezaEn(sx, sy, mr, mc) {
-        var wx = (sx - S.ox) / S.scale, wy = (sy - S.oy) / S.scale, lst = piezasMesa(mr, mc);
-        for (var i = lst.length - 1; i >= 0; i--) {   // de adelante hacia atrás
-            var it = lst[i];
-            if (it.p && Math.abs(wx - it.x) <= it.w / 2 && wy <= it.y && wy >= it.y - it.w) return it;
-        }
-        return null;
+    function enviarCeldasYa(mesas) {
+        var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+        if (!esAdmin() || !user) { estado('Solo los administradores pueden editar.', true); return Promise.resolve(false); }
+        estado('Guardando…');
+        return user.getIdToken(true).then(function (tok) {
+            return fetch(endpoint(), {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ idToken: tok, accion: 'mesaCeldas', mesas: mesas })
+            });
+        }).then(function (r) { return r.json(); }).then(function (d) {
+            if (!d.ok) throw new Error(d.error || 'Error del servidor');
+            mesas.forEach(function (m) { S.recientesC[clave(m.mr, m.mc)] = Date.now(); });   // la hoja tarda unos minutos en reflejarlo por CSV
+            if (!Object.keys(S.sucias).length) estado('✅ Guardado.');
+            return true;
+        }).catch(function (e) {
+            var m = String((e && e.message) || e);
+            if (/Falta el nombre/i.test(m)) m = 'el Apps Script todavía no tiene la acción de celdas: pega el codigo.gs nuevo y publícalo otra vez.';
+            mesas.forEach(function (x) { S.sucias[clave(x.mr, x.mc)] = true; });   // quedan pendientes: se reintentan con el siguiente cambio
+            estado('No se pudo guardar: ' + m, true);
+            return false;
+        });
     }
+    // Leer las celdas (público): pestaña «MesasCeldas» de la hoja, como CSV
+    function cargarCeldas() {
+        if (Date.now() - S.celdasTs < 30000 && !Object.keys(S.sucias).length) return Promise.resolve();
+        var id = window.SHEET_ID || SHEET_ID_RESPALDO;
+        var url = 'https://docs.google.com/spreadsheets/d/' + id + '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent(HOJA_CELDAS) + '&_=' + Date.now();
+        return fetch(url).then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.text();
+        }).then(function (t) {
+            var rows = parseCSV(t), hd = -1, i;
+            for (i = 0; i < Math.min(rows.length, 3); i++) {
+                var cb = rows[i].map(norm);
+                if (cb.indexOf('fila') !== -1 && cb.indexOf('columna') !== -1 && cb.indexOf('producto') !== -1) { hd = i; break; }
+            }
+            S.celdasTs = Date.now();
+            if (hd < 0) return;   // la pestaña «MesasCeldas» todavía no existe: no hay celdas guardadas
+            var cab = rows[hd].map(norm), iF = cab.indexOf('fila'), iC = cab.indexOf('columna'), iP = cab.indexOf('producto'), iI = cab.indexOf('imagen');
+            var nuevo = {};
+            for (i = hd + 1; i < rows.length; i++) {
+                var r = parseInt(rows[i][iF], 10) - 1, c = parseInt(rows[i][iC], 10) - 1;
+                var n = String(rows[i][iP] || '').trim().slice(0, 200), im = iI >= 0 ? String(rows[i][iI] || '').trim().slice(0, 600) : '';
+                if (r >= 0 && r < NF && c >= 0 && c < NC && (n || im)) nuevo[clave(r, c)] = { n: n, i: im };
+            }
+            // Las mesas que un administrador guardó hace pocos minutos (o tiene pendientes) mandan sobre la lectura: el CSV puede ir atrasado
+            var prot = {}, hay = false;
+            Object.keys(S.sucias).forEach(function (k) { prot[k] = 1; hay = true; });
+            Object.keys(S.recientesC).forEach(function (k) {
+                if (Date.now() - S.recientesC[k] > 5 * 60 * 1000) { delete S.recientesC[k]; return; }
+                prot[k] = 1; hay = true;
+            });
+            if (hay) {
+                var dePro = function (k) { var q = k.split(','); return prot[clave(Math.floor(q[0] / MF), Math.floor(q[1] / MC))]; };
+                Object.keys(nuevo).forEach(function (k) { if (dePro(k)) delete nuevo[k]; });
+                Object.keys(S.celdas).forEach(function (k) { if (dePro(k)) nuevo[k] = S.celdas[k]; });
+            }
+            S.celdas = nuevo; S.ver++;
+            try { localStorage.setItem('velas_mesas_celdas_v1', JSON.stringify(S.celdas)); } catch (e) { /* sin almacenamiento */ }
+            actualizarCelda(); pedirDibujo();
+        }).catch(function (e) { console.warn('[mesas] no se pudieron leer las celdas:', e); });
+    }
+
+    // Imágenes: se guardan como miniaturas cuadradas (una foto grande por celda llenaría la memoria del celular)
     function imagenPieza(url) {
         if (!url) return null;
         var e = PZ_IMG[url];
         if (!e) {
-            e = PZ_IMG[url] = { img: new Image(), ok: false };
-            e.img.onload = function () { e.ok = true; pedirDibujo(); };
+            e = PZ_IMG[url] = { img: new Image(), ok: false, src: null };
+            e.img.onload = function () {
+                var im = e.img, w = im.naturalWidth, hh = im.naturalHeight;
+                try {
+                    var lado = Math.min(w, hh), c = document.createElement('canvas');
+                    c.width = c.height = PZ_THUMB;
+                    c.getContext('2d').drawImage(im, (w - lado) / 2, (hh - lado) / 2, lado, lado, 0, 0, PZ_THUMB, PZ_THUMB);
+                    e.src = c; e.img = null;
+                } catch (x) { e.src = im; }
+                e.ok = true; pedirDibujo();
+            };
+            e.img.onerror = function () { e.fallo = true; };
             e.img.src = url;   // solo se pide cuando la pieza se ve lo bastante grande en pantalla
         }
-        return e.ok ? e.img : null;
+        return e.ok ? e.src : null;
+    }
+    function marcaCelda(r, c) {
+        if (!S.editando) return '';
+        if (S.mover && S.mover.r === r && S.mover.c === c) return 'mov';
+        if (S.cel && S.cel.r === r && S.cel.c === c) return 'sel';
+        return '';
+    }
+    // Marca en el piso la celda elegida (dorado) y la que se está moviendo (naranja)
+    function resaltarSuelo(ctx, k, mr, mc) {
+        if (!S.editando) return;
+        [[S.mover, '255,154,74'], [S.cel, '245,196,107']].forEach(function (par) {
+            var ce = par[0]; if (!ce || Math.floor(ce.r / MF) !== mr || Math.floor(ce.c / MC) !== mc) return;
+            var xa = mc * (MC + G) + ce.c % MC, ya = mr * (MF + GF) + ce.r % MF;
+            var Pa = proj(xa, ya), Pb = proj(xa + 1, ya), Pc = proj(xa + 1, ya + 1), Pd = proj(xa, ya + 1);
+            poli(ctx, [Pa, Pb, Pc, Pd], 'rgba(' + par[1] + ',0.35)');
+            ctx.beginPath(); ctx.moveTo(Pa[0], Pa[1]); ctx.lineTo(Pb[0], Pb[1]); ctx.lineTo(Pc[0], Pc[1]); ctx.lineTo(Pd[0], Pd[1]); ctx.closePath();
+            ctx.strokeStyle = 'rgb(' + par[1] + ')'; ctx.lineWidth = Math.max(2.5 / k, 1.5); ctx.stroke();
+        });
     }
     function dibujarPiezas(ctx, k) {
         if (TW * k < 4) return;   // muy alejado: solo se ven las mesas
         var vx0 = -S.ox / k, vx1 = (S.w - S.ox) / k, vy0 = -S.oy / k, vy1 = (S.h - S.oy) / k;
         for (var mr = 0; mr < MESAS_F; mr++) {
             for (var mc = 0; mc < MESAS_C; mc++) {
+                if (!dibujable(mr, mc)) continue;
                 var x0 = mc * (MC + G), y0 = mr * (MF + GF);
                 var A = proj(x0, y0), B = proj(x0 + MC, y0), D = proj(x0, y0 + MF), C = proj(x0 + MC, y0 + MF);
                 if (Math.max(B[0], C[0]) < vx0 - 200 || Math.min(A[0], D[0]) > vx1 + 200 || D[1] + 80 < vy0 || A[1] - 200 > vy1) continue;   // fuera de pantalla
-                piezasMesa(mr, mc).forEach(function (it) {
-                    var w = it.w, sw = w * k, bx = it.x - w / 2, by = it.y - w;
-                    ctx.fillStyle = 'rgba(0,0,0,0.35)';
-                    ctx.beginPath(); ctx.ellipse(it.x, it.y, w * 0.46, w * 0.08, 0, 0, 2 * Math.PI); ctx.fill();   // sombra en la mesa
-                    if (!it.p) {   // cuando hay más productos de los que caben: ficha «+N»
-                        ctx.fillStyle = '#3a2819'; ctx.fillRect(bx, by, w, w);
-                        ctx.fillStyle = '#f5c46b'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                        ctx.font = '700 ' + (w * 0.36) + 'px "Segoe UI", system-ui, sans-serif';
-                        ctx.fillText('+' + it.mas, it.x, by + w / 2);
-                    } else {
-                        var img = sw >= 22 ? imagenPieza(it.p.imagen) : null;
-                        if (img && img.naturalWidth) {
-                            var lado = Math.min(img.naturalWidth, img.naturalHeight);
-                            ctx.drawImage(img, (img.naturalWidth - lado) / 2, (img.naturalHeight - lado) / 2, lado, lado, bx, by, w, w);
-                        } else { ctx.fillStyle = '#3a2819'; ctx.fillRect(bx, by, w, w); }
-                        var precio = (it.p.oferta && parseFloat(it.p.precioOferta) > 0) ? it.p.precioOferta : it.p.precioNormal;
-                        if (sw >= 60 && parseFloat(precio) > 0) {   // etiqueta con el precio, solo cuando ya se lee
-                            ctx.fillStyle = 'rgba(14,9,6,0.78)'; ctx.fillRect(bx, it.y - w * 0.2, w, w * 0.2);
-                            ctx.fillStyle = '#fff3dc'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                            ctx.font = '700 ' + (w * 0.13) + 'px "Segoe UI", system-ui, sans-serif';
-                            ctx.fillText('$' + Math.round(parseFloat(precio)), it.x, it.y - w * 0.1);
-                        }
+                resaltarSuelo(ctx, k, mr, mc);
+                var lst = celdasMesa(mr, mc);
+                for (var i = 0; i < lst.length; i++) {
+                    var it = lst[i]; if (!esVisible(it)) continue;
+                    var P = posCelda(mr, mc, it.lc, it.lr), w = P.w, sw = w * k, bx = P.x - w / 2, by = P.y - w;
+                    if (P.x + w / 2 < vx0 || P.x - w / 2 > vx1 || P.y < vy0 || by > vy1) continue;   // celda fuera de pantalla
+                    if (sw >= 6) {
+                        ctx.fillStyle = 'rgba(0,0,0,0.35)';
+                        ctx.beginPath(); ctx.ellipse(P.x, P.y, w * 0.46, w * 0.08, 0, 0, 2 * Math.PI); ctx.fill();   // sombra en la mesa
                     }
-                    ctx.strokeStyle = 'rgba(245,196,107,0.85)'; ctx.lineWidth = Math.max(1.5 / k, 1); ctx.lineJoin = 'miter';
-                    ctx.strokeRect(bx, by, w, w);
-                });
+                    var src = (it.p || !catalogo().length) && sw >= UMBRAL_IMG ? imagenPieza(urlDe(it)) : null;
+                    if (src) ctx.drawImage(src, 0, 0, src.width || src.naturalWidth, src.height || src.naturalHeight, bx, by, w, w);
+                    else { ctx.fillStyle = it.p || !catalogo().length ? '#3a2819' : '#4a1f24'; ctx.fillRect(bx, by, w, w); }
+                    if (!it.p && catalogo().length && sw >= 14) {   // solo administradores: el producto ya no existe
+                        ctx.fillStyle = '#ff9aa8'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                        ctx.font = '700 ' + (w * 0.5) + 'px "Segoe UI", system-ui, sans-serif';
+                        ctx.fillText('⚠', P.x, by + w / 2);
+                    }
+                    var precio = it.p ? ((it.p.oferta && parseFloat(it.p.precioOferta) > 0) ? it.p.precioOferta : it.p.precioNormal) : 0;
+                    if (sw >= UMBRAL_PRECIO && parseFloat(precio) > 0) {   // etiqueta con el precio, solo cuando ya se lee
+                        ctx.fillStyle = 'rgba(14,9,6,0.78)'; ctx.fillRect(bx, P.y - w * 0.2, w, w * 0.2);
+                        ctx.fillStyle = '#fff3dc'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                        ctx.font = '700 ' + (w * 0.13) + 'px "Segoe UI", system-ui, sans-serif';
+                        ctx.fillText('$' + Math.round(parseFloat(precio)), P.x, P.y - w * 0.1);
+                    }
+                    var mk = marcaCelda(it.r, it.c);
+                    if (mk) { ctx.strokeStyle = mk === 'mov' ? '#ff9a4a' : '#f5c46b'; ctx.lineWidth = Math.max(3 / k, 2); ctx.lineJoin = 'miter'; ctx.strokeRect(bx, by, w, w); }
+                    else if (sw >= 14) { ctx.strokeStyle = 'rgba(245,196,107,0.85)'; ctx.lineWidth = Math.max(1.5 / k, 1); ctx.lineJoin = 'miter'; ctx.strokeRect(bx, by, w, w); }
+                }
             }
         }
     }
@@ -801,6 +1182,7 @@
     function dibujarMesas(ctx, k) {
         for (var mr = 0; mr < MESAS_F; mr++) {
             for (var mc = 0; mc < MESAS_C; mc++) {
+                if (!dibujable(mr, mc)) continue;
                 var sel = !!(S.sel && S.sel.mr === mr && S.sel.mc === mc);
                 var x0 = mc * (MC + G), x1 = x0 + MC, y0 = mr * (MF + GF), y1 = y0 + MF;
                 var A = proj(x0, y0), B = proj(x1, y0), C = proj(x1, y1), D = proj(x0, y1);
@@ -828,6 +1210,7 @@
         ctx.beginPath();
         for (var mr = 0; mr < MESAS_F; mr++) {
             for (var mc = 0; mc < MESAS_C; mc++) {
+                if (!dibujable(mr, mc)) continue;
                 var x0 = mc * (MC + G), y0 = mr * (MF + GF), i, a, b;
                 for (i = 1; i < MC; i++) { a = proj(x0 + i, y0); b = proj(x0 + i, y0 + MF); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); }
                 for (i = 1; i < MF; i++) { a = proj(x0, y0 + i); b = proj(x0 + MC, y0 + i); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); }
@@ -862,6 +1245,7 @@
         ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
         for (var mr = 0; mr < MESAS_F; mr++) {
             for (var mc = 0; mc < MESAS_C; mc++) {
+                if (!dibujable(mr, mc)) continue;
                 var texto = S.textos[clave(mr, mc)], vacio = false;
                 if (!texto) {
                     // Al editar, las mesas sin texto muestran una pista tenue
