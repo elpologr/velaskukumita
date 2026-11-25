@@ -235,6 +235,44 @@
         .btn-modo-velas.btn-modo-largo .btn-modo-velas-emoji { font-size: 2rem; }
         .btn-modo-velas.btn-modo-largo .btn-modo-velas-label { font-size: 1.05rem; }
     }
+
+    /* ── Filtro de precios más compacto (menos alto) ── */
+    #bloqueFiltroPrecioArreglos,
+    #bloqueFiltroPrecioTodos {
+        padding: 9px 12px 8px !important;
+        margin: 6px 0 10px 0 !important;
+    }
+    #bloqueFiltroPrecioArreglos > p,
+    #bloqueFiltroPrecioTodos > p {
+        margin: 0 0 6px !important;
+        font-size: 0.82rem !important;
+    }
+    #bloqueFiltroPrecioArreglos > div:nth-of-type(1),
+    #bloqueFiltroPrecioTodos > div:nth-of-type(1) {
+        margin-bottom: 7px !important;
+        gap: 8px !important;
+    }
+    #bloqueFiltroPrecioArreglos .btn-tipo-precio-velas,
+    #bloqueFiltroPrecioTodos .btn-tipo-precio-velas {
+        padding: 6px 16px !important;
+        font-size: 13px !important;
+    }
+    #bloqueFiltroPrecioArreglos .seccion-precios-velas,
+    #bloqueFiltroPrecioTodos .seccion-precios-velas {
+        padding: 4px 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+    }
+    #bloqueFiltroPrecioArreglos .btn-precio-velas,
+    #bloqueFiltroPrecioTodos .btn-precio-velas {
+        padding: 6px 13px !important;
+        font-size: 13px !important;
+    }
+    #bloqueFiltroPrecioArreglos .btn-scroll-precios,
+    #bloqueFiltroPrecioTodos .btn-scroll-precios {
+        width: 30px !important;
+        height: 30px !important;
+    }
     </style>
 </head>
 <body>
@@ -1322,7 +1360,7 @@
         </div>
 
         <!-- ARREGLOS — barra de búsqueda (debajo del filtro de precio) -->
-        <div class="panel-busqueda-unificado visible" id="panelArreglos">
+        <div class="panel-busqueda-unificado visible" id="panelArreglos" style="display:none !important;">
             <div class="barra-busqueda-unificada-wrap">
                 <div class="barra-busqueda-unificada" id="barraBuscadorArreglos">
                     <input type="text" id="inputBusquedaArreglos" class="bbu-input" placeholder="Buscar productos…" oninput="filtrarPorNombreUnificado('arreglos', this.value)">
@@ -1393,7 +1431,7 @@
         </div>
 
         <!-- TODOS LOS PRODUCTOS -->
-        <div class="panel-busqueda-unificado" id="panelTodos">
+        <div class="panel-busqueda-unificado" id="panelTodos" style="display:none !important;">
             <div class="barra-busqueda-unificada-wrap">
                 <div class="barra-busqueda-unificada" id="barraBuscadorTodos">
                     <input type="text" id="inputBusquedaTodos" class="bbu-input" placeholder="Buscar Todos los Productos…" oninput="filtrarPorNombreUnificado('todos', this.value)">
