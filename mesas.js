@@ -28,6 +28,8 @@
     var TW = 64, TH = 40;        // ancho y alto de una celda en pantalla (vista 2.5D: TH < TW da la sensación de inclinación)
     var M = 1.5;
     var DEPTH = 28;              // grosor del tablero (la cara frontal que se ve)
+    var PERSP = 0.3;             // perspectiva: cuánto se encoge el borde del fondo respecto al de enfrente (0 = plano; 0.3 = 30% más angosto; 0.45 = muy marcado)
+    var CAIDA = 1500;            // qué tanto «se cierran» hacia el centro los cantos verticales del grosor (más alto = menos efecto)
     var MAX_ESCALA = 4;
     var MAX_TEXTO = 500;         // máximo de letras por mesa (el servidor lo vuelve a limitar)
     var CACHE_KEY = 'velas_mesas_textos_v1';
@@ -35,6 +37,9 @@
     var SHEET_ID_RESPALDO = '1jin2wMYingvbPD2csGxIbm5AhulfRvCRvIzAKJTUNMw';
     var ENDPOINT_RESPALDO = 'https://script.google.com/macros/s/AKfycbyDp6hVMXjv8pNpbpmadzilQN-pOC2jitBiV1bn6meNdDteKEw-814ZvicOPYmxdTcH/exec';
     var AC = NC + (MESAS_C - 1) * G, AF = NF + (MESAS_F - 1) * GF;   // medidas totales con huecos
+    var CX = AC * TW / 2;                                // eje central (vista de frente: el punto de fuga está en el centro)
+    var ZMAX = AF * TH;                                  // profundidad total del piso
+    var Q = (1 / (1 - PERSP) - 1) / ZMAX;                // fuerza de la perspectiva
 
     var S = {
         textos: {}, recientes: {}, sel: null, editando: false, cola: Promise.resolve(),
@@ -44,7 +49,23 @@
     var root = null, cv = null;
 
     function $(id) { return document.getElementById(id); }
-    function proj(c, r) { return [c * TW, r * TH]; }   // 2.5D: columnas → X, filas → Y (acortada por la inclinación)
+    // Perspectiva de frente con cámara inclinada: las filas siguen horizontales y las columnas verticales se van
+    // cerrando hacia el fondo (la fila 0 está lejos, la última está más cerca de la cámara).
+    function profundo(r) { return (AF - r) * TH; }                    // distancia al borde de enfrente
+    function esc(r) { return 1 / (1 + Q * profundo(r)); }             // escala en esa fila (1 = enfrente, menor = lejos)
+    function proj(c, r) {
+        var Z = profundo(r), s = 1 / (1 + Q * Z);
+        return [CX + (c * TW - CX) * s, ZMAX - Z * s];
+    }
+    // Inversa de proj: de un punto del plano proyectado (wx, wy) a [columna, fila] continuas (o null si pasa del horizonte)
+    function invProj(wx, wy) {
+        var Zs = ZMAX - wy, d = 1 - Q * Zs;
+        if (d <= 0.001) return null;
+        var Z = Zs / d, s = 1 / (1 + Q * Z);
+        return [(CX + (wx - CX) / s) / TW, AF - Z / TH];
+    }
+    // Baja un punto del tablero «t» hacia abajo; el canto se inclina hacia el centro, así se asoma el lateral de las mesas de los lados
+    function baja(P, t) { var f = 1 - t / CAIDA; return [CX + (P[0] - CX) * f, P[1] + t]; }
     function clave(mr, mc) { return mr + ',' + mc; }
     function numeroMesa(mr, mc) { return mr * MESAS_C + mc + 1; }
     function norm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim(); }
@@ -60,6 +81,7 @@
         var admin = esAdmin();
         $('mesasEditar').style.display = admin ? 'block' : 'none';
         if (!admin && S.editando) alternarEdicion(false);
+        catRender();
     }
     (function engancharAuth() {
         if (typeof auth === 'undefined' || !auth.onAuthStateChanged || typeof _esAdminUI !== 'function') {
@@ -86,6 +108,19 @@
             '</div>' +
             '<div class="mesas-lienzo" id="mesasLienzo">' +
                 '<canvas id="mesasCanvas"></canvas>' +
+                '<button class="mesas-cat-btn" type="button" id="mesasCatBtn" aria-label="Abrir catálogo">📋 Catálogo</button>' +
+                '<aside class="mesas-cat" id="mesasCat" aria-label="Catálogo">' +
+                    '<div class="mesas-cat-head">' +
+                        '<button type="button" class="mesas-cat-atras" id="mesasCatAtras" aria-label="Volver a las colecciones">‹</button>' +
+                        '<div class="mesas-cat-titulo" id="mesasCatTitulo">Catálogo</div>' +
+                        '<button type="button" class="mesas-cat-cerrar" id="mesasCatCerrar" aria-label="Cerrar catálogo">✕</button>' +
+                    '</div>' +
+                    '<div class="mesas-cat-admin" id="mesasCatAdmin">' +
+                        '<button type="button" id="mesasCatAgregar">＋ Agregar producto</button>' +
+                        '<span>Las colecciones salen de las etiquetas de cada producto. Toca ✏️ para cambiarlas.</span>' +
+                    '</div>' +
+                    '<div class="mesas-cat-cuerpo" id="mesasCatCuerpo"></div>' +
+                '</aside>' +
                 '<div class="mesas-zoom">' +
                     '<button type="button" id="mesasMas" aria-label="Acercar">+</button>' +
                     '<button type="button" id="mesasMenos" aria-label="Alejar">−</button>' +
@@ -124,6 +159,7 @@
             if (S.abierta && e.key === 'Escape' && document.activeElement && document.activeElement.tagName !== 'TEXTAREA') cerrarMesas();
         });
         engancharGestos();
+        catEnganchar();
     }
 
     // ── Abrir / cerrar ──
@@ -132,8 +168,10 @@
         cargarCache();
         root.classList.add('abierta');
         document.body.style.overflow = 'hidden';
+        document.body.classList.add('mesas-abierta');   // sube los paneles de edición por encima de las mesas (ver mesas.css)
         S.abierta = true;
         actualizarAdmin();
+        catRender();
         requestAnimationFrame(function () {
             medir();
             if (!S.ajustada) { ajustarVista(); S.ajustada = true; }
@@ -149,6 +187,7 @@
         autoguardarSiHayCambios();
         if (S.editando) alternarEdicion(false);
         root.classList.remove('abierta');
+        document.body.classList.remove('mesas-abierta');
         S.abierta = false;
         var perfil = document.getElementById('pantallaPerfil');
         if (!(perfil && perfil.classList.contains('activo'))) document.body.style.overflow = '';
@@ -172,7 +211,7 @@
     }
     function ajustarVista() {
         var bw = (AC + 2 * M) * TW;
-        var yArriba = -(M + GF / 2) * TH, yAbajo = (AF + M) * TH + DEPTH + 30;
+        var yArriba = proj(0, -(M + GF / 2))[1], yAbajo = proj(0, AF + M)[1] + DEPTH + 30;
         var k = Math.min(S.w * 0.94 / bw, S.h * 0.94 / (yAbajo - yArriba));
         S.fitEscala = k; S.minEscala = k * 0.7;
         S.scale = k;
@@ -181,7 +220,7 @@
     }
     function limitarVista() {
         // Evita irse al vacío: el centro de la pantalla se queda dentro de la mesa
-        var xmin = -TW, xmax = AC * TW + TW, ymin = -(GF / 2 + 1) * TH, ymax = AF * TH + DEPTH + TH;
+        var xmin = -TW, xmax = AC * TW + TW, ymin = proj(0, -(GF / 2 + 1))[1], ymax = proj(0, AF)[1] + DEPTH + TH;
         var cx = (S.w / 2 - S.ox) / S.scale, cy = (S.h / 2 - S.oy) / S.scale;
         cx = Math.max(xmin, Math.min(xmax, cx)); cy = Math.max(ymin, Math.min(ymax, cy));
         S.ox = S.w / 2 - cx * S.scale; S.oy = S.h / 2 - cy * S.scale;
@@ -297,12 +336,17 @@
     }
     function mesaEn(sx, sy) {
         var wx = (sx - S.ox) / S.scale, wy = (sy - S.oy) / S.scale;
-        var mc = idxCol(wx / TW), mr = idxFila(wy / TH);
+        var f = invProj(wx, wy); if (!f) return null;
+        var mc = idxCol(f[0]), mr = idxFila(f[1]);
         return (mc >= 0 && mr >= 0) ? { mr: mr, mc: mc } : null;
     }
     function seleccionarEn(sx, sy) {
         var m = mesaEn(sx, sy);
         if (!m) { if (S.sel) deseleccionar(); return; }
+        if (!S.editando) {   // si la pieza ya se ve lo bastante grande, se abre el producto; si no, primero se acerca la mesa
+            var pz = piezaEn(sx, sy, m.mr, m.mc);
+            if (pz && pz.w * S.scale >= 48) { catAbrirProducto(pz.p); return; }
+        }
         seleccionarMesa(m.mr, m.mc);
     }
     function seleccionarMesa(mr, mc) {
@@ -387,6 +431,7 @@
             if (!d.ok) throw new Error(d.error || 'Error del servidor');
             var k = clave(mr, mc);
             if (texto) S.textos[k] = texto; else delete S.textos[k];
+            PZ.textos = null;   // el nombre de la mesa cambió: se vuelven a repartir los productos
             S.recientes[k] = { t: texto, ts: Date.now() };   // la hoja tarda unos minutos en reflejarlo por CSV
             guardarCache();
             estado('✅ Guardado.');
@@ -463,6 +508,272 @@
         try { localStorage.setItem(CACHE_KEY, JSON.stringify(S.textos)); } catch (e) { /* sin almacenamiento */ }
     }
 
+    // ── Barra lateral de catálogo (estilo catálogo de WhatsApp) ──
+    // Las colecciones NO se guardan aparte: salen de las etiquetas que ya tiene cada producto en la hoja
+    // (EtiquetaEvento → Religioso, Día de Muertos, Navidad…; EtiquetaPrincipal → Centro de Mesa, Decoraciones…).
+    // Para meter o sacar un producto de una colección, el administrador cambia sus etiquetas (botón ✏️ de cada fila).
+    var CAT_VISTA_PREVIA = 3;                       // cuántos productos se ven de primeras en cada colección
+    var CAT_EXCLUIR_TIPOS = ['etiqueta', 'etiquetas'];   // igual que en «Mostrar Todo» del sitio: las etiquetas no entran
+    var CAT = { abierta: false, vista: null };      // vista: null = lista de colecciones; o la clave de una colección ('todos' = Todos los artículos)
+
+    function h(tag, cls, txt) {
+        var e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (txt != null) e.textContent = txt;
+        return e;
+    }
+    function catProductos() {
+        var lista = (typeof listaProductos !== 'undefined' && listaProductos) ? listaProductos : [];
+        return lista.filter(function (p) {
+            return !(p.tipos || []).some(function (t) { return CAT_EXCLUIR_TIPOS.indexOf(String(t).trim().toLowerCase()) !== -1; });
+        });
+    }
+    function catBonito(v) { v = String(v).replace(/-/g, ' ').trim(); return v.charAt(0).toUpperCase() + v.slice(1); }
+    // Nombre con emoji tal como aparece en el panel de agregar producto; si no existe ahí, se arma a partir de la etiqueta
+    function catNombre(tipo, valor) {
+        var chks = document.querySelectorAll(tipo === 'e' ? '.chk-evento-producto' : '.chk-etiqueta-principal-producto');
+        for (var i = 0; i < chks.length; i++) {
+            if (String(chks[i].value).trim().toLowerCase() === valor) {
+                var sp = chks[i].parentNode && chks[i].parentNode.querySelector('span');
+                if (sp && sp.textContent.trim()) return sp.textContent.trim();
+            }
+        }
+        return catBonito(valor);
+    }
+    function catColecciones(prods) {
+        var mapa = {}, orden = [];
+        function meter(clave, tipo, valor, p) {
+            if (!mapa[clave]) { mapa[clave] = { clave: clave, tipo: tipo, valor: valor, items: [] }; orden.push(clave); }
+            mapa[clave].items.push(p);
+        }
+        prods.forEach(function (p) {
+            (p.eventos || '').split('|').forEach(function (e) { e = e.trim().toLowerCase(); if (e) meter('e:' + e, 'e', e, p); });
+            (p.tipos || []).forEach(function (t) { t = String(t).trim().toLowerCase(); if (t) meter('t:' + t, 't', t, p); });
+        });
+        var cols = orden.map(function (k) { var c = mapa[k]; c.nombre = catNombre(c.tipo, c.valor); return c; });
+        cols.sort(function (a, b) { return b.items.length - a.items.length; });   // las colecciones con más productos primero
+        return cols;
+    }
+    function catTarjeta(p) { return document.querySelector('#gridProductos [data-num=\"' + p.id + '\"]'); }
+    function catAbrirProducto(p) {
+        var card = catTarjeta(p);
+        if (card) card.click();   // reutiliza el mismo modal de producto del catálogo (se abre por encima de las mesas)
+        else if (typeof mostrarToast === 'function') mostrarToast('No se encontró el producto');
+    }
+    function catEditarProducto(p) {
+        var card = catTarjeta(p);
+        if (card && typeof abrirEdicionProducto === 'function') abrirEdicionProducto(card);
+    }
+    function catPrecio(p) {
+        var normal = parseFloat(p.precioNormal) || 0, oferta = parseFloat(p.precioOferta) || 0;
+        var caja = h('div', 'mesas-cat-precio');
+        if (p.oferta && oferta > 0) {
+            caja.appendChild(h('span', '', '$' + Math.round(oferta)));
+            if (normal > 0) caja.appendChild(h('s', '', '$' + Math.round(normal)));
+        } else if (normal > 0) {
+            caja.textContent = '$' + Math.round(normal);
+        }
+        return caja;
+    }
+    function catFila(p, admin) {
+        var fila = h('div', 'mesas-cat-item');
+        fila.setAttribute('role', 'button'); fila.tabIndex = 0;
+        var im = document.createElement('img');
+        im.loading = 'lazy'; im.alt = p.nombre || ''; im.src = p.imagen || '';
+        im.onerror = function () { this.style.visibility = 'hidden'; };
+        var info = h('div', 'mesas-cat-info');
+        info.appendChild(h('div', 'mesas-cat-nombre', p.nombre));
+        info.appendChild(catPrecio(p));
+        fila.appendChild(im); fila.appendChild(info);
+        if (admin) {
+            var ed = h('button', 'mesas-cat-editar', '✏️');
+            ed.type = 'button'; ed.setAttribute('aria-label', 'Editar producto');
+            ed.addEventListener('click', function (e) { e.stopPropagation(); catEditarProducto(p); });
+            fila.appendChild(ed);
+        }
+        fila.addEventListener('click', function () { catAbrirProducto(p); });
+        fila.addEventListener('keydown', function (e) { if (e.key === 'Enter') catAbrirProducto(p); });
+        return fila;
+    }
+    function catSeccion(titulo, items, admin, verTodo) {
+        var sec = h('section', 'mesas-cat-seccion');
+        var cab = h('div', 'mesas-cat-seccion-cab');
+        cab.appendChild(h('h4', '', titulo));
+        if (verTodo) {
+            var b = h('button', 'mesas-cat-mostrar', 'Mostrar todo');
+            b.type = 'button';
+            b.addEventListener('click', verTodo);
+            cab.appendChild(b);
+        }
+        sec.appendChild(cab);
+        items.forEach(function (p) { sec.appendChild(catFila(p, admin)); });
+        return sec;
+    }
+    function catIrA(vista) {
+        CAT.vista = vista;
+        catRender();
+        var c = $('mesasCatCuerpo'); if (c) c.scrollTop = 0;
+    }
+    function catRender() {
+        var cont = $('mesasCatCuerpo'); if (!cont) return;
+        var admin = esAdmin(), prods = catProductos();
+        var zAdmin = $('mesasCatAdmin'); if (zAdmin) zAdmin.style.display = admin ? 'flex' : 'none';
+        cont.innerHTML = '';
+        if (!prods.length) {
+            $('mesasCatTitulo').textContent = 'Catálogo';
+            $('mesasCatAtras').style.display = 'none';
+            cont.appendChild(h('div', 'mesas-cat-vacio', 'Cargando catálogo…'));
+            return;
+        }
+        var cols = catColecciones(prods), actual = null;
+        if (CAT.vista && CAT.vista !== 'todos') {
+            cols.forEach(function (c) { if (c.clave === CAT.vista) actual = c; });
+            if (!actual) CAT.vista = null;   // esa colección ya no existe (por ejemplo, se cambiaron las etiquetas)
+        }
+        $('mesasCatAtras').style.display = CAT.vista ? 'block' : 'none';
+        if (CAT.vista === 'todos') {
+            $('mesasCatTitulo').textContent = 'Todos los artículos';
+            cont.appendChild(catSeccion('Todos los artículos', prods, admin, null));
+        } else if (actual) {
+            $('mesasCatTitulo').textContent = actual.nombre;
+            cont.appendChild(catSeccion(actual.nombre, actual.items, admin, null));
+        } else {
+            $('mesasCatTitulo').textContent = 'Catálogo';
+            cols.forEach(function (c) {
+                var mas = c.items.length > CAT_VISTA_PREVIA ? function () { catIrA(c.clave); } : null;
+                cont.appendChild(catSeccion(c.nombre, c.items.slice(0, CAT_VISTA_PREVIA), admin, mas));
+            });
+            cont.appendChild(catSeccion('Todos los artículos', prods, admin, null));   // esta sí muestra todo
+        }
+    }
+    function catAlternar(forzar) {
+        CAT.abierta = (typeof forzar === 'boolean') ? forzar : !CAT.abierta;
+        $('mesasCat').classList.toggle('abierta', CAT.abierta);
+        $('mesasCatBtn').style.display = CAT.abierta ? 'none' : 'block';
+        if (CAT.abierta) catRender();
+    }
+    function catEnganchar() {
+        $('mesasCatBtn').addEventListener('click', function () { catAlternar(true); });
+        $('mesasCatCerrar').addEventListener('click', function () { catAlternar(false); });
+        $('mesasCatAtras').addEventListener('click', function () { catIrA(null); });
+        $('mesasCatAgregar').addEventListener('click', function () {
+            if (typeof abrirPantallaAdminProductos === 'function') abrirPantallaAdminProductos();
+        });
+        document.addEventListener('catalogoCargado', function () { catRender(); pedirDibujo(); });   // cuando la hoja termina de cargar o se recarga
+    }
+
+    // ── Productos sobre las mesas ──
+    // Cada mesa se vincula con sus productos por el NOMBRE que tiene (el texto de la mesa):
+    //   · «$50 Pesos» (empieza con un precio) → todos los productos cuyo precio es exactamente $50
+    //   · «Más Vendido»                      → los productos marcados como más vendidos
+    //   · «Centros de Mesa»                  → los productos con la etiqueta principal Centro de Mesa
+    // Si una mesa 39 o 40 todavía no tiene texto, se asumen Centros de Mesa y Más Vendido respectivamente.
+    // Como se calcula con la lista de productos, un producto nuevo (o con otro precio) cambia de mesa solo.
+    var PZ = { textos: null, lista: null, mapa: {} };
+    var PZ_DISPOSICIONES = [[5, 3], [6, 4], [8, 5]];   // [columnas, filas] de piezas por mesa, según cuántos productos haya (máx. 40)
+    var PZ_ANCHO = 0.8;                                 // ancho de cada pieza respecto a su espacio (1 = ocupa todo)
+    var PZ_IMG = {};
+
+    function reglaMesa(mr, mc) {
+        var crudo = String(S.textos[clave(mr, mc)] || '').trim(), t = norm(crudo), n = numeroMesa(mr, mc);
+        var m = /^\$\s*(\d+(?:\.\d+)?)/.exec(crudo) || /^(\d+(?:\.\d+)?)\s*pesos/i.exec(crudo);
+        if (m) return { tipo: 'precio', valor: parseFloat(m[1]) };
+        if (/vendido/.test(t)) return { tipo: 'vendido' };
+        if (/centros? de mesa/.test(t)) return { tipo: 'centros' };
+        if (!t && n === 39) return { tipo: 'centros' };
+        if (!t && n === 40) return { tipo: 'vendido' };
+        return null;
+    }
+    function pzEsCentros(p) { return (p.tipos || []).some(function (t) { return /centros?[ -]de[ -]mesa/.test(norm(t)); }); }
+    function pzEsVendido(p) { return !!p.masVendido || (p.tipos || []).some(function (t) { return /vendido/.test(norm(t)); }); }
+    function pzIndexar() {
+        var lista = (typeof listaProductos !== 'undefined') ? listaProductos : null;
+        if (PZ.textos === S.textos && PZ.lista === lista) return;   // nada cambió desde la última vez
+        PZ.textos = S.textos; PZ.lista = lista; PZ.mapa = {};
+        var prods = catProductos();
+        for (var mr = 0; mr < MESAS_F; mr++) {
+            for (var mc = 0; mc < MESAS_C; mc++) {
+                var r = reglaMesa(mr, mc); if (!r) continue;
+                var arr = prods.filter(function (p) {
+                    if (r.tipo === 'precio') return Math.abs((parseFloat(p.precioNormal) || 0) - r.valor) < 0.001;
+                    return r.tipo === 'vendido' ? pzEsVendido(p) : pzEsCentros(p);
+                });
+                if (arr.length) PZ.mapa[clave(mr, mc)] = arr;
+            }
+        }
+    }
+    // Posición de cada pieza sobre la mesa (en coordenadas de la vista): x = centro, y = donde se apoya, w = ancho (y alto)
+    function piezasMesa(mr, mc) {
+        pzIndexar();
+        var lst = PZ.mapa[clave(mr, mc)]; if (!lst) return [];
+        var n = lst.length, L = PZ_DISPOSICIONES[PZ_DISPOSICIONES.length - 1], i;
+        for (i = 0; i < PZ_DISPOSICIONES.length; i++) { if (PZ_DISPOSICIONES[i][0] * PZ_DISPOSICIONES[i][1] >= n) { L = PZ_DISPOSICIONES[i]; break; } }
+        var cols = L[0], filas = L[1], cap = cols * filas, extra = n > cap ? n - cap + 1 : 0;
+        var mostrar = extra ? cap - 1 : n, out = [];
+        var x0 = mc * (MC + G), y0 = mr * (MF + GF);
+        for (i = 0; i < (extra ? cap : n); i++) {
+            var cx = x0 + (i % cols + 0.5) * (MC / cols), fy = y0 + (Math.floor(i / cols) + 1) * (MF / filas) - 0.3;
+            var P = proj(cx, fy);
+            out.push({ p: i < mostrar ? lst[i] : null, mas: i < mostrar ? 0 : extra, x: P[0], y: P[1], w: PZ_ANCHO * (MC / cols) * TW * esc(fy) });
+        }
+        return out;
+    }
+    function piezaEn(sx, sy, mr, mc) {
+        var wx = (sx - S.ox) / S.scale, wy = (sy - S.oy) / S.scale, lst = piezasMesa(mr, mc);
+        for (var i = lst.length - 1; i >= 0; i--) {   // de adelante hacia atrás
+            var it = lst[i];
+            if (it.p && Math.abs(wx - it.x) <= it.w / 2 && wy <= it.y && wy >= it.y - it.w) return it;
+        }
+        return null;
+    }
+    function imagenPieza(url) {
+        if (!url) return null;
+        var e = PZ_IMG[url];
+        if (!e) {
+            e = PZ_IMG[url] = { img: new Image(), ok: false };
+            e.img.onload = function () { e.ok = true; pedirDibujo(); };
+            e.img.src = url;   // solo se pide cuando la pieza se ve lo bastante grande en pantalla
+        }
+        return e.ok ? e.img : null;
+    }
+    function dibujarPiezas(ctx, k) {
+        if (TW * k < 4) return;   // muy alejado: solo se ven las mesas
+        var vx0 = -S.ox / k, vx1 = (S.w - S.ox) / k, vy0 = -S.oy / k, vy1 = (S.h - S.oy) / k;
+        for (var mr = 0; mr < MESAS_F; mr++) {
+            for (var mc = 0; mc < MESAS_C; mc++) {
+                var x0 = mc * (MC + G), y0 = mr * (MF + GF);
+                var A = proj(x0, y0), B = proj(x0 + MC, y0), D = proj(x0, y0 + MF), C = proj(x0 + MC, y0 + MF);
+                if (Math.max(B[0], C[0]) < vx0 - 200 || Math.min(A[0], D[0]) > vx1 + 200 || D[1] + 80 < vy0 || A[1] - 200 > vy1) continue;   // fuera de pantalla
+                piezasMesa(mr, mc).forEach(function (it) {
+                    var w = it.w, sw = w * k, bx = it.x - w / 2, by = it.y - w;
+                    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+                    ctx.beginPath(); ctx.ellipse(it.x, it.y, w * 0.46, w * 0.08, 0, 0, 2 * Math.PI); ctx.fill();   // sombra en la mesa
+                    if (!it.p) {   // cuando hay más productos de los que caben: ficha «+N»
+                        ctx.fillStyle = '#3a2819'; ctx.fillRect(bx, by, w, w);
+                        ctx.fillStyle = '#f5c46b'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                        ctx.font = '700 ' + (w * 0.36) + 'px "Segoe UI", system-ui, sans-serif';
+                        ctx.fillText('+' + it.mas, it.x, by + w / 2);
+                    } else {
+                        var img = sw >= 22 ? imagenPieza(it.p.imagen) : null;
+                        if (img && img.naturalWidth) {
+                            var lado = Math.min(img.naturalWidth, img.naturalHeight);
+                            ctx.drawImage(img, (img.naturalWidth - lado) / 2, (img.naturalHeight - lado) / 2, lado, lado, bx, by, w, w);
+                        } else { ctx.fillStyle = '#3a2819'; ctx.fillRect(bx, by, w, w); }
+                        var precio = (it.p.oferta && parseFloat(it.p.precioOferta) > 0) ? it.p.precioOferta : it.p.precioNormal;
+                        if (sw >= 60 && parseFloat(precio) > 0) {   // etiqueta con el precio, solo cuando ya se lee
+                            ctx.fillStyle = 'rgba(14,9,6,0.78)'; ctx.fillRect(bx, it.y - w * 0.2, w, w * 0.2);
+                            ctx.fillStyle = '#fff3dc'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                            ctx.font = '700 ' + (w * 0.13) + 'px "Segoe UI", system-ui, sans-serif';
+                            ctx.fillText('$' + Math.round(parseFloat(precio)), it.x, it.y - w * 0.1);
+                        }
+                    }
+                    ctx.strokeStyle = 'rgba(245,196,107,0.85)'; ctx.lineWidth = Math.max(1.5 / k, 1); ctx.lineJoin = 'miter';
+                    ctx.strokeRect(bx, by, w, w);
+                });
+            }
+        }
+    }
+
     // ── Dibujo ──
     function pedirDibujo() {
         if (S.abierta && !S.raf) S.raf = requestAnimationFrame(dibujar);
@@ -483,6 +794,7 @@
         ctx.setTransform(S.dpr * k, 0, 0, S.dpr * k, S.dpr * S.ox, S.dpr * S.oy);
         dibujarMesas(ctx, k);
         dibujarRejilla(ctx, k);
+        dibujarPiezas(ctx, k);
         dibujarTextos(ctx, k);
     }
     // Cada mesa chica es su propia tabla, con su marco, separada de las demás por un hueco oscuro
@@ -492,12 +804,17 @@
                 var sel = !!(S.sel && S.sel.mr === mr && S.sel.mc === mc);
                 var x0 = mc * (MC + G), x1 = x0 + MC, y0 = mr * (MF + GF), y1 = y0 + MF;
                 var A = proj(x0, y0), B = proj(x1, y0), C = proj(x1, y1), D = proj(x0, y1);
+                var tF = DEPTH * esc(y1), tA = DEPTH * esc(y0);   // el grosor también se acorta con la distancia
                 // sombra suave que cae hacia abajo, para que la mesa «se despegue» del fondo
-                poli(ctx, [[D[0] - 6, D[1] + DEPTH * 0.4], [C[0] + 6, C[1] + DEPTH * 0.4], [C[0] + 14, C[1] + DEPTH + 14], [D[0] - 14, D[1] + DEPTH + 14]], 'rgba(0,0,0,0.38)');
+                poli(ctx, [[D[0] - 6, D[1] + tF * 0.4], [C[0] + 6, C[1] + tF * 0.4], [C[0] + 14, C[1] + tF + 14], [D[0] - 14, D[1] + tF + 14]], 'rgba(0,0,0,0.38)');
+                // lateral que se asoma (la cara hacia el centro de la pantalla no se ve; se ve la de afuera)
+                var BD = baja(D, tF), BC = baja(C, tF), BA = baja(A, tA), BB = baja(B, tA);
+                if (CX > (A[0] + B[0] + C[0] + D[0]) / 4) poli(ctx, [B, C, BC, BB], sel ? '#33241a' : '#241a12');   // mesa a la izquierda del centro: se asoma su lado derecho; a la derecha: el izquierdo
+                else poli(ctx, [A, D, BD, BA], sel ? '#33241a' : '#241a12');
                 // frente de la mesa (el grosor): degradado de madera oscura
-                var gr = ctx.createLinearGradient(0, D[1], 0, D[1] + DEPTH);
+                var gr = ctx.createLinearGradient(0, D[1], 0, D[1] + tF);
                 gr.addColorStop(0, sel ? '#4a3322' : '#3a2819'); gr.addColorStop(1, '#0a0705');
-                poli(ctx, [D, C, [C[0], C[1] + DEPTH], [D[0], D[1] + DEPTH]], gr);
+                poli(ctx, [D, C, BC, BD], gr);
                 poli(ctx, [A, B, C, D], sel ? '#2a1d14' : '#1a130e');                              // cara superior
                 ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.lineTo(C[0], C[1]); ctx.lineTo(D[0], D[1]); ctx.closePath();
                 ctx.strokeStyle = sel ? '#f5c46b' : 'rgba(245,196,107,0.65)';
@@ -552,15 +869,17 @@
                     texto = 'Mesa ' + numeroMesa(mr, mc) + ' · toca para escribir'; vacio = true;
                 }
                 var xa = mc * (MC + G), ya = mr * (MF + GF);
-                var o = proj(xa, ya), alto;
+                var alto;
                 ctx.fillStyle = vacio ? 'rgba(255,243,220,0.35)' : '#fff3dc';
-                ctx.save();
-                ctx.transform(TW, 0, 0, TH, o[0], o[1]);   // el plano del piso: 1 unidad = 1 celda (la letra se acorta con la inclinación)
-                ctx.scale(0.01, 0.01);                                       // ahora 1 unidad = 1/100 de celda
                 ctx.font = '600 ' + tam + 'px "Playfair Display", Georgia, serif';
                 var lineas = partirTexto(ctx, texto, MC * 100 - 60, 3);
                 alto = lineas.length * lh + pad;                              // alto del recuadro, en 1/100 de celda
-                lineas.forEach(function (ln, i) { ctx.fillText(ln, MC * 50, -alto / 2 - (lineas.length - 1) * lh / 2 + i * lh + tam * 0.35); });
+                // El plano del piso en el centro del recuadro: 1 unidad = 1 celda (ancho y alto se acortan con la inclinación y la distancia)
+                var rc = ya - alto / 200, sc = esc(rc), o = proj(xa + MC / 2, rc);
+                ctx.save();
+                ctx.transform(TW * sc, 0, 0, TH * sc * sc, o[0], o[1]);
+                ctx.scale(0.01, 0.01);                                       // ahora 1 unidad = 1/100 de celda
+                lineas.forEach(function (ln, i) { ctx.fillText(ln, 0, -(lineas.length - 1) * lh / 2 + i * lh + tam * 0.35); });
                 ctx.restore();
                 // Recuadro: tres lados (izquierdo, de arriba y derecho); el cuarto es el borde de la mesa
                 var h = alto / 100;
