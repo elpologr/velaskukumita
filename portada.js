@@ -4,21 +4,28 @@
 // mostrarToast y cargarDesdeGoogleSheets).
 //
 // QUÉ HACE
-//   · En la PRIMERA página del catálogo, cada fila de 3 productos es una «sección»: fila 1 = temporada (Navidad, Día de
-//     Muertos…), fila 2 = religioso, fila 3 = cirios, fila 4 = centros de mesa… Cada fila toma los primeros 3 productos
-//     (en el orden de la hoja) que tengan la etiqueta/evento elegido, y lleva arriba un título editable.
-//   · Los demás productos siguen después, en su orden de siempre. Si no hay nada configurado, el catálogo queda igual que antes.
+//   · La PÁGINA 1 del catálogo es una portada: NO muestra los productos de la hoja en su orden; solo filas de 3 productos
+//     «reflejados» (copias) de los mejores productos, que siguen viviendo en su lugar de la hoja. Los productos de la hoja
+//     empiezan a verse desde la PÁGINA 2 (30 por página).
+//   · Por defecto cada fila es AUTOMÁTICA: fila 1 = primeros 3 productos de la página 2, fila 2 = primeros 3 de la página 3, …
+//     (hasta 10 filas = páginas 2 a 11).
+//   · Desde el ⚙️ el administrador puede cambiar cualquier fila por una sección (evento/temporada, etiqueta, más vendidos,
+//     oferta) y ponerle un título. Las demás filas siguen en automático.
+//   · Con filtros o búsqueda activos la portada no se usa (se ve la paginación normal).
 //   · El botón ⚙️ (esquina superior derecha, fijo aunque se haga scroll) solo se dibuja para los correos de ADMIN_EMAILS.
 //     La seguridad real está en el Apps Script (acción «portada» en codigo.gs), que vuelve a verificar el token de Firebase.
 //
 // DÓNDE SE GUARDA: pestaña «Portada» de la misma hoja de Google (la crea sola el Apps Script la primera vez que se guarda):
-//   Fila | Filtro | Etiqueta        ·   Filtro = «tipo:cirios», «evento:navidad», «especial:masvendido» o «especial:oferta»
+//   Fila | Filtro | Etiqueta        ·   Filtro = «tipo:cirios», «evento:navidad», «especial:masvendido», «especial:oferta»
+//   o «especial:auto» (fila automática: primeros 3 productos de la página que le toca)
 // ══════════════════════════════════════════════════════════════════════════════
 (function () {
     'use strict';
 
-    var POR_FILA = 3;          // productos por sección (una fila del catálogo en computadora)
-    var MAX_FILAS = 8;         // máximo de secciones (8 × 3 = 24, caben en la primera página de 30)
+    var POR_FILA = 3;          // productos por fila (una fila del catálogo en computadora)
+    var MAX_FILAS = 10;        // filas de la portada (10 × 3 = 30, caben en la página 1). La fila N toma de la página N+1
+    var POR_PAGINA = 30;       // debe coincidir con POR_PAGINA de la paginación en app.js
+    var AUTO = 'especial:auto';
     var HOJA = 'Portada';
     var CACHE_KEY = 'velas_portada_v1';
 
@@ -41,6 +48,7 @@
     };
     function nombreFiltro(filtro) {
         var p = String(filtro || '').split(':'), tipo = p[0], v = p.slice(1).join(':');
+        if (tipo === 'especial' && v === 'auto') return '';
         if (tipo === 'especial') return v === 'masvendido' ? 'Más vendidos' : v === 'oferta' ? 'En oferta' : bonito(v);
         if (tipo === 'evento') {
             var n = NOMBRES_EVENTO[v] || NOMBRES_EVENTO[claveSlug(v)] || bonito(v);
@@ -77,10 +85,13 @@
     }
 
     // ── Leer la configuración (pestaña «Portada», CSV público) ──
+    // Las filas son POSICIONALES (la fila 3 es la fila 3): una fila vacía o inválida se vuelve «automática», no se elimina
     function limpiarFilas(arr) {
-        return (arr || []).filter(function (f) { return f && /^(tipo|evento|especial):.+/.test(String(f.filtro || '')); })
-            .slice(0, MAX_FILAS)
-            .map(function (f) { return { filtro: String(f.filtro).trim(), etiqueta: String(f.etiqueta || '').trim().slice(0, 60) }; });
+        return (arr || []).slice(0, MAX_FILAS).map(function (f) {
+            var filtro = String((f && f.filtro) || '').trim();
+            if (!/^(tipo|evento|especial):.+/.test(filtro)) return { filtro: AUTO, etiqueta: '' };
+            return { filtro: filtro, etiqueta: String((f && f.etiqueta) || '').trim().slice(0, 60) };
+        });
     }
     function leerConfig() {
         var id = (typeof SHEET_ID !== 'undefined') ? SHEET_ID : '';
@@ -117,10 +128,11 @@
     // app.js espera esta promesa antes de pintar el catálogo, para que la portada ya salga acomodada
     window.portadaListaPromesa = cargarConfig();
 
-    // ── Acomodar el catálogo: secciones al inicio, con su título ──
-    var obs = null, grupos = [];
+    // ── Portada: filas de copias en la página 1, con título opcional ──
+    var obs = null, grupos = [], totalOriginales = 0;
     function sincronizarCabeceras() {
         grupos.forEach(function (g) {
+            if (!g.cab) return;
             var hay = g.cards.some(function (c) { return !c.classList.contains('oculto') && !c.classList.contains('paginacion-oculto'); });
             g.cab.style.display = hay ? '' : 'none';
         });
@@ -128,35 +140,64 @@
     var rafSync = 0;
     function pedirSync() { if (rafSync) return; rafSync = requestAnimationFrame(function () { rafSync = 0; sincronizarCabeceras(); }); }
 
+    function esAuto(f) { return !f || !f.filtro || f.filtro === AUTO; }
+    function productoPorIdx(idx) {
+        var L = (typeof listaProductos !== 'undefined' && listaProductos) ? listaProductos : [];
+        for (var k = 0; k < L.length; k++) { if (String(L[k].id) === String(idx)) return L[k]; }
+        return null;
+    }
+
     function aplicarPortada() {
         var grid = document.getElementById('gridProductos');
         if (!grid) return;
         if (obs) { obs.disconnect(); obs = null; }
-        grid.querySelectorAll('.portada-cab, .portada-corte').forEach(function (n) { n.remove(); });
+        grid.querySelectorAll('.portada-cab, .portada-corte, .card-portada').forEach(function (n) { n.remove(); });
         grupos = [];
-        var cfg = window._portadaCfg;
-        if (!cfg || !cfg.length) return;
         var cards = Array.prototype.slice.call(grid.querySelectorAll(':scope > .card-dinamica'));
-        if (!cards.length) return;
-        var usadas = new Set(), frag = document.createDocumentFragment();
-        cfg.forEach(function (fila) {
-            var elegidas = cards.filter(function (c) { return !usadas.has(c) && coincide(c, fila.filtro); }).slice(0, POR_FILA);
-            if (!elegidas.length) return;
-            var cab = el('div', 'portada-cab');
-            cab.appendChild(el('h3', '', fila.etiqueta || nombreFiltro(fila.filtro)));
-            frag.appendChild(cab);
-            elegidas.forEach(function (c) { usadas.add(c); frag.appendChild(c); });
+        totalOriginales = cards.length;
+        if (!cards.length || typeof window._crearCardProducto !== 'function') return;
+        var cfg = window._portadaCfg || [], usadas = new Set(), frag = document.createDocumentFragment();
+
+        for (var i = 0; i < MAX_FILAS; i++) {
+            var fila = cfg[i] || null, auto = esAuto(fila), elegidas;
+            if (auto) {
+                // Automática: primeros productos de la página (i + 2) de la hoja
+                elegidas = cards.slice(i * POR_PAGINA, (i + 1) * POR_PAGINA).filter(function (c) { return !usadas.has(c); }).slice(0, POR_FILA);
+            } else {
+                // Sección elegida: primeros productos de toda la hoja con esa etiqueta / evento
+                elegidas = cards.filter(function (c) { return !usadas.has(c) && coincide(c, fila.filtro); }).slice(0, POR_FILA);
+            }
+            if (!elegidas.length) continue;
+            var copias = [];
+            elegidas.forEach(function (c) {
+                usadas.add(c);
+                var p = productoPorIdx(c.getAttribute('data-idx'));
+                if (!p) return;
+                var copia = window._crearCardProducto(p, true);
+                copia.classList.add('paginacion-oculto');   // la paginación la muestra solo en la página 1
+                copias.push(copia);
+            });
+            if (!copias.length) continue;
+            var titulo = (fila && fila.etiqueta) ? fila.etiqueta : (auto ? '' : nombreFiltro(fila.filtro));
+            var cab = null;
+            if (titulo) { cab = el('div', 'portada-cab'); cab.appendChild(el('h3', '', titulo)); frag.appendChild(cab); }
+            copias.forEach(function (c) { frag.appendChild(c); });
             frag.appendChild(el('div', 'portada-corte'));   // corte de fila: lo que sigue empieza en una fila nueva
-            grupos.push({ cab: cab, cards: elegidas });
-        });
+            grupos.push({ cab: cab, cards: copias });
+        }
         if (!grupos.length) return;
-        cards.forEach(function (c) { if (!usadas.has(c)) frag.appendChild(c); });
+        // Las copias van AL FINAL del grid: así cualquier búsqueda de «la tarjeta del producto X» encuentra primero la original
         grid.appendChild(frag);
         obs = new MutationObserver(pedirSync);
         obs.observe(grid, { attributes: true, attributeFilter: ['class'], subtree: true });
         sincronizarCabeceras();
     }
     window.aplicarPortada = aplicarPortada;
+
+    // La paginación (app.js) pregunta si la página 1 es la portada: solo si hay filas Y no hay filtro/búsqueda activos
+    window._portadaHayPagina1 = function (nVisibles) {
+        return grupos.length > 0 && nVisibles === totalOriginales;
+    };
 
     // Cada vez que app.js vuelve a pintar el catálogo, se acomoda la portada
     var origRender = window.renderizarCatalogoCompleto;
@@ -203,36 +244,27 @@
         cont.innerHTML = '';
         filas.forEach(function (f, i) {
             var caja = el('div', 'cfgp-fila');
-            caja.appendChild(el('div', 'cfgp-num', 'Fila ' + (i + 1) + (i === 0 ? ' · temporada' : '')));
+            caja.appendChild(el('div', 'cfgp-num', 'Fila ' + (i + 1)));
             var sel = document.createElement('select'); sel.className = 'cfgp-sel';
-            var vacio = document.createElement('option'); vacio.value = ''; vacio.textContent = '— Elige qué productos van aquí —'; sel.appendChild(vacio);
+            var vacio = document.createElement('option'); vacio.value = AUTO; vacio.textContent = 'Automático — primeros 3 de la página ' + (i + 2); sel.appendChild(vacio);
             var existe = false;
             ops.forEach(function (o) {
                 var op = document.createElement('option'); op.value = o.valor; op.textContent = o.texto + '  (' + o.n + ')'; sel.appendChild(op);
                 if (o.valor === f.filtro) existe = true;
             });
             if (f.filtro && !existe) { var raro = document.createElement('option'); raro.value = f.filtro; raro.textContent = nombreFiltro(f.filtro) + ' (sin productos)'; sel.appendChild(raro); }
-            sel.value = f.filtro || '';
+            sel.value = f.filtro || AUTO;
             var inp = document.createElement('input'); inp.type = 'text'; inp.className = 'cfgp-inp'; inp.maxLength = 60;
-            inp.placeholder = 'Título que se verá en esta fila'; inp.value = f.etiqueta || '';
+            inp.placeholder = 'Título de la fila (opcional)'; inp.value = f.etiqueta || '';
             sel.addEventListener('change', function () {
                 var anterior = nombreFiltro(f.filtro);
                 f.filtro = sel.value;
-                if (!f.etiqueta || f.etiqueta === anterior) { f.etiqueta = f.filtro ? nombreFiltro(f.filtro) : ''; inp.value = f.etiqueta; }
+                if (!f.etiqueta || f.etiqueta === anterior) { f.etiqueta = f.filtro ? nombreFiltro(f.filtro) : ''; inp.value = f.etiqueta; }   // (automático → sin título)
             });
             inp.addEventListener('input', function () { f.etiqueta = inp.value; });
-            var acc = el('div', 'cfgp-acc');
-            [['↑', 'Subir', function () { if (i > 0) { var t = filas[i - 1]; filas[i - 1] = filas[i]; filas[i] = t; pintarFilas(); } }],
-             ['↓', 'Bajar', function () { if (i < filas.length - 1) { var t = filas[i + 1]; filas[i + 1] = filas[i]; filas[i] = t; pintarFilas(); } }],
-             ['✕', 'Quitar fila', function () { filas.splice(i, 1); pintarFilas(); }]].forEach(function (a) {
-                var b = el('button', 'cfgp-mini', a[0]); b.type = 'button'; b.title = a[1]; b.setAttribute('aria-label', a[1]);
-                b.addEventListener('click', a[2]); acc.appendChild(b);
-            });
-            caja.appendChild(sel); caja.appendChild(inp); caja.appendChild(acc);
+            caja.appendChild(sel); caja.appendChild(inp);
             cont.appendChild(caja);
         });
-        $('cfgPortadaMas').style.display = filas.length >= MAX_FILAS ? 'none' : 'block';
-        if (!filas.length) cont.appendChild(el('div', 'cfgp-vacio', 'Sin filas: el catálogo se muestra en su orden normal.'));
     }
     function $(id) { return document.getElementById(id); }
 
@@ -244,11 +276,11 @@
             '<div class="cfgp-caja">' +
                 '<div class="cfgp-cab"><h3>⚙️ Configuración</h3><button type="button" class="cfgp-x" id="cfgPortadaCerrar" aria-label="Cerrar">✕</button></div>' +
                 '<div class="cfgp-cuerpo">' +
-                    '<h4>Primeras filas del catálogo</h4>' +
-                    '<p class="cfgp-ayuda">En la <b>primera página</b> del catálogo, cada fila muestra 3 productos de la sección que elijas, con el título que escribas. ' +
-                    'La fila 1 es la de <b>temporada</b>: cámbiala cuando quieras (por ejemplo de Día de Muertos a Navidad). Los demás productos siguen después.</p>' +
+                    '<h4>Filas de la portada (página 1)</h4>' +
+                    '<p class="cfgp-ayuda">La <b>página 1</b> solo muestra estas filas de 3 productos; los productos de la hoja empiezan en la página 2. ' +
+                    'En <b>Automático</b>, la fila 1 muestra los primeros 3 productos de la página 2, la fila 2 los de la página 3, y así sucesivamente. ' +
+                    'Cambia cualquier fila por un evento/temporada, una etiqueta, más vendidos u ofertas, y ponle título si quieres.</p>' +
                     '<div id="cfgPortadaFilas"></div>' +
-                    '<button type="button" class="cfgp-mas" id="cfgPortadaMas">＋ Agregar fila</button>' +
                     '<div class="cfgp-estado" id="cfgPortadaEstado"></div>' +
                 '</div>' +
                 '<div class="cfgp-pie">' +
@@ -260,7 +292,6 @@
         modal.addEventListener('click', function (e) { if (e.target === modal) cerrarPanel(); });
         $('cfgPortadaCerrar').addEventListener('click', cerrarPanel);
         $('cfgPortadaCancelar').addEventListener('click', cerrarPanel);
-        $('cfgPortadaMas').addEventListener('click', function () { if (filas.length < MAX_FILAS) { filas.push({ filtro: '', etiqueta: '' }); pintarFilas(); } });
         $('cfgPortadaGuardar').addEventListener('click', guardar);
         document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('abierto')) cerrarPanel(); });
     }
@@ -268,14 +299,10 @@
         if (!esAdminActual()) return;
         construirModal();
         var cfg = window._portadaCfg || [];
-        if (cfg.length) filas = cfg.map(function (f) { return { filtro: f.filtro, etiqueta: f.etiqueta }; });
-        else {
-            // Primera vez: se sugieren las 4 filas que pensaste; cambia lo que no coincida
-            var ops = opcionesFiltro();
-            filas = [['navidad', 'Temporada'], ['religios', 'Religioso'], ['cirio', 'Cirios'], ['centro', 'Centros de mesa']].map(function (s) {
-                var v = adivinar(ops, s[0]);
-                return { filtro: v, etiqueta: v ? s[1] : '' };
-            });
+        filas = [];
+        for (var k = 0; k < MAX_FILAS; k++) {
+            var c = cfg[k];
+            filas.push(c ? { filtro: c.filtro || AUTO, etiqueta: c.etiqueta || '' } : { filtro: AUTO, etiqueta: '' });
         }
         estado('');
         pintarFilas();
@@ -293,6 +320,8 @@
         var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
         if (!esAdminActual() || !user) { estado('Tu sesión no está autorizada.', true); return; }
         var nuevo = limpiarFilas(filas);
+        // No se guardan las filas automáticas del final que no tienen título (así «todo automático» = portada sin configuración)
+        while (nuevo.length && nuevo[nuevo.length - 1].filtro === AUTO && !nuevo[nuevo.length - 1].etiqueta) nuevo.pop();
         guardando = true; $('cfgPortadaGuardar').disabled = true; estado('Guardando…');
         user.getIdToken(true).then(function (tok) {
             return fetch(ADMIN_ENDPOINT, {

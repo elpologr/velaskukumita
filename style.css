@@ -1492,7 +1492,8 @@
             background-color: #8c7565;
             color: white;
         }
-        body.modo-oscuro .card-dinamica {
+        body.modo-oscuro .card-dinamica,
+        body.modo-oscuro .card-portada {
             background: #2a2218;
             border-color: #3a3028;
             color: #e0d5cc;
@@ -2519,7 +2520,8 @@
         overflow-x: hidden;
     }
 
-    .card-dinamica {
+    .card-dinamica,
+    .card-portada {
         border: 1px solid #ddd;
         border-radius: 8px;
         padding: 12px;
@@ -2606,13 +2608,15 @@
         .card-precio-mayoreo-badge { font-size: 11px; padding: 2px 6px; }
     }
 
-    .card-dinamica h3 {
+    .card-dinamica h3,
+    .card-portada h3 {
         font-size: 15px !important;
         margin: 4px 0 !important;
         line-height: 1.3;
     }
     @media (max-width: 768px) {
-        .card-dinamica h3 {
+        .card-dinamica h3,
+    .card-portada h3 {
             font-size: 12px !important;
         }
     }
@@ -2682,10 +2686,12 @@
         .img-contenedor-dinamico {
             height: 160px;
         }
-        .card-dinamica h3 {
+        .card-dinamica h3,
+    .card-portada h3 {
             font-size: 13px !important;
         }
-        .card-dinamica [style*="font-size: 28px"] {
+        .card-dinamica [style*="font-size: 28px"],
+        .card-portada [style*="font-size: 28px"] {
             font-size: 14px !important;
         }
     }
@@ -3969,7 +3975,8 @@ body.modo-oscuro .cart-total-valor { color: #f0e8e0; }
     }
 
     /* 3. Cada tarjeta */
-    .card-dinamica {
+    .card-dinamica,
+    .card-portada {
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;

@@ -358,14 +358,18 @@ function mostrarEstadoCarga(mensaje, esError) {
 // renderizarCatalogoCompleto()
 // Lee listaProductos y genera dinámicamente cada tarjeta .card-dinamica
 // ══════════════════════════════════════════════════════════════════════════════
-function renderizarCatalogoCompleto() {
-    var grid = document.getElementById('gridProductos');
-    if (!grid) { console.warn('renderizarCatalogoCompleto: #gridProductos no encontrado'); return; }
-    grid.innerHTML = '';
-
-    listaProductos.forEach(function(p) {
+// Construye UNA tarjeta de producto.
+//   esCopia = false → tarjeta normal del catálogo (.card-dinamica)
+//   esCopia = true  → copia «reflejada» para la página 1 / portada (.card-portada). Es una tarjeta
+//                     aparte (no cuenta en filtros, carruseles ni paginación) y al tocarla abre el producto original.
+function _crearCardProducto(p, esCopia) {
         var card = document.createElement('div');
-        card.className = 'card-dinamica';
+        card.className = esCopia ? 'card-portada' : 'card-dinamica';
+        var _cardOriginal = function() {
+            if (!esCopia) return card;
+            return document.querySelector('#gridProductos > .card-dinamica[data-idx="' + p.id + '"]') || card;
+        };
+        card._cardOriginal = _cardOriginal;
 
         // ── Data-attributes necesarios para filtros y modal ──
         card.setAttribute('data-num',             String(p.id));
@@ -451,7 +455,7 @@ function renderizarCatalogoCompleto() {
         btnCartCard.innerHTML = '🛒';
         btnCartCard.addEventListener('click', function(e) {
             e.stopPropagation();
-            if (typeof abrirModalCantidad === 'function') abrirModalCantidad(card);
+            if (typeof abrirModalCantidad === 'function') abrirModalCantidad(_cardOriginal());
         });
         imgContenedor.appendChild(btnCartCard);
 
@@ -520,11 +524,21 @@ function renderizarCatalogoCompleto() {
             if (e.target.closest('.btn-like')) return;
             if (e.target.closest('.btn-carrito-card')) return;
             if (typeof abrirModalProducto === 'function') {
-                abrirModalProducto(card);
+                abrirModalProducto(_cardOriginal());
             }
         });
 
-        grid.appendChild(card);
+        return card;
+}
+window._crearCardProducto = _crearCardProducto;
+
+function renderizarCatalogoCompleto() {
+    var grid = document.getElementById('gridProductos');
+    if (!grid) { console.warn('renderizarCatalogoCompleto: #gridProductos no encontrado'); return; }
+    grid.innerHTML = '';
+
+    listaProductos.forEach(function(p) {
+        grid.appendChild(_crearCardProducto(p, false));
     });
     // Sincronizar corazones con favoritos guardados
     if (typeof syncBotonesLike === 'function') syncBotonesLike();
@@ -941,10 +955,14 @@ function aplicarConfigBazar(rawTexto) {
 
 
 // ===== PAGINACIÓN DE 30 PRODUCTOS POR PÁGINA =====
+// Si la portada está activa (portada.js) y NO hay filtros/búsqueda, la PÁGINA 1 muestra solo las filas de la portada
+// (copias reflejadas de productos que viven en otras páginas) y los productos de la hoja empiezan en la PÁGINA 2.
+// Con filtros o búsqueda activos la portada no se usa: la paginación es la normal (de 30 en 30 desde la página 1).
 (function() {
     const POR_PAGINA = 30;
     let paginaActual = 1;
     let tarjetasVisibles = [];
+    let conPortada = false;     // ¿la página 1 es la portada?
 
     function obtenerTarjetasVisibles() {
         return Array.from(document.querySelectorAll('#gridProductos .card-dinamica'))
@@ -952,25 +970,27 @@ function aplicarConfigBazar(rawTexto) {
     }
 
     function calcularTotalPaginas() {
-        return Math.ceil(tarjetasVisibles.length / POR_PAGINA);
+        return Math.ceil(tarjetasVisibles.length / POR_PAGINA) + (conPortada ? 1 : 0);
     }
 
     function mostrarPagina(num) {
         paginaActual = num;
-        // Guardar página en el hash de la URL para que persista al recargar
-        // (Hash de paginación desactivado para evitar scroll automático al recargar)
-        // La URL se mantiene limpia; la página siempre arranca desde el top.
-        var inicio = (num - 1) * POR_PAGINA;
+        var enPortada = conPortada && num === 1;
+        var inicio = (num - 1 - (conPortada ? 1 : 0)) * POR_PAGINA;
         var fin = inicio + POR_PAGINA;
-        // Quita paginacion-oculto a todas
+        // Quita paginacion-oculto a todas las tarjetas normales
         document.querySelectorAll('#gridProductos .card-dinamica').forEach(function(c) {
             c.classList.remove('paginacion-oculto');
         });
         // Oculta las que no están en la página actual (sólo de las visibles)
         tarjetasVisibles.forEach(function(card, i) {
-            if (i < inicio || i >= fin) {
+            if (enPortada || i < inicio || i >= fin) {
                 card.classList.add('paginacion-oculto');
             }
+        });
+        // Las copias de la portada solo se ven en la página 1 cuando la portada está activa
+        document.querySelectorAll('#gridProductos .card-portada').forEach(function(c) {
+            c.classList.toggle('paginacion-oculto', !enPortada);
         });
         renderControles();
         if (_scrollAlCambiarPagina) {
@@ -985,11 +1005,15 @@ function aplicarConfigBazar(rawTexto) {
 
     function renderControles() {
         const total = calcularTotalPaginas();
-        const mostradas = tarjetasVisibles.slice((paginaActual-1)*POR_PAGINA, paginaActual*POR_PAGINA).length;
+        const enPortada = conPortada && paginaActual === 1;
+        const inicio = (paginaActual - 1 - (conPortada ? 1 : 0)) * POR_PAGINA;
+        const mostradas = enPortada ? 0 : tarjetasVisibles.slice(inicio, inicio + POR_PAGINA).length;
         const hayTarjetas = document.querySelectorAll('#gridProductos .card-dinamica').length > 0;
-        const infoTexto = tarjetasVisibles.length > 0
-            ? "Mostrando " + ((paginaActual-1)*POR_PAGINA+1) + "\u2013" + ((paginaActual-1)*POR_PAGINA+mostradas) + " de " + tarjetasVisibles.length + " productos"
-            : (hayTarjetas ? 'Sin resultados para ese filtro' : '');
+        const infoTexto = enPortada
+            ? 'Productos destacados'
+            : (tarjetasVisibles.length > 0
+                ? "Mostrando " + (inicio+1) + "\u2013" + (inicio+mostradas) + " de " + tarjetasVisibles.length + " productos"
+                : (hayTarjetas ? 'Sin resultados para ese filtro' : ''));
 
         ['pagInfoArriba', 'pagInfoAbajo'].forEach(function(id) {
             var el = document.getElementById(id);
@@ -1000,13 +1024,7 @@ function aplicarConfigBazar(rawTexto) {
             var cont = document.getElementById(id);
             if (!cont) return;
             cont.innerHTML = '';
-            if (total <= 1) {
-                // Limpiar el hash de página para que no quede sucio al quitar filtros
-                if (window.history && window.history.replaceState) {
-                    // URL ya limpia — no hay hash de paginación que limpiar
-                }
-                return;
-            }
+            if (total <= 1) return;
 
             var btnPrev = document.createElement('button');
             btnPrev.className = 'btn-pag';
@@ -1036,6 +1054,8 @@ function aplicarConfigBazar(rawTexto) {
 
     function actualizarPaginacion() {
         tarjetasVisibles = obtenerTarjetasVisibles();
+        // ¿La página 1 es la portada? (portada.js decide: hay filas con productos y no hay ningún filtro activo)
+        conPortada = (typeof window._portadaHayPagina1 === 'function') && !!window._portadaHayPagina1(tarjetasVisibles.length);
         // Siempre arrancar en página 1 y en el top de la pantalla
         // (se eliminó la restauración desde hash para evitar scroll automático al recargar)
         window.history.replaceState(null, '', window.location.pathname + window.location.search);
@@ -1808,7 +1828,7 @@ function aplicarConfigBazar(rawTexto) {
     // ===== POST-PROCESADO DE CARDS (se ejecuta cada vez que el catálogo se renderiza) =====
     function postProcesarCards() {
         // Activar click en imagen de cada card
-        document.querySelectorAll('.card-dinamica').forEach(card => {
+        document.querySelectorAll('.card-dinamica, .card-portada').forEach(card => {
             const imgContenedor = card.querySelector('.img-contenedor-dinamico');
             if (imgContenedor) {
                 imgContenedor.style.cursor = 'pointer';
@@ -1817,7 +1837,7 @@ function aplicarConfigBazar(rawTexto) {
                     imgContenedor._clickBound = true;
                     imgContenedor.addEventListener('click', (e) => {
                         e.stopPropagation(); // evita que el clic también dispare el listener de la tarjeta y abra el modal 2 veces
-                        abrirModalProducto(card);
+                        abrirModalProducto(card._cardOriginal ? card._cardOriginal() : card);
                     });
                 }
             }
