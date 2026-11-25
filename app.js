@@ -2747,12 +2747,11 @@ function cerrarModalTienda() {
     }
 }
 
-// ─── QR MODAL ───
+// ─── COMPARTIR PÁGINA (QR + copiar link) ───
+var URL_PAGINA_COMPARTIR = 'https://velaskukumita.com';
 function abrirModalQR() {
-    const url = window.location.href;
-    document.getElementById('qrUrlTexto').textContent = url;
     document.getElementById('modalQR').classList.add('abierto');
-    generarQR(url);
+    generarQR(URL_PAGINA_COMPARTIR);
 }
 function cerrarModalQR() {
     document.getElementById('modalQR').classList.remove('abierto');
@@ -2766,7 +2765,7 @@ _ready(function() {
 function generarQR(texto) {
     const canvas = document.getElementById('qrCanvas');
     const ctx = canvas.getContext('2d');
-    const size = window.innerWidth >= 768 ? 380 : 200;
+    const size = 220;
     canvas.width = size;
     canvas.height = size;
 
@@ -2790,15 +2789,10 @@ function generarQR(texto) {
 
 // ─── COPIAR URL ───
 async function copiarURL() {
-    const url = window.location.href;
+    const url = URL_PAGINA_COMPARTIR;
+    const etiqueta = document.getElementById('btnCopiarTexto');
     try {
         await navigator.clipboard.writeText(url);
-        const btn = document.getElementById('btnCopiarURL');
-        const span = btn.querySelector('span');
-        const textoOriginal = span ? span.textContent : '';
-        if (span) span.textContent = '\u00a1Copiado!'; document.getElementById('btnCopiarTexto').textContent = '\u00a1Copiado!';
-        setTimeout(() => { if (span) span.textContent = textoOriginal; document.getElementById('btnCopiarTexto').textContent = 'Copiar URL'; }, 2000);
-        mostrarToast('\ud83d\udd17 URL copiada al portapapeles');
     } catch (e) {
         const temp = document.createElement('textarea');
         temp.value = url;
@@ -2806,8 +2800,12 @@ async function copiarURL() {
         temp.select();
         document.execCommand('copy');
         document.body.removeChild(temp);
-        mostrarToast('\ud83d\udd17 URL copiada al portapapeles');
     }
+    if (etiqueta) {
+        etiqueta.textContent = '\u00a1Link copiado!';
+        setTimeout(function() { etiqueta.textContent = 'Copiar link de la p\u00e1gina'; }, 2000);
+    }
+    mostrarToast('\ud83d\udd17 Link copiado al portapapeles');
 }
 function cerrarPantallaPerfil() {
     document.getElementById('pantallaPerfil').classList.remove('activo');
@@ -3442,9 +3440,9 @@ function activarPill(cual) {
     var panelEl = panelId ? document.getElementById(panelId) : null;
     if (panelEl) panelEl.classList.add('activo');
 
-    // Mostrar/ocultar catálogo de productos
+    // Mostrar/ocultar catálogo de productos (solo se ve con «Catálogo»; Biografía, Ofertas y Más Vendidos muestran únicamente su propia zona)
     var catalogo = document.getElementById('zona-catalogo');
-    if (catalogo) catalogo.style.display = (cual === 'biografia') ? 'none' : 'block';
+    if (catalogo) catalogo.style.display = (cual === 'biografia' || cual === 'ofertas' || cual === 'masvendidos') ? 'none' : 'block';
 
     if (cual === 'productos') {
         // Sin scroll automático al mostrar el panel de productos
@@ -4790,65 +4788,6 @@ _ready(function() { _cargarHistorialUsados(); });
     };
 })();
 
-// ── Reclamar cupón de la Zona Interactiva ──
-function reclamarCuponZonaInteractiva() {
-    var codigo = 'ZONA15';
-    var btnEl  = document.getElementById('btnReclamarCupon15');
-
-    if (_cuponEnCarritoActual(codigo)) { mostrarToast('🎟️ El cupón ZONA15 ya está en tu carrito'); return; }
-    if (_cuponYaUsado(codigo)) { _bloquearBtnCupon15(); mostrarToast('⚠️ Este cupón ya fue reclamado anteriormente'); return; }
-
-    var cupDef = _catalogoCupones[codigo];
-    var fechaHoy = new Date().toLocaleDateString('es-MX', { year:'numeric', month:'long', day:'numeric' });
-    _cuponesAplicados.push({
-        codigo:        codigo,
-        descuento:     cupDef.descuento,
-        descripcion:   cupDef.descripcion,
-        tipo:          cupDef.tipo,
-        origen:        cupDef.origen,
-        fechaObtenido: fechaHoy
-    });
-    _marcarCuponUsado(codigo);
-
-    // Guardar en Firestore si hay sesión
-    _guardarCuponFirestore(codigo, cupDef, fechaHoy);
-
-    if (btnEl) {
-        btnEl.disabled = true;
-        btnEl.style.background = 'linear-gradient(135deg,#4caf50,#2e7d32)';
-        btnEl.style.boxShadow   = '0 4px 16px rgba(46,125,50,0.4)';
-        btnEl.innerHTML = '✅ Cupón guardado en tu carrito';
-    }
-    mostrarToast('🎉 ¡Cupón del 15% añadido! Ábrelo en el carrito.');
-    renderizarCarrito();
-}
-
-function _bloquearBtnCupon15() {
-    var btnEl    = document.getElementById('btnReclamarCupon15');
-    var estadoEl = document.getElementById('zonaCupon15Estado');
-    if (btnEl) {
-        btnEl.disabled = true;
-        btnEl.style.background = 'linear-gradient(135deg,#bbb,#999)';
-        btnEl.style.boxShadow  = 'none';
-        btnEl.style.cursor     = 'default';
-        btnEl.innerHTML        = '⛔ Ya has utilizado este cupón';
-    }
-    if (estadoEl && !estadoEl.querySelector('.msg-cupon-usado')) {
-        var msg = document.createElement('p');
-        msg.className = 'msg-cupon-usado';
-        msg.style.cssText = 'font-size:0.78rem;color:#9a8878;margin-top:10px;font-style:italic;';
-        msg.textContent   = 'Este cupón ya fue reclamado desde este dispositivo.';
-        estadoEl.appendChild(msg);
-    }
-}
-
-// Al cargar la página, revisar si el cupón ya fue usado y bloquear botón
-_ready(function() {
-    if (_cuponYaUsado('ZONA15')) {
-        setTimeout(_bloquearBtnCupon15, 400);
-    }
-});
-
 // ── Aplicar cupón manual (por código) ──
 function aplicarCuponManual() {
     var inputEl = document.getElementById('inputCuponManual');
@@ -5014,19 +4953,6 @@ document.addEventListener('click', function(e) {
         cerrarSubmenus();
     }
 });
-
-function irAZonaInteractiva() {
-    // Activa el panel de Biografía y lleva a su inicio (el cupón se descubre explorando)
-    if (typeof activarPill === 'function') activarPill('biografia');
-    setTimeout(function() {
-        var panel = document.getElementById('panelPillBiografia');
-        if (panel) {
-            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    }, 120);
-}
 
 // Cerrar modal de cantidad al hacer clic en el fondo
 _ready(function() {

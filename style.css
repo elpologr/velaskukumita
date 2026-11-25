@@ -1330,6 +1330,42 @@
             transition: background 0.2s, transform 0.15s;
         }
         .btn-copiar-qr:hover { background: #5c4d43; transform: translateY(-1px); }
+
+        /* ===== BOTÓN "COMPARTIR PÁGINA" (debajo de la imagen de perfil) ===== */
+        .btn-compartir-pagina {
+            background: #9a9a9a; color: #fff; border: none; border-radius: 999px;
+            padding: 8px 20px; font-size: 0.85rem; font-weight: 600; font-family: inherit;
+            cursor: pointer; transition: background 0.2s, transform 0.15s;
+        }
+        .btn-compartir-pagina:hover { background: #7d7d7d; transform: translateY(-1px); }
+        .btn-compartir-pagina:active { transform: scale(0.97); }
+
+        /* ===== MODAL COMPARTIR: caja con scroll + lista de redes ===== */
+        .modal-qr-caja { max-height: 92vh; overflow-y: auto; overscroll-behavior: contain; }
+        @media (min-width: 768px) {
+            .modal-qr-caja { max-width: 400px !important; padding: 36px 32px 28px !important; }
+            .modal-qr-titulo { font-size: 1.3rem !important; margin-bottom: 6px !important; }
+            .modal-qr-sub { font-size: 0.9rem !important; margin-bottom: 18px !important; }
+            #qrCanvas { width: 220px !important; height: 220px !important; }
+            .btn-copiar-qr { font-size: 0.9rem !important; padding: 10px 22px !important; margin-top: 16px !important; }
+            .modal-qr-cerrar { width: 30px !important; height: 30px !important; font-size: 16px !important; top: 12px !important; right: 14px !important; }
+        }
+        #qrCanvas { width: 220px; height: 220px; max-width: 100%; }
+        .btn-copiar-qr { width: 100%; justify-content: center; }
+        .cp-redes { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+        .cp-red {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            padding: 11px 16px; border-radius: 12px; color: #fff; text-decoration: none;
+            font-size: 0.95rem; font-weight: 600; transition: transform 0.15s, filter 0.2s;
+        }
+        .cp-red:hover { transform: translateY(-1px); filter: brightness(1.1); }
+        .cp-red svg { width: 22px; height: 22px; flex-shrink: 0; }
+        .cp-yt { background: #FF0000; }
+        .cp-fb { background: #1877F2; }
+        .cp-ig { background: linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); }
+        .cp-tt { background: #000; }
+        .cp-wa { background: #25D366; }
+
         body.modo-oscuro .modal-qr-caja { background: #1e1a16; }
         body.modo-oscuro .modal-qr-titulo { color: #e0d5cc; }
         body.modo-oscuro .modal-qr-sub { color: #9a8878; }
@@ -3674,111 +3710,37 @@ body.modo-oscuro .cart-total-valor { color: #f0e8e0; }
 }
 
 /* ══════════════════════════════════════════════════════
-   PERFILES "TAMBIÉN VENDEMOS YESO" (Fer / Polo)
-   Antes eran estilos inline sin media query, por lo que en
-   pantallas angostas se apilaban uno debajo del otro. Ahora
-   se fuerza una sola fila siempre (como en PC) y se encogen
-   un poco en móvil para que siempre quepan lado a lado.
+   SUBMENÚ DE LA FOTO DE PERFIL: logo arriba y, en una fila
+   debajo, las páginas de Yesos Polo y Yesos Fer (las tres
+   imágenes del mismo tamaño, cuadradas).
    ══════════════════════════════════════════════════════ */
-.yeso-perfiles-fila {
+.perfil-menu {
+    padding: 16px;
     display: flex;
-    flex-wrap: nowrap;
+    flex-direction: column;
+    gap: 12px;
+}
+.perfil-menu-logo {
+    display: flex;
     justify-content: center;
-    align-items: flex-start;
-    gap: 10px;
 }
-.yeso-perfil-col {
-    flex: 1 1 0;
-    min-width: 0;
-    max-width: 190px;
+.perfil-menu-fila {
+    display: flex;
+    gap: 12px;
 }
-.yeso-perfil-link {
+.perfil-menu-logo img,
+.perfil-menu-tile {
     display: block;
-    margin: 0 auto 10px;
-    width: 130px;
-    max-width: 100%;
-    cursor: pointer;
-}
-.yeso-perfil-img {
-    width: 100%;
-    height: 130px;
+    width: calc(50% - 6px);
+    aspect-ratio: 1 / 1;
     border-radius: 16px;
-    object-fit: cover;
+    overflow: hidden;
     box-shadow: 0 6px 20px rgba(0,0,0,0.16);
-    display: block;
-    transition: transform 0.22s, box-shadow 0.22s;
 }
-.yeso-perfil-link:hover .yeso-perfil-img {
-    transform: scale(1.04);
-    box-shadow: 0 10px 28px rgba(0,0,0,0.22);
-}
-.yeso-perfil-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    background: linear-gradient(135deg,#8c7565,#5c4d43);
-    color: white;
-    text-decoration: none;
-    border-radius: 999px;
-    padding: 10px 14px;
-    font-size: 0.85rem;
-    font-weight: 800;
-    font-family: inherit;
-    box-shadow: 0 4px 14px rgba(92,77,67,0.3);
-    transition: all 0.22s;
-    width: 100%;
-    box-sizing: border-box;
-    text-align: center;
-    line-height: 1.25;
-}
-.yeso-perfil-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 7px 22px rgba(92,77,67,0.42);
-}
-.yeso-perfil-img2-wrap {
-    margin-top: 10px;
-    width: 130px;
-    max-width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-}
-.yeso-perfil-img2 {
-    width: 100%;
-    height: 130px;
-    border-radius: 16px;
-    object-fit: cover;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.16);
-    display: block;
-}
-/* En móvil: misma fila, un poco más chico para que siempre quepan las 2 columnas */
-@media (max-width: 767px) {
-    .yeso-perfiles-fila { gap: 6px; }
-    .yeso-perfil-link, .yeso-perfil-img2-wrap {
-        width: 108px;
-    }
-    .yeso-perfil-img, .yeso-perfil-img2 {
-        height: 108px;
-    }
-    .yeso-perfil-btn {
-        padding: 8px 6px;
-        font-size: 0.7rem;
-        gap: 4px;
-    }
-}
-@media (max-width: 360px) {
-    .yeso-perfiles-fila { gap: 4px; }
-    .yeso-perfil-link, .yeso-perfil-img2-wrap {
-        width: 92px;
-    }
-    .yeso-perfil-img, .yeso-perfil-img2 {
-        height: 92px;
-    }
-    .yeso-perfil-btn {
-        font-size: 0.64rem;
-        padding: 7px 4px;
-    }
-}
+.perfil-menu-logo img { object-fit: cover; }
+.perfil-menu-tile { cursor: pointer; transition: transform 0.22s, box-shadow 0.22s; }
+.perfil-menu-tile:hover { transform: scale(1.04); box-shadow: 0 10px 28px rgba(0,0,0,0.22); }
+.perfil-menu-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 /* ══════════════════════════════════════════════════════
    AVISO "FILAS OCUPADAS" (panel Agregar producto → Posición en la hoja)
