@@ -2777,6 +2777,22 @@
         .pill-btn:hover:not(.activo) { background: #e8ddd5; border-color: #b8a898; }
         body.modo-oscuro .pill-btn { background: #2a2a2a; border-color: #444; color: #ccc; }
         body.modo-oscuro .pill-btn.activo { background: #8c7565; border-color: #8c7565; color: white; }
+        /* Barra de pestañas (Biografía / Catálogo): el botón seleccionado se ve BLANCO y resalta sobre el fondo café;
+           los no seleccionados van en un café más claro y translúcido, para que no se confundan con el activo. */
+        #pillNavBarra .pill-btn {
+            background: rgba(255,255,255,0.18);
+            border-color: rgba(255,255,255,0.35);
+            color: #fff;
+        }
+        #pillNavBarra .pill-btn:hover:not(.activo) { background: rgba(255,255,255,0.30); border-color: rgba(255,255,255,0.55); }
+        #pillNavBarra .pill-btn.activo,
+        body.modo-oscuro #pillNavBarra .pill-btn.activo {
+            background: #ffffff;
+            border-color: #ffffff;
+            color: #5c4d43;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.28);
+        }
+        body.modo-oscuro #pillNavBarra .pill-btn:not(.activo) { background: rgba(0,0,0,0.25); border-color: rgba(255,255,255,0.2); color: #ddd; }
         /* Paneles de píldoras */
         .pill-panel {
             display: none;

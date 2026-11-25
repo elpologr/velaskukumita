@@ -36,6 +36,7 @@
     var PERSP = 0.3;             // perspectiva: cuánto se encoge el borde del fondo respecto al de enfrente (0 = plano; 0.3 = 30% más angosto; 0.45 = muy marcado)
     var CAIDA = 1500;            // qué tanto «se cierran» hacia el centro los cantos verticales del grosor (más alto = menos efecto)
     var MAX_ESCALA = 4;
+    var MAX_PAG = 6;             // máximo de «partes» (mesas gemelas) por mesa: cuando una mesa se llena, sigue en la parte 2, 3…
     var MAX_TEXTO = 500;         // máximo de letras por mesa (el servidor lo vuelve a limitar)
     var CACHE_KEY = 'velas_mesas_textos_v1';
     var HOJA = 'Mesas';
@@ -51,7 +52,7 @@
         scale: 0.05, ox: 0, oy: 0, w: 0, h: 0, dpr: 1, minEscala: 0.03, fitEscala: 0.05,
         raf: 0, anim: 0, abierta: false, ajustada: false,
         celdas: {}, ver: 0, cel: null, mover: null, sucias: {}, recientesC: {}, guardaTimer: 0, celdasTs: 0, celKey: '',
-        movil: false, cur: 0   // movil: se muestra una sola mesa a la vez; cur: número de mesa actual (0 = la primera, arriba a la izquierda)
+        pg: {}, movil: false, cur: 0   // movil: se muestra una sola mesa a la vez; cur: número de mesa actual (0 = la primera, arriba a la izquierda)
     };
     var root = null, cv = null;
 
@@ -172,6 +173,11 @@
                     '<button type="button" id="mesasMenos" aria-label="Alejar">−</button>' +
                     '<button type="button" id="mesasAjustar" aria-label="Ver todas las mesas">⤢</button>' +
                 '</div>' +
+                '<div class="mesas-pag" id="mesasPag">' +
+                    '<button type="button" id="mesasPagPrev" aria-label="Parte anterior de esta mesa">‹</button>' +
+                    '<span id="mesasPagInfo"></span>' +
+                    '<button type="button" id="mesasPagNext" aria-label="Siguiente parte de esta mesa">›</button>' +
+                '</div>' +
                 '<div class="mesas-caption" id="mesasCaption"></div>' +
                 '<div class="mesas-panel-admin" id="mesasPanelAdmin">' +
                     '<div class="mesas-panel-titulo" id="mesasPanelTitulo"></div>' +
@@ -217,6 +223,8 @@
             if (S.movil) { irAMesa(S.cur); return; }   // en móvil: vuelve a encuadrar la mesa actual
             deseleccionar(); ajustarVista(); pedirDibujo();
         });
+        $('mesasPagPrev').addEventListener('click', function () { cambiarPagina(-1); });
+        $('mesasPagNext').addEventListener('click', function () { cambiarPagina(1); });
         $('mesasPrev').addEventListener('click', function () { irAMesa(S.cur - 1); });
         $('mesasNext').addEventListener('click', function () { irAMesa(S.cur + 1); });
         $('mesasEditar').addEventListener('click', function () { alternarEdicion(); });
@@ -514,6 +522,7 @@
     function actualizarPanel(cambioDeMesa) {
         var cap = $('mesasCaption'), panel = $('mesasPanelAdmin');
         if (!cap || !panel) return;
+        actualizarPag();
         var txt = textoSel();
         // Público: el texto completo de la mesa tocada
         cap.textContent = txt;
@@ -523,7 +532,7 @@
         if (S.editando) {
             var ta = $('mesasTexto');
             $('mesasPanelTitulo').textContent = S.sel
-                ? '📝 Mesa ' + numeroMesa(S.sel.mr, S.sel.mc) + ' (fila ' + (S.sel.mr + 1) + ', columna ' + (S.sel.mc + 1) + ' de mesas)'
+                ? '📝 Mesa ' + numeroMesa(S.sel.mr, S.sel.mc) + (paginasMesa(S.sel.mr, S.sel.mc) > 1 ? ' · parte ' + (pagActual(S.sel.mr, S.sel.mc) + 1) : '') + ' (fila ' + (S.sel.mr + 1) + ', columna ' + (S.sel.mc + 1) + ' de mesas)'
                 : 'Toca una mesa para escribir su texto';
             ta.disabled = !S.sel;
             $('mesasGuardar').disabled = !S.sel;
@@ -833,7 +842,10 @@
         if (v.n) for (i = 0; i < L.length; i++) { if (L[i].nombre === v.n) return L[i]; }
         return null;
     }
-    function mesaDeCelda(r, c) { return { mr: Math.floor(r / MF), mc: Math.floor(c / MC) }; }
+    // Cada mesa puede tener varias «partes» (mesas gemelas con el mismo tema). La parte p guarda sus celdas en las filas
+    // p*NF … p*NF+NF-1 de la cuadrícula grande (la parte 1 usa las filas de siempre, así nada de lo guardado cambia).
+    function mesaDeCelda(r, c) { return { mr: Math.floor((r % NF) / MF), mc: Math.floor(c / MC), pag: Math.floor(r / NF) }; }
+    function pagActual(mr, mc) { return S.pg[clave(mr, mc)] || 0; }
     // Reparte las celdas guardadas por mesa (ordenadas de atrás hacia adelante) y las enlaza con el catálogo
     function czIndexar() {
         var lista = (typeof listaProductos !== 'undefined') ? listaProductos : null;
@@ -846,13 +858,41 @@
         });
         Object.keys(S.celdas).forEach(function (k) {
             var q = k.split(','), r = +q[0], c = +q[1], v = S.celdas[k];
-            if (!(r >= 0 && r < NF && c >= 0 && c < NC) || !v) return;
-            var mk = clave(Math.floor(r / MF), Math.floor(c / MC));
+            if (!(r >= 0 && r < NF * MAX_PAG && c >= 0 && c < NC) || !v) return;
+            var mk = clave(Math.floor((r % NF) / MF), Math.floor(c / MC)) + '|' + Math.floor(r / NF);
             (CZ.mapa[mk] = CZ.mapa[mk] || []).push({ r: r, c: c, lr: r % MF, lc: c % MC, v: v, p: (v.i && porImg[v.i]) || (v.n && porNombre[v.n]) || null });
         });
         Object.keys(CZ.mapa).forEach(function (mk) { CZ.mapa[mk].sort(function (a, b) { return a.r - b.r || a.c - b.c; }); });
     }
-    function celdasMesa(mr, mc) { czIndexar(); return CZ.mapa[clave(mr, mc)] || []; }
+    function celdasMesaPag(mr, mc, pag) { czIndexar(); return CZ.mapa[clave(mr, mc) + '|' + pag] || []; }
+    function celdasMesa(mr, mc) { return celdasMesaPag(mr, mc, pagActual(mr, mc)); }   // las de la parte que se está viendo
+    // Cuántas partes tiene la mesa: hasta la última con productos. El administrador (editando) ve una más cuando la última está llena.
+    function paginasMesa(mr, mc) {
+        var max = 0, p;
+        for (p = 0; p < MAX_PAG; p++) if (celdasMesaPag(mr, mc, p).length) max = p;
+        var n = max + 1;
+        if (S.editando && n < MAX_PAG && celdasMesaPag(mr, mc, max).length >= MC * MF) n++;
+        return n;
+    }
+    function cambiarPagina(d) {
+        if (!S.sel) return;
+        var mr = S.sel.mr, mc = S.sel.mc, n = paginasMesa(mr, mc), p = Math.max(0, Math.min(n - 1, pagActual(mr, mc) + d));
+        if (p === pagActual(mr, mc)) return;
+        S.pg[clave(mr, mc)] = p;
+        S.cel = null; S.celKey = '';
+        actualizarPanel(false); pedirDibujo();
+    }
+    function actualizarPag() {
+        var box = $('mesasPag'); if (!box) return;
+        var n = S.sel ? paginasMesa(S.sel.mr, S.sel.mc) : 1;
+        if (S.sel && pagActual(S.sel.mr, S.sel.mc) >= n) S.pg[clave(S.sel.mr, S.sel.mc)] = n - 1;
+        if (!S.sel || n <= 1) { box.style.display = 'none'; return; }
+        var p = pagActual(S.sel.mr, S.sel.mc);
+        box.style.display = 'flex';
+        $('mesasPagInfo').textContent = 'Parte ' + (p + 1) + ' de ' + n;
+        $('mesasPagPrev').disabled = p <= 0;
+        $('mesasPagNext').disabled = p >= n - 1;
+    }
     // El público no ve celdas cuyo producto ya no existe en el catálogo (el administrador sí, con una alerta)
     function esVisible(it) { return !!(it.p || S.editando || !catalogo().length); }
     function urlDe(it) { return (it.p && it.p.imagen) || it.v.i || ''; }
@@ -876,7 +916,7 @@
         var f = invProj((sx - S.ox) / S.scale, (sy - S.oy) / S.scale); if (!f) return null;
         var lc = Math.floor(f[0] - mc * (MC + G)), lr = Math.floor(f[1] - mr * (MF + GF));
         if (lc < 0 || lc >= MC || lr < 0 || lr >= MF) return null;
-        return { r: mr * MF + lr, c: mc * MC + lc };
+        return { r: pagActual(mr, mc) * NF + mr * MF + lr, c: mc * MC + lc };
     }
 
     // Editar celdas (administradores) ──
@@ -889,6 +929,7 @@
     }
     function actualizarCelda() {
         var caja = $('mesasCelda'); if (!caja) return;
+        actualizarPag();
         var ce = S.cel, k = ce ? clave(ce.r, ce.c) : '', v = ce ? S.celdas[k] : null, p = v ? productoDeVinculo(v) : null;
         $('mesasCeldaTitulo').textContent = S.mover ? '↔ Moviendo… toca la celda de destino'
             : ce ? '🔲 Celda: fila ' + (ce.r % MF + 1) + ', columna ' + (ce.c % MC + 1)
@@ -976,19 +1017,22 @@
     // Devuelve cuántos productos puso (-1 si la mesa no tiene una regla reconocible)
     function llenarMesa(mr, mc) {
         var r = reglaMesa(mr, mc); if (!r) return -1;
-        var ya = {};
-        celdasMesa(mr, mc).forEach(function (it) { if (it.p) ya[it.p.id] = 1; });
+        var ya = {}, p0;
+        for (p0 = 0; p0 < MAX_PAG; p0++) celdasMesaPag(mr, mc, p0).forEach(function (it) { if (it.p) ya[it.p.id] = 1; });   // sin repetir los de ninguna parte
         var pend = catProductos().filter(function (p) {
             if (ya[p.id]) return false;
             if (r.tipo === 'precio') return Math.abs((parseFloat(p.precioNormal) || 0) - r.valor) < 0.001;
             return r.tipo === 'vendido' ? pzEsVendido(p) : pzEsCentros(p);
         });
+        // Se llena la parte 1; si se llena, lo que sobre pasa a la parte 2, y así sucesivamente
         var n = 0;
-        for (var lr = 0; lr < MF && n < pend.length; lr++) {
-            for (var lc = 0; lc < MC && n < pend.length; lc++) {
-                var k = clave(mr * MF + lr, mc * MC + lc);
-                if (S.celdas[k]) continue;
-                var p = pend[n++]; S.celdas[k] = { n: p.nombre, i: p.imagen || '' };
+        for (var pag = 0; pag < MAX_PAG && n < pend.length; pag++) {
+            for (var lr = 0; lr < MF && n < pend.length; lr++) {
+                for (var lc = 0; lc < MC && n < pend.length; lc++) {
+                    var k = clave(pag * NF + mr * MF + lr, mc * MC + lc);
+                    if (S.celdas[k]) continue;
+                    var p = pend[n++]; S.celdas[k] = { n: p.nombre, i: p.imagen || '' };
+                }
             }
         }
         if (n) marcarSucia(mr, mc);
@@ -1003,8 +1047,8 @@
         var pack = {};
         ks.forEach(function (k) { var q = k.split(','); pack[k] = { mr: +q[0], mc: +q[1], celdas: [] }; });
         Object.keys(S.celdas).forEach(function (k) {
-            var q = k.split(','), r = +q[0], c = +q[1], t = pack[clave(Math.floor(r / MF), Math.floor(c / MC))], v = S.celdas[k];
-            if (t && v) t.celdas.push([r % MF, c % MC, v.n || '', v.i || '']);
+            var q = k.split(','), r = +q[0], c = +q[1], md = mesaDeCelda(r, c), t = pack[clave(md.mr, md.mc)], v = S.celdas[k];
+            if (t && v) t.celdas.push([r % MF, c % MC, v.n || '', v.i || '', md.pag]);   // el 5.º dato es la parte (0 = parte 1)
         });
         var mesas = ks.map(function (k) { return pack[k]; });
         S.cola = S.cola.then(function () { return enviarCeldasYa(mesas); });
@@ -1054,7 +1098,7 @@
             for (i = hd + 1; i < rows.length; i++) {
                 var r = parseInt(rows[i][iF], 10) - 1, c = parseInt(rows[i][iC], 10) - 1;
                 var n = String(rows[i][iP] || '').trim().slice(0, 200), im = iI >= 0 ? String(rows[i][iI] || '').trim().slice(0, 600) : '';
-                if (r >= 0 && r < NF && c >= 0 && c < NC && (n || im)) nuevo[clave(r, c)] = { n: n, i: im };
+                if (r >= 0 && r < NF * MAX_PAG && c >= 0 && c < NC && (n || im)) nuevo[clave(r, c)] = { n: n, i: im };
             }
             // Las mesas que un administrador guardó hace pocos minutos (o tiene pendientes) mandan sobre la lectura: el CSV puede ir atrasado
             var prot = {}, hay = false;
@@ -1064,7 +1108,7 @@
                 prot[k] = 1; hay = true;
             });
             if (hay) {
-                var dePro = function (k) { var q = k.split(','); return prot[clave(Math.floor(q[0] / MF), Math.floor(q[1] / MC))]; };
+                var dePro = function (k) { var q = k.split(','), md = mesaDeCelda(+q[0], +q[1]); return prot[clave(md.mr, md.mc)]; };
                 Object.keys(nuevo).forEach(function (k) { if (dePro(k)) delete nuevo[k]; });
                 Object.keys(S.celdas).forEach(function (k) { if (dePro(k)) nuevo[k] = S.celdas[k]; });
             }
@@ -1105,7 +1149,7 @@
     function resaltarSuelo(ctx, k, mr, mc) {
         if (!S.editando) return;
         [[S.mover, '255,154,74'], [S.cel, '245,196,107']].forEach(function (par) {
-            var ce = par[0]; if (!ce || Math.floor(ce.r / MF) !== mr || Math.floor(ce.c / MC) !== mc) return;
+            var ce = par[0]; if (!ce || Math.floor((ce.r % NF) / MF) !== mr || Math.floor(ce.c / MC) !== mc || Math.floor(ce.r / NF) !== pagActual(mr, mc)) return;
             var xa = mc * (MC + G) + ce.c % MC, ya = mr * (MF + GF) + ce.r % MF;
             var Pa = proj(xa, ya), Pb = proj(xa + 1, ya), Pc = proj(xa + 1, ya + 1), Pd = proj(xa, ya + 1);
             poli(ctx, [Pa, Pb, Pc, Pd], 'rgba(' + par[1] + ',0.35)');

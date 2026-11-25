@@ -219,3 +219,21 @@ body.mesas-abierta #pantallaEditarProducto.activo { z-index: 9800; }
 #pantallaMesas .mesas-celda-mas { padding: 6px 8px; font-size: 11.5px; }
 #pantallaMesas .mesas-detalle summary { cursor: pointer; font-size: 13px; font-weight: 700; color: #c9b8a4; padding: 4px 0; }
 #pantallaMesas .mesas-detalle .mesas-texto { margin: 6px 0; }
+
+/* ── Partes de una mesa (cuando una mesa se llena de productos, continúa en una mesa gemela: parte 2, 3…) ── */
+#pantallaMesas .mesas-pag {
+    display: none; position: absolute; left: 50%; top: 12px; transform: translateX(-50%); z-index: 3;
+    align-items: center; gap: 4px; padding: 4px;
+    border: 1px solid #5a4636; border-radius: 14px; background: rgba(30,20,14,0.9);
+}
+#pantallaMesas .mesas-pag button {
+    width: 40px; height: 38px; border: none; border-radius: 10px; background: transparent;
+    color: #fbefdc; font-size: 26px; line-height: 1; padding-bottom: 3px; cursor: pointer;
+}
+#pantallaMesas .mesas-pag button:active { background: #8c7565; }
+#pantallaMesas .mesas-pag button:disabled { opacity: 0.3; cursor: not-allowed; }
+#pantallaMesas .mesas-pag span { min-width: 96px; text-align: center; font-size: 14px; font-weight: 700; color: #f5c46b; white-space: nowrap; }
+@media (max-width: 480px) {
+    #pantallaMesas .mesas-pag { top: 62px; }   /* debajo del botón de catálogo, para no chocar con él ni con el zoom */
+    #pantallaMesas .mesas-pag span { min-width: 84px; font-size: 13px; }
+}
