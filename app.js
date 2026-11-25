@@ -639,6 +639,8 @@ function cargarDesdeGoogleSheets() {
             return res.text();
         })
         .then(function(texto) {
+          // Portada del catálogo (portada.js): se espera (máx. 4 s) la configuración de las primeras filas para pintar ya acomodado
+          return (window.portadaListaPromesa || Promise.resolve()).then(function() {
             var filas = parsearCSV(texto);
 
             // ── DIAGNÓSTICO: imprime las primeras 3 filas del CSV en consola ──
@@ -711,6 +713,7 @@ function cargarDesdeGoogleSheets() {
                 );
             });
             console.groupEnd();
+          });
         })
         .catch(function(err) {
             console.error('Error cargando Google Sheets:', err);
