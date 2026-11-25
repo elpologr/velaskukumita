@@ -3418,7 +3418,7 @@ document.querySelectorAll('.card-dinamica').forEach(function(card) {
 
 
 // ===== PÍLDORAS (BIOGRAFÍA / OFERTAS / MÁS VENDIDOS) =====
-var _pillBtns   = { biografia:'pillBiografia', productos:'pillProductos', ofertas:'pillOfertas', masvendidos:'pillMasVendidos' };
+var _pillBtns   = { biografia:'pillBiografia', productos:'pillProductos', ofertas:'pillProductos', masvendidos:'pillProductos' };
 var _pillPanels = { biografia:'panelPillBiografia', productos:null, ofertas:'panelPillOfertas', masvendidos:'panelPillMasVendidos' };
 
 function activarPill(cual) {
@@ -5286,7 +5286,7 @@ function _cargarFavoritosFirestore(uid) {
 
     // Limpiar filtro de evento cuando el usuario cambia de tab manualmente
     _ready(function() {
-        document.querySelectorAll('.btn-modo-velas').forEach(function(btn) {
+        document.querySelectorAll('.btn-modo-velas:not(.btn-modo-extra)').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.btn-evento-carrusel').forEach(function(b) {
                     b.classList.remove('activo-evento');
@@ -5369,7 +5369,7 @@ function _cargarFavoritosFirestore(uid) {
 
     // Limpiar búsqueda global cuando el usuario cambia de tab
     _ready(function() {
-        var tabBtns = document.querySelectorAll('.btn-modo-velas');
+        var tabBtns = document.querySelectorAll('.btn-modo-velas:not(.btn-modo-extra)');
         tabBtns.forEach(function(btn) {
             btn.addEventListener('click', function() {
                 var input = document.getElementById('inputBusquedaGlobal');
@@ -5405,6 +5405,16 @@ window.togglePanelEventos = function() {
     panel.style.display = visible ? 'none' : 'block';
     if (icono) icono.textContent = visible ? '▼' : '▲';
     if (btn) btn.style.borderColor = visible ? '#e0d5cc' : '#8c7565';
+};
+
+// ── Botón "Filtros de productos": abre / cierra el panel con Evento, Forma, Festividad y Etiquetas ──
+window.togglePanelFiltrosProductos = function() {
+    var panel = document.getElementById('panelFiltrosProductos');
+    var btn   = document.getElementById('btnModoFiltros');
+    if (!panel) return;
+    var visible = panel.style.display !== 'none';
+    panel.style.display = visible ? 'none' : 'block';
+    if (btn) btn.classList.toggle('abierto', !visible);
 };
 
 // ── Filtrar por Forma (carrusel) ──
@@ -5523,7 +5533,7 @@ window.filtrarPorFormaCarrusel = function(btnPulsado, forma) {
 
 // Limpiar filtro de forma cuando el usuario cambia de tab
 _ready(function() {
-    document.querySelectorAll('.btn-modo-velas').forEach(function(btn) {
+    document.querySelectorAll('.btn-modo-velas:not(.btn-modo-extra)').forEach(function(btn) {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.btn-forma-carrusel').forEach(function(b) {
                 b.classList.remove('activo-evento');

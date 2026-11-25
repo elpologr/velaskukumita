@@ -4264,8 +4264,18 @@ body.modo-oscuro .btn-privacidad-drawer:hover { background: #3a2e26 !important; 
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(30,20,14,0.62), rgba(30,20,14,0.42));
+    background: linear-gradient(135deg, rgba(30,20,14,0.30), rgba(30,20,14,0.10));
     z-index: 1;
     pointer-events: none;
+}
+/* Botón más alto para que se alcance a ver bien la imagen del bazar */
+.btn-bazar-conimagen {
+    min-height: 96px;
+    background-position: center !important;
+    background-size: cover !important;
+    background-repeat: no-repeat !important;
+}
+.btn-bazar-conimagen .btn-tienda-bazar-texto {
+    text-shadow: 0 2px 6px rgba(0,0,0,0.85), 0 0 14px rgba(0,0,0,0.6) !important;
 }
 
