@@ -1352,19 +1352,50 @@
         }
         #qrCanvas { width: 220px; height: 220px; max-width: 100%; }
         .btn-copiar-qr { width: 100%; justify-content: center; }
-        .cp-redes { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+        /* Redes: cuadrados, 2 por fila, con logo de fondo y "pegatinas" decorativas */
+        .cp-redes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 18px; }
         .cp-red {
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            padding: 11px 16px; border-radius: 12px; color: #fff; text-decoration: none;
-            font-size: 0.95rem; font-weight: 600; transition: transform 0.15s, filter 0.2s;
+            position: relative; overflow: hidden; isolation: isolate;
+            aspect-ratio: 1 / 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 8px;
+            border-radius: 18px; color: #fff; text-decoration: none;
+            font-size: 1rem; font-weight: 800; letter-spacing: 0.3px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.18), inset 0 0 0 1.5px rgba(255,255,255,0.28);
+            transition: transform 0.15s, filter 0.2s;
         }
-        .cp-red:hover { transform: translateY(-1px); filter: brightness(1.1); }
-        .cp-red svg { width: 22px; height: 22px; flex-shrink: 0; }
-        .cp-yt { background: #FF0000; }
-        .cp-fb { background: #1877F2; }
+        .cp-red:hover { transform: translateY(-2px) scale(1.02); filter: brightness(1.08); }
+        /* Logo de la página como fondo translúcido */
+        .cp-red::before {
+            content: ''; position: absolute; inset: 0; z-index: -2;
+            background: url('imagenes/logo-velas-kukumita.webp') center/cover no-repeat;
+            opacity: 0.30; mix-blend-mode: soft-light;
+        }
+        /* Brillo suave para dar profundidad */
+        .cp-red::after {
+            content: ''; position: absolute; inset: 0; z-index: -1;
+            background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.28), transparent 60%);
+        }
+        .cp-red svg {
+            width: 42px; height: 42px; flex-shrink: 0;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
+        }
+        .cp-red span { text-shadow: 0 1px 4px rgba(0,0,0,0.45); }
+        /* Pegatinas */
+        .cp-st {
+            position: absolute; z-index: -1; font-style: normal; line-height: 1;
+            opacity: 0.45; pointer-events: none; user-select: none;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+        }
+        .cp-st1 { top: 8%;  left: 9%;   font-size: 1.7rem; transform: rotate(-16deg); }
+        .cp-st2 { top: 10%; right: 9%;  font-size: 1.4rem; transform: rotate(14deg); }
+        .cp-st3 { bottom: 9%; left: 8%; font-size: 1.5rem; transform: rotate(12deg); }
+        .cp-st4 { bottom: 8%; right: 9%; font-size: 1.7rem; transform: rotate(-12deg); }
+        .cp-st5 { top: 44%; left: 4%;   font-size: 1rem; transform: rotate(8deg); opacity: 0.35; }
+        .cp-yt { background: linear-gradient(145deg, #ff3b3b, #b80000); }
+        .cp-fb { background: linear-gradient(145deg, #3b8cff, #0f4fb8); }
         .cp-ig { background: linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); }
-        .cp-tt { background: #000; }
-        .cp-wa { background: #25D366; }
+        .cp-tt { background: linear-gradient(145deg, #2b2b2b, #000); }
+        .cp-wa { background: linear-gradient(145deg, #3fe07f, #129a47); grid-column: 1 / -1; justify-self: center; width: calc(50% - 5px); }
 
         body.modo-oscuro .modal-qr-caja { background: #1e1a16; }
         body.modo-oscuro .modal-qr-titulo { color: #e0d5cc; }
