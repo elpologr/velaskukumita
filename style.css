@@ -5190,3 +5190,6 @@ body.zi-creando #pantallaAdminProductos.activo { z-index: 10080; }
 body.zi-creando #overlayRecorteImagen { z-index: 10090; }
 .zi-b-crear { background: #e8f5e9; border-color: #a5d6a7; color: #2e7d32; }
 body.modo-oscuro .zi-b-crear { background: #25382a; border-color: #3f6b47; color: #bfe6c6; }
+/* Capturar el recuadro y crear un producto con esa imagen (zonas-imagen.js) */
+.zi-b-captura { background: #fff4e0; border-color: #f0d09a; color: #8a5a00; }
+body.modo-oscuro .zi-b-captura { background: #3d3020; border-color: #7a5d2c; color: #f5d9a3; }

@@ -12,6 +12,8 @@
 //     · moverlo y cambiar su tamaño desde las esquinas,
 //     · anclarle un producto con «🔗 Elegir producto», o crearlo ahí mismo con «✨ Crear producto nuevo» (abre el formulario
 //       completo de «Agregar producto»; al guardarlo se ancla solo al recuadro y los recuadros siguen editables),
+//     · «📸 Capturar y crear producto»: recorta exactamente lo que encierra el recuadro (a la resolución original de la imagen) y abre
+//       «Agregar producto» con esa captura ya puesta como imagen del producto (útil cuando no tienes la foto del artículo),
 //     · borrarlo y guardar todo en la hoja (pestaña «ZonasImagen», la crea sola el Apps Script).
 //   Los recuadros se guardan en porcentajes de la imagen, así que se ven igual en celular y en computadora.
 //   El servidor vuelve a verificar el token y el correo (acción «zonasimagen»); aquí solo se evita mostrar las herramientas.
@@ -228,7 +230,8 @@
 
         ed.selTxt = el('div', 'zi-sel');
         ed.bElegir = boton('🔗 Elegir producto', 'zi-b zi-b-ok');
-        b.appendChild(ed.selTxt); b.appendChild(ed.bElegir);
+        ed.bCapturar = boton('📸 Capturar y crear producto', 'zi-b zi-b-captura');
+        b.appendChild(ed.selTxt); b.appendChild(ed.bElegir); b.appendChild(ed.bCapturar);
 
         ed.picker = el('div', 'zi-picker'); ed.picker.hidden = true;
         ed.buscar = document.createElement('input');
@@ -264,6 +267,7 @@
         ed.bElegir.addEventListener('click', function () { if (ed.picker.hidden) abrirPicker(); else ed.picker.hidden = true; });
         ed.buscar.addEventListener('input', function () { pintarLista(ed.buscar.value); });
         ed.bCrear.addEventListener('click', function () { crearProductoNuevo(ed); });
+        ed.bCapturar.addEventListener('click', function () { capturarYCrear(ed); });
         ed.bCancelar.addEventListener('click', function () {
             if (ed.ocupado) return;
             if (ed.sucio && !window.confirm('¿Salir sin guardar los cambios de los recuadros?')) return;
@@ -290,7 +294,7 @@
         var z = ed.zonas[i];
         ed.bBorrar.disabled = !z;
         ed.bNuevo.disabled = ed.zonas.length >= MAX_ZONAS;
-        ed.selTxt.hidden = !z; ed.bElegir.hidden = !z;
+        ed.selTxt.hidden = !z; ed.bElegir.hidden = !z; ed.bCapturar.hidden = !z;
         if (z) ed.selTxt.textContent = 'Recuadro ' + (i + 1) + ': ' + (z.p ? '🔗 ' + z.p : 'sin producto anclado');
         else ed.picker.hidden = true;
     }
@@ -415,7 +419,7 @@
     }
 
     // ── Crear un producto nuevo desde el recuadro (formulario completo de «Agregar producto») ──
-    function crearProductoNuevo(ed) {
+    function crearProductoNuevo(ed, archivo) {
         var z = ed.zonas[ed.sel];
         if (!z || edicion !== ed) return;
         if (typeof abrirPantallaAdminProductos !== 'function') { estado('No se pudo abrir «Agregar producto».', true); return; }
@@ -425,7 +429,63 @@
         ed.barra.style.display = 'none';
         abrirPantallaAdminProductos();
         var pant = document.getElementById('pantallaAdminProductos');
-        if (!pant || !pant.classList.contains('activo')) terminarCreacion();   // no se abrió (sesión sin permiso, etc.)
+        if (!pant || !pant.classList.contains('activo')) { terminarCreacion(); return; }   // no se abrió (sesión sin permiso, etc.)
+        // Si viene de una captura, se coloca como imagen del producto (mismo camino que «Elegir de la galería»)
+        if (archivo && typeof procesarImagenProducto === 'function') procesarImagenProducto({ target: { files: [archivo], value: '' } });
+    }
+
+    // ── Capturar lo que encierra el recuadro y crear un producto con esa captura ──
+    // Se recorta de la imagen original (no de la pantalla), así que sale nítida aunque el recuadro se vea chico.
+    function cargarImagenCors(src) {
+        return fetch(src, { mode: 'cors', cache: 'no-store' })
+            .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.blob(); })
+            .then(function (blob) {
+                return new Promise(function (ok, fallo) {
+                    var url = URL.createObjectURL(blob), im = new Image();
+                    im.onload = function () { URL.revokeObjectURL(url); ok(im); };
+                    im.onerror = function () { URL.revokeObjectURL(url); fallo(new Error('imagen')); };
+                    im.src = url;
+                });
+            })
+            .catch(function () {   // plan B: cargarla con permiso CORS (con parámetro para no reutilizar una copia en caché sin CORS)
+                return new Promise(function (ok, fallo) {
+                    var im = new Image(); im.crossOrigin = 'anonymous';
+                    im.onload = function () { ok(im); };
+                    im.onerror = function () { fallo(new Error('No se pudo leer la imagen para recortarla.')); };
+                    im.src = src + (src.indexOf('?') > -1 ? '&' : '?') + '_cap=' + Date.now();
+                });
+            });
+    }
+    function capturarYCrear(ed) {
+        var z = ed.zonas[ed.sel];
+        if (!z || edicion !== ed || ed.ocupado) return;
+        if (typeof procesarImagenProducto !== 'function') { estado('No se pudo abrir «Agregar producto».', true); return; }
+        var textoOriginal = ed.bCapturar.textContent;
+        ed.ocupado = true; ed.bCapturar.disabled = true; ed.bCapturar.textContent = '⏳ Capturando…'; estado('');
+        function listo() { ed.ocupado = false; ed.bCapturar.disabled = false; ed.bCapturar.textContent = textoOriginal; }
+        cargarImagenCors(ed.src).then(function (im) {
+            var nw = im.naturalWidth, nh = im.naturalHeight;
+            var sx = Math.round(nw * z.x / 100), sy = Math.round(nh * z.y / 100);
+            var sw = Math.max(1, Math.min(nw - sx, Math.round(nw * z.w / 100)));
+            var sh = Math.max(1, Math.min(nh - sy, Math.round(nh * z.h / 100)));
+            var cv = document.createElement('canvas'); cv.width = sw; cv.height = sh;
+            cv.getContext('2d').drawImage(im, sx, sy, sw, sh, 0, 0, sw, sh);
+            return new Promise(function (ok, fallo) {
+                function aJpeg() { cv.toBlob(function (b) { b ? ok(b) : fallo(new Error('No se pudo generar la captura.')); }, 'image/jpeg', 0.95); }
+                try {
+                    cv.toBlob(function (b) { if (b && b.type === 'image/webp') ok(b); else aJpeg(); }, 'image/webp', 0.95);
+                } catch (e) { fallo(new Error('El navegador no permitió recortar esta imagen.')); }   // canvas «manchado» (sin CORS)
+            });
+        }).then(function (blob) {
+            listo();
+            if (edicion !== ed) return;
+            var ext = blob.type === 'image/webp' ? '.webp' : '.jpg';
+            var archivo = new File([blob], 'captura-recuadro-' + (ed.sel + 1) + ext, { type: blob.type });
+            crearProductoNuevo(ed, archivo);
+        }).catch(function (err) {
+            listo();
+            estado('❌ ' + (err && err.message ? err.message : 'No se pudo capturar el recuadro'), true);
+        });
     }
     function terminarCreacion() {
         var c = creando; creando = null;
