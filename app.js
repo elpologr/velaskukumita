@@ -4650,6 +4650,11 @@ function _lpRender(k) {
         var etiqueta = document.createElement('span'); etiqueta.className = 'lp-origen';
         etiqueta.textContent = it.nuevo ? (it.creado ? '🆕 Producto nuevo (ya creado)' : '🆕 Se creará como producto nuevo al guardar') : (it.existente ? '📚 Producto existente' : '');
         centro.appendChild(n); if (etiqueta.textContent) centro.appendChild(etiqueta);
+        if (it.nuevo && !it.creado) {   // producto nuevo aún sin crear: se puede volver a editar todos sus datos
+            var ed = document.createElement('button'); ed.type = 'button'; ed.className = 'lp-editar-datos'; ed.textContent = '✏️ Editar datos';
+            ed.addEventListener('click', function () { if (typeof abrirSubmenuListaPrecios === 'function') abrirSubmenuListaPrecios(k, it); });
+            centro.appendChild(ed);
+        }
         var p = document.createElement('input');
         p.type = 'number'; p.className = 'panel-nombre-input lp-in-precio'; p.min = '0'; p.step = 'any';
         p.setAttribute('inputmode', 'decimal'); p.placeholder = '$ precio'; p.value = it.precio;

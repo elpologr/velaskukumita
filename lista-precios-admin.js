@@ -38,10 +38,10 @@
         document.body.appendChild(overlay);
         document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && overlay.classList.contains('abierto')) cerrar(); });
     }
-    function abrir(k) {
+    function abrir(k, itemEditar) {
         kActual = (k === 'edit') ? 'edit' : 'add';
         construir();
-        mostrarMenu();
+        if (itemEditar && itemEditar.nuevo && !itemEditar.creado) mostrarNuevo(itemEditar); else mostrarMenu();
         overlay.classList.add('abierto');
     }
     function cerrar() {
@@ -89,8 +89,8 @@
         });
         return salida;
     }
-    function yaEnLista(nombre) {
-        return _lpForm[kActual].some(function (it) { return String(it.nombre).trim().toLowerCase() === nombre.trim().toLowerCase(); });
+    function yaEnLista(nombre, excepto) {
+        return _lpForm[kActual].some(function (it) { return it !== excepto && String(it.nombre).trim().toLowerCase() === nombre.trim().toLowerCase(); });
     }
     function mostrarExistentes() {
         ponerVista('existentes', '📚 Producto que ya existe');
@@ -156,8 +156,8 @@
         caja.appendChild(grid);
         return caja;
     }
-    function mostrarNuevo() {
-        ponerVista('nuevo', '🆕 Producto nuevo');
+    function mostrarNuevo(editItem) {   // editItem: producto nuevo que ya estaba en la lista y se vuelve a editar
+        ponerVista('nuevo', editItem ? '✏️ Editar producto de la lista' : '🆕 Producto nuevo');
         var imgData = null;
         var enfX = 50, enfY = 0;   // zona de la imagen que se verá en el catálogo (igual que en «Agregar producto»)
 
@@ -312,8 +312,25 @@
         gP.addEventListener('change', contarAc); gE.addEventListener('change', contarAc);
         mostrarAc(null); contarAc();
 
+        // Al volver a editar un producto de la lista, se cargan sus datos
+        if (editItem) {
+            var n0 = editItem.nuevo || {};
+            imgData = editItem.imgData || null;
+            var pe = String(n0.enfoque || '').split(',');
+            if (!isNaN(parseFloat(pe[0])) && !isNaN(parseFloat(pe[1]))) { enfX = parseFloat(pe[0]); enfY = parseFloat(pe[1]); }
+            iNombre.value = editItem.nombre || '';
+            iPrecio.value = String(editItem.precio === undefined ? '' : editItem.precio);
+            iMayoreo.value = n0.mayoreo || ''; iDesc.value = n0.descripcion || '';
+            iAlto.value = n0.alto || ''; iAncho.value = n0.ancho || ''; iStock.value = n0.existencia || '';
+            iTexto.value = n0.textoImagen || plantilla;
+            function marcar(g, lista) {
+                var v = String(lista || '').split('|').filter(Boolean);
+                Array.prototype.forEach.call(g.querySelectorAll('input[type="checkbox"]'), function (c) { c.checked = v.indexOf(c.value) !== -1; });
+            }
+            marcar(gP, n0.etiquetaPrincipal); marcar(gE, n0.etiquetaEvento); contarAc();
+        }
         var estado = el('div', 'slp-estado');
-        var agregar = el('button', 'slp-btn-listo slp-btn-agregar', '➕ Agregar a la lista'); agregar.type = 'button';
+        var agregar = el('button', 'slp-btn-listo slp-btn-agregar', editItem ? '💾 Guardar cambios' : '➕ Agregar a la lista'); agregar.type = 'button';
         agregar.addEventListener('click', function () {
             var nombre = iNombre.value.replace(/[\r\n\t]+/g, ' ').trim();
             var precio = iPrecio.value.trim(), mayoreo = iMayoreo.value.trim(), stock = iStock.value.trim();
@@ -323,15 +340,19 @@
             if (precio === '' || isNaN(Number(precio)) || Number(precio) < 0) return error('Escribe un precio válido.');
             if (mayoreo !== '' && (isNaN(Number(mayoreo)) || Number(mayoreo) < 0)) return error('El precio de mayoreo debe ser un número válido.');
             if (stock !== '' && (isNaN(Number(stock)) || Number(stock) < 0)) return error('La existencia debe ser un número.');
-            if (yaEnLista(nombre)) return error('Ya hay un producto con ese nombre en la lista.');
-            if (_lpForm[kActual].length >= 40) return error('Máximo 40 productos en la lista.');
+            if (yaEnLista(nombre, editItem)) return error('Ya hay un producto con ese nombre en la lista.');
+            if (!editItem && _lpForm[kActual].length >= 40) return error('Máximo 40 productos en la lista.');
             var principales = Array.prototype.map.call(gP.querySelectorAll('input:checked'), function (c) { return c.value; }).join('|');
             var eventos = Array.prototype.map.call(gE.querySelectorAll('input:checked'), function (c) { return c.value; }).join('|');
-            _lpForm[kActual].push({
-                nombre: nombre, precio: precio, img: '', imgData: imgData, creado: false,
-                nuevo: { textoImagen: textoActual().substring(0, 60), enfoque: enfX + ',' + enfY, precio: precio, mayoreo: mayoreo, descripcion: iDesc.value.trim(), alto: iAlto.value.trim(), ancho: iAncho.value.trim(),
-                         existencia: stock, etiquetaPrincipal: principales, etiquetaEvento: eventos }
-            });
+            var datosNuevo = { textoImagen: textoActual().substring(0, 60), enfoque: enfX + ',' + enfY, precio: precio, mayoreo: mayoreo, descripcion: iDesc.value.trim(), alto: iAlto.value.trim(), ancho: iAncho.value.trim(),
+                         existencia: stock, etiquetaPrincipal: principales, etiquetaEvento: eventos };
+            if (editItem) {
+                editItem.nombre = nombre; editItem.precio = precio; editItem.imgData = imgData; editItem.nuevo = datosNuevo;
+                aviso('✅ Cambios guardados en «' + nombre + '»');
+                cerrar();   // vuelve a la lista del formulario ya actualizada
+                return;
+            }
+            _lpForm[kActual].push({ nombre: nombre, precio: precio, img: '', imgData: imgData, creado: false, nuevo: datosNuevo });
             aviso('✅ «' + nombre + '» se creará como producto nuevo al guardar');
             mostrarMenu();
         });
@@ -348,6 +369,7 @@
         cuerpo.appendChild(filaAc); cuerpo.appendChild(gP); cuerpo.appendChild(gE);
         cuerpo.appendChild(el('p', 'slp-info', 'El producto se crea en el catálogo al presionar «Guardar» en el producto principal. Los demás datos (oferta, video, etc.) se pueden completar después con ⚙️ Editar.'));
         cuerpo.appendChild(estado); cuerpo.appendChild(agregar);
+        if (editItem) { pintarPrevia(); setTimeout(pintarPrevia, 0); }   // ya con medidas: coloca el cuadro y el texto de la imagen
     }
 
     window.abrirSubmenuListaPrecios = abrir;

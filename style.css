@@ -4971,3 +4971,7 @@ body.modo-oscuro .btn-pantalla-completa { background: #3a2e26; color: #e8ddd5; }
 .lp-orden .lp-orden-asa { height: 20px; font-size: 15px; cursor: grab; touch-action: none; user-select: none; }
 .lp-fila-form-img.lp-arrastrando { position: relative; z-index: 5; opacity: 0.9; box-shadow: 0 6px 18px rgba(0,0,0,0.25); }
 body.modo-oscuro .lp-orden button { background: #3a2e26; border-color: #4a3c32; color: #f0e8e0; }
+
+.lp-editar-datos { align-self: flex-start; padding: 3px 10px; border: 1.5px solid #8c7565; border-radius: 999px; background: #fff; color: #5c4d43; font-size: 12px; font-weight: 700; cursor: pointer; }
+.lp-editar-datos:active { background: #efe7df; }
+body.modo-oscuro .lp-editar-datos { background: #3a2e26; color: #f0e8e0; border-color: #6a5a4e; }
