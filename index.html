@@ -30,7 +30,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600;1,700&family=Playfair+Display:ital,wght@0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
     <!-- Estilos externos -->
-    <link rel="stylesheet" href="style.css?v=25">
+    <link rel="stylesheet" href="style.css?v=26">
     <link rel="stylesheet" href="mesas.css?v=4">
 
     <!-- Estilos botones de modo catálogo -->
@@ -617,6 +617,10 @@
                         <label class="check-evento-producto"><input type="checkbox" class="chk-etiqueta-principal-producto" value="Etiquetas"><span>Etiquetas</span></label>
                         <label class="check-evento-producto"><input type="checkbox" class="chk-etiqueta-principal-producto" value="Centro de Mesa"><span>Centro de Mesa</span></label>
                     </div>
+                    <div class="fila-nueva-etiqueta">
+                        <input id="inputNuevaEtiquetaPrincipal" class="panel-nombre-input" type="text" maxlength="40" placeholder="➕ Nueva etiqueta principal (queda guardada)">
+                        <button type="button" class="btn-nueva-etiqueta" onclick="crearEtiquetaPersonalizada('principal', 'inputNuevaEtiquetaPrincipal')">➕ Crear</button>
+                    </div>
                 </div>
                 <div class="campo-admin-producto campo-zona-etiqueta-evento">
                     <label class="panel-nombre-label">Etiqueta de Evento <span style="font-weight:400; color:#9a8878;">(opcional, puedes elegir varias)</span></label>
@@ -650,6 +654,10 @@
                         <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="jubilacion"><span>🎊 Jubilación</span></label>
                         <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="apertura-negocio"><span>🏪 Apertura de Negocio</span></label>
                         <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto" value="condolencias"><span>🤍 Condolencias</span></label>
+                    </div>
+                    <div class="fila-nueva-etiqueta">
+                        <input id="inputNuevaEtiquetaEvento" class="panel-nombre-input" type="text" maxlength="40" placeholder="➕ Nueva etiqueta de evento (queda guardada)">
+                        <button type="button" class="btn-nueva-etiqueta" onclick="crearEtiquetaPersonalizada('evento', 'inputNuevaEtiquetaEvento')">➕ Crear</button>
                     </div>
                     <input id="inputEventoOtroProducto" class="panel-nombre-input" type="text" maxlength="60" placeholder="¿Otro evento? Escríbelo aquí (opcional)" style="margin-top:8px;">
                 </div>
@@ -790,6 +798,10 @@
                         <label class="check-evento-producto"><input type="checkbox" class="chk-etiqueta-principal-producto-edit" value="Etiquetas"><span>Etiquetas</span></label>
                         <label class="check-evento-producto"><input type="checkbox" class="chk-etiqueta-principal-producto-edit" value="Centro de Mesa"><span>Centro de Mesa</span></label>
                     </div>
+                    <div class="fila-nueva-etiqueta">
+                        <input id="inputNuevaEtiquetaPrincipalEdit" class="panel-nombre-input" type="text" maxlength="40" placeholder="➕ Nueva etiqueta principal (queda guardada)">
+                        <button type="button" class="btn-nueva-etiqueta" onclick="crearEtiquetaPersonalizada('principal', 'inputNuevaEtiquetaPrincipalEdit')">➕ Crear</button>
+                    </div>
                 </div>
                 <div class="campo-admin-producto campo-zona-etiqueta-evento">
                     <label class="panel-nombre-label">Etiqueta de Evento <span style="font-weight:400; color:#9a8878;">(opcional, puedes elegir varias)</span></label>
@@ -823,6 +835,10 @@
                         <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="jubilacion"><span>🎊 Jubilación</span></label>
                         <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="apertura-negocio"><span>🏪 Apertura de Negocio</span></label>
                         <label class="check-evento-producto"><input type="checkbox" class="chk-evento-producto-edit" value="condolencias"><span>🤍 Condolencias</span></label>
+                    </div>
+                    <div class="fila-nueva-etiqueta">
+                        <input id="inputNuevaEtiquetaEventoEdit" class="panel-nombre-input" type="text" maxlength="40" placeholder="➕ Nueva etiqueta de evento (queda guardada)">
+                        <button type="button" class="btn-nueva-etiqueta" onclick="crearEtiquetaPersonalizada('evento', 'inputNuevaEtiquetaEventoEdit')">➕ Crear</button>
                     </div>
                     <input id="inputEventoOtroProductoEdit" class="panel-nombre-input" type="text" maxlength="60" placeholder="¿Otro evento? Escríbelo aquí (opcional)" style="margin-top:8px;">
                 </div>
@@ -2169,7 +2185,7 @@
 </div>
 
     <!-- JavaScript externo -->
-    <script src="app.js?v=17"></script>
+    <script src="app.js?v=18"></script>
 <script src="admin-producto-ui.js?v=1"></script>
 <script src="portada.js?v=2"></script>
 <script src="cuadricula.js?v=4"></script>

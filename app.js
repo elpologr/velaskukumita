@@ -7289,3 +7289,140 @@ async function moverProductoEdit() {
         if (btn) btn.disabled = false;
     }
 }
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  ETIQUETAS PERSONALIZADAS (Etiqueta principal / Etiqueta de evento)
+//  Las que crea el administrador se guardan en la pestaña «EtiquetasPersonalizadas» de la hoja
+//  (la crea sola el Apps Script) y se muestran como casillas en «Agregar» y «Editar producto».
+// ═══════════════════════════════════════════════════════════════════════════
+var _etiquetasPersonalizadas = [];   // [{ tipo: 'principal'|'evento', valor, texto }]
+var _creandoEtiqueta = false;
+
+// Mismo formato que usa el catálogo para las etiquetas de evento (sin acentos, minúsculas, guiones)
+function _slugEtiquetaEvento(t) {
+    return String(t || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '');
+}
+
+// Agrega la casilla en las dos pantallas (agregar y editar). Devuelve las casillas creadas (o las ya existentes).
+function _pintarEtiquetaPersonalizada(tipo, valor, texto) {
+    var grids = (tipo === 'evento')
+        ? [['gridEventosProducto', 'chk-evento-producto'], ['gridEventosProductoEdit', 'chk-evento-producto-edit']]
+        : [['gridEtiquetaPrincipalProducto', 'chk-etiqueta-principal-producto'], ['gridEtiquetaPrincipalProductoEdit', 'chk-etiqueta-principal-producto-edit']];
+    var resultado = [];
+    grids.forEach(function (g) {
+        var grid = document.getElementById(g[0]);
+        if (!grid) return;
+        var existente = null;
+        grid.querySelectorAll('input[type="checkbox"]').forEach(function (chk) {
+            if (chk.value.trim().toLowerCase() === String(valor).trim().toLowerCase()) existente = chk;
+        });
+        if (existente) { resultado.push(existente); return; }
+        var lab = document.createElement('label');
+        lab.className = 'check-evento-producto';
+        var inp = document.createElement('input');
+        inp.type = 'checkbox'; inp.className = g[1]; inp.value = valor;
+        inp.setAttribute('data-personalizada', '1');
+        var sp = document.createElement('span');
+        sp.textContent = texto;
+        lab.appendChild(inp); lab.appendChild(sp);
+        grid.appendChild(lab);
+        resultado.push(inp);
+    });
+    return resultado;
+}
+
+// Lee la pestaña de etiquetas al abrir el sitio (si no existe todavía, simplemente no hay ninguna)
+function _cargarEtiquetasPersonalizadas() {
+    if (typeof SHEET_ID === 'undefined') return;
+    var url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=' +
+        encodeURIComponent('EtiquetasPersonalizadas') + '&_=' + Date.now();
+    fetch(url).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+        .then(function (txt) {
+            var filas = parsearCSV(txt);
+            // Si la pestaña no existe, Google devuelve otra hoja: se valida el encabezado para no confundirse
+            if (!filas.length || (filas[0][0] || '').trim().toLowerCase() !== 'tipo' || (filas[0][1] || '').trim().toLowerCase() !== 'valor') return;
+            for (var i = 1; i < filas.length; i++) {
+                var tipo = (filas[i][0] || '').trim().toLowerCase();
+                var valor = (filas[i][1] || '').trim();
+                var texto = (filas[i][2] || '').trim() || valor;
+                if ((tipo !== 'principal' && tipo !== 'evento') || !valor) continue;
+                _etiquetasPersonalizadas.push({ tipo: tipo, valor: valor, texto: texto });
+                _pintarEtiquetaPersonalizada(tipo, valor, texto);
+            }
+        })
+        .catch(function (e) { console.warn('[Kukumita] No se pudieron cargar las etiquetas personalizadas:', e); });
+}
+
+async function crearEtiquetaPersonalizada(tipo, inputId) {
+    if (_creandoEtiqueta) return;
+    var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+    if (!_esAdminUI(user)) { mostrarToast('Tu sesión no está autorizada.'); return; }
+    var input = document.getElementById(inputId);
+    if (!input) return;
+    var texto = input.value.replace(/[\r\n\t|,]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/^[=+\-@]+/, '').trim();
+    if (!texto) { mostrarToast('Escribe el nombre de la etiqueta.'); return; }
+    var valorLocal = (tipo === 'evento') ? _slugEtiquetaEvento(texto) : texto;
+    if (!valorLocal) { mostrarToast('Ese nombre no es válido, usa letras o números.'); return; }
+
+    // ¿Ya existe (de las de fábrica o una creada antes)? Entonces solo se marca.
+    var gridId = (tipo === 'evento') ? '#gridEventosProducto' : '#gridEtiquetaPrincipalProducto';
+    var gridIdEdit = gridId + 'Edit';
+    var esEdit = /Edit$/.test(inputId);
+    var existente = null;
+    document.querySelectorAll((esEdit ? gridIdEdit : gridId) + ' input[type="checkbox"]').forEach(function (chk) {
+        if (chk.value.trim().toLowerCase() === valorLocal.toLowerCase()) existente = chk;
+    });
+    if (existente) {
+        existente.checked = true;
+        existente.dispatchEvent(new Event('change', { bubbles: true }));
+        input.value = '';
+        mostrarToast('Esa etiqueta ya existía: quedó marcada.');
+        return;
+    }
+
+    var btn = input.parentNode.querySelector('.btn-nueva-etiqueta');
+    _creandoEtiqueta = true;
+    if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+    try {
+        var idToken = await user.getIdToken(true);
+        var resp = await fetch(ADMIN_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ accion: 'etiqueta', idToken: idToken, tipo: tipo, texto: texto })
+        });
+        var data = await resp.json();
+        if (!data.ok) throw new Error(data.error || 'Error del servidor');
+
+        var valor = data.valor || valorLocal, textoFinal = data.texto || texto;
+        _etiquetasPersonalizadas.push({ tipo: tipo, valor: valor, texto: textoFinal });
+        var casillas = _pintarEtiquetaPersonalizada(tipo, valor, textoFinal);
+        // Se marca en el formulario donde se creó
+        var sel = (esEdit ? gridIdEdit : gridId);
+        casillas.forEach(function (chk) {
+            if (chk.closest(sel)) {
+                chk.checked = true;
+                chk.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+        input.value = '';
+        mostrarToast(data.duplicado ? 'Esa etiqueta ya estaba guardada: quedó marcada.' : '✅ Etiqueta creada y guardada');
+    } catch (err) {
+        console.error('Error creando etiqueta:', err);
+        mostrarToast('❌ ' + (err.message || 'No se pudo crear la etiqueta'));
+    } finally {
+        _creandoEtiqueta = false;
+        if (btn) { btn.disabled = false; btn.textContent = '➕ Crear'; }
+    }
+}
+
+// Enter dentro del campo = Crear
+document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' || !e.target || !/^inputNuevaEtiqueta/.test(e.target.id || '')) return;
+    e.preventDefault();
+    var b = e.target.parentNode.querySelector('.btn-nueva-etiqueta');
+    if (b) b.click();
+});
+
+_cargarEtiquetasPersonalizadas();

@@ -4604,3 +4604,12 @@ body.modo-oscuro .ayuda-texto-imagen { color: #b8a595; }
 @media (max-width: 600px) {
     .texto-sobre-imagen { max-width: calc(100% - 90px); font-size: 12px; padding: 3px 9px; top: 8px; }
 }
+
+/* ── Crear una etiqueta nueva (queda guardada en la hoja) ── */
+.fila-nueva-etiqueta { display: flex; gap: 8px; margin-top: 8px; align-items: stretch; }
+.fila-nueva-etiqueta .panel-nombre-input { flex: 1 1 auto; min-width: 0; }
+.btn-nueva-etiqueta {
+    flex: 0 0 auto; padding: 0 14px; border: 1.5px solid #8c7565; border-radius: 10px;
+    background: #8c7565; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap;
+}
+.btn-nueva-etiqueta:disabled { opacity: 0.5; cursor: not-allowed; }
