@@ -2160,21 +2160,20 @@
         body.modo-oscuro .btn-cerrar-recorte { background: #3a2e26; color: #e8ddd5; }
         /* ── Fila superior: miniatura grande de la 1a imagen + botón "Agregar imagen" ── */
         .fila-imagen-principal {
-            display: flex; align-items: flex-start; gap: 12px;
+            display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px;
             width: 100%; max-width: 380px;
         }
         .fila-imagen-principal .btn-agregar-imagen-producto {
-            width: auto; flex: 1 1 auto; min-width: 0;
-            margin-left: auto; /* la empuja hacia la derecha cuando hay espacio libre */
+            width: auto; flex: 1 1 100%; min-width: 0;
         }
         .miniatura-principal-wrap {
-            flex: 0 0 auto;
+            flex: 0 0 100%;
             display: flex; flex-direction: column; align-items: center; gap: 6px;
-            width: 92px;
+            width: 100%;
         }
         .miniatura-principal {
             position: relative;
-            width: 92px; height: 128px; /* el doble de alto que las miniaturas normales (64px) */
+            width: min(100%, 300px); aspect-ratio: 92 / 128; /* misma proporción de antes, pero mucho más grande */
             border-radius: 12px; overflow: hidden;
             border: 1.5px solid #8c7565; background: #efe7df;
             cursor: crosshair; touch-action: none; user-select: none;
@@ -4587,8 +4586,9 @@ body.modo-oscuro .acordeon-btn .ac-cuenta { background: #f5c46b; color: #2a1d12;
 body.modo-oscuro .ayuda-texto-imagen { color: #b8a595; }
 .recorte-texto-preview {
     position: absolute; top: 3%; left: 50%; transform: translateX(-50%);
-    max-width: 84%; padding: 0.35em 0.6em; border-radius: 0.5em;
-    background: rgba(0,0,0,0.45); color: #fff; font-size: 8px; font-weight: 700; line-height: 1.25;
+    max-width: 84%; padding: 0.1em 0.2em;
+    color: #fff; font-size: 8px; font-weight: 700; line-height: 1.25;
+    text-shadow: -0.03em -0.03em 0 #000, 0.03em -0.03em 0 #000, -0.03em 0.03em 0 #000, 0.03em 0.03em 0 #000, 0 -0.03em 0 #000, 0 0.03em 0 #000, -0.03em 0 0 #000, 0.03em 0 0 #000;
     text-align: center; word-break: break-word; pointer-events: none; display: none;
 }
 
@@ -4604,18 +4604,19 @@ body.modo-oscuro .ayuda-texto-imagen { color: #b8a595; }
 /* ── Texto sobre la imagen en la tarjeta del catálogo (arriba al centro; deja libre el corazón de la derecha) ── */
 .texto-sobre-imagen {
     position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-    max-width: calc(100% - 150px); padding: 4px 12px; border-radius: 12px;
-    background: rgba(0,0,0,0.45); color: #fff; font-size: 14px; font-weight: 700; line-height: 1.25;
-    text-align: center; word-break: break-word; text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    max-width: calc(100% - 150px); padding: 2px 6px;
+    color: #fff; font-size: 14px; font-weight: 700; line-height: 1.25;
+    text-align: center; word-break: break-word;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000, 1px 0 0 #000;
     pointer-events: none; z-index: 2;
 }
 @media (max-width: 600px) {
-    .texto-sobre-imagen { max-width: calc(100% - 90px); font-size: 12px; padding: 3px 9px; top: 8px; }
+    .texto-sobre-imagen { max-width: calc(100% - 90px); font-size: 12px; padding: 2px 5px; top: 8px; }
 }
 
 /* ── Texto oculto: nadie lo ve, salvo el administrador (atenuado, para poder reactivarlo) ── */
 .texto-sobre-imagen-oculto { display: none; }
-body.kk-admin-ui .texto-sobre-imagen-oculto { display: block; opacity: 0.4; outline: 1.5px dashed rgba(255,255,255,0.8); }
+body.kk-admin-ui .texto-sobre-imagen-oculto { display: block; opacity: 0.45; outline: 1.5px dashed rgba(255,255,255,0.9); }
 /* Botón 👁️ / 🚫 de la tarjeta: solo administradores */
 .btn-texto-card {
     display: none; position: absolute; top: 8px; left: 8px; z-index: 3;
