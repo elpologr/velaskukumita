@@ -315,7 +315,9 @@
         cuerpo.appendChild(campo('Nombre del producto', iNombre));
         cuerpo.appendChild(campo('Texto sobre la imagen (opcional)', iTexto));
         cuerpo.appendChild(filaPrecios);
-        cuerpo.appendChild(campo('Descripción', iDesc));
+        var campoDesc = campo('Descripción', iDesc);
+        cuerpo.appendChild(campoDesc);
+        if (typeof window.montarDescripcionesFijas === 'function') window.montarDescripcionesFijas(iDesc);   // botones de descripciones fijas (marcan también la etiqueta del mismo nombre)
         cuerpo.appendChild(filaMedidas);
         cuerpo.appendChild(campo('Existencia (piezas)', iStock));
         cuerpo.appendChild(gP); cuerpo.appendChild(gE);

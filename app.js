@@ -3562,6 +3562,7 @@ function _redirigirScrollGlobal(e) {
         return;
     }
     if (cont.contains(e.target)) return; // el evento ya va a la zona correcta
+    if (e.target && e.target.closest && e.target.closest('.slp-overlay')) return;   // submenú «Agregar a la lista» (Revisar precios): tiene su propio scroll
     e.preventDefault();
     cont.scrollTop += e.deltaY;
 }
@@ -3574,6 +3575,7 @@ document.addEventListener('touchstart', function (e) {
 document.addEventListener('touchmove', function (e) {
     var cont = _contenedorScrollActivo();
     if (!cont || cont.contains(e.target)) return;
+    if (e.target && e.target.closest && e.target.closest('.slp-overlay')) return;   // submenú «Agregar a la lista»: tiene su propio scroll
     e.preventDefault();
     if (e.touches && e.touches.length) {
         var actual = e.touches[0].clientY;

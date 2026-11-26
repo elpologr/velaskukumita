@@ -21,10 +21,10 @@
     // ── Marcar la etiqueta principal que se llame igual que la descripción fija (ej. «Mascotas») ──
     function norm(t) { return String(t || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' '); }
     function activarEtiqueta(ta, nombre) {
-        var pant = ta.closest ? ta.closest('#pantallaAdminProductos, #pantallaEditarProducto') : null;
+        var pant = ta.closest ? ta.closest('#pantallaAdminProductos, #pantallaEditarProducto, .slp-cuerpo') : null;
         if (!pant) return;
         var buscado = norm(nombre);
-        var casillas = pant.querySelectorAll('.chk-etiqueta-principal-producto, .chk-etiqueta-principal-producto-edit');
+        var casillas = pant.querySelectorAll('.chk-etiqueta-principal-producto, .chk-etiqueta-principal-producto-edit, input[data-grupo="principal"]');
         for (var i = 0; i < casillas.length; i++) {
             var chk = casillas[i];
             var sp = chk.parentNode ? chk.parentNode.querySelector('span') : null;
@@ -62,8 +62,8 @@
     }
 
     // ── Panel debajo de cada campo de descripción ──
-    function montar(idTextarea) {
-        var ta = document.getElementById(idTextarea);
+    function montar(idOElemento) {
+        var ta = (typeof idOElemento === 'string') ? document.getElementById(idOElemento) : idOElemento;
         if (!ta || !ta.parentNode) return;
         var panel = el('div', 'dfj');
         var fila = el('div', 'dfj-fila');
@@ -136,7 +136,7 @@
             m.chips.appendChild(chip);
         });
     }
-    function pintarTodos() { montajes.forEach(pintar); }
+    function pintarTodos() { montajes = montajes.filter(function (m) { return m.ta.isConnected; }); montajes.forEach(pintar); }
 
     // ── Cargar las guardadas (pestaña «DescripcionesFijas»; si no existe todavía, simplemente no hay ninguna) ──
     function cargar() {
@@ -158,6 +158,7 @@
             .catch(function (e) { console.warn('[Kukumita] No se pudieron cargar las descripciones fijas:', e); });
     }
 
+    window.montarDescripcionesFijas = montar;   // lo usa el submenú «Producto nuevo» de «Revisar precios» (lista-precios-admin.js)
     montar('inputDescripcionProducto');
     montar('inputDescripcionProductoEdit');
     cargar();
