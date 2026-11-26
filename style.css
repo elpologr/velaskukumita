@@ -4697,3 +4697,102 @@ body.modo-oscuro .lp-caja { background: #1e1712; }
 body.modo-oscuro .lp-header, body.modo-oscuro .lp-fila { border-color: #3a2e26; }
 body.modo-oscuro .lp-header h3, body.modo-oscuro .lp-producto, body.modo-oscuro .lp-nombre { color: #f0e8e0; }
 body.modo-oscuro .lp-agregar { background: #3a2e26; }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   AGREGAR PRODUCTO — acomodo de escritorio tipo Yesos Polo Kukúmita
+   (3 columnas a todo el ancho, campos compactos y barra de "Guardar" siempre visible).
+   Solo afecta a #pantallaAdminProductos. En celular NADA cambia: las columnas siguen siendo
+   transparentes (display: contents) y el atributo data-ord devuelve cada campo a su lugar de siempre.
+     columna 1: imagen → texto sobre la imagen → posición en la hoja
+     columna 2: nombre y precios → descripción → medidas → stock → video → En oferta / Más vendido
+     columna 3: etiqueta principal y etiqueta de evento (botones desplegables)
+   ══════════════════════════════════════════════════════════════════════════════ */
+/* Orden original (móvil): como las columnas son display:contents, "order" ordena todos los campos juntos */
+#pantallaAdminProductos [data-ord="1"]  { order: 10; }
+#pantallaAdminProductos [data-ord="2"]  { order: 20; }
+#pantallaAdminProductos [data-ord="3"]  { order: 30; }
+#pantallaAdminProductos [data-ord="4"]  { order: 40; }
+#pantallaAdminProductos [data-ord="5"]  { order: 50; }
+#pantallaAdminProductos [data-ord="6"]  { order: 60; }
+#pantallaAdminProductos [data-ord="7"]  { order: 70; }
+#pantallaAdminProductos .acordeon-etiquetas { order: 79; }   /* botones desplegables de admin-producto-ui.js: justo antes de las etiquetas */
+#pantallaAdminProductos [data-ord="8"]  { order: 80; }
+#pantallaAdminProductos [data-ord="9"]  { order: 90; }
+#pantallaAdminProductos [data-ord="10"] { order: 100; }
+#pantallaAdminProductos [data-ord="11"] { order: 110; }
+#pantallaAdminProductos [data-ord="12"] { order: 120; }
+#pantallaAdminProductos [data-ord="13"] { order: 130; }
+#pantallaAdminProductos [data-ord="14"] { order: 140; }
+#pantallaAdminProductos [data-ord="15"] { order: 150; }
+/* El envoltorio de "Guardar" no existe en móvil: el botón y el aviso quedan como siempre */
+#pantallaAdminProductos .barra-guardar-producto { display: contents; }
+
+/* Tablet (768–899 px): dos columnas; las etiquetas ocupan todo el ancho debajo */
+@media (min-width: 768px) and (max-width: 899px) {
+    #pantallaAdminProductos .form-admin-producto-grid > .form-admin-col:nth-child(3) { grid-column: 1 / -1; }
+}
+
+/* Escritorio (≥ 900 px) */
+@media (min-width: 900px) {
+    #pantallaAdminProductos .pantalla-perfil-header { padding: 8px 16px; }
+    #pantallaAdminProductos .pantalla-perfil-titulo { font-size: 17px; }
+    #pantallaAdminProductos .pantalla-perfil-body { padding: 10px 0 0; gap: 0; justify-content: flex-start; }
+    #pantallaAdminProductos .form-admin-producto {
+        max-width: none; padding: 0 10px 10px; border: 0; border-radius: 0; background: transparent; gap: 0;
+    }
+    #pantallaAdminProductos .form-admin-producto-grid {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1fr);
+        gap: 0 16px;
+    }
+    #pantallaAdminProductos .form-admin-col { gap: 10px; min-width: 0; }
+    #pantallaAdminProductos .campo-admin-producto { gap: 4px; }
+
+    /* Campos más compactos */
+    #pantallaAdminProductos .panel-nombre-input { padding: 8px 11px; font-size: 14px; }
+    #pantallaAdminProductos textarea.panel-nombre-input { min-height: 54px; }
+    #pantallaAdminProductos .fila-campos-dobles { gap: 10px; }
+
+    /* Imagen: miniatura más chica para que quepa sin scroll */
+    #pantallaAdminProductos .fila-imagen-principal { max-width: none; gap: 8px; }
+    #pantallaAdminProductos .selector-imagen-wrap { max-width: none; }
+    #pantallaAdminProductos .btn-opcion-perfil { max-width: none; padding: 10px 14px; gap: 10px; border-radius: 12px; font-size: 15px; }
+    #pantallaAdminProductos .btn-opcion-perfil .op-icono { font-size: 22px; }
+    #pantallaAdminProductos .miniatura-principal { width: min(100%, 190px); }
+    #pantallaAdminProductos .galeria-imagenes-producto { max-width: none; gap: 8px; }
+    #pantallaAdminProductos .miniatura-imagen-producto { width: 56px; height: 56px; }
+
+    /* Botones "En oferta" / "Más vendido": uno junto al otro y bajitos (antes eran cuadros de 135 px) */
+    #pantallaAdminProductos .campo-admin-checkbox { flex-wrap: nowrap; gap: 10px; align-items: stretch; }
+    #pantallaAdminProductos .campo-admin-checkbox .pill-btn {
+        flex: 1 1 0; width: auto; height: 52px; flex-direction: row; gap: 8px; padding: 6px 10px; border-radius: 14px;
+    }
+    #pantallaAdminProductos .campo-admin-checkbox .pill-btn > span:first-of-type { font-size: 1.5rem !important; }
+    #pantallaAdminProductos .campo-admin-checkbox .pill-btn-label { font-size: 14px; }
+
+    /* Etiquetas (botones desplegables): el panel abierto se desplaza por dentro, sin empujar el botón Guardar */
+    #pantallaAdminProductos .acordeon-etiquetas { gap: 8px; }
+    #pantallaAdminProductos .acordeon-panel { max-height: calc(100vh - 220px); overflow-y: auto; overscroll-behavior: contain; }
+    #pantallaAdminProductos .check-evento-producto { padding: 7px 5px; }
+
+    /* Barra inferior fija: el botón Guardar siempre a la vista, sin buscarlo con scroll
+       (va a la izquierda para que no lo tape la burbuja del carrito, que flota abajo a la derecha) */
+    #pantallaAdminProductos .barra-guardar-producto {
+        display: flex; align-items: center; gap: 14px;
+        position: sticky; bottom: 0; z-index: 5; margin-top: auto;
+        width: 100%; padding: 10px 14px;
+        background: #fdfbf7; border-top: 1px solid #e8ddd5;
+    }
+    #pantallaAdminProductos .barra-guardar-producto .btn-guardar-producto { width: auto; min-width: 260px; max-width: 360px; padding: 11px 24px; }
+    #pantallaAdminProductos .barra-guardar-producto .status-admin-producto { flex: 1 1 auto; min-width: 0; min-height: 0; }
+    body.modo-oscuro #pantallaAdminProductos .barra-guardar-producto { background: #1a1410; border-color: #3a3028; }
+}
+/* Entre 900 y 1099 px las columnas son angostas: las etiquetas van de 2 en 2 (igual que en Yesos) */
+@media (min-width: 900px) and (max-width: 1099px) {
+    #pantallaAdminProductos .grid-checks-evento { grid-template-columns: repeat(2, 1fr); }
+    #pantallaAdminProductos .check-evento-producto:nth-child(3n) { border-right: 1px solid #e8ddd5; }
+    #pantallaAdminProductos .check-evento-producto:nth-child(2n) { border-right: none; }
+    #pantallaAdminProductos .check-evento-producto:nth-last-child(-n+3) { border-bottom: 1px solid #e8ddd5; }
+    #pantallaAdminProductos .check-evento-producto:nth-last-child(-n+2) { border-bottom: none; }
+    body.modo-oscuro #pantallaAdminProductos .check-evento-producto:nth-child(3n),
+    body.modo-oscuro #pantallaAdminProductos .check-evento-producto:nth-last-child(-n+3) { border-color: #3a3028; }
+}
