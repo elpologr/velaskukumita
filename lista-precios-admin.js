@@ -163,7 +163,7 @@
         if (!editItem || !editItem.nuevo || editItem.creado) editItem = null;
         ponerVista('nuevo', editItem ? '✏️ Editar producto de la lista' : '🆕 Producto nuevo');
         var imgData = null;
-        var enfX = 50, enfY = 0;   // zona de la imagen que se verá en el catálogo (igual que en «Agregar producto»)
+        var enfX = 50, enfY = 50;   // zona de la imagen que se verá en el catálogo (igual que en «Agregar producto»)
 
         // Imagen
         var zonaImg = el('div', 'slp-campo');
@@ -243,7 +243,7 @@
             if (!f) return;
             estadoImg.textContent = 'Convirtiendo imagen…'; estadoImg.className = 'slp-estado';
             _convertirArchivoImagenProducto(f).then(function (r) {
-                imgData = r; enfX = 50; enfY = 0; imgM.removeAttribute('src'); pintarPrevia();
+                imgData = r; enfX = 50; enfY = 50; imgM.removeAttribute('src'); pintarPrevia();
                 estadoImg.textContent = '';
             }).catch(function (err) { estadoImg.textContent = String(err); estadoImg.className = 'slp-estado error'; });
         }

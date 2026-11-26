@@ -6935,11 +6935,11 @@ function procesarImagenProducto(event) {
         var agregadas = 0, errores = [];
         resultados.forEach(function (r) {
             if (r && r.error) { errores.push(r.nombreArchivo + ': ' + r.error); return; }
-            // Punto de enfoque por defecto (centrado, pegado arriba) — el usuario
+            // Punto de enfoque por defecto (centrado, en el medio de la imagen) — el usuario
             // puede ajustarlo arrastrando sobre la miniatura grande si esta imagen
             // termina siendo la primera (índice 0).
             r.enfoqueX = 50;
-            r.enfoqueY = 0;
+            r.enfoqueY = 50;
             _adminImagenesProducto.push(r);
             agregadas++;
         });
@@ -7535,7 +7535,7 @@ function procesarImagenProductoEdit(event) {
         resultados.forEach(function (r) {
             if (r && r.error) { errores.push(r.nombreArchivo + ': ' + r.error); return; }
             r.enfoqueX = 50;
-            r.enfoqueY = 0;
+            r.enfoqueY = 50;
             _editImagenesNuevas.push(r);
             agregadas++;
         });
