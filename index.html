@@ -30,7 +30,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600;1,700&family=Playfair+Display:ital,wght@0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
     <!-- Estilos externos -->
-    <link rel="stylesheet" href="style.css?v=49">
+    <link rel="stylesheet" href="style.css?v=50">
     <link rel="stylesheet" href="mesas.css?v=4">
 
     <!-- Estilos botones de modo catálogo -->
@@ -897,6 +897,7 @@
 
             <div class="barra-guardar-producto">
             <button class="btn-guardar-producto" id="btnGuardarEdicionProducto" onclick="guardarEdicionProducto()">💾 Guardar cambios</button>
+            <button type="button" class="btn-eliminar-producto" id="btnEliminarProductoEdit" onclick="eliminarProductoEdit()" title="Borra el producto del sitio y de la hoja de Google Sheets">🗑️ Eliminar producto</button>
             <p class="status-admin-producto" id="statusEdicionProducto"></p>
             </div>
         </div>
@@ -2263,7 +2264,7 @@
 </div>
 
     <!-- JavaScript externo -->
-    <script src="app.js?v=36"></script>
+    <script src="app.js?v=37"></script>
 <script src="admin-producto-ui.js?v=2"></script>
 <script src="lista-precios-admin.js?v=10"></script>
 <script src="galeria-lista-precios.js?v=3"></script>

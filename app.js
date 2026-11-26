@@ -7198,6 +7198,8 @@ var _editImagenesExistentes = [];   // URLs que YA estaban en el producto (se pu
 var _editEnfoquesExistentes = [];   // { x, y } por cada URL en _editImagenesExistentes, mismo índice
 var _editImagenesNuevas     = [];   // { base64, nombre, dataUrl, enfoqueX, enfoqueY } — se suben y se agregan al guardar
 var _editGuardando          = false;
+var _editEliminando         = false;  // true mientras se elimina el producto de la hoja (botón "Eliminar producto")
+var _editNombreOriginal     = '';     // nombre del producto TAL COMO está en la hoja (el servidor lo compara antes de borrar)
 var _editMoviendo           = false;  // true mientras se está reubicando el producto de fila (botón "Mover a esa posición")
 
 function abrirEdicionProducto(card) {
@@ -7214,6 +7216,7 @@ function abrirEdicionProducto(card) {
         return;
     }
     _editFilaActual = filaSheets;
+    _editNombreOriginal = (card.getAttribute('data-nombre') || '').trim();
 
     // ── Reubicación de fila: mostrar la fila actual y limpiar el campo/estado ──
     var _spanFilaActualEdit = document.getElementById('filaActualProductoEdit');
@@ -7310,6 +7313,79 @@ function cerrarPantallaEditarProducto() {
         history.replaceState(null, '');
     }
 }
+
+// ── Eliminar el producto que se está editando (también lo borra de la hoja de Google Sheets) ──
+// Usa la acción «eliminar» del Apps Script: quita la fila y sube las de abajo (sin mover la configuración del bazar).
+async function eliminarProductoEdit() {
+    if (_editEliminando || _editGuardando || _editMoviendo) return;
+
+    var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+    if (!_esAdminUI(user)) { _statusEdit('Tu sesión no está autorizada.', true); return; }
+    if (!_editFilaActual || !_editNombreOriginal) { _statusEdit('No se pudo identificar el producto a eliminar.', true); return; }
+
+    if (!window.confirm('¿Eliminar «' + _editNombreOriginal + '» de la hoja de Google Sheets?\n\n' +
+        'Esta acción no se puede deshacer y el producto desaparecerá del sitio para todos.')) return;
+
+    var btn = document.getElementById('btnEliminarProductoEdit');
+    _editEliminando = true;
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Eliminando…'; }
+    _statusEdit('Eliminando de la hoja… no cierres esta pantalla.', false);
+
+    try {
+        var idToken = await user.getIdToken(true);
+        var resp = await fetch(ADMIN_ENDPOINT, {
+            method:  'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body:    JSON.stringify({ accion: 'eliminar', idToken: idToken, filaEditar: _editFilaActual, nombreActual: _editNombreOriginal })
+        });
+        var data = await resp.json();
+        if (!data.ok) throw new Error(data.error || 'Error del servidor');
+
+        mostrarToast('🗑️ Producto eliminado');
+        _statusEdit('', false);
+        cerrarPantallaEditarProducto();
+        var cerrarMP = (typeof cerrarModalProducto === 'function') ? cerrarModalProducto : window.cerrarModalProducto;
+        if (typeof cerrarMP === 'function') { try { cerrarMP(); } catch (e) { } }
+        // Las filas de abajo subieron una posición: se recarga el catálogo desde la hoja
+        if (typeof cargarDesdeGoogleSheets === 'function') setTimeout(cargarDesdeGoogleSheets, 1200);
+        _avisoImgbbEliminado(data);
+    } catch (err) {
+        console.error('Error eliminando producto:', err);
+        var m = String((err && err.message) || 'No se pudo eliminar');
+        // Si el Apps Script aún no tiene el código nuevo, cae en la rama de «agregar producto» y responde esto:
+        if (/Falta el imagen|Falta la imagen|Falta el nombre|Precio inv/i.test(m)) m = 'el Apps Script todavía no tiene la acción de eliminar: pega el codigo.gs nuevo y publícalo otra vez.';
+        _statusEdit('❌ ' + m, true);
+    } finally {
+        _editEliminando = false;
+        if (btn) { btn.disabled = false; btn.textContent = '🗑️ Eliminar producto'; }
+    }
+}
+
+// Las imágenes del producto siguen en ImgBB: el servidor devuelve un enlace de borrado por imagen (cuando lo tiene guardado)
+function _avisoImgbbEliminado(d) {
+    var enlaces = (d && d.imgbbBorrar) || [], sin = (d && d.imgbbSinEnlace) || 0;
+    if (!enlaces.length && !sin) return;
+    var fondo = document.createElement('div');
+    fondo.className = 'ep-imgbb-fondo';
+    var caja = document.createElement('div'); caja.className = 'ep-imgbb-caja';
+    var t = document.createElement('h4'); t.textContent = 'Imágenes en ImgBB'; caja.appendChild(t);
+    if (enlaces.length) {
+        var p = document.createElement('p'); p.textContent = 'Para borrarlas también de tu galería de ImgBB abre cada enlace y confirma ahí el borrado:'; caja.appendChild(p);
+        enlaces.forEach(function (u, i) {
+            var a = document.createElement('a'); a.href = u; a.target = '_blank'; a.rel = 'noopener noreferrer';
+            a.textContent = 'Borrar imagen ' + (i + 1) + ' en ImgBB ↗'; caja.appendChild(a);
+        });
+    }
+    if (sin) {
+        var p2 = document.createElement('p');
+        p2.textContent = (sin === 1 ? 'Una imagen se subió' : sin + ' imágenes se subieron') + ' antes de que el sistema guardara enlaces de borrado; tendrás que quitarla' + (sin === 1 ? '' : 's') + ' a mano desde tu cuenta de ImgBB.';
+        caja.appendChild(p2);
+    }
+    var ok = document.createElement('button'); ok.type = 'button'; ok.textContent = 'Listo';
+    ok.addEventListener('click', function () { fondo.remove(); });
+    caja.appendChild(ok); fondo.appendChild(caja); document.body.appendChild(fondo);
+}
+window.eliminarProductoEdit = eliminarProductoEdit;
 
 function _statusEdit(msg, esError) {
     var el = document.getElementById('statusEdicionProducto');
