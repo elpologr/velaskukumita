@@ -89,8 +89,10 @@
         });
         return salida;
     }
-    function yaEnLista(nombre, excepto) {
-        return _lpForm[kActual].some(function (it) { return it !== excepto && String(it.nombre).trim().toLowerCase() === nombre.trim().toLowerCase(); });
+    // Los nombres pueden repetirse: un producto «ya está en la lista» solo si es el mismo (mismo nombre Y misma imagen).
+    function yaEnLista(p) {
+        var n = String(p.nombre).trim().toLowerCase(), im = String(p.img || '').trim();
+        return _lpForm[kActual].some(function (it) { return it.existente && String(it.nombre).trim().toLowerCase() === n && String(it.img || '').trim() === im; });
     }
     function mostrarExistentes() {
         ponerVista('existentes', '📚 Producto que ya existe');
@@ -109,10 +111,10 @@
                 var txt = el('span', 'slp-item-txt');
                 txt.appendChild(el('strong', '', p.nombre));
                 txt.appendChild(el('small', '', p.modoRevisar ? 'Tiene lista de precios propia' : (p.precio ? '$' + p.precio + ' MXN' : 'Sin precio')));
-                var marca = el('span', 'slp-item-marca', yaEnLista(p.nombre) ? '✓' : '＋');
+                var marca = el('span', 'slp-item-marca', yaEnLista(p) ? '✓' : '＋');
                 b.appendChild(foto); b.appendChild(txt); b.appendChild(marca);
                 b.addEventListener('click', function () {
-                    if (yaEnLista(p.nombre)) { aviso('«' + p.nombre + '» ya está en la lista'); return; }
+                    if (yaEnLista(p)) { aviso('«' + p.nombre + '» ya está en la lista'); return; }
                     if (_lpForm[kActual].length >= 40) { aviso('Máximo 40 productos en la lista'); return; }
                     _lpForm[kActual].push({ nombre: p.nombre, precio: p.modoRevisar ? '' : String(p.precio || ''), img: p.img, existente: true });
                     if (typeof _lpRender === 'function') _lpRender(kActual);
@@ -342,7 +344,6 @@
             if (precio === '' || isNaN(Number(precio)) || Number(precio) < 0) return error('Escribe un precio válido.');
             if (mayoreo !== '' && (isNaN(Number(mayoreo)) || Number(mayoreo) < 0)) return error('El precio de mayoreo debe ser un número válido.');
             if (stock !== '' && (isNaN(Number(stock)) || Number(stock) < 0)) return error('La existencia debe ser un número.');
-            if (yaEnLista(nombre, editItem)) return error('Ya hay un producto con ese nombre en la lista.');
             if (!editItem && _lpForm[kActual].length >= 40) return error('Máximo 40 productos en la lista.');
             var principales = Array.prototype.map.call(gP.querySelectorAll('input:checked'), function (c) { return c.value; }).join('|');
             var eventos = Array.prototype.map.call(gE.querySelectorAll('input:checked'), function (c) { return c.value; }).join('|');
