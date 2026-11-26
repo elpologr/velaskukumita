@@ -5206,3 +5206,8 @@ body.modo-oscuro .zi-b-captura { background: #3d3020; border-color: #7a5d2c; col
 .lp-recuadros-estado.error { color: #b3261e; font-weight: 700; }
 body.modo-oscuro .lp-recuadros-estado { color: #c9b8a4; }
 body.modo-oscuro .lp-recuadros-estado.error { color: #ff9aa8; }
+
+/* Barra de páginas de abajo pegada al final del catálogo (antes quedaba lejos por el alto mínimo de la cuadrícula y los márgenes) */
+.grid-productos-inteligente { min-height: 0 !important; }
+#gridProductos { padding-bottom: 6px !important; }
+#pagControlesAbajo { margin: 0.4rem 0 0.8rem !important; }
