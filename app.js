@@ -422,12 +422,27 @@ function _crearCardProducto(p, esCopia) {
         };
         imgContenedor.appendChild(img);
 
-        // ── Texto sobre la imagen (arriba al centro; aparte del nombre). Solo si hay texto y está activado ──
-        if (p.textoImagen && p.mostrarTextoImagen !== false) {
+        // ── Texto sobre la imagen (arriba al centro; aparte del nombre) ──
+        // Si el administrador lo ocultó, el elemento existe pero no se ve (solo el administrador lo ve atenuado, para poder reactivarlo).
+        if (p.textoImagen) {
             var txtImg = document.createElement('div');
-            txtImg.className = 'texto-sobre-imagen';
+            txtImg.className = 'texto-sobre-imagen' + (p.mostrarTextoImagen === false ? ' texto-sobre-imagen-oculto' : '');
             txtImg.textContent = p.textoImagen;
             imgContenedor.appendChild(txtImg);
+
+            // Botón del administrador (👁️ / 🚫) para ocultar o volver a mostrar ese texto sin entrar a «Editar producto»
+            var btnTxt = document.createElement('button');
+            btnTxt.type = 'button';
+            btnTxt.className = 'btn-texto-card';
+            btnTxt.textContent = (p.mostrarTextoImagen === false) ? '🚫' : '👁️';
+            btnTxt.title = (p.mostrarTextoImagen === false) ? 'Mostrar el texto sobre la imagen' : 'Ocultar el texto sobre la imagen';
+            btnTxt.setAttribute('aria-label', btnTxt.title);
+            btnTxt.addEventListener('click', function (e) {
+                e.stopPropagation();
+                e.preventDefault();
+                _alternarTextoImagenCard(card);
+            });
+            imgContenedor.appendChild(btnTxt);
         }
 
         // ── Botón "hay más fotos" (solo si el producto tiene 2 o más imágenes) ──
@@ -5797,6 +5812,7 @@ function actualizarBotonAdminProductos(user) {
 if (typeof auth !== 'undefined' && auth.onAuthStateChanged) {
     auth.onAuthStateChanged(function (user) {
         actualizarBotonAdminProductos(user);
+        document.body.classList.toggle('kk-admin-ui', _esAdminUI(user));
     });
 }
 
@@ -7447,3 +7463,64 @@ document.addEventListener('keydown', function (e) {
 });
 
 _cargarEtiquetasPersonalizadas();
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  OCULTAR / MOSTRAR EL TEXTO SOBRE LA IMAGEN desde las tarjetas del catálogo (solo administradores)
+//  Guarda «no» / «si» en la columna S del producto (acción «textoimagen» del Apps Script) y actualiza
+//  de inmediato la tarjeta del catálogo y su copia de la portada.
+// ═══════════════════════════════════════════════════════════════════════════
+var _alternandoTextoImagen = false;
+
+function _aplicarEstadoTextoImagen(idx, mostrar) {
+    document.querySelectorAll('[data-idx="' + idx + '"]').forEach(function (c) {
+        if (!c.classList.contains('card-dinamica') && !c.classList.contains('card-portada')) return;
+        c.setAttribute('data-mostrar-texto-imagen', mostrar ? '1' : '0');
+        var t = c.querySelector('.texto-sobre-imagen');
+        if (t) t.classList.toggle('texto-sobre-imagen-oculto', !mostrar);
+        var b = c.querySelector('.btn-texto-card');
+        if (b) {
+            b.textContent = mostrar ? '👁️' : '🚫';
+            b.title = mostrar ? 'Ocultar el texto sobre la imagen' : 'Mostrar el texto sobre la imagen';
+            b.setAttribute('aria-label', b.title);
+        }
+    });
+}
+
+async function _alternarTextoImagenCard(card) {
+    if (_alternandoTextoImagen) return;
+    var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+    if (!_esAdminUI(user)) return;
+    var orig = (card && card._cardOriginal) ? card._cardOriginal() : card;
+    if (!orig) return;
+    var idx = orig.getAttribute('data-idx');
+    var fila = orig.getAttribute('data-sheet-row');
+    var nombre = orig.getAttribute('data-nombre') || '';
+    var mostrarAhora = orig.getAttribute('data-mostrar-texto-imagen') !== '0';
+    var nuevo = !mostrarAhora;
+
+    _alternandoTextoImagen = true;
+    var botones = document.querySelectorAll('.btn-texto-card');
+    botones.forEach(function (b) { b.disabled = true; });
+    try {
+        var idToken = await user.getIdToken(true);
+        var resp = await fetch(ADMIN_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+                accion: 'textoimagen', idToken: idToken,
+                filaEditar: fila, nombreActual: nombre, mostrar: nuevo ? 'si' : 'no'
+            })
+        });
+        var data = await resp.json();
+        if (!data.ok) throw new Error(data.error || 'Error del servidor');
+        _aplicarEstadoTextoImagen(idx, nuevo);
+        mostrarToast(nuevo ? '👁️ Texto visible en el catálogo' : '🚫 Texto oculto en el catálogo');
+    } catch (err) {
+        console.error('Error alternando el texto sobre la imagen:', err);
+        mostrarToast('❌ ' + (err.message || 'No se pudo guardar el cambio'));
+    } finally {
+        _alternandoTextoImagen = false;
+        botones.forEach(function (b) { b.disabled = false; });
+    }
+}
