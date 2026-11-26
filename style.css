@@ -4703,13 +4703,14 @@ body.modo-oscuro .lp-agregar { background: #3a2e26; }
    (3 columnas a todo el ancho, campos compactos y barra de "Guardar" siempre visible).
    Solo afecta a #pantallaAdminProductos. En celular NADA cambia: las columnas siguen siendo
    transparentes (display: contents) y el atributo data-ord devuelve cada campo a su lugar de siempre.
-     columna 1: imagen → texto sobre la imagen → posición en la hoja
-     columna 2: nombre y precios → descripción → medidas → stock → video → En oferta / Más vendido
-     columna 3: etiqueta principal y etiqueta de evento (botones desplegables)
+     columna 1: imagen → nombre del producto → posición en la hoja
+     columna 2: texto sobre la imagen → precios → descripción → medidas
+     columna 3: etiqueta principal y de evento (botones desplegables) → En oferta / Más vendido → video → stock
    ══════════════════════════════════════════════════════════════════════════════ */
 /* Orden original (móvil): como las columnas son display:contents, "order" ordena todos los campos juntos */
-#pantallaAdminProductos [data-ord="1"]  { order: 10; }
-#pantallaAdminProductos [data-ord="2"]  { order: 20; }
+#pantallaAdminProductos [data-ord="1"]  { order: 10; }    /* imagen */
+#pantallaAdminProductos [data-ord="2"]  { order: 20; }    /* nombre del producto (debajo de la imagen) */
+#pantallaAdminProductos [data-ord="10"] { order: 25; }    /* texto sobre la imagen */
 #pantallaAdminProductos [data-ord="3"]  { order: 30; }
 #pantallaAdminProductos [data-ord="4"]  { order: 40; }
 #pantallaAdminProductos [data-ord="5"]  { order: 50; }
@@ -4718,12 +4719,11 @@ body.modo-oscuro .lp-agregar { background: #3a2e26; }
 #pantallaAdminProductos .acordeon-etiquetas { order: 79; }   /* botones desplegables de admin-producto-ui.js: justo antes de las etiquetas */
 #pantallaAdminProductos [data-ord="8"]  { order: 80; }
 #pantallaAdminProductos [data-ord="9"]  { order: 90; }
-#pantallaAdminProductos [data-ord="10"] { order: 100; }
-#pantallaAdminProductos [data-ord="11"] { order: 110; }
-#pantallaAdminProductos [data-ord="12"] { order: 120; }
-#pantallaAdminProductos [data-ord="13"] { order: 130; }
-#pantallaAdminProductos [data-ord="14"] { order: 140; }
-#pantallaAdminProductos [data-ord="15"] { order: 150; }
+#pantallaAdminProductos [data-ord="13"] { order: 130; }   /* En oferta / Más vendido */
+#pantallaAdminProductos [data-ord="14"] { order: 140; }   /* precio de oferta */
+#pantallaAdminProductos [data-ord="12"] { order: 150; }   /* video de YouTube */
+#pantallaAdminProductos [data-ord="11"] { order: 160; }   /* cantidad en stock */
+#pantallaAdminProductos [data-ord="15"] { order: 170; }   /* posición en la hoja */
 /* El envoltorio de "Guardar" no existe en móvil: el botón y el aviso quedan como siempre */
 #pantallaAdminProductos .barra-guardar-producto { display: contents; }
 

@@ -548,9 +548,9 @@
                     <div class="galeria-imagenes-producto" id="galeriaImagenesProducto"></div>
                     <span class="contador-imagenes-producto" id="contadorImagenesProducto" style="display:none;"></span>
                 </div>
-                <div data-ord="10" class="campo-admin-producto">
-                    <label class="panel-nombre-label">Texto sobre la imagen</label>
-                    <input id="inputTextoImagenProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. ¡Nuevo!, Edición limitada" maxlength="60" oninput="_actualizarTextoSobreImagen()">
+                <div data-ord="2" class="campo-admin-producto">
+                    <label class="panel-nombre-label">Nombre del producto</label>
+                    <input id="inputNombreProducto" class="panel-nombre-input" type="text" placeholder="Ej. Vela aromática grande" maxlength="120">
                 </div>
                 <div data-ord="15" class="campo-admin-producto campo-zona-posicion-sheet">
                     <label class="panel-nombre-label">Posición en la hoja <span style="font-weight:400; color:#9a8878;">(opcional)</span></label>
@@ -559,9 +559,9 @@
                 </div>
                 </div>
                 <div class="form-admin-col">
-                <div data-ord="2" class="campo-admin-producto">
-                    <label class="panel-nombre-label">Nombre del producto</label>
-                    <input id="inputNombreProducto" class="panel-nombre-input" type="text" placeholder="Ej. Vela aromática grande" maxlength="120">
+                <div data-ord="10" class="campo-admin-producto">
+                    <label class="panel-nombre-label">Texto sobre la imagen</label>
+                    <input id="inputTextoImagenProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. ¡Nuevo!, Edición limitada" maxlength="60" oninput="_actualizarTextoSobreImagen()">
                 </div>
                 <div data-ord="3" class="campo-admin-producto campo-modo-precio">
                     <label class="panel-nombre-label">Botón de precio</label>
@@ -600,31 +600,6 @@
                         <label class="panel-nombre-label">Ancho</label>
                         <input id="inputAnchoProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 8 cm">
                     </div>
-                </div>
-                <div data-ord="11" class="campo-admin-producto">
-                    <label class="panel-nombre-label">Cantidad en stock</label>
-                    <input id="inputStockProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="0" step="1" placeholder="Ej. 20">
-                </div>
-                <div data-ord="12" class="campo-admin-producto">
-                    <label class="panel-nombre-label">Video de YouTube</label>
-                    <input id="inputVideoYoutubeProducto" class="panel-nombre-input" type="url" placeholder="Opcional, ej. https://www.youtube.com/embed/XXXXXXXXXXX">
-                </div>
-                <div data-ord="13" class="campo-admin-producto campo-admin-checkbox">
-                    <label class="pill-btn pill-btn-admin-toggle">
-                        <input id="inputEnOfertaProducto" type="checkbox" onchange="_toggleZonaOfertaProducto()">
-                        <span style="font-size:2.25rem; line-height:1;">🏷️</span>
-                        <span class="pill-btn-label">En Oferta</span>
-                    </label>
-                    <label class="pill-btn pill-btn-admin-toggle">
-                        <input id="inputMasVendidoProducto" type="checkbox">
-                        <span style="font-size:2.25rem; line-height:1;">🏆</span>
-                        <span class="pill-btn-label">Más Vendido</span>
-                    </label>
-                </div>
-                <div data-ord="14" class="campo-admin-producto" id="zonaPrecioOfertaProducto" style="display:none;">
-                    <label class="panel-nombre-label">Precio de oferta</label>
-                    <input id="inputPrecioOfertaProducto" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ej. 120 (debe ser menor al precio original)">
-                    <span style="font-size:11px; color:#9a8878;">Se muestra debajo del precio original, y este queda marcado con una ✕ mientras la oferta esté activa.</span>
                 </div>
                 </div>
                 <div class="form-admin-col">
@@ -682,6 +657,31 @@
                         <button type="button" class="btn-nueva-etiqueta" onclick="crearEtiquetaPersonalizada('evento', 'inputNuevaEtiquetaEvento')">➕ Crear</button>
                     </div>
                     <input id="inputEventoOtroProducto" class="panel-nombre-input" type="text" maxlength="60" placeholder="¿Otro evento? Escríbelo aquí (opcional)" style="margin-top:8px;">
+                </div>
+                <div data-ord="13" class="campo-admin-producto campo-admin-checkbox">
+                    <label class="pill-btn pill-btn-admin-toggle">
+                        <input id="inputEnOfertaProducto" type="checkbox" onchange="_toggleZonaOfertaProducto()">
+                        <span style="font-size:2.25rem; line-height:1;">🏷️</span>
+                        <span class="pill-btn-label">En Oferta</span>
+                    </label>
+                    <label class="pill-btn pill-btn-admin-toggle">
+                        <input id="inputMasVendidoProducto" type="checkbox">
+                        <span style="font-size:2.25rem; line-height:1;">🏆</span>
+                        <span class="pill-btn-label">Más Vendido</span>
+                    </label>
+                </div>
+                <div data-ord="14" class="campo-admin-producto" id="zonaPrecioOfertaProducto" style="display:none;">
+                    <label class="panel-nombre-label">Precio de oferta</label>
+                    <input id="inputPrecioOfertaProducto" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ej. 120 (debe ser menor al precio original)">
+                    <span style="font-size:11px; color:#9a8878;">Se muestra debajo del precio original, y este queda marcado con una ✕ mientras la oferta esté activa.</span>
+                </div>
+                <div data-ord="12" class="campo-admin-producto">
+                    <label class="panel-nombre-label">Video de YouTube</label>
+                    <input id="inputVideoYoutubeProducto" class="panel-nombre-input" type="url" placeholder="Opcional, ej. https://www.youtube.com/embed/XXXXXXXXXXX">
+                </div>
+                <div data-ord="11" class="campo-admin-producto">
+                    <label class="panel-nombre-label">Cantidad en stock</label>
+                    <input id="inputStockProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="0" step="1" placeholder="Ej. 20">
                 </div>
                 </div>
               </div>
