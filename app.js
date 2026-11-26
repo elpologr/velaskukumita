@@ -1610,6 +1610,9 @@ function aplicarConfigBazar(rawTexto) {
             descZona.style.display = 'none';
         }
 
+        // «Revisar precios»: imagen de los artículos de la lista, con botón «Siguiente», bajo la descripción (galeria-lista-precios.js)
+        if (typeof window.mostrarGaleriaRevisarPrecios === 'function') window.mostrarGaleriaRevisarPrecios(card);
+
         // Alto y Ancho
         const dimZona   = document.getElementById('modalDimensionesZona');
         const altoZona  = document.getElementById('modalAltoZona');
