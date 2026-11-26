@@ -4585,8 +4585,8 @@ body.modo-oscuro .acordeon-btn .ac-cuenta { background: #f5c46b; color: #2a1d12;
 .ayuda-texto-imagen { display: block; margin-top: 4px; font-size: 11.5px; color: #a89080; line-height: 1.3; }
 body.modo-oscuro .ayuda-texto-imagen { color: #b8a595; }
 .recorte-texto-preview {
-    position: absolute; top: 3%; left: 50%; transform: translateX(-50%);
-    max-width: 96%; padding: 0.1em 0.2em; white-space: nowrap;
+    position: absolute; top: 3%; left: 10%; right: 10%;   /* caja del 80 % del ancho, centrada: el texto no salta de línea antes de llegar a sus bordes */
+    padding: 0.1em 0.2em; white-space: nowrap;
     color: #fff; font-size: 8px; font-weight: 700; line-height: 1.25;
     text-shadow: -0.03em -0.03em 0 #000, 0.03em -0.03em 0 #000, -0.03em 0.03em 0 #000, 0.03em 0.03em 0 #000, 0 -0.03em 0 #000, 0 0.03em 0 #000, -0.03em 0 0 #000, 0.03em 0 0 #000;
     text-align: center; word-break: break-word; pointer-events: none; display: none;
@@ -4603,15 +4603,15 @@ body.modo-oscuro .ayuda-texto-imagen { color: #b8a595; }
 
 /* ── Texto sobre la imagen en la tarjeta del catálogo (arriba al centro; deja libre el corazón de la derecha) ── */
 .texto-sobre-imagen {
-    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-    max-width: calc(100% - 110px); padding: 2px 6px; white-space: nowrap;
+    position: absolute; top: 10px; left: 55px; right: 55px;   /* ocupa todo el ancho salvo los botones de las esquinas */
+    padding: 2px 6px; white-space: nowrap;
     color: #fff; font-size: 14px; font-weight: 700; line-height: 1.25;
     text-align: center; word-break: break-word;
     text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000, 1px 0 0 #000;
     pointer-events: none; z-index: 2;
 }
 @media (max-width: 600px) {
-    .texto-sobre-imagen { max-width: calc(100% - 90px); font-size: 12px; padding: 2px 5px; top: 8px; }
+    .texto-sobre-imagen { left: 46px; right: 46px; font-size: 12px; padding: 2px 5px; top: 8px; }
 }
 
 /* ── Texto oculto: nadie lo ve, salvo el administrador (atenuado, para poder reactivarlo) ── */

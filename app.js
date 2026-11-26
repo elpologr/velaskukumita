@@ -6197,7 +6197,7 @@ function _actualizarTextoSobreImagen() {
         var lado = cuadro ? cuadro.clientWidth : 0;
         if (lado) {
             el.style.fontSize = (lado * _TEXTO_IMG_ESCALA) + 'px';
-            _ajustarTextoUnaLinea(el, lado * _TEXTO_IMG_ESCALA, lado * _TEXTO_IMG_ESCALA * 0.5);
+            _ajustarTextoUnaLinea(el, lado * _TEXTO_IMG_ESCALA, lado * _TEXTO_IMG_ESCALA * 0.75);
         }
     });
 }
@@ -6222,7 +6222,7 @@ var _roTextoCard = (typeof ResizeObserver === 'function') ? new ResizeObserver(f
 }) : null;
 function _ajustarTextoCard(el) {
     var base = (window.innerWidth <= 600) ? 12 : 14;
-    _ajustarTextoUnaLinea(el, base, 9);
+    _ajustarTextoUnaLinea(el, base, base * 0.75);
 }
 
 function _renderizarMiniaturaPrincipal() {
