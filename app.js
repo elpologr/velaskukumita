@@ -540,6 +540,21 @@ function renderizarCatalogoCompleto() {
     listaProductos.forEach(function(p) {
         grid.appendChild(_crearCardProducto(p, false));
     });
+
+    // Marco «recorte de tijeras» para agregar un producto: solo lo ven los administradores y solo en la
+    // última página, después del último producto (lo muestra/oculta actualizarMarcoAgregar() de la paginación).
+    var marcoAgregar = document.createElement('button');
+    marcoAgregar.type = 'button';
+    marcoAgregar.id = 'marcoAgregarProducto';
+    marcoAgregar.className = 'marco-agregar-producto';
+    marcoAgregar.setAttribute('aria-label', 'Agregar producto');
+    marcoAgregar.innerHTML = '<span class="marco-agregar-tijeras" aria-hidden="true">✂</span>' +
+        '<span class="marco-agregar-mas" aria-hidden="true">+</span>' +
+        '<span class="marco-agregar-texto">Agregar producto</span>';
+    marcoAgregar.addEventListener('click', function() {
+        if (typeof abrirPantallaAdminProductos === 'function') abrirPantallaAdminProductos();
+    });
+    grid.appendChild(marcoAgregar);
     // Sincronizar corazones con favoritos guardados
     if (typeof syncBotonesLike === 'function') syncBotonesLike();
 }
@@ -993,6 +1008,7 @@ function aplicarConfigBazar(rawTexto) {
             c.classList.toggle('paginacion-oculto', !enPortada);
         });
         renderControles();
+        actualizarMarcoAgregar();
         if (_scrollAlCambiarPagina) {
             var grid = document.getElementById('gridProductos');
             if (grid) {
@@ -1002,6 +1018,20 @@ function aplicarConfigBazar(rawTexto) {
     }
 
     var _scrollAlCambiarPagina = false;
+
+    // Marco «Agregar producto»: solo administradores, solo en la ÚLTIMA página de los productos (no en la portada)
+    // y solo si no hay filtro/búsqueda activos (si no, «después del último producto» no tendría sentido).
+    function actualizarMarcoAgregar() {
+        var marco = document.getElementById('marcoAgregarProducto');
+        if (!marco) return;
+        var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+        var admin = (typeof _esAdminUI === 'function') && _esAdminUI(user);
+        var total = document.querySelectorAll('#gridProductos .card-dinamica').length;
+        var enUltima = total > 0 && tarjetasVisibles.length === total &&
+            paginaActual === calcularTotalPaginas() && !(conPortada && paginaActual === 1);
+        marco.classList.toggle('visible', !!(admin && enUltima));
+    }
+    window.actualizarMarcoAgregar = actualizarMarcoAgregar;
 
     function renderControles() {
         const total = calcularTotalPaginas();
@@ -5745,6 +5775,8 @@ function actualizarBotonAdminProductos(user) {
     // Engranaje de "Editar información del bazar", dentro del submenu de bazar.
     var btnCfgBazar = document.getElementById('btnBazarAdminConfig');
     if (btnCfgBazar) btnCfgBazar.style.display = _esAdminUI(user) ? 'flex' : 'none';
+    // Marco «Agregar producto» al final del catálogo (última página)
+    if (typeof window.actualizarMarcoAgregar === 'function') window.actualizarMarcoAgregar();
 }
 
 // Firebase permite varios listeners: este no interfiere con el que ya existe.

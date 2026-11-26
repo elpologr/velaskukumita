@@ -4448,3 +4448,19 @@ body.modo-oscuro .portada-cab h3 { color: #e8ddd5; border-bottom-color: #4a3f38;
 #pantallaCuadricula .cg-destino { border-color: #2e86de; box-shadow: 0 0 0 3px rgba(46,134,222,0.45); transform: scale(1.04); opacity: 1; }
 #pantallaCuadricula .cg-recien { animation: cgRecien 1.4s ease-out 1; }
 @keyframes cgRecien { 0% { box-shadow: 0 0 0 4px rgba(245,196,107,0.95); } 100% { box-shadow: 0 0 0 0 rgba(245,196,107,0); } }
+
+
+/* ===== MARCO «AGREGAR PRODUCTO» al final del catálogo (recorte de tijeras; solo administradores, última página) ===== */
+.marco-agregar-producto {
+    display: none; position: relative; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    min-height: 240px; padding: 16px; box-sizing: border-box; cursor: pointer;
+    border: 2.5px dashed #b8a898; border-radius: 12px; background: transparent; color: #8c7565;
+    font-family: inherit; transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.marco-agregar-producto.visible { display: flex; }
+.marco-agregar-producto:hover { background: rgba(140,117,101,0.08); border-color: #8c7565; color: #5c4d43; }
+.marco-agregar-tijeras { position: absolute; top: 10px; left: 14px; font-size: 22px; line-height: 1; opacity: 0.8; }
+.marco-agregar-mas { font-size: 2.6rem; font-weight: 300; line-height: 1; }
+.marco-agregar-texto { font-size: 0.95rem; font-weight: 800; letter-spacing: 0.3px; }
+body.modo-oscuro .marco-agregar-producto { border-color: #6e5a4f; color: #b8a898; }
+body.modo-oscuro .marco-agregar-producto:hover { background: rgba(255,255,255,0.05); border-color: #b8a898; color: #e8ddd5; }
