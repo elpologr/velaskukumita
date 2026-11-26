@@ -1239,7 +1239,27 @@ function aplicarConfigBazar(rawTexto) {
         } else {
             actualizarPaginacion();
         }
+        // Si hay palabras en alguna barra de búsqueda (por ejemplo, al volver de editar un producto, que recarga la hoja),
+        // la búsqueda se vuelve a aplicar para que no se cancele ni regrese a los productos generales.
+        _reaplicarBusquedaEscrita(modoActual);
     });
+
+    function _reaplicarBusquedaEscrita(modo) {
+        // 1) Barra de búsqueda global (busca en todo el catálogo)
+        var global = document.getElementById('inputBusquedaGlobal');
+        if (global && global.value.trim() && typeof window.busquedaGlobal === 'function') {
+            window.busquedaGlobal(global.value);
+            return;
+        }
+        // 2) Barra del panel activo (Todos / Arreglos / Etiquetas / Decoraciones / Centros de mesa)
+        var panelDeModo = { mostrar_todo: 'todos', todos: 'todos', arreglos: 'arreglos', etiquetas: 'etiquetas', decoraciones: 'decoraciones', centros_mesa: 'centros_mesa' };
+        var inputDePanel = { todos: 'inputBusquedaTodos', arreglos: 'inputBusquedaArreglos', etiquetas: 'inputBusquedaEtiquetas', decoraciones: 'inputBusquedaDecoraciones', centros_mesa: 'inputBusquedaCentrosMesa' };
+        var panel = panelDeModo[modo] || 'todos';
+        var inp = document.getElementById(inputDePanel[panel]);
+        if (inp && inp.value.trim() && typeof window.filtrarPorNombreUnificadoInmediato === 'function') {
+            window.filtrarPorNombreUnificadoInmediato(panel);
+        }
+    }
 
     // También respaldo con _ready por si el catálogo ya estaba listo al iniciar
     _ready(function() {
