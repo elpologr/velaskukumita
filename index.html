@@ -30,7 +30,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600;1,700&family=Playfair+Display:ital,wght@0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
     <!-- Estilos externos -->
-    <link rel="stylesheet" href="style.css?v=32">
+    <link rel="stylesheet" href="style.css?v=33">
     <link rel="stylesheet" href="mesas.css?v=4">
 
     <!-- Estilos botones de modo catálogo -->
@@ -552,6 +552,14 @@
                     <label class="panel-nombre-label">Nombre del producto</label>
                     <input id="inputNombreProducto" class="panel-nombre-input" type="text" placeholder="Ej. Vela aromática grande" maxlength="120">
                 </div>
+                <div class="campo-admin-producto campo-modo-precio">
+                    <label class="panel-nombre-label">Botón de precio</label>
+                    <div class="selector-modo-precio" role="radiogroup" aria-label="Botón de precio del producto">
+                        <label class="modo-precio-op"><input type="radio" name="modoPrecioProducto" value="precio" checked onchange="_cambiarModoPrecio('add')"><span>💲 Precio</span></label>
+                        <label class="modo-precio-op"><input type="radio" name="modoPrecioProducto" value="revisar" onchange="_cambiarModoPrecio('add')"><span>🔎 Revisar precios</span></label>
+                    </div>
+                </div>
+                <div id="zonaPrecioNormalProducto">
                 <div class="fila-campos-dobles">
                     <div class="campo-admin-producto">
                         <label class="panel-nombre-label">Precio</label>
@@ -561,6 +569,12 @@
                         <label class="panel-nombre-label">Precio de mayoreo</label>
                         <input id="inputPrecioMayoreoProducto" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Opcional">
                     </div>
+                </div>
+                </div>
+                <div class="campo-admin-producto" id="zonaListaPreciosProducto" style="display:none;">
+                    <label class="panel-nombre-label">Productos de la imagen y su precio</label>
+                    <div class="lista-precios-filas" id="filasListaPreciosProducto"></div>
+                    <button type="button" class="btn-nueva-etiqueta btn-lp-agregar" onclick="_lpAgregarFila('add')">➕ Agregar producto a la lista</button>
                 </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Descripción</label>
@@ -722,6 +736,14 @@
                     <label class="panel-nombre-label">Nombre del producto</label>
                     <input id="inputNombreProductoEdit" class="panel-nombre-input" type="text" placeholder="Ej. Vela aromática grande" maxlength="120">
                 </div>
+                <div class="campo-admin-producto campo-modo-precio">
+                    <label class="panel-nombre-label">Botón de precio</label>
+                    <div class="selector-modo-precio" role="radiogroup" aria-label="Botón de precio del producto">
+                        <label class="modo-precio-op"><input type="radio" name="modoPrecioProductoEdit" value="precio" checked onchange="_cambiarModoPrecio('edit')"><span>💲 Precio</span></label>
+                        <label class="modo-precio-op"><input type="radio" name="modoPrecioProductoEdit" value="revisar" onchange="_cambiarModoPrecio('edit')"><span>🔎 Revisar precios</span></label>
+                    </div>
+                </div>
+                <div id="zonaPrecioNormalProductoEdit">
                 <div class="fila-campos-dobles">
                     <div class="campo-admin-producto">
                         <label class="panel-nombre-label">Precio</label>
@@ -731,6 +753,12 @@
                         <label class="panel-nombre-label">Precio de mayoreo</label>
                         <input id="inputPrecioMayoreoProductoEdit" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Opcional">
                     </div>
+                </div>
+                </div>
+                <div class="campo-admin-producto" id="zonaListaPreciosProductoEdit" style="display:none;">
+                    <label class="panel-nombre-label">Productos de la imagen y su precio</label>
+                    <div class="lista-precios-filas" id="filasListaPreciosProductoEdit"></div>
+                    <button type="button" class="btn-nueva-etiqueta btn-lp-agregar" onclick="_lpAgregarFila('edit')">➕ Agregar producto a la lista</button>
                 </div>
                 <div class="fila-campos-dobles">
                     <div class="campo-admin-producto">
@@ -1700,6 +1728,11 @@
                 </div>
             </div>
 
+            <!-- 8b. «Revisar precios» (solo en productos con lista de precios) -->
+            <div id="mpRevisarPreciosFila" style="display:none; padding:10px 0 2px 0; border-top:1px solid #f0eae4;">
+                <button type="button" class="mp-btn-revisar" id="mpBtnRevisarPrecios">🔎 Revisar precios</button>
+            </div>
+
             <!-- 9a. Botones Favoritos / Carrito -->
             <div class="mp-botones-accion" style="margin-top:6px; margin-bottom:0;">
                 <button class="mp-btn-favoritos" id="mpBtnFavoritos">❤️ Favoritos</button>
@@ -2052,6 +2085,19 @@
     </div>
 </div>
 
+<!-- Submenú «Revisar precios»: artículos que trae la imagen y el precio de cada uno -->
+<div id="modalListaPrecios" onclick="if(event.target===this)cerrarListaPrecios()">
+    <div class="lp-caja">
+        <div class="lp-header">
+            <h3>🔎 Revisar precios</h3>
+            <button type="button" class="mc-cerrar" onclick="cerrarListaPrecios()" aria-label="Cerrar">✕</button>
+        </div>
+        <div class="lp-producto" id="lpNombreProducto"></div>
+        <div class="lp-ayuda">Toca 🛒 para añadir una pieza al carrito.</div>
+        <div class="lp-lista" id="lpLista"></div>
+    </div>
+</div>
+
 <!-- Pantalla de Carrito -->
 <div id="pantallaCarrito">
     <div class="cart-header">
@@ -2190,11 +2236,11 @@
 </div>
 
     <!-- JavaScript externo -->
-    <script src="app.js?v=23"></script>
+    <script src="app.js?v=24"></script>
 <script src="admin-producto-ui.js?v=1"></script>
 <script src="portada.js?v=2"></script>
 <script src="cuadricula.js?v=4"></script>
-<script src="mesas.js?v=8"></script>
+<script src="mesas.js?v=9"></script>
 
     <!-- ── AUTO-FIX MÓVIL: detecta y elimina cualquier elemento que desborde el viewport ── -->
     <script>

@@ -222,6 +222,34 @@ function parsearCSV(texto) {
 }
 
 // ── Convierte filas CSV en objetos de producto ──
+// ── Lista de precios de un producto («Revisar precios») ──
+// Se guarda en la hoja como "Nombre::precio;;Nombre::precio".
+function _parseListaPrecios(texto) {
+    return String(texto || '').split(';;').map(function (t) {
+        var k = t.lastIndexOf('::');
+        if (k < 0) return null;
+        var nombre = t.slice(0, k).trim();
+        var precio = parseFloat(t.slice(k + 2));
+        if (!nombre || isNaN(precio)) return null;
+        return { nombre: nombre, precio: precio };
+    }).filter(Boolean);
+}
+function _serializarListaPrecios(lista) {
+    return (lista || []).map(function (x) {
+        return String(x.nombre).replace(/(::|;;)/g, ' ').trim() + '::' + x.precio;
+    }).join(';;');
+}
+function _listaPreciosCard(card) {
+    try { return JSON.parse(card.getAttribute('data-lista-precios') || '[]'); } catch (e) { return []; }
+}
+function _esRevisarPrecios(card) {
+    return !!card && card.getAttribute('data-modo-precio') === 'revisar' && _listaPreciosCard(card).length > 0;
+}
+function _formatoPrecio(n) {
+    n = parseFloat(n) || 0;
+    return '$' + (Math.round(n) === n ? String(n) : n.toFixed(2)) + ' MXN';
+}
+
 function csvAProductos(filas) {
     if (filas.length < 2) return [];
     // Omitir la fila de encabezados (fila 0)
@@ -253,6 +281,8 @@ function csvAProductos(filas) {
         // Q=16 Precio de Oferta (opcional; solo se muestra si "en oferta" = si)
         // R=17 Texto sobre la imagen (opcional; se dibuja arriba al centro de la tarjeta, NO es el nombre)
         // S=18 Mostrar ese texto ("no" = oculto; vacío o "si" = visible)
+        // T=19 Modo de precio ("revisar" = botón «Revisar precios» con lista; vacío = precio normal)
+        // U=20 Lista de precios: "Nombre::precio;;Nombre::precio" (solo si T = revisar). La columna B guarda el precio más bajo.
 
         // Video principal (E=4)
         var videoPrincipal = get(4).replace(/^"+|"+$/g, '').trim();
@@ -305,6 +335,8 @@ function csvAProductos(filas) {
             precioOferta: precioOferta,
             textoImagen:  get(17).replace(/^"+|"+$/g, '').trim(),
             mostrarTextoImagen: get(18).trim().toLowerCase() !== 'no',
+            listaPrecios: _parseListaPrecios(get(20)),
+            modoPrecio:   (get(19).toLowerCase() === 'revisar' && _parseListaPrecios(get(20)).length) ? 'revisar' : 'precio',
             masVendido:   masVendido,
             alto:         get(10),
             ancho:        get(11),
@@ -385,6 +417,8 @@ function _crearCardProducto(p, esCopia) {
         card.setAttribute('data-precio-bazar',    String(parseInt(p.precioBazar,  10) || ''));
         card.setAttribute('data-precio-oferta',   String(parseFloat(p.precioOferta) || ''));
         card.setAttribute('data-texto-imagen',    p.textoImagen || '');
+        card.setAttribute('data-modo-precio',     p.modoPrecio === 'revisar' ? 'revisar' : '');
+        card.setAttribute('data-lista-precios',   JSON.stringify(p.listaPrecios || []));
         card.setAttribute('data-mostrar-texto-imagen', p.mostrarTextoImagen === false ? '0' : '1');
         card.setAttribute('data-tipo',            p.tipo  || 'arreglo');
         card.setAttribute('data-tipos',           (p.tipos || [p.tipo || 'arreglo']).join('|'));
@@ -485,6 +519,7 @@ function _crearCardProducto(p, esCopia) {
         btnCartCard.innerHTML = '🛒';
         btnCartCard.addEventListener('click', function(e) {
             e.stopPropagation();
+            if (p.modoPrecio === 'revisar') { abrirListaPrecios(_cardOriginal()); return; }
             if (typeof abrirModalCantidad === 'function') abrirModalCantidad(_cardOriginal());
         });
         imgContenedor.appendChild(btnCartCard);
@@ -532,14 +567,28 @@ function _crearCardProducto(p, esCopia) {
         var preciosBloque = document.createElement('div');
         preciosBloque.className = 'card-precios-bloque';
 
+        if (p.modoPrecio === 'revisar') {
+            // Producto con varios artículos y precios: en lugar del precio se muestra el botón «Revisar precios»
+            var btnRevisar = document.createElement('button');
+            btnRevisar.type = 'button';
+            btnRevisar.className = 'card-btn-revisar-precios';
+            btnRevisar.textContent = '🔎 Revisar precios';
+            btnRevisar.addEventListener('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                abrirListaPrecios(_cardOriginal());
+            });
+            preciosBloque.appendChild(btnRevisar);
+        } else {
         var precioNormalDiv = document.createElement('div');
         precioNormalDiv.className = 'card-precio-normal';
         precioNormalDiv.innerHTML =
             '<span class="card-precio-etiqueta">Precio</span>' +
             '<span class="card-precio-valor">$' + (p.precioNormal || '') + ' MXN</span>';
         preciosBloque.appendChild(precioNormalDiv);
+        }
 
-        if (p.precioBazar) {
+        if (p.modoPrecio !== 'revisar' && p.precioBazar) {
             var precioBazarDiv = document.createElement('div');
             precioBazarDiv.className = 'card-precio-mayoreo-bloque visible';
             precioBazarDiv.innerHTML =
@@ -553,6 +602,7 @@ function _crearCardProducto(p, esCopia) {
         card.addEventListener('click', function(e) {
             if (e.target.closest('.btn-like')) return;
             if (e.target.closest('.btn-carrito-card')) return;
+            if (e.target.closest('.card-btn-revisar-precios')) return;
             if (typeof abrirModalProducto === 'function') {
                 abrirModalProducto(_cardOriginal());
             }
@@ -1341,10 +1391,17 @@ function aplicarConfigBazar(rawTexto) {
         const ancho = card.getAttribute('data-ancho') || '';
         const existencia = parseInt(card.getAttribute('data-existencia') || '0') || 0;
         const imagenesJSON = card.getAttribute('data-imagenes');
-        const precioNum = card.getAttribute('data-precio') || '';
-        const precioBazar = card.getAttribute('data-precio-bazar') || '';
-        const precioOferta = card.getAttribute('data-precio-oferta') || '';
+        const _modoRevisar = _esRevisarPrecios(card);   // «Revisar precios»: no hay un precio único, hay una lista
+        const precioNum = _modoRevisar ? '' : (card.getAttribute('data-precio') || '');
+        const precioBazar = _modoRevisar ? '' : (card.getAttribute('data-precio-bazar') || '');
+        const precioOferta = _modoRevisar ? '' : (card.getAttribute('data-precio-oferta') || '');
         const ofertaActivaPrecio = card.getAttribute('data-oferta') === '1';
+        const _filaRevisar = document.getElementById('mpRevisarPreciosFila');
+        if (_filaRevisar) {
+            _filaRevisar.style.display = _modoRevisar ? 'block' : 'none';
+            const _btnRev = document.getElementById('mpBtnRevisarPrecios');
+            if (_btnRev) _btnRev.onclick = () => { abrirListaPrecios(card); };
+        }
 
         // ── Video principal del producto (se muestra vía botón "Ver Video", no en la galería) ──
         galeriaVideoPrincipal = (card.getAttribute('data-video') || '').trim();
@@ -1673,6 +1730,7 @@ function aplicarConfigBazar(rawTexto) {
         const mpBtnCarrito = document.getElementById('mpBtnCarrito');
         if (mpBtnCarrito) {
             mpBtnCarrito.onclick = () => {
+                if (_modoRevisar) { abrirListaPrecios(card); return; }
                 abrirModalCantidad(card);
             };
         }
@@ -2978,6 +3036,7 @@ function obtenerProductosDrawer() {
         return {
             nombre: card.getAttribute('data-nombre') || '',
             precio: card.getAttribute('data-precio') || '',
+            desde: card.getAttribute('data-modo-precio') === 'revisar',
             img: (card.querySelector('.img-contenedor-dinamico img') || {}).src || '',
             card: card
         };
@@ -3073,7 +3132,7 @@ function renderizarResultadosDrawer(lista, titulo) {
         item.className = 'drawer-rec-item';
         item.innerHTML = '<img class="drawer-rec-img" src="' + p.img + '" alt="' + p.nombre + '" onerror="this.style.background=\'#eee\'">'
             + '<div class="drawer-rec-info"><p class="drawer-rec-nombre">' + p.nombre + '</p>'
-            + '<p class="drawer-rec-precio">$' + p.precio + ' MXN</p></div>'
+            + '<p class="drawer-rec-precio">' + (p.desde ? 'Desde ' : '') + '$' + p.precio + ' MXN</p></div>'
             + '<span style="color:#bbb;">›</span>';
         item.onclick = function() {
             cerrarDrawer();
@@ -3709,7 +3768,7 @@ function renderizarFavoritos() {
         var card = document.querySelector('[data-idx="' + idxProd + '"]');
 
         var nombre = prod ? prod.nombre : (card ? (card.querySelector('h3') || {}).textContent : 'Producto');
-        var precio = prod ? ('$' + (prod.precioBazar || prod.precioNormal || '') + ' MXN') : '';
+        var precio = prod ? ((prod.modoPrecio === 'revisar' ? 'Desde ' : '') + '$' + (prod.precioBazar || prod.precioNormal || '') + ' MXN') : '';
         var imgSrc = prod ? (prod.imagen || (prod.imagenes && prod.imagenes[0]) || '') :
                     (card ? ((card.querySelector('img') || {}).src || '') : '');
         var _enfoqueFav = _objectPositionDesdeEnfoque(prod ? prod.enfoqueImagen :
@@ -4362,7 +4421,7 @@ function construirCarrusel(tipo) {
             '<div class="carrusel-card-info">' +
                 '<div class="carrusel-card-badge' + (esOferta ? '' : ' mv') + '">' + (esOferta ? '🏷️ Oferta' : '🏆 Top') + '</div>' +
                 '<div class="carrusel-card-nombre" title="' + nombre + '">' + nombre + '</div>' +
-                '<div class="carrusel-card-precio">' + (precioMostrar ? '$' + precioMostrar + ' MXN' : '') + '</div>' +
+                '<div class="carrusel-card-precio">' + (precioMostrar ? (card.getAttribute('data-modo-precio') === 'revisar' ? 'Desde ' : '') + '$' + precioMostrar + ' MXN' : '') + '</div>' +
             '</div>';
 
         // Al hacer click abre el modal de producto
@@ -4441,8 +4500,145 @@ var _CARRITO_MAX_PIEZAS = 99;
 var _cotizacionUltimoEnvio = 0;
 var _cotizacionCooldown = 30000; // 30 segundos entre envíos
 
+
+// ═════════════════════════════════════════════════════════════════════
+//  REVISAR PRECIOS — submenú con los artículos que trae la imagen y el precio de cada uno
+//  (para productos como «catálogo de gatitos» que varían de precio). Cada renglón se puede añadir al carrito.
+// ═════════════════════════════════════════════════════════════════════
+var _lpCardActual = null;
+
+function abrirListaPrecios(card) {
+    if (!card) return;
+    _lpCardActual = card;
+    var nombre = (card.getAttribute('data-nombre') || 'Producto').trim();
+    var lista = _listaPreciosCard(card);
+    document.getElementById('lpNombreProducto').textContent = nombre;
+    var cont = document.getElementById('lpLista');
+    cont.innerHTML = '';
+    lista.forEach(function (it) {
+        var fila = document.createElement('div');
+        fila.className = 'lp-fila';
+        var n = document.createElement('div'); n.className = 'lp-nombre'; n.textContent = it.nombre;
+        var pr = document.createElement('div'); pr.className = 'lp-precio'; pr.textContent = _formatoPrecio(it.precio);
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'lp-agregar';
+        b.setAttribute('aria-label', 'Añadir ' + it.nombre + ' al carrito'); b.textContent = '🛒';
+        b.addEventListener('click', function () { _agregarItemListaCarrito(card, it); });
+        fila.appendChild(n); fila.appendChild(pr); fila.appendChild(b);
+        cont.appendChild(fila);
+    });
+    document.getElementById('modalListaPrecios').classList.add('abierto');
+    _bloquearScrollBody();
+}
+
+function cerrarListaPrecios() {
+    var m = document.getElementById('modalListaPrecios');
+    if (!m || !m.classList.contains('abierto')) return;
+    m.classList.remove('abierto');
+    _desbloquearScrollBody();
+    _lpCardActual = null;
+}
+
+function _agregarItemListaCarrito(card, it) {
+    var base = (card.getAttribute('data-nombre') || 'Producto').trim();
+    var nombre = base + ' — ' + it.nombre;
+    var imagenes = [];
+    try { imagenes = JSON.parse(card.getAttribute('data-imagenes') || '[]'); } catch (e) {}
+    var imgSrc = imagenes[0] || ((card.querySelector('.img-contenedor-dinamico img') || {}).src) || '';
+    var enfoqueImg = card.getAttribute('data-enfoque-imagen') || '';
+    var existente = carrito.find(function (i) { return i.nombre === nombre; });
+    if (existente) {
+        existente.cantidad = Math.min(_CARRITO_MAX_PIEZAS, existente.cantidad + 1);
+        mostrarToast('🛒 Cantidad actualizada: ' + it.nombre + ' (' + existente.cantidad + ')');
+    } else {
+        if (carrito.length >= _CARRITO_MAX_PRODUCTOS) { mostrarToast('⚠️ Límite de 20 productos alcanzado'); return; }
+        carrito.push({ nombre: nombre, precio: parseFloat(it.precio) || 0, img: imgSrc, enfoque: enfoqueImg, cantidad: 1 });
+        mostrarToast('✅ ' + it.nombre + ' añadido al carrito');
+    }
+    actualizarBurbuja();
+    _guardarCarrito();
+}
+
+// ═════════════════════════════════════════════════════════════════════
+//  FORMULARIOS (agregar / editar): botón de precio «Precio» o «Revisar precios» + editor de la lista
+//  k = 'add' | 'edit'
+// ═════════════════════════════════════════════════════════════════════
+var _lpForm = { add: [], edit: [] };
+var _lpIds = {
+    add:  { radio: 'modoPrecioProducto',     filas: 'filasListaPreciosProducto',     zonaLista: 'zonaListaPreciosProducto',     zonaPrecio: 'zonaPrecioNormalProducto',     zonaOferta: 'zonaPrecioOfertaProducto',     chkOferta: 'inputEnOfertaProducto' },
+    edit: { radio: 'modoPrecioProductoEdit', filas: 'filasListaPreciosProductoEdit', zonaLista: 'zonaListaPreciosProductoEdit', zonaPrecio: 'zonaPrecioNormalProductoEdit', zonaOferta: 'zonaPrecioOfertaProductoEdit', chkOferta: 'inputEnOfertaProductoEdit' }
+};
+function _lpModo(k) {
+    var r = document.querySelector('input[name="' + _lpIds[k].radio + '"]:checked');
+    return r ? r.value : 'precio';
+}
+function _lpRender(k) {
+    var cont = document.getElementById(_lpIds[k].filas);
+    if (!cont) return;
+    cont.innerHTML = '';
+    _lpForm[k].forEach(function (it, i) {
+        var fila = document.createElement('div');
+        fila.className = 'lp-fila-form';
+        var n = document.createElement('input');
+        n.type = 'text'; n.className = 'panel-nombre-input lp-in-nombre'; n.maxLength = 80;
+        n.placeholder = 'Ej. Gato chico'; n.value = it.nombre;
+        n.addEventListener('input', function () { it.nombre = n.value; });
+        var p = document.createElement('input');
+        p.type = 'number'; p.className = 'panel-nombre-input lp-in-precio'; p.min = '0'; p.step = 'any';
+        p.setAttribute('inputmode', 'decimal'); p.placeholder = '$ precio'; p.value = it.precio;
+        p.addEventListener('input', function () { it.precio = p.value; });
+        var x = document.createElement('button');
+        x.type = 'button'; x.className = 'lp-quitar'; x.textContent = '✕'; x.title = 'Quitar de la lista';
+        x.addEventListener('click', function () { _lpForm[k].splice(i, 1); _lpRender(k); });
+        fila.appendChild(n); fila.appendChild(p); fila.appendChild(x);
+        cont.appendChild(fila);
+    });
+}
+function _lpAgregarFila(k) {
+    if (_lpForm[k].length >= 40) { mostrarToast('Máximo 40 productos en la lista'); return; }
+    _lpForm[k].push({ nombre: '', precio: '' });
+    _lpRender(k);
+    var ins = document.querySelectorAll('#' + _lpIds[k].filas + ' .lp-in-nombre');
+    if (ins.length) ins[ins.length - 1].focus();
+}
+function _cambiarModoPrecio(k) {
+    var revisar = _lpModo(k) === 'revisar';
+    var ids = _lpIds[k];
+    var zp = document.getElementById(ids.zonaPrecio), zl = document.getElementById(ids.zonaLista);
+    if (zp) zp.style.display = revisar ? 'none' : '';
+    if (zl) zl.style.display = revisar ? 'block' : 'none';
+    if (revisar && !_lpForm[k].length) { _lpForm[k].push({ nombre: '', precio: '' }); _lpRender(k); }
+    var zo = document.getElementById(ids.zonaOferta), chk = document.getElementById(ids.chkOferta);
+    if (zo) zo.style.display = (!revisar && chk && chk.checked) ? 'block' : 'none';
+}
+// Carga un modo y una lista en el formulario (al abrir «Editar» o al limpiar «Agregar»)
+function _lpCargar(k, modo, lista) {
+    var radios = document.querySelectorAll('input[name="' + _lpIds[k].radio + '"]');
+    Array.prototype.forEach.call(radios, function (r) { r.checked = (r.value === modo); });
+    _lpForm[k] = (lista || []).map(function (x) { return { nombre: x.nombre, precio: String(x.precio) }; });
+    _lpRender(k);
+    _cambiarModoPrecio(k);
+}
+// Valida la lista del formulario → { ok, lista, minimo } | { ok:false, error }
+function _lpRecolectar(k) {
+    var salida = [], minimo = null;
+    for (var i = 0; i < _lpForm[k].length; i++) {
+        var it = _lpForm[k][i];
+        var nombre = String(it.nombre || '').replace(/[\r\n\t]+/g, ' ').trim();
+        var pr = String(it.precio === undefined ? '' : it.precio).trim();
+        if (!nombre && pr === '') continue;   // renglón vacío: se ignora
+        if (!nombre) return { ok: false, error: 'Falta el nombre de un producto de la lista de precios.' };
+        if (pr === '' || isNaN(Number(pr)) || Number(pr) < 0) return { ok: false, error: 'Escribe un precio válido para «' + nombre + '».' };
+        salida.push({ nombre: nombre, precio: Number(pr) });
+        if (minimo === null || Number(pr) < minimo) minimo = Number(pr);
+    }
+    if (!salida.length) return { ok: false, error: 'Agrega al menos un producto a la lista de precios.' };
+    if (salida.length > 40) return { ok: false, error: 'La lista admite máximo 40 productos.' };
+    return { ok: true, lista: _serializarListaPrecios(salida), minimo: minimo };
+}
+
 // ── Modal de Cantidad ──
 function abrirModalCantidad(card) {
+    if (_esRevisarPrecios(card)) { abrirListaPrecios(card); return; }   // sin precio único: se elige de la lista
     _mcCardActual = card;
     _mcCantidadActual = 1;
     var nombre = card.getAttribute('data-nombre')
@@ -6557,12 +6753,12 @@ function seleccionarTodosEventosProductoEdit() {
 function _toggleZonaOfertaProducto() {
     var chk = document.getElementById('inputEnOfertaProducto');
     var zona = document.getElementById('zonaPrecioOfertaProducto');
-    if (zona) zona.style.display = (chk && chk.checked) ? 'block' : 'none';
+    if (zona) zona.style.display = (chk && chk.checked && _lpModo('add') !== 'revisar') ? 'block' : 'none';
 }
 function _toggleZonaOfertaProductoEdit() {
     var chk = document.getElementById('inputEnOfertaProductoEdit');
     var zona = document.getElementById('zonaPrecioOfertaProductoEdit');
-    if (zona) zona.style.display = (chk && chk.checked) ? 'block' : 'none';
+    if (zona) zona.style.display = (chk && chk.checked && _lpModo('edit') !== 'revisar') ? 'block' : 'none';
 }
 
 async function guardarProductoAdmin() {
@@ -6595,6 +6791,14 @@ async function guardarProductoAdmin() {
     var videoYoutube    = ((document.getElementById('inputVideoYoutubeProducto') || {}).value || '').trim();
     var filaDestino     = ((document.getElementById('inputFilaProducto') || {}).value || '').trim();
     var precioOferta    = ((document.getElementById('inputPrecioOfertaProducto') || {}).value || '').trim();
+
+    // Modo «Revisar precios»: el precio sale de la lista (el más bajo) y no hay mayoreo ni precio de oferta
+    var modoPrecio = _lpModo('add'), listaPrecios = '';
+    if (modoPrecio === 'revisar') {
+        var _rl = _lpRecolectar('add');
+        if (!_rl.ok) { _statusAdmin(_rl.error, true); return; }
+        listaPrecios = _rl.lista; precio = String(_rl.minimo); precioMayoreo = ''; precioOferta = '';
+    }
 
     if (!nombre) {
         _statusAdmin('Escribe el nombre del producto.', true); return;
@@ -6651,6 +6855,8 @@ async function guardarProductoAdmin() {
             video:             videoYoutube,
             filaDestino:       filaDestino,
             precioOferta:      precioOferta,
+            modoPrecio:        modoPrecio === 'revisar' ? 'revisar' : '',
+            listaPrecios:      listaPrecios,
             imagenes:          _adminImagenesProducto.map(function (x) { return x.base64; }),
             imagenesNombres:   _adminImagenesProducto.map(function (x) { return x.nombre; }),
             // Punto de enfoque de CADA imagen ("X,Y" en %), mismo orden que "imagenes".
@@ -6685,6 +6891,7 @@ async function guardarProductoAdmin() {
                 var el = document.getElementById(id);
                 if (el) el.checked = false;
             });
+        _lpCargar('add', 'precio', []);
         _toggleZonaOfertaProducto();
         document.querySelectorAll('.chk-etiqueta-principal-producto:checked').forEach(function (chk) {
             chk.checked = false;
@@ -6809,6 +7016,7 @@ function abrirEdicionProducto(card) {
     _setValorEdit('inputAnchoProductoEdit',          card.getAttribute('data-ancho') || '');
     _setValorEdit('inputStockProductoEdit',          card.getAttribute('data-existencia') || '');
     _setValorEdit('inputPrecioOfertaProductoEdit',   card.getAttribute('data-precio-oferta') || '');
+    _lpCargar('edit', _esRevisarPrecios(card) ? 'revisar' : 'precio', _esRevisarPrecios(card) ? _listaPreciosCard(card) : []);
 
     // ── Etiqueta principal (una o varias) ──
     var tiposCard = (card.getAttribute('data-tipos') || card.getAttribute('data-tipo') || '')
@@ -7061,6 +7269,13 @@ async function guardarEdicionProducto() {
     var videoYoutube    = ((document.getElementById('inputVideoYoutubeProductoEdit') || {}).value || '').trim();
     var precioOferta    = ((document.getElementById('inputPrecioOfertaProductoEdit') || {}).value || '').trim();
 
+    var modoPrecio = _lpModo('edit'), listaPrecios = '';
+    if (modoPrecio === 'revisar') {
+        var _rl = _lpRecolectar('edit');
+        if (!_rl.ok) { _statusEdit(_rl.error, true); return; }
+        listaPrecios = _rl.lista; precio = String(_rl.minimo); precioMayoreo = ''; precioOferta = '';
+    }
+
     if (!nombre) { _statusEdit('Escribe el nombre del producto.', true); return; }
     if (precio === '' || isNaN(Number(precio)) || Number(precio) < 0) {
         _statusEdit('Escribe un precio válido.', true); return;
@@ -7111,6 +7326,8 @@ async function guardarEdicionProducto() {
             ancho:             ancho,
             video:             videoYoutube,
             precioOferta:      precioOferta,
+            modoPrecio:        modoPrecio === 'revisar' ? 'revisar' : '',
+            listaPrecios:      listaPrecios,
             imagenesNuevas:        _editImagenesNuevas.map(function (x) { return x.base64; }),
             imagenesNuevasNombres: _editImagenesNuevas.map(function (x) { return x.nombre; }),
             // Las que quedaron (ya guardadas) después de quitar las que el usuario

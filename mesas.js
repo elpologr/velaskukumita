@@ -731,7 +731,7 @@
             caja.appendChild(h('span', '', '$' + Math.round(oferta)));
             if (normal > 0) caja.appendChild(h('s', '', '$' + Math.round(normal)));
         } else if (normal > 0) {
-            caja.textContent = '$' + Math.round(normal);
+            caja.textContent = (p.modoPrecio === 'revisar' ? 'Desde ' : '') + '$' + Math.round(normal);
         }
         return caja;
     }

@@ -4628,3 +4628,72 @@ body.kk-admin-ui .texto-sobre-imagen-oculto { display: block; opacity: 0.45; out
 body.kk-admin-ui .btn-texto-card { display: flex; }
 .btn-texto-card:disabled { opacity: 0.5; cursor: wait; }
 @media (max-width: 600px) { .btn-texto-card { width: 34px; height: 34px; font-size: 15px; top: 6px; left: 6px; } }
+
+/* ══════════ Revisar precios (productos con varios artículos y precios) ══════════ */
+/* Formularios agregar / editar: elegir el botón de precio */
+.selector-modo-precio { display: flex; gap: 8px; }
+.modo-precio-op { flex: 1 1 0; cursor: pointer; }
+.modo-precio-op input { position: absolute; opacity: 0; pointer-events: none; }
+.modo-precio-op span {
+    display: flex; align-items: center; justify-content: center; text-align: center; min-height: 44px; padding: 8px 10px;
+    border: 1.5px solid #d9cfc8; border-radius: 10px; background: #fff; color: #5c4d43; font-size: 14px; font-weight: 700;
+}
+.modo-precio-op input:checked + span { background: #8c7565; border-color: #8c7565; color: #fff; }
+.modo-precio-op input:focus-visible + span { outline: 2px solid #f5c46b; outline-offset: 2px; }
+body.modo-oscuro .modo-precio-op span { background: #2a211b; border-color: #4a3b32; color: #e8dccf; }
+body.modo-oscuro .modo-precio-op input:checked + span { background: #8c7565; border-color: #8c7565; color: #fff; }
+.lista-precios-filas { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.lp-fila-form { display: flex; gap: 6px; align-items: stretch; }
+.lp-fila-form .lp-in-nombre { flex: 1 1 auto; min-width: 0; }
+.lp-fila-form .lp-in-precio { flex: 0 0 96px; width: 96px; min-width: 0; }
+.lp-quitar {
+    flex: 0 0 auto; width: 38px; border: 1.5px solid #d9cfc8; border-radius: 10px; background: #fff;
+    color: #c0392b; font-size: 15px; font-weight: 700; cursor: pointer;
+}
+.btn-lp-agregar { width: 100%; padding: 10px 14px; }
+
+/* Tarjeta del catálogo: botón en lugar del precio */
+.card-btn-revisar-precios {
+    display: block; width: 100%; padding: 9px 10px; border: none; border-radius: 10px;
+    background: #8c7565; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s;
+}
+.card-btn-revisar-precios:hover { background: #6f5b4d; }
+
+/* Modal del producto */
+.mp-btn-revisar {
+    display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; padding: 13px 10px;
+    border: none; border-radius: 12px; background: #8c7565; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.mp-btn-revisar:hover { background: #6f5b4d; }
+
+/* Submenú con la lista de precios */
+#modalListaPrecios {
+    display: none; position: fixed; inset: 0; z-index: 20000;
+    background: rgba(0,0,0,0.72); backdrop-filter: blur(4px);
+    align-items: flex-end; justify-content: center;
+}
+#modalListaPrecios.abierto { display: flex; }
+.lp-caja {
+    background: #fff; border-radius: 22px 22px 0 0; width: 100%; max-width: 480px; max-height: 85vh;
+    display: flex; flex-direction: column; padding: 0 0 18px;
+    box-shadow: 0 -6px 40px rgba(0,0,0,0.2); animation: slideUpCart 0.3s cubic-bezier(.4,0,.2,1);
+}
+@media (min-width: 540px) { #modalListaPrecios { align-items: center; padding: 16px; } .lp-caja { border-radius: 18px; } }
+.lp-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid #f0eae4; flex: 0 0 auto; }
+.lp-header h3 { margin: 0; font-size: 16px; font-weight: 800; color: #362a22; }
+.lp-producto { padding: 12px 18px 0; font-size: 16px; font-weight: 800; color: #362a22; flex: 0 0 auto; }
+.lp-ayuda { padding: 2px 18px 8px; font-size: 12px; color: #9a8878; flex: 0 0 auto; }
+.lp-lista { overflow-y: auto; overscroll-behavior: contain; padding: 0 18px; flex: 1 1 auto; }
+.lp-fila { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0eae4; }
+.lp-fila:last-child { border-bottom: none; }
+.lp-nombre { flex: 1 1 auto; min-width: 0; font-size: 15px; font-weight: 600; color: #362a22; word-break: break-word; }
+.lp-precio { flex: 0 0 auto; font-size: 15px; font-weight: 800; color: #8c7565; white-space: nowrap; }
+.lp-agregar {
+    flex: 0 0 auto; width: 40px; height: 40px; border: none; border-radius: 50%;
+    background: #362a22; color: #fff; font-size: 17px; cursor: pointer;
+}
+.lp-agregar:active { transform: scale(0.93); }
+body.modo-oscuro .lp-caja { background: #1e1712; }
+body.modo-oscuro .lp-header, body.modo-oscuro .lp-fila { border-color: #3a2e26; }
+body.modo-oscuro .lp-header h3, body.modo-oscuro .lp-producto, body.modo-oscuro .lp-nombre { color: #f0e8e0; }
+body.modo-oscuro .lp-agregar { background: #3a2e26; }
