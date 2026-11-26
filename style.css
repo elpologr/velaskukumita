@@ -4028,7 +4028,7 @@ body.modo-oscuro .cart-total-valor { color: #f0e8e0; }
     box-shadow: 0 2px 12px rgba(140,117,101,0.18);
 }
 #inputBusquedaGlobal::placeholder { color: #bba898; }
-body.busqueda-global-activa .selector-modo-velas-wrap { opacity: 0.5; pointer-events: none; }
+/* con una búsqueda activa los botones de modo siguen disponibles (al tocar uno se borra la búsqueda) */
 body.busqueda-global-activa #bloqueFiltroPrecioArreglos,
 body.busqueda-global-activa #bloqueFiltroPrecioTodos { opacity: 0.4; pointer-events: none; }
 
@@ -4995,3 +4995,13 @@ body.modo-oscuro .glp-nombre { color: #f0e8e0; }
 .lp-sinprecio-chk { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; color: #b3261e; cursor: pointer; white-space: nowrap; }
 .lp-chk-sinprecio { display: flex; align-items: center; gap: 8px; margin: 6px 0 12px; font-size: 14px; font-weight: 700; color: #b3261e; cursor: pointer; }
 .lp-in-precio:disabled { opacity: 0.45; }
+
+/* ── Barra de búsqueda fija del catálogo ── */
+.buscador-catalogo { display: flex; align-items: center; gap: 10px; max-width: 640px; margin: 14px auto 6px; padding: 4px 14px; background: #fff; border: 2px solid #e0d5cc; border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: border-color 0.16s, box-shadow 0.16s; }
+.buscador-catalogo:focus-within { border-color: #8c7565; box-shadow: 0 2px 12px rgba(140,117,101,0.22); }
+.bc-lupa { flex: 0 0 auto; color: #8c7565; }
+.bc-input { flex: 1 1 auto; min-width: 0; border: none; outline: none; background: transparent; padding: 11px 0; font-size: 16px; color: #362a22; font-family: inherit; }
+.bc-input::placeholder { color: #bba898; }
+.bc-limpiar { flex: 0 0 auto; width: 30px; height: 30px; border: none; border-radius: 50%; background: #efe7df; color: #5c4d43; font-size: 14px; font-weight: 800; cursor: pointer; line-height: 1; padding: 0; }
+.bc-limpiar:active { background: #e0d5cc; }
+.bc-resultados { max-width: 640px; margin: 4px auto 0; text-align: center; font-size: 0.95rem; font-weight: 700; color: #8c7565; }

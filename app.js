@@ -5795,7 +5795,25 @@ function _cargarFavoritosFirestore(uid) {
         if (typeof window.actualizarPaginacion === 'function') window.actualizarPaginacion();
     };
 
+    // Escribir en la barra busca solo cuando se deja de teclear un instante (la X y el contador se actualizan al momento)
+    var _tBusquedaGlobal = null;
+    window.busquedaGlobalDebounce = function(valor) {
+        var btnLimpiar = document.getElementById('btnLimpiarGlobal');
+        if (btnLimpiar) btnLimpiar.style.display = (valor || '').trim() ? 'block' : 'none';
+        clearTimeout(_tBusquedaGlobal);
+        _tBusquedaGlobal = setTimeout(function() { window.busquedaGlobal(valor); }, 300);
+    };
+    // Botón «Buscar productos»: lleva a la barra de búsqueda y deja el cursor listo para escribir
+    window.irABuscadorCatalogo = function() {
+        var zona = document.getElementById('zonaBuscadorCatalogo');
+        var input = document.getElementById('inputBusquedaGlobal');
+        if (!zona || !input) return;
+        zona.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(function() { try { input.focus({ preventScroll: true }); } catch (e) { input.focus(); } }, 350);
+    };
+
     window.limpiarBusquedaGlobal = function() {
+        clearTimeout(_tBusquedaGlobal);
         var input    = document.getElementById('inputBusquedaGlobal');
         var btnLimpiar = document.getElementById('btnLimpiarGlobal');
         var infoEl   = document.getElementById('resultadosGlobalInfo');

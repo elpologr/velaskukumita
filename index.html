@@ -30,7 +30,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600;1,700&family=Playfair+Display:ital,wght@0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
     <!-- Estilos externos -->
-    <link rel="stylesheet" href="style.css?v=46">
+    <link rel="stylesheet" href="style.css?v=47">
     <link rel="stylesheet" href="mesas.css?v=4">
 
     <!-- Estilos botones de modo catálogo -->
@@ -1261,13 +1261,12 @@
             <h2 style="font-size: 3.6rem; font-weight: 900; color: #111; letter-spacing: 2px; margin: 0; font-family: 'Playfair Display', Georgia, serif; font-style: italic; line-height: 1.1;">Catálogo</h2>
         </div>
 
-        <!-- Barra de búsqueda global eliminada (queda la de cada categoría) -->
 
         <!-- ===== BOTONES DE MODO: MOSTRAR TODO + PRODUCTOS / ARREGLOS / DECORACIONES / ETIQUETAS ===== -->
         <div class="selector-modo-velas-wrap">
             <!-- Fila 1: un solo botón largo. Fila 2: Filtros de productos / Ofertas / Más Vendidos -->
             <div class="selector-modo-velas" id="selectorModoVelas">
-                <button class="btn-modo-velas btn-modo-mostrar-todo btn-modo-largo activo" id="btnModoTodosProductos" onclick="cambiarModoVelas('mostrar_todo'); document.getElementById('gridProductos').scrollIntoView({behavior:'smooth', block:'start'});">
+                <button class="btn-modo-velas btn-modo-mostrar-todo btn-modo-largo activo" id="btnModoTodosProductos" onclick="cambiarModoVelas('mostrar_todo'); irABuscadorCatalogo();">
                     <span class="btn-modo-velas-emoji">🛍️</span>
                     <span class="btn-modo-velas-label">Buscar productos</span>
                 </button>
@@ -1609,6 +1608,17 @@
         </div>
 
         
+
+<!-- Barra de búsqueda fija del catálogo (justo arriba de los botones de página). «Buscar productos» lleva aquí -->
+<div class="container" id="zonaBuscadorCatalogo" style="padding-bottom:0;">
+    <div class="buscador-catalogo" id="barraGlobal" role="search">
+        <svg class="bc-lupa" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="inputBusquedaGlobal" class="bc-input" placeholder="Buscar productos…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-label="Buscar productos"
+               oninput="busquedaGlobalDebounce(this.value)" onkeydown="if(event.key==='Enter'){ event.preventDefault(); busquedaGlobal(this.value); this.blur(); }">
+        <button type="button" id="btnLimpiarGlobal" class="bc-limpiar" style="display:none;" onclick="limpiarBusquedaGlobal(); document.getElementById('inputBusquedaGlobal').focus();" aria-label="Borrar búsqueda">✕</button>
+    </div>
+    <p class="bc-resultados" id="resultadosGlobalInfo" style="display:none;"></p>
+</div>
 
 <!-- Controles de paginación superiores -->
 <div class="container" style="padding-bottom:0;">
@@ -2249,7 +2259,7 @@
 </div>
 
     <!-- JavaScript externo -->
-    <script src="app.js?v=33"></script>
+    <script src="app.js?v=34"></script>
 <script src="admin-producto-ui.js?v=2"></script>
 <script src="lista-precios-admin.js?v=10"></script>
 <script src="galeria-lista-precios.js?v=3"></script>
