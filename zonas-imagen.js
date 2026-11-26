@@ -15,6 +15,8 @@
 //     · «📸 Capturar y crear producto»: recorta exactamente lo que encierra el recuadro (a la resolución original de la imagen) y abre
 //       «Agregar producto» con esa captura ya puesta como imagen del producto (útil cuando no tienes la foto del artículo),
 //     · «⬇️ Descargar captura a mi PC»: guarda lo que encierra el recuadro como un archivo PNG en tu carpeta de descargas,
+//     · en «Editar producto», al elegir «🔎 Revisar precios» (o con «🔄 Traer productos de los recuadros») los productos anclados
+//       con recuadros se agregan solos a la lista de precios como productos existentes del catálogo,
 //     · borrarlo y guardar todo en la hoja (pestaña «ZonasImagen», la crea sola el Apps Script).
 //   Los recuadros se guardan en porcentajes de la imagen, así que se ven igual en celular y en computadora.
 //   El servidor vuelve a verificar el token y el correo (acción «zonasimagen»); aquí solo se evita mostrar las herramientas.
@@ -581,6 +583,84 @@
             if (edicion === ed) { ed.bGuardar.disabled = false; ed.bCancelar.disabled = false; estado('❌ ' + (err && err.message ? err.message : 'No se pudo guardar'), true); }
         }
     }
+
+    // ── «Revisar precios» en «Editar producto»: traer como lista de precios los productos anclados con recuadros ──
+    // Al elegir «🔎 Revisar precios» (o con el botón «🔄 Traer productos de los recuadros») se leen los recuadros de las imágenes del
+    // producto que se está editando; cada recuadro cuyo producto ya existe en el catálogo se agrega a la lista como «producto existente».
+    // Los que no existen en el catálogo se avisan (hay que crearlos primero). No duplica los que ya están en la lista.
+    var estadoRecuadros = null;
+    function cardEditando() {
+        var fila = (typeof _editFilaActual !== 'undefined' && _editFilaActual) ? String(_editFilaActual) : '';
+        if (!fila) return null;
+        var l = todasLasCards();
+        for (var i = 0; i < l.length; i++) if (l[i].getAttribute('data-sheet-row') === fila) return l[i];
+        return null;
+    }
+    function imagenesDeCard(card) {
+        var a = []; try { a = JSON.parse(card.getAttribute('data-imagenes') || '[]'); } catch (e) { }
+        return a.map(function (u) { return String(u || '').trim(); }).filter(Boolean);
+    }
+    function textoEstado(t, error) { if (!estadoRecuadros) return; estadoRecuadros.textContent = t || ''; estadoRecuadros.className = 'lp-recuadros-estado' + (error ? ' error' : ''); }
+    function traerDeRecuadros(manual) {
+        if (typeof _lpForm === 'undefined' || typeof _lpRender !== 'function') return;
+        var cardProp = cardEditando();
+        if (!cardProp) { if (manual) aviso('Abre un producto con ⚙️ Editar para usar esta opción.'); return; }
+        var zonas = [];
+        imagenesDeCard(cardProp).forEach(function (u) { (mapa[u] || []).forEach(function (z) { zonas.push(z); }); });
+        if (!zonas.length) {
+            textoEstado('Este producto no tiene recuadros sobre su imagen.');
+            if (manual) aviso('Este producto no tiene recuadros sobre su imagen.');
+            return;
+        }
+        var filaProp = cardProp.getAttribute('data-sheet-row');
+        var lista = _lpForm.edit, nuevos = 0, yaEstaban = 0, faltan = [], llena = false;
+        function yaEsta(nombre, img) {
+            var n = norm(nombre);
+            return lista.some(function (it) { return it.existente && norm(it.nombre) === n && String(it.img || '').trim() === img; });
+        }
+        zonas.forEach(function (z) {
+            var nom = norm(z.p), card = null, cs = todasLasCards();
+            for (var i = 0; i < cs.length; i++) if (norm(cs[i].getAttribute('data-nombre')) === nom && cs[i].getAttribute('data-sheet-row') !== filaProp) { card = cs[i]; break; }
+            if (!card) { if (faltan.indexOf(z.p) === -1) faltan.push(z.p); return; }
+            var nombre = (card.getAttribute('data-nombre') || '').trim();
+            var img = (imagenesDeCard(card)[0] || ''); if (!/^https:\/\//i.test(img)) img = '';
+            if (yaEsta(nombre, img)) { yaEstaban++; return; }
+            if (lista.length >= 40) { llena = true; return; }
+            var modo = card.getAttribute('data-modo-precio') || '';
+            lista.push({ nombre: nombre, precio: (modo === 'revisar' || modo === 'sinprecio') ? '' : String(card.getAttribute('data-precio') || ''), img: img, existente: true, sinPrecio: modo === 'sinprecio' });
+            nuevos++;
+        });
+        _lpRender('edit');
+        var partes = [];
+        partes.push(nuevos ? ('✅ ' + nuevos + ' producto(s) añadido(s) desde los recuadros') : 'No hay productos nuevos que añadir');
+        if (yaEstaban) partes.push(yaEstaban + ' ya estaba(n) en la lista');
+        if (nuevos) partes.push('revisa su precio');
+        var txt = partes.join(' · ') + '.';
+        if (faltan.length) txt += ' ⚠️ No existen en el catálogo (créalos primero): ' + faltan.join(', ') + '.';
+        if (llena) txt += ' La lista llegó al máximo de 40.';
+        textoEstado(txt, !!faltan.length || llena);
+        if (nuevos || manual) aviso(nuevos ? ('✅ ' + nuevos + ' producto(s) añadido(s) desde los recuadros') : 'No hay productos nuevos que añadir desde los recuadros');
+    }
+    (function montarRevisarDesdeRecuadros() {
+        var zona = document.getElementById('zonaListaPreciosProductoEdit');
+        if (zona) {
+            var b = boton('🔄 Traer productos de los recuadros', 'btn-nueva-etiqueta btn-lp-agregar');
+            b.title = 'Agrega a la lista los productos que ya anclaste con recuadros sobre la imagen';
+            b.addEventListener('click', function () { traerDeRecuadros(true); });
+            estadoRecuadros = el('div', 'lp-recuadros-estado');
+            var primero = zona.querySelector('.btn-lp-agregar');
+            if (primero) { zona.insertBefore(b, primero); zona.insertBefore(estadoRecuadros, primero); } else { zona.appendChild(b); zona.appendChild(estadoRecuadros); }
+        }
+        Array.prototype.forEach.call(document.querySelectorAll('input[name="modoPrecioProductoEdit"]'), function (r) {
+            r.addEventListener('change', function () {
+                if (r.value !== 'revisar' || !r.checked) return;
+                setTimeout(function () { textoEstado(''); traerDeRecuadros(false); }, 0);   // después de que app.js muestre la lista
+            });
+        });
+        // Al abrir otro producto para editarlo, se borra el mensaje anterior
+        var pe = document.getElementById('pantallaEditarProducto');
+        if (pe) new MutationObserver(function () { if (pe.classList.contains('activo')) textoEstado(''); }).observe(pe, { attributes: true, attributeFilter: ['class'] });
+    })();
 
     // ── Arranque ──
     var track = document.getElementById('modalGaleriaTrack');

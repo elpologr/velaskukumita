@@ -5200,3 +5200,9 @@ body.modo-oscuro .zi-b-captura { background: #3d3020; border-color: #7a5d2c; col
 .zi-fila-captura[hidden] { display: none; }
 .zi-fila-captura { flex-wrap: wrap; }
 .zi-fila-captura .zi-b { min-width: 140px; }
+/* Mensaje bajo «Traer productos de los recuadros» (zonas-imagen.js) */
+.lp-recuadros-estado { margin: 6px 0 8px; font-size: 12.5px; line-height: 1.4; color: #8c7565; }
+.lp-recuadros-estado:empty { display: none; }
+.lp-recuadros-estado.error { color: #b3261e; font-weight: 700; }
+body.modo-oscuro .lp-recuadros-estado { color: #c9b8a4; }
+body.modo-oscuro .lp-recuadros-estado.error { color: #ff9aa8; }
