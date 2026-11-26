@@ -4989,3 +4989,9 @@ body.modo-oscuro .lp-editar-datos { background: #3a2e26; color: #f0e8e0; border-
 @media (hover: hover) { .glp-flecha:hover { background: #fff; } }
 body.modo-oscuro .glp-marco { background: #3a2e26; }
 body.modo-oscuro .glp-nombre { color: #f0e8e0; }
+
+/* ── «Sin precio» en la lista de «Revisar precios» (formularios) ── */
+.lp-precio-wrap { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; flex: 0 0 auto; }
+.lp-sinprecio-chk { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; color: #b3261e; cursor: pointer; white-space: nowrap; }
+.lp-chk-sinprecio { display: flex; align-items: center; gap: 8px; margin: 6px 0 12px; font-size: 14px; font-weight: 700; color: #b3261e; cursor: pointer; }
+.lp-in-precio:disabled { opacity: 0.45; }

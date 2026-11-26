@@ -230,17 +230,18 @@ function _parseListaPrecios(texto) {
         var p = t.split('::');
         if (p.length < 2) return null;
         var nombre = p[0].trim();
-        var precio = parseFloat(p[1]);
+        var sinPrecio = String(p[1]).trim().toLowerCase() === 'sinprecio';   // artículo al que aún no se le pone precio
+        var precio = sinPrecio ? 0 : parseFloat(p[1]);
         if (!nombre || isNaN(precio)) return null;
         var img = (p[2] || '').trim();
         if (!/^https:\/\//i.test(img)) img = '';
-        return { nombre: nombre, precio: precio, img: img };
+        return sinPrecio ? { nombre: nombre, precio: 0, img: img, sinPrecio: true } : { nombre: nombre, precio: precio, img: img };
     }).filter(Boolean);
 }
 function _serializarListaPrecios(lista) {
     return (lista || []).map(function (x) {
         var img = /^https:\/\//i.test(x.img || '') ? String(x.img).replace(/(::|;;|\s)/g, '') : '';
-        return String(x.nombre).replace(/(::|;;)/g, ' ').trim() + '::' + x.precio + (img ? '::' + img : '');
+        return String(x.nombre).replace(/(::|;;)/g, ' ').trim() + '::' + (x.sinPrecio ? 'sinprecio' : x.precio) + (img ? '::' + img : '');
     }).join(';;');
 }
 function _listaPreciosCard(card) {
@@ -4578,10 +4579,15 @@ function abrirListaPrecios(card) {
             fila.appendChild(im);
         }
         var n = document.createElement('div'); n.className = 'lp-nombre'; n.textContent = it.nombre;
-        var pr = document.createElement('div'); pr.className = 'lp-precio'; pr.textContent = _formatoPrecio(it.precio);
+        var pr = document.createElement('div'); pr.className = 'lp-precio'; pr.textContent = it.sinPrecio ? 'Sin precio' : _formatoPrecio(it.precio);
         var b = document.createElement('button'); b.type = 'button'; b.className = 'lp-agregar';
-        b.setAttribute('aria-label', 'Añadir ' + it.nombre + ' al carrito'); b.textContent = '🛒';
-        b.addEventListener('click', function () { _agregarItemListaCarrito(card, it); });
+        if (it.sinPrecio) {   // sin precio no se cotiza en el carrito: se consulta por WhatsApp
+            b.setAttribute('aria-label', 'Consultar el precio de ' + it.nombre); b.textContent = '💬';
+            b.addEventListener('click', function () { _consultarPrecioWA(nombre + ' — ' + it.nombre); });
+        } else {
+            b.setAttribute('aria-label', 'Añadir ' + it.nombre + ' al carrito'); b.textContent = '🛒';
+            b.addEventListener('click', function () { _agregarItemListaCarrito(card, it); });
+        }
         fila.appendChild(n); fila.appendChild(pr); fila.appendChild(b);
         cont.appendChild(fila);
     });
@@ -4662,10 +4668,19 @@ function _lpRender(k) {
         p.type = 'number'; p.className = 'panel-nombre-input lp-in-precio'; p.min = '0'; p.step = 'any';
         p.setAttribute('inputmode', 'decimal'); p.placeholder = '$ precio'; p.value = it.precio;
         p.addEventListener('input', function () { it.precio = p.value; if (it.nuevo) it.nuevo.precio = p.value; });
+        var pw = document.createElement('div'); pw.className = 'lp-precio-wrap';
+        var lsp = document.createElement('label'); lsp.className = 'lp-sinprecio-chk';
+        var csp = document.createElement('input'); csp.type = 'checkbox'; csp.checked = !!it.sinPrecio;
+        var tsp = document.createElement('span'); tsp.textContent = 'Sin precio';
+        lsp.appendChild(csp); lsp.appendChild(tsp);
+        function aplicarSP() { p.disabled = !!it.sinPrecio; if (it.sinPrecio) p.value = ''; }
+        csp.addEventListener('change', function () { it.sinPrecio = csp.checked; if (csp.checked) { it.precio = ''; if (it.nuevo) it.nuevo.precio = ''; } aplicarSP(); });
+        aplicarSP();
+        pw.appendChild(p); pw.appendChild(lsp);
         var x = document.createElement('button');
         x.type = 'button'; x.className = 'lp-quitar'; x.textContent = '✕'; x.title = 'Quitar de la lista';
         x.addEventListener('click', function () { _lpForm[k].splice(i, 1); _lpRender(k); });
-        fila.appendChild(_lpCrearControlOrden(k, i, fila)); fila.appendChild(foto); fila.appendChild(centro); fila.appendChild(p); fila.appendChild(x);
+        fila.appendChild(_lpCrearControlOrden(k, i, fila)); fila.appendChild(foto); fila.appendChild(centro); fila.appendChild(pw); fila.appendChild(x);
         cont.appendChild(fila);
     });
 }
@@ -4728,7 +4743,7 @@ function _cambiarModoPrecio(k) {
 function _lpCargar(k, modo, lista) {
     var radios = document.querySelectorAll('input[name="' + _lpIds[k].radio + '"]');
     Array.prototype.forEach.call(radios, function (r) { r.checked = (r.value === modo); });
-    _lpForm[k] = (lista || []).map(function (x) { return { nombre: x.nombre, precio: String(x.precio), img: x.img || '' }; });
+    _lpForm[k] = (lista || []).map(function (x) { return { nombre: x.nombre, precio: x.sinPrecio ? '' : String(x.precio), img: x.img || '', sinPrecio: !!x.sinPrecio }; });
     _lpRender(k);
     _cambiarModoPrecio(k);
 }
@@ -4740,14 +4755,17 @@ function _lpRecolectar(k) {
         var it = _lpForm[k][i];
         var nombre = String(it.nombre || '').replace(/[\r\n\t]+/g, ' ').trim();
         var pr = String(it.precio === undefined ? '' : it.precio).trim();
-        if (!nombre && pr === '') continue;   // renglón vacío: se ignora
+        var sp = !!it.sinPrecio;
+        if (!nombre && pr === '' && !sp) continue;   // renglón vacío: se ignora
         if (!nombre) return { ok: false, error: 'Falta el nombre de un producto de la lista de precios.' };
+        if (sp) { salida.push({ ref: it, nombre: nombre, precio: 0, sinPrecio: true }); continue; }   // «Sin precio»: no cuenta para el «Desde»
         if (pr === '' || isNaN(Number(pr)) || Number(pr) < 0) return { ok: false, error: 'Escribe un precio válido para «' + nombre + '».' };
         salida.push({ ref: it, nombre: nombre, precio: Number(pr) });
         if (minimo === null || Number(pr) < minimo) minimo = Number(pr);
     }
     if (!salida.length) return { ok: false, error: 'Agrega al menos un producto a la lista de precios.' };
     if (salida.length > 40) return { ok: false, error: 'La lista admite máximo 40 productos.' };
+    if (minimo === null) return { ok: false, error: 'Al menos un producto de la lista debe tener precio (con él se muestra el «Desde $…»).' };
     return { ok: true, items: salida, minimo: minimo };
 }
 // Sube las imágenes pendientes y crea los productos nuevos de la lista; devuelve el texto para la columna U.
@@ -4760,9 +4778,9 @@ async function _lpResolverParaGuardar(rl, idToken, avisar) {
             var n = it.nuevo;
             var cuerpoN = {
                 idToken: idToken, nombre: e.nombre, textoImagen: n.textoImagen || '', mostrarTextoImagen: 'si',
-                descripcion: n.descripcion || '', precio: String(e.precio), precioMayoreo: n.mayoreo || '', existencia: n.existencia || '',
+                descripcion: n.descripcion || '', precio: e.sinPrecio ? '0' : String(e.precio), precioMayoreo: e.sinPrecio ? '' : (n.mayoreo || ''), existencia: n.existencia || '',
                 etiquetaPrincipal: n.etiquetaPrincipal || '', etiquetaEvento: n.etiquetaEvento || '', enOferta: '', masVendido: '',
-                alto: n.alto || '', ancho: n.ancho || '', video: '', filaDestino: '', precioOferta: '', modoPrecio: '', listaPrecios: '',
+                alto: n.alto || '', ancho: n.ancho || '', video: '', filaDestino: '', precioOferta: '', modoPrecio: e.sinPrecio ? 'sinprecio' : '', listaPrecios: '',
                 imagenes: [it.imgData.base64], imagenesNombres: [it.imgData.nombre], enfoques: [n.enfoque || '50,0']
             };
             var rN = await fetch(ADMIN_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(cuerpoN) });
@@ -4777,7 +4795,7 @@ async function _lpResolverParaGuardar(rl, idToken, avisar) {
             if (!dI.ok) throw new Error('No se pudo subir la imagen de «' + e.nombre + '»: ' + (dI.error || 'error del servidor'));
             it.img = dI.url; it.imgData = null;
         }
-        lista.push({ nombre: e.nombre, precio: e.precio, img: it.img || '' });
+        lista.push({ nombre: e.nombre, precio: e.precio, img: it.img || '', sinPrecio: !!e.sinPrecio });
     }
     return _serializarListaPrecios(lista);
 }

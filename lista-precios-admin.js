@@ -284,6 +284,10 @@
         var iAncho = entrada('text', 'Opcional, ej. 8 cm');
         var iStock = entrada('number', 'Opcional');
         var filaPrecios = el('div', 'fila-campos-dobles'); filaPrecios.appendChild(campo('Precio', iPrecio)); filaPrecios.appendChild(campo('Precio de mayoreo', iMayoreo));
+        // «Sin precio»: el producto se crea ya y el precio se pone en otra ocasión
+        var lblSP = el('label', 'lp-chk-sinprecio'); var chkSP = document.createElement('input'); chkSP.type = 'checkbox';
+        lblSP.appendChild(chkSP); lblSP.appendChild(el('span', '', 'Sin precio (lo pondré en otra ocasión)'));
+        chkSP.addEventListener('change', function () { iPrecio.disabled = chkSP.checked; iMayoreo.disabled = chkSP.checked; if (chkSP.checked) { iPrecio.value = ''; iMayoreo.value = ''; } });
         var filaMedidas = el('div', 'fila-campos-dobles'); filaMedidas.appendChild(campo('Alto', iAlto)); filaMedidas.appendChild(campo('Ancho', iAncho));
 
         var selP = kActual === 'edit' ? '.chk-etiqueta-principal-producto-edit' : '.chk-etiqueta-principal-producto';
@@ -327,6 +331,7 @@
             iMayoreo.value = n0.mayoreo || ''; iDesc.value = n0.descripcion || '';
             iAlto.value = n0.alto || ''; iAncho.value = n0.ancho || ''; iStock.value = n0.existencia || '';
             iTexto.value = n0.textoImagen || plantilla;
+            if (editItem.sinPrecio) { chkSP.checked = true; iPrecio.value = ''; iMayoreo.value = ''; iPrecio.disabled = true; iMayoreo.disabled = true; }
             function marcar(g, lista) {
                 var v = String(lista || '').split('|').filter(Boolean);
                 Array.prototype.forEach.call(g.querySelectorAll('input[type="checkbox"]'), function (c) { c.checked = v.indexOf(c.value) !== -1; });
@@ -337,11 +342,12 @@
         var agregar = el('button', 'slp-btn-listo slp-btn-agregar', editItem ? '💾 Guardar cambios' : '➕ Agregar a la lista'); agregar.type = 'button';
         agregar.addEventListener('click', function () {
             var nombre = iNombre.value.replace(/[\r\n\t]+/g, ' ').trim();
-            var precio = iPrecio.value.trim(), mayoreo = iMayoreo.value.trim(), stock = iStock.value.trim();
+            var sinPrecio = chkSP.checked;
+            var precio = sinPrecio ? '' : iPrecio.value.trim(), mayoreo = sinPrecio ? '' : iMayoreo.value.trim(), stock = iStock.value.trim();
             function error(m) { estado.textContent = m; estado.className = 'slp-estado error'; }
             if (!imgData) return error('Agrega la imagen del producto.');
             if (!nombre) return error('Escribe el nombre del producto.');
-            if (precio === '' || isNaN(Number(precio)) || Number(precio) < 0) return error('Escribe un precio válido.');
+            if (!sinPrecio && (precio === '' || isNaN(Number(precio)) || Number(precio) < 0)) return error('Escribe un precio válido o marca «Sin precio».');
             if (mayoreo !== '' && (isNaN(Number(mayoreo)) || Number(mayoreo) < 0)) return error('El precio de mayoreo debe ser un número válido.');
             if (stock !== '' && (isNaN(Number(stock)) || Number(stock) < 0)) return error('La existencia debe ser un número.');
             if (!editItem && _lpForm[kActual].length >= 40) return error('Máximo 40 productos en la lista.');
@@ -350,12 +356,12 @@
             var datosNuevo = { textoImagen: textoActual().substring(0, 60), enfoque: enfX + ',' + enfY, precio: precio, mayoreo: mayoreo, descripcion: iDesc.value.trim(), alto: iAlto.value.trim(), ancho: iAncho.value.trim(),
                          existencia: stock, etiquetaPrincipal: principales, etiquetaEvento: eventos };
             if (editItem) {
-                editItem.nombre = nombre; editItem.precio = precio; editItem.imgData = imgData; editItem.nuevo = datosNuevo;
+                editItem.nombre = nombre; editItem.precio = precio; editItem.sinPrecio = sinPrecio; editItem.imgData = imgData; editItem.nuevo = datosNuevo;
                 aviso('✅ Cambios guardados en «' + nombre + '»');
                 cerrar();   // vuelve a la lista del formulario ya actualizada
                 return;
             }
-            _lpForm[kActual].push({ nombre: nombre, precio: precio, img: '', imgData: imgData, creado: false, nuevo: datosNuevo });
+            _lpForm[kActual].push({ nombre: nombre, precio: precio, sinPrecio: sinPrecio, img: '', imgData: imgData, creado: false, nuevo: datosNuevo });
             if (typeof _lpRender === 'function') _lpRender(kActual);   // la lista del formulario se actualiza al instante
             aviso('✅ «' + nombre + '» se creará como producto nuevo al guardar');
             mostrarMenu();
@@ -365,6 +371,7 @@
         cuerpo.appendChild(campo('Nombre del producto', iNombre));
         cuerpo.appendChild(campo('Texto sobre la imagen (opcional)', iTexto));
         cuerpo.appendChild(filaPrecios);
+        cuerpo.appendChild(lblSP);
         var campoDesc = campo('Descripción', iDesc);
         cuerpo.appendChild(campoDesc);
         if (typeof window.montarDescripcionesFijas === 'function') window.montarDescripcionesFijas(iDesc);   // botones de descripciones fijas (marcan también la etiqueta del mismo nombre)
