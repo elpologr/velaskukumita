@@ -4935,3 +4935,31 @@ body.modo-oscuro .fp-caja { background: #2a211b; color: #f0e6da; }
 body.modo-oscuro .fp-producto { color: #b8a898; }
 body.modo-oscuro .fp-campo input { background: #1c1510; border-color: #4a3b30; color: #f0e6da; }
 body.modo-oscuro .fp-cancelar { background: #3a2e26; color: #f0e6da; }
+
+/* ══════════════════════════════════════════════════════════════
+   Botón «Pantalla completa» en «Elegir qué se ve en el catálogo» y visor de la imagen
+   ══════════════════════════════════════════════════════════════ */
+.recorte-header-acciones { display: flex; align-items: center; gap: 8px; }
+.btn-pantalla-completa {
+    padding: 6px 10px; border: none; border-radius: 16px; background: #eee1d6; color: #362a22;
+    font-size: 12.5px; font-weight: 700; cursor: pointer; white-space: nowrap;
+}
+.btn-pantalla-completa:active { background: #ddc9b8; }
+body.modo-oscuro .btn-pantalla-completa { background: #3a2e26; color: #e8ddd5; }
+.visor-img-completa {
+    position: fixed; inset: 0; z-index: 12000; background: #000; overflow: auto;
+    display: flex; align-items: center; justify-content: center; -webkit-overflow-scrolling: touch;
+}
+.visor-img-completa .vic-img { max-width: 100%; max-height: 100%; object-fit: contain; cursor: zoom-in; user-select: none; -webkit-user-drag: none; }
+.visor-img-completa.vic-zoom { display: block; }
+.visor-img-completa.vic-zoom .vic-img { max-width: none; max-height: none; width: 250%; cursor: zoom-out; }
+.vic-cerrar {
+    position: fixed; top: calc(10px + env(safe-area-inset-top, 0px)); right: 10px; width: 38px; height: 38px;
+    border: none; border-radius: 50%; background: rgba(0,0,0,0.45); color: #fff; font-size: 18px; cursor: pointer; opacity: 0.55;
+}
+.vic-hint {
+    position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+    padding: 7px 14px; border-radius: 16px; background: rgba(0,0,0,0.6); color: #fff; font-size: 13px; white-space: nowrap;
+    pointer-events: none; animation: vicHintFuera 0.4s ease 3s forwards;
+}
+@keyframes vicHintFuera { to { opacity: 0; visibility: hidden; } }

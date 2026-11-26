@@ -6,6 +6,8 @@
 //      (el botón de siempre sigue funcionando igual).
 //   2. «Etiqueta principal» y «Etiqueta de evento» se muestran como dos botones: al presionar uno se despliegan sus
 //      opciones y se pliegan las del otro (nunca están abiertas las dos a la vez). Cada botón muestra cuántas hay marcadas.
+//   3. Dentro de «Elegir qué se ve en el catálogo» (botón ⋮ de cada imagen) hay un botón «Pantalla completa» para ver la imagen
+//      grande y sacar capturas (por ejemplo, de los productos de una lista de «Revisar precios»).
 // ══════════════════════════════════════════════════════════════════════════════
 (function () {
     'use strict';
@@ -102,4 +104,48 @@
     }
     montarAcordeon('pantallaAdminProductos');
     montarAcordeon('pantallaEditarProducto');
+
+    // ── 3. Imagen a pantalla completa ──
+    (function () {
+        var imgModal = document.getElementById('recorteGrandeImg');
+        var cab = document.querySelector('#overlayRecorteImagen .modal-recorte-header');
+        if (!imgModal || !cab) return;
+        var cerrarBtn = cab.querySelector('.btn-cerrar-recorte');
+
+        var btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'btn-pantalla-completa';
+        btn.textContent = '⛶ Pantalla completa';
+        btn.title = 'Ver esta imagen grande, sin nada encima, para sacar una captura';
+        var acciones = document.createElement('div'); acciones.className = 'recorte-header-acciones';
+        acciones.appendChild(btn);
+        if (cerrarBtn) { cab.insertBefore(acciones, cerrarBtn); acciones.appendChild(cerrarBtn); } else cab.appendChild(acciones);
+
+        var visor = null;
+        function teclas(e) { if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); cerrar(); } }
+        function cerrar() {
+            if (!visor) return;
+            visor.remove(); visor = null;
+            document.removeEventListener('keydown', teclas, true);
+            var fs = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fs) { try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) { } }
+        }
+        function abrir() {
+            var src = imgModal.getAttribute('src') || imgModal.src;
+            if (!src) return;
+            cerrar();
+            visor = document.createElement('div'); visor.className = 'visor-img-completa';
+            var im = document.createElement('img'); im.className = 'vic-img'; im.src = src; im.alt = 'Imagen a pantalla completa'; im.draggable = false;
+            im.addEventListener('click', function () { visor.classList.toggle('vic-zoom'); });   // un toque acerca, otro toque vuelve a ajustar
+            var x = document.createElement('button'); x.type = 'button'; x.className = 'vic-cerrar'; x.textContent = '✕'; x.setAttribute('aria-label', 'Cerrar pantalla completa');
+            x.addEventListener('click', cerrar);
+            var hint = document.createElement('div'); hint.className = 'vic-hint'; hint.textContent = 'Toca la imagen para acercarla · ✕ o Esc para salir';
+            visor.appendChild(im); visor.appendChild(x); visor.appendChild(hint);
+            document.body.appendChild(visor);
+            document.addEventListener('keydown', teclas, true);
+            var rf = visor.requestFullscreen || visor.webkitRequestFullscreen;   // en iPhone no existe: queda cubriendo toda la pantalla
+            if (rf) { try { var p = rf.call(visor); if (p && p.catch) p.catch(function () { }); } catch (e) { } }
+        }
+        btn.addEventListener('click', abrir);
+        window.addEventListener('popstate', cerrar);   // el botón «atrás» del teléfono también lo cierra
+    })();
 })();

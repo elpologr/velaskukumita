@@ -5,6 +5,7 @@
 //   Debajo del campo «Descripción» de «Agregar producto» y «Editar producto» hay un botón por cada descripción fija guardada
 //   (ej. «Mascotas»). Al tocarlo, su texto se escribe en la descripción. Con «➕ Nueva descripción fija» se crea otra: nombre + texto.
 //   Quedan guardadas para siempre en la pestaña «DescripcionesFijas» de la hoja (la crea sola el Apps Script).
+//   Si existe una etiqueta principal con el mismo nombre que la descripción fija (ej. «Mascotas»), al tocar el botón también se marca esa etiqueta.
 // ══════════════════════════════════════════════════════════════════════════════
 (function () {
     'use strict';
@@ -16,6 +17,26 @@
     function el(tag, cls, texto) { var e = document.createElement(tag); if (cls) e.className = cls; if (texto !== undefined) e.textContent = texto; return e; }
     function aviso(m) { if (typeof mostrarToast === 'function') mostrarToast(m); }
     function limpiarNombre(t) { return String(t || '').replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/^[=+\-@]+/, '').trim().substring(0, 40); }
+
+    // ── Marcar la etiqueta principal que se llame igual que la descripción fija (ej. «Mascotas») ──
+    function norm(t) { return String(t || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' '); }
+    function activarEtiqueta(ta, nombre) {
+        var pant = ta.closest ? ta.closest('#pantallaAdminProductos, #pantallaEditarProducto') : null;
+        if (!pant) return;
+        var buscado = norm(nombre);
+        var casillas = pant.querySelectorAll('.chk-etiqueta-principal-producto, .chk-etiqueta-principal-producto-edit');
+        for (var i = 0; i < casillas.length; i++) {
+            var chk = casillas[i];
+            var sp = chk.parentNode ? chk.parentNode.querySelector('span') : null;
+            if (norm(chk.value) === buscado || (sp && norm(sp.textContent) === buscado)) {
+                if (!chk.checked) {
+                    chk.checked = true;
+                    chk.dispatchEvent(new Event('change', { bubbles: true }));   // actualiza el contador del botón «Etiqueta principal»
+                }
+                return;
+            }
+        }
+    }
 
     // ── Escribir una descripción fija en el campo ──
     function insertar(ta, texto) {
@@ -98,7 +119,7 @@
         lista.forEach(function (d) {
             var chip = el('span', 'dfj-chip');
             var usar = el('button', 'dfj-usar', d.nombre); usar.type = 'button'; usar.title = d.texto;
-            usar.addEventListener('click', function () { insertar(m.ta, d.texto); });
+            usar.addEventListener('click', function () { activarEtiqueta(m.ta, d.nombre); insertar(m.ta, d.texto); });
             var borrar = el('button', 'dfj-borrar', '✕'); borrar.type = 'button'; borrar.title = 'Borrar esta descripción fija'; borrar.setAttribute('aria-label', 'Borrar ' + d.nombre);
             borrar.addEventListener('click', async function () {
                 if (ocupado) return;
