@@ -223,20 +223,24 @@ function parsearCSV(texto) {
 
 // ── Convierte filas CSV en objetos de producto ──
 // ── Lista de precios de un producto («Revisar precios») ──
-// Se guarda en la hoja como "Nombre::precio;;Nombre::precio".
+// Se guarda en la hoja como "Nombre::precio::urlImagen;;Nombre::precio::urlImagen".
+// La imagen de cada artículo es opcional (las listas antiguas "Nombre::precio" siguen funcionando).
 function _parseListaPrecios(texto) {
     return String(texto || '').split(';;').map(function (t) {
-        var k = t.lastIndexOf('::');
-        if (k < 0) return null;
-        var nombre = t.slice(0, k).trim();
-        var precio = parseFloat(t.slice(k + 2));
+        var p = t.split('::');
+        if (p.length < 2) return null;
+        var nombre = p[0].trim();
+        var precio = parseFloat(p[1]);
         if (!nombre || isNaN(precio)) return null;
-        return { nombre: nombre, precio: precio };
+        var img = (p[2] || '').trim();
+        if (!/^https:\/\//i.test(img)) img = '';
+        return { nombre: nombre, precio: precio, img: img };
     }).filter(Boolean);
 }
 function _serializarListaPrecios(lista) {
     return (lista || []).map(function (x) {
-        return String(x.nombre).replace(/(::|;;)/g, ' ').trim() + '::' + x.precio;
+        var img = /^https:\/\//i.test(x.img || '') ? String(x.img).replace(/(::|;;|\s)/g, '') : '';
+        return String(x.nombre).replace(/(::|;;)/g, ' ').trim() + '::' + x.precio + (img ? '::' + img : '');
     }).join(';;');
 }
 function _listaPreciosCard(card) {
@@ -4518,6 +4522,11 @@ function abrirListaPrecios(card) {
     lista.forEach(function (it) {
         var fila = document.createElement('div');
         fila.className = 'lp-fila';
+        if (it.img) {
+            var im = document.createElement('img'); im.className = 'lp-img'; im.src = it.img; im.alt = it.nombre; im.loading = 'lazy';
+            im.addEventListener('click', function () { if (typeof abrirVisorImagenLista === 'function') abrirVisorImagenLista(it.img, it.nombre); });
+            fila.appendChild(im);
+        }
         var n = document.createElement('div'); n.className = 'lp-nombre'; n.textContent = it.nombre;
         var pr = document.createElement('div'); pr.className = 'lp-precio'; pr.textContent = _formatoPrecio(it.precio);
         var b = document.createElement('button'); b.type = 'button'; b.className = 'lp-agregar';
@@ -4543,8 +4552,8 @@ function _agregarItemListaCarrito(card, it) {
     var nombre = base + ' — ' + it.nombre;
     var imagenes = [];
     try { imagenes = JSON.parse(card.getAttribute('data-imagenes') || '[]'); } catch (e) {}
-    var imgSrc = imagenes[0] || ((card.querySelector('.img-contenedor-dinamico img') || {}).src) || '';
-    var enfoqueImg = card.getAttribute('data-enfoque-imagen') || '';
+    var imgSrc = it.img || imagenes[0] || ((card.querySelector('.img-contenedor-dinamico img') || {}).src) || '';
+    var enfoqueImg = it.img ? '' : (card.getAttribute('data-enfoque-imagen') || '');
     var existente = carrito.find(function (i) { return i.nombre === nombre; });
     if (existente) {
         existente.cantidad = Math.min(_CARRITO_MAX_PIEZAS, existente.cantidad + 1);
@@ -4575,30 +4584,40 @@ function _lpRender(k) {
     var cont = document.getElementById(_lpIds[k].filas);
     if (!cont) return;
     cont.innerHTML = '';
+    if (!_lpForm[k].length) {
+        var vac = document.createElement('div'); vac.className = 'lp-vacio-form';
+        vac.textContent = 'Todavía no hay productos en la lista. Toca «Agregar producto a la lista».';
+        cont.appendChild(vac);
+    }
     _lpForm[k].forEach(function (it, i) {
         var fila = document.createElement('div');
-        fila.className = 'lp-fila-form';
+        fila.className = 'lp-fila-form lp-fila-form-img';
+        var foto = document.createElement('div'); foto.className = 'lp-miniatura';
+        var src = it.imgData ? it.imgData.dataUrl : (it.img || '');
+        if (src) { var im = document.createElement('img'); im.src = src; im.alt = ''; foto.appendChild(im); } else { foto.textContent = '🖼️'; }
+        var centro = document.createElement('div'); centro.className = 'lp-centro-form';
         var n = document.createElement('input');
         n.type = 'text'; n.className = 'panel-nombre-input lp-in-nombre'; n.maxLength = 80;
-        n.placeholder = 'Ej. Gato chico'; n.value = it.nombre;
+        n.placeholder = 'Nombre del producto'; n.value = it.nombre;
         n.addEventListener('input', function () { it.nombre = n.value; });
+        var etiqueta = document.createElement('span'); etiqueta.className = 'lp-origen';
+        etiqueta.textContent = it.nuevo ? (it.creado ? '🆕 Producto nuevo (ya creado)' : '🆕 Se creará como producto nuevo al guardar') : (it.existente ? '📚 Producto existente' : '');
+        centro.appendChild(n); if (etiqueta.textContent) centro.appendChild(etiqueta);
         var p = document.createElement('input');
         p.type = 'number'; p.className = 'panel-nombre-input lp-in-precio'; p.min = '0'; p.step = 'any';
         p.setAttribute('inputmode', 'decimal'); p.placeholder = '$ precio'; p.value = it.precio;
-        p.addEventListener('input', function () { it.precio = p.value; });
+        p.addEventListener('input', function () { it.precio = p.value; if (it.nuevo) it.nuevo.precio = p.value; });
         var x = document.createElement('button');
         x.type = 'button'; x.className = 'lp-quitar'; x.textContent = '✕'; x.title = 'Quitar de la lista';
         x.addEventListener('click', function () { _lpForm[k].splice(i, 1); _lpRender(k); });
-        fila.appendChild(n); fila.appendChild(p); fila.appendChild(x);
+        fila.appendChild(foto); fila.appendChild(centro); fila.appendChild(p); fila.appendChild(x);
         cont.appendChild(fila);
     });
 }
+// «➕ Agregar producto a la lista»: abre el submenú (ver lista-precios-admin.js)
 function _lpAgregarFila(k) {
     if (_lpForm[k].length >= 40) { mostrarToast('Máximo 40 productos en la lista'); return; }
-    _lpForm[k].push({ nombre: '', precio: '' });
-    _lpRender(k);
-    var ins = document.querySelectorAll('#' + _lpIds[k].filas + ' .lp-in-nombre');
-    if (ins.length) ins[ins.length - 1].focus();
+    if (typeof abrirSubmenuListaPrecios === 'function') abrirSubmenuListaPrecios(k);
 }
 function _cambiarModoPrecio(k) {
     var revisar = _lpModo(k) === 'revisar';
@@ -4606,7 +4625,7 @@ function _cambiarModoPrecio(k) {
     var zp = document.getElementById(ids.zonaPrecio), zl = document.getElementById(ids.zonaLista);
     if (zp) zp.style.display = revisar ? 'none' : '';
     if (zl) zl.style.display = revisar ? 'block' : 'none';
-    if (revisar && !_lpForm[k].length) { _lpForm[k].push({ nombre: '', precio: '' }); _lpRender(k); }
+    if (revisar) _lpRender(k);
     var zo = document.getElementById(ids.zonaOferta), chk = document.getElementById(ids.chkOferta);
     if (zo) zo.style.display = (!revisar && chk && chk.checked) ? 'block' : 'none';
 }
@@ -4614,11 +4633,12 @@ function _cambiarModoPrecio(k) {
 function _lpCargar(k, modo, lista) {
     var radios = document.querySelectorAll('input[name="' + _lpIds[k].radio + '"]');
     Array.prototype.forEach.call(radios, function (r) { r.checked = (r.value === modo); });
-    _lpForm[k] = (lista || []).map(function (x) { return { nombre: x.nombre, precio: String(x.precio) }; });
+    _lpForm[k] = (lista || []).map(function (x) { return { nombre: x.nombre, precio: String(x.precio), img: x.img || '' }; });
     _lpRender(k);
     _cambiarModoPrecio(k);
 }
-// Valida la lista del formulario → { ok, lista, minimo } | { ok:false, error }
+// Valida la lista del formulario → { ok, items, minimo } | { ok:false, error }
+// (las imágenes nuevas y los productos nuevos se resuelven al guardar con _lpResolverParaGuardar)
 function _lpRecolectar(k) {
     var salida = [], minimo = null;
     for (var i = 0; i < _lpForm[k].length; i++) {
@@ -4628,12 +4648,43 @@ function _lpRecolectar(k) {
         if (!nombre && pr === '') continue;   // renglón vacío: se ignora
         if (!nombre) return { ok: false, error: 'Falta el nombre de un producto de la lista de precios.' };
         if (pr === '' || isNaN(Number(pr)) || Number(pr) < 0) return { ok: false, error: 'Escribe un precio válido para «' + nombre + '».' };
-        salida.push({ nombre: nombre, precio: Number(pr) });
+        salida.push({ ref: it, nombre: nombre, precio: Number(pr) });
         if (minimo === null || Number(pr) < minimo) minimo = Number(pr);
     }
     if (!salida.length) return { ok: false, error: 'Agrega al menos un producto a la lista de precios.' };
     if (salida.length > 40) return { ok: false, error: 'La lista admite máximo 40 productos.' };
-    return { ok: true, lista: _serializarListaPrecios(salida), minimo: minimo };
+    return { ok: true, items: salida, minimo: minimo };
+}
+// Sube las imágenes pendientes y crea los productos nuevos de la lista; devuelve el texto para la columna U.
+async function _lpResolverParaGuardar(rl, idToken, avisar) {
+    var lista = [];
+    for (var i = 0; i < rl.items.length; i++) {
+        var e = rl.items[i], it = e.ref;
+        if (it.nuevo && !it.creado) {
+            if (avisar) avisar('Creando el producto nuevo «' + e.nombre + '» (' + (i + 1) + '/' + rl.items.length + ')…');
+            var n = it.nuevo;
+            var cuerpoN = {
+                idToken: idToken, nombre: e.nombre, textoImagen: '', mostrarTextoImagen: 'si',
+                descripcion: n.descripcion || '', precio: String(e.precio), precioMayoreo: n.mayoreo || '', existencia: n.existencia || '',
+                etiquetaPrincipal: n.etiquetaPrincipal || '', etiquetaEvento: n.etiquetaEvento || '', enOferta: '', masVendido: '',
+                alto: n.alto || '', ancho: n.ancho || '', video: '', filaDestino: '', precioOferta: '', modoPrecio: '', listaPrecios: '',
+                imagenes: [it.imgData.base64], imagenesNombres: [it.imgData.nombre], enfoques: ['50,0']
+            };
+            var rN = await fetch(ADMIN_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(cuerpoN) });
+            var dN = await rN.json();
+            if (!dN.ok) throw new Error('No se pudo crear «' + e.nombre + '»: ' + (dN.error || 'error del servidor'));
+            it.creado = true; it.img = (dN.imagenes && dN.imagenes[0]) || dN.imagen || ''; it.imgData = null;
+        } else if (it.imgData && !it.img) {
+            if (avisar) avisar('Subiendo la imagen de «' + e.nombre + '»…');
+            var rI = await fetch(ADMIN_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ accion: 'subirimagen', idToken: idToken, imagen: it.imgData.base64, nombre: it.imgData.nombre }) });
+            var dI = await rI.json();
+            if (!dI.ok) throw new Error('No se pudo subir la imagen de «' + e.nombre + '»: ' + (dI.error || 'error del servidor'));
+            it.img = dI.url; it.imgData = null;
+        }
+        lista.push({ nombre: e.nombre, precio: e.precio, img: it.img || '' });
+    }
+    return _serializarListaPrecios(lista);
 }
 
 // ── Modal de Cantidad ──
@@ -6216,6 +6267,8 @@ function _convertirArchivoImagenProducto(archivo) {
 }
 
 function _actualizarContadorImagenesProducto() {
+    var _txtBtnImg = document.getElementById('textoBtnAgregarImagen');
+    if (_txtBtnImg) _txtBtnImg.textContent = _adminImagenesProducto.length > 0 ? 'Agregar más imágenes' : 'Agregar imagen';
     var contador = document.getElementById('contadorImagenesProducto');
     if (!contador) return;
     var total = _adminImagenesProducto.length;
@@ -6797,7 +6850,7 @@ async function guardarProductoAdmin() {
     if (modoPrecio === 'revisar') {
         var _rl = _lpRecolectar('add');
         if (!_rl.ok) { _statusAdmin(_rl.error, true); return; }
-        listaPrecios = _rl.lista; precio = String(_rl.minimo); precioMayoreo = ''; precioOferta = '';
+        precio = String(_rl.minimo); precioMayoreo = ''; precioOferta = '';
     }
 
     if (!nombre) {
@@ -6836,6 +6889,7 @@ async function guardarProductoAdmin() {
     try {
         // Token fresco de Firebase — el servidor lo verifica antes de escribir
         var idToken = await user.getIdToken(true);
+        if (modoPrecio === 'revisar') listaPrecios = await _lpResolverParaGuardar(_rl, idToken, function (m) { _statusAdmin(m, false); });
 
         var cuerpo = {
             idToken:           idToken,
@@ -7273,7 +7327,7 @@ async function guardarEdicionProducto() {
     if (modoPrecio === 'revisar') {
         var _rl = _lpRecolectar('edit');
         if (!_rl.ok) { _statusEdit(_rl.error, true); return; }
-        listaPrecios = _rl.lista; precio = String(_rl.minimo); precioMayoreo = ''; precioOferta = '';
+        precio = String(_rl.minimo); precioMayoreo = ''; precioOferta = '';
     }
 
     if (!nombre) { _statusEdit('Escribe el nombre del producto.', true); return; }
@@ -7306,6 +7360,7 @@ async function guardarEdicionProducto() {
 
     try {
         var idToken = await user.getIdToken(true);
+        if (modoPrecio === 'revisar') listaPrecios = await _lpResolverParaGuardar(_rl, idToken, function (m) { _statusEdit(m, false); });
 
         var cuerpo = {
             accion:            'editar',
