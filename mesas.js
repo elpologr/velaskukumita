@@ -727,7 +727,9 @@
     function catPrecio(p) {
         var normal = parseFloat(p.precioNormal) || 0, oferta = parseFloat(p.precioOferta) || 0;
         var caja = h('div', 'mesas-cat-precio');
-        if (p.oferta && oferta > 0) {
+        if (p.modoPrecio === 'sinprecio') {
+            caja.textContent = 'Sin precio';
+        } else if (p.oferta && oferta > 0) {
             caja.appendChild(h('span', '', '$' + Math.round(oferta)));
             if (normal > 0) caja.appendChild(h('s', '', '$' + Math.round(normal)));
         } else if (normal > 0) {

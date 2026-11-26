@@ -249,6 +249,24 @@ function _listaPreciosCard(card) {
 function _esRevisarPrecios(card) {
     return !!card && card.getAttribute('data-modo-precio') === 'revisar' && _listaPreciosCard(card).length > 0;
 }
+// ── «Sin precio»: producto al que aún no se le pone precio (columna T = "sinprecio") ──
+function _esSinPrecio(card) {
+    return !!card && card.getAttribute('data-modo-precio') === 'sinprecio';
+}
+function _consultarPrecioWA(nombre) {
+    var texto = 'Hola, me interesa el producto: ' + nombre + '. ¿Me puedes informar el precio?';
+    window.open('https://wa.me/524431469161?text=' + encodeURIComponent(texto), '_blank');
+}
+// Administradores → abre la ventanita para fijar el precio (sin-precio.js); cualquier otra persona → consulta por WhatsApp
+function _accionSinPrecio(card) {
+    if (!card) return;
+    var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+    if (typeof _esAdminUI === 'function' && _esAdminUI(user) && typeof window.abrirFijarPrecio === 'function') {
+        window.abrirFijarPrecio(card);
+        return;
+    }
+    _consultarPrecioWA((card.getAttribute('data-nombre') || 'Producto').trim());
+}
 function _formatoPrecio(n) {
     n = parseFloat(n) || 0;
     return '$' + (Math.round(n) === n ? String(n) : n.toFixed(2)) + ' MXN';
@@ -340,7 +358,7 @@ function csvAProductos(filas) {
             textoImagen:  get(17).replace(/^"+|"+$/g, '').trim(),
             mostrarTextoImagen: get(18).trim().toLowerCase() !== 'no',
             listaPrecios: _parseListaPrecios(get(20)),
-            modoPrecio:   (get(19).toLowerCase() === 'revisar' && _parseListaPrecios(get(20)).length) ? 'revisar' : 'precio',
+            modoPrecio:   (get(19).toLowerCase() === 'revisar' && _parseListaPrecios(get(20)).length) ? 'revisar' : (get(19).trim().toLowerCase() === 'sinprecio' ? 'sinprecio' : 'precio'),
             masVendido:   masVendido,
             alto:         get(10),
             ancho:        get(11),
@@ -421,7 +439,7 @@ function _crearCardProducto(p, esCopia) {
         card.setAttribute('data-precio-bazar',    String(parseInt(p.precioBazar,  10) || ''));
         card.setAttribute('data-precio-oferta',   String(parseFloat(p.precioOferta) || ''));
         card.setAttribute('data-texto-imagen',    p.textoImagen || '');
-        card.setAttribute('data-modo-precio',     p.modoPrecio === 'revisar' ? 'revisar' : '');
+        card.setAttribute('data-modo-precio',     p.modoPrecio === 'revisar' ? 'revisar' : (p.modoPrecio === 'sinprecio' ? 'sinprecio' : ''));
         card.setAttribute('data-lista-precios',   JSON.stringify(p.listaPrecios || []));
         card.setAttribute('data-mostrar-texto-imagen', p.mostrarTextoImagen === false ? '0' : '1');
         card.setAttribute('data-tipo',            p.tipo  || 'arreglo');
@@ -524,6 +542,7 @@ function _crearCardProducto(p, esCopia) {
         btnCartCard.addEventListener('click', function(e) {
             e.stopPropagation();
             if (p.modoPrecio === 'revisar') { abrirListaPrecios(_cardOriginal()); return; }
+            if (p.modoPrecio === 'sinprecio') { _consultarPrecioWA(p.nombre); return; }
             if (typeof abrirModalCantidad === 'function') abrirModalCantidad(_cardOriginal());
         });
         imgContenedor.appendChild(btnCartCard);
@@ -571,7 +590,23 @@ function _crearCardProducto(p, esCopia) {
         var preciosBloque = document.createElement('div');
         preciosBloque.className = 'card-precios-bloque';
 
-        if (p.modoPrecio === 'revisar') {
+        if (p.modoPrecio === 'sinprecio') {
+            // Sin precio: franja roja. Administradores → «Falta fijar precio» (abre el editor de precio); público → consulta por WhatsApp
+            var franjaSP = document.createElement('div');
+            franjaSP.className = 'card-sin-precio';
+            franjaSP.setAttribute('role', 'button');
+            franjaSP.tabIndex = 0;
+            franjaSP.innerHTML = '<span class="csp-publico">💬 Sin precio · consúltalo por WhatsApp</span>' +
+                                 '<span class="csp-admin">⚠️ Falta fijar precio · toca para ponerlo</span>';
+            var _accionFranja = function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                _accionSinPrecio(_cardOriginal());
+            };
+            franjaSP.addEventListener('click', _accionFranja);
+            franjaSP.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') _accionFranja(e); });
+            preciosBloque.appendChild(franjaSP);
+        } else if (p.modoPrecio === 'revisar') {
             // Producto con varios artículos y precios: en lugar del precio se muestra el botón «Revisar precios»
             var btnRevisar = document.createElement('button');
             btnRevisar.type = 'button';
@@ -592,7 +627,7 @@ function _crearCardProducto(p, esCopia) {
         preciosBloque.appendChild(precioNormalDiv);
         }
 
-        if (p.modoPrecio !== 'revisar' && p.precioBazar) {
+        if (p.modoPrecio !== 'revisar' && p.modoPrecio !== 'sinprecio' && p.precioBazar) {
             var precioBazarDiv = document.createElement('div');
             precioBazarDiv.className = 'card-precio-mayoreo-bloque visible';
             precioBazarDiv.innerHTML =
@@ -607,6 +642,7 @@ function _crearCardProducto(p, esCopia) {
             if (e.target.closest('.btn-like')) return;
             if (e.target.closest('.btn-carrito-card')) return;
             if (e.target.closest('.card-btn-revisar-precios')) return;
+            if (e.target.closest('.card-sin-precio')) return;
             if (typeof abrirModalProducto === 'function') {
                 abrirModalProducto(_cardOriginal());
             }
@@ -1396,15 +1432,24 @@ function aplicarConfigBazar(rawTexto) {
         const existencia = parseInt(card.getAttribute('data-existencia') || '0') || 0;
         const imagenesJSON = card.getAttribute('data-imagenes');
         const _modoRevisar = _esRevisarPrecios(card);   // «Revisar precios»: no hay un precio único, hay una lista
-        const precioNum = _modoRevisar ? '' : (card.getAttribute('data-precio') || '');
-        const precioBazar = _modoRevisar ? '' : (card.getAttribute('data-precio-bazar') || '');
-        const precioOferta = _modoRevisar ? '' : (card.getAttribute('data-precio-oferta') || '');
+        const _sinPrecio = _esSinPrecio(card);            // «Sin precio»: aún no se fija el precio
+        const precioNum = (_modoRevisar || _sinPrecio) ? '' : (card.getAttribute('data-precio') || '');
+        const precioBazar = (_modoRevisar || _sinPrecio) ? '' : (card.getAttribute('data-precio-bazar') || '');
+        const precioOferta = (_modoRevisar || _sinPrecio) ? '' : (card.getAttribute('data-precio-oferta') || '');
         const ofertaActivaPrecio = card.getAttribute('data-oferta') === '1';
         const _filaRevisar = document.getElementById('mpRevisarPreciosFila');
         if (_filaRevisar) {
             _filaRevisar.style.display = _modoRevisar ? 'block' : 'none';
             const _btnRev = document.getElementById('mpBtnRevisarPrecios');
             if (_btnRev) _btnRev.onclick = () => { abrirListaPrecios(card); };
+        }
+        const _filaSin = document.getElementById('mpSinPrecioFila');
+        if (_filaSin) {
+            _filaSin.style.display = _sinPrecio ? 'block' : 'none';
+            const _bWA = document.getElementById('mpBtnSinPrecioWA');
+            if (_bWA) _bWA.onclick = () => { _consultarPrecioWA(nombre); };
+            const _bFijar = document.getElementById('mpBtnFijarPrecio');
+            if (_bFijar) _bFijar.onclick = () => { _accionSinPrecio(card); };
         }
 
         // ── Video principal del producto (se muestra vía botón "Ver Video", no en la galería) ──
@@ -1741,7 +1786,7 @@ function aplicarConfigBazar(rawTexto) {
 
         // Botón WhatsApp
         document.getElementById('mpBtnWhatsapp').onclick = () => {
-            const texto = encodeURIComponent('Hola, me interesa el producto: ' + nombre + (precioNum ? ' ($' + precioNum + ' MXN)' : ''));
+            const texto = encodeURIComponent('Hola, me interesa el producto: ' + nombre + (_sinPrecio ? '. ¿Me puedes informar el precio?' : (precioNum ? ' ($' + precioNum + ' MXN)' : '')));
             window.open('https://wa.me/524431469161?text=' + texto, '_blank');
         };
 
@@ -3772,7 +3817,7 @@ function renderizarFavoritos() {
         var card = document.querySelector('[data-idx="' + idxProd + '"]');
 
         var nombre = prod ? prod.nombre : (card ? (card.querySelector('h3') || {}).textContent : 'Producto');
-        var precio = prod ? ((prod.modoPrecio === 'revisar' ? 'Desde ' : '') + '$' + (prod.precioBazar || prod.precioNormal || '') + ' MXN') : '';
+        var precio = prod ? (prod.modoPrecio === 'sinprecio' ? 'Sin precio' : ((prod.modoPrecio === 'revisar' ? 'Desde ' : '') + '$' + (prod.precioBazar || prod.precioNormal || '') + ' MXN')) : '';
         var imgSrc = prod ? (prod.imagen || (prod.imagenes && prod.imagenes[0]) || '') :
                     (card ? ((card.querySelector('img') || {}).src || '') : '');
         var _enfoqueFav = _objectPositionDesdeEnfoque(prod ? prod.enfoqueImagen :
@@ -4425,7 +4470,7 @@ function construirCarrusel(tipo) {
             '<div class="carrusel-card-info">' +
                 '<div class="carrusel-card-badge' + (esOferta ? '' : ' mv') + '">' + (esOferta ? '🏷️ Oferta' : '🏆 Top') + '</div>' +
                 '<div class="carrusel-card-nombre" title="' + nombre + '">' + nombre + '</div>' +
-                '<div class="carrusel-card-precio">' + (precioMostrar ? (card.getAttribute('data-modo-precio') === 'revisar' ? 'Desde ' : '') + '$' + precioMostrar + ' MXN' : '') + '</div>' +
+                '<div class="carrusel-card-precio">' + (card.getAttribute('data-modo-precio') === 'sinprecio' ? 'Sin precio' : (precioMostrar ? (card.getAttribute('data-modo-precio') === 'revisar' ? 'Desde ' : '') + '$' + precioMostrar + ' MXN' : '')) + '</div>' +
             '</div>';
 
         // Al hacer click abre el modal de producto
@@ -4620,14 +4665,14 @@ function _lpAgregarFila(k) {
     if (typeof abrirSubmenuListaPrecios === 'function') abrirSubmenuListaPrecios(k);
 }
 function _cambiarModoPrecio(k) {
-    var revisar = _lpModo(k) === 'revisar';
+    var revisar = _lpModo(k) === 'revisar', sinPrecio = _lpModo(k) === 'sinprecio';
     var ids = _lpIds[k];
     var zp = document.getElementById(ids.zonaPrecio), zl = document.getElementById(ids.zonaLista);
-    if (zp) zp.style.display = revisar ? 'none' : '';
+    if (zp) zp.style.display = (revisar || sinPrecio) ? 'none' : '';
     if (zl) zl.style.display = revisar ? 'block' : 'none';
     if (revisar) _lpRender(k);
     var zo = document.getElementById(ids.zonaOferta), chk = document.getElementById(ids.chkOferta);
-    if (zo) zo.style.display = (!revisar && chk && chk.checked) ? 'block' : 'none';
+    if (zo) zo.style.display = (!revisar && !sinPrecio && chk && chk.checked) ? 'block' : 'none';
 }
 // Carga un modo y una lista en el formulario (al abrir «Editar» o al limpiar «Agregar»)
 function _lpCargar(k, modo, lista) {
@@ -4689,6 +4734,11 @@ async function _lpResolverParaGuardar(rl, idToken, avisar) {
 
 // ── Modal de Cantidad ──
 function abrirModalCantidad(card) {
+    if (_esSinPrecio(card)) {   // sin precio no se cotiza en el carrito: se consulta por WhatsApp
+        mostrarToast('Este producto aún no tiene precio. Consúltalo por WhatsApp.');
+        _consultarPrecioWA((card.getAttribute('data-nombre') || 'Producto').trim());
+        return;
+    }
     if (_esRevisarPrecios(card)) { abrirListaPrecios(card); return; }   // sin precio único: se elige de la lista
     _mcCardActual = card;
     _mcCantidadActual = 1;
@@ -6825,12 +6875,12 @@ function seleccionarTodosEventosProductoEdit() {
 function _toggleZonaOfertaProducto() {
     var chk = document.getElementById('inputEnOfertaProducto');
     var zona = document.getElementById('zonaPrecioOfertaProducto');
-    if (zona) zona.style.display = (chk && chk.checked && _lpModo('add') !== 'revisar') ? 'block' : 'none';
+    if (zona) zona.style.display = (chk && chk.checked && _lpModo('add') === 'precio') ? 'block' : 'none';
 }
 function _toggleZonaOfertaProductoEdit() {
     var chk = document.getElementById('inputEnOfertaProductoEdit');
     var zona = document.getElementById('zonaPrecioOfertaProductoEdit');
-    if (zona) zona.style.display = (chk && chk.checked && _lpModo('edit') !== 'revisar') ? 'block' : 'none';
+    if (zona) zona.style.display = (chk && chk.checked && _lpModo('edit') === 'precio') ? 'block' : 'none';
 }
 
 async function guardarProductoAdmin() {
@@ -6870,6 +6920,8 @@ async function guardarProductoAdmin() {
         var _rl = _lpRecolectar('add');
         if (!_rl.ok) { _statusAdmin(_rl.error, true); return; }
         precio = String(_rl.minimo); precioMayoreo = ''; precioOferta = '';
+    } else if (modoPrecio === 'sinprecio') {
+        precio = '0'; precioMayoreo = ''; precioOferta = '';   // «Sin precio»: se guarda 0 y el servidor marca la columna T
     }
 
     if (!nombre) {
@@ -6928,7 +6980,7 @@ async function guardarProductoAdmin() {
             video:             videoYoutube,
             filaDestino:       filaDestino,
             precioOferta:      precioOferta,
-            modoPrecio:        modoPrecio === 'revisar' ? 'revisar' : '',
+            modoPrecio:        (modoPrecio === 'revisar' || modoPrecio === 'sinprecio') ? modoPrecio : '',
             listaPrecios:      listaPrecios,
             imagenes:          _adminImagenesProducto.map(function (x) { return x.base64; }),
             imagenesNombres:   _adminImagenesProducto.map(function (x) { return x.nombre; }),
@@ -7082,7 +7134,7 @@ function abrirEdicionProducto(card) {
     _setValorEdit('inputTextoImagenProductoEdit',   card.getAttribute('data-texto-imagen') || '');
     var _chkMostrarTxtEdit = document.getElementById('inputMostrarTextoImagenProductoEdit');
     if (_chkMostrarTxtEdit) _chkMostrarTxtEdit.checked = card.getAttribute('data-mostrar-texto-imagen') !== '0';
-    _setValorEdit('inputPrecioProductoEdit',         card.getAttribute('data-precio') || '');
+    _setValorEdit('inputPrecioProductoEdit',         _esSinPrecio(card) ? '' : (card.getAttribute('data-precio') || ''));
     _setValorEdit('inputPrecioMayoreoProductoEdit',  card.getAttribute('data-precio-bazar') || '');
     _setValorEdit('inputDescripcionProductoEdit',    card.getAttribute('data-descripcion') || '');
     _setValorEdit('inputVideoYoutubeProductoEdit',   card.getAttribute('data-video') || '');
@@ -7090,7 +7142,7 @@ function abrirEdicionProducto(card) {
     _setValorEdit('inputAnchoProductoEdit',          card.getAttribute('data-ancho') || '');
     _setValorEdit('inputStockProductoEdit',          card.getAttribute('data-existencia') || '');
     _setValorEdit('inputPrecioOfertaProductoEdit',   card.getAttribute('data-precio-oferta') || '');
-    _lpCargar('edit', _esRevisarPrecios(card) ? 'revisar' : 'precio', _esRevisarPrecios(card) ? _listaPreciosCard(card) : []);
+    _lpCargar('edit', _esSinPrecio(card) ? 'sinprecio' : (_esRevisarPrecios(card) ? 'revisar' : 'precio'), _esRevisarPrecios(card) ? _listaPreciosCard(card) : []);
 
     // ── Etiqueta principal (una o varias) ──
     var tiposCard = (card.getAttribute('data-tipos') || card.getAttribute('data-tipo') || '')
@@ -7348,6 +7400,8 @@ async function guardarEdicionProducto() {
         var _rl = _lpRecolectar('edit');
         if (!_rl.ok) { _statusEdit(_rl.error, true); return; }
         precio = String(_rl.minimo); precioMayoreo = ''; precioOferta = '';
+    } else if (modoPrecio === 'sinprecio') {
+        precio = '0'; precioMayoreo = ''; precioOferta = '';   // «Sin precio»: se guarda 0 y el servidor marca la columna T
     }
 
     if (!nombre) { _statusEdit('Escribe el nombre del producto.', true); return; }
@@ -7401,7 +7455,7 @@ async function guardarEdicionProducto() {
             ancho:             ancho,
             video:             videoYoutube,
             precioOferta:      precioOferta,
-            modoPrecio:        modoPrecio === 'revisar' ? 'revisar' : '',
+            modoPrecio:        (modoPrecio === 'revisar' || modoPrecio === 'sinprecio') ? modoPrecio : '',
             listaPrecios:      listaPrecios,
             imagenesNuevas:        _editImagenesNuevas.map(function (x) { return x.base64; }),
             imagenesNuevasNombres: _editImagenesNuevas.map(function (x) { return x.nombre; }),

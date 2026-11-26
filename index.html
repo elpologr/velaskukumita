@@ -30,7 +30,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600;1,700&family=Playfair+Display:ital,wght@0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
     <!-- Estilos externos -->
-    <link rel="stylesheet" href="style.css?v=38">
+    <link rel="stylesheet" href="style.css?v=39">
     <link rel="stylesheet" href="mesas.css?v=4">
 
     <!-- Estilos botones de modo catálogo -->
@@ -568,6 +568,7 @@
                     <div class="selector-modo-precio" role="radiogroup" aria-label="Botón de precio del producto">
                         <label class="modo-precio-op"><input type="radio" name="modoPrecioProducto" value="precio" checked onchange="_cambiarModoPrecio('add')"><span>💲 Precio</span></label>
                         <label class="modo-precio-op"><input type="radio" name="modoPrecioProducto" value="revisar" onchange="_cambiarModoPrecio('add')"><span>🔎 Revisar precios</span></label>
+                        <label class="modo-precio-op"><input type="radio" name="modoPrecioProducto" value="sinprecio" onchange="_cambiarModoPrecio('add')"><span>🚫 Sin precio</span></label>
                     </div>
                 </div>
                 <div data-ord="4" id="zonaPrecioNormalProducto">
@@ -745,6 +746,7 @@
                     <div class="selector-modo-precio" role="radiogroup" aria-label="Botón de precio del producto">
                         <label class="modo-precio-op"><input type="radio" name="modoPrecioProductoEdit" value="precio" checked onchange="_cambiarModoPrecio('edit')"><span>💲 Precio</span></label>
                         <label class="modo-precio-op"><input type="radio" name="modoPrecioProductoEdit" value="revisar" onchange="_cambiarModoPrecio('edit')"><span>🔎 Revisar precios</span></label>
+                        <label class="modo-precio-op"><input type="radio" name="modoPrecioProductoEdit" value="sinprecio" onchange="_cambiarModoPrecio('edit')"><span>🚫 Sin precio</span></label>
                     </div>
                 </div>
                 <div id="zonaPrecioNormalProductoEdit">
@@ -1737,6 +1739,13 @@
                 <button type="button" class="mp-btn-revisar" id="mpBtnRevisarPrecios">🔎 Revisar precios</button>
             </div>
 
+            <!-- 8c. «Sin precio» (aviso rojo; los administradores pueden fijar el precio desde aquí) -->
+            <div id="mpSinPrecioFila" class="mp-sin-precio" style="display:none;">
+                <div class="mp-sin-precio-msg">Aún no se coloca un precio para este producto, pero puedes solicitarlo al vendedor por WhatsApp.</div>
+                <button type="button" class="mp-btn-sin-precio-wa" id="mpBtnSinPrecioWA">💬 Solicitar precio por WhatsApp</button>
+                <button type="button" class="mp-btn-fijar-precio" id="mpBtnFijarPrecio">⚠️ Falta fijar precio · toca para ponerlo</button>
+            </div>
+
             <!-- 9a. Botones Favoritos / Carrito -->
             <div class="mp-botones-accion" style="margin-top:6px; margin-bottom:0;">
                 <button class="mp-btn-favoritos" id="mpBtnFavoritos">❤️ Favoritos</button>
@@ -2240,10 +2249,11 @@
 </div>
 
     <!-- JavaScript externo -->
-    <script src="app.js?v=26"></script>
+    <script src="app.js?v=27"></script>
 <script src="admin-producto-ui.js?v=1"></script>
 <script src="lista-precios-admin.js?v=1"></script>
 <script src="descripciones-fijas.js?v=1"></script>
+<script src="sin-precio.js?v=1"></script>
 <script src="portada.js?v=2"></script>
 <script src="cuadricula.js?v=4"></script>
 <script src="mesas.js?v=9"></script>
