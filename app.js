@@ -429,6 +429,7 @@ function _crearCardProducto(p, esCopia) {
             txtImg.className = 'texto-sobre-imagen' + (p.mostrarTextoImagen === false ? ' texto-sobre-imagen-oculto' : '');
             txtImg.textContent = p.textoImagen;
             imgContenedor.appendChild(txtImg);
+            if (_roTextoCard) _roTextoCard.observe(imgContenedor);
 
             // Botón del administrador (👁️ / 🚫) para ocultar o volver a mostrar ese texto sin entrar a «Editar producto»
             var btnTxt = document.createElement('button');
@@ -6194,8 +6195,34 @@ function _actualizarTextoSobreImagen() {
         el.textContent = t;
         el.style.display = (t && x[2]) ? 'block' : 'none';
         var lado = cuadro ? cuadro.clientWidth : 0;
-        if (lado) el.style.fontSize = (lado * _TEXTO_IMG_ESCALA) + 'px';
+        if (lado) {
+            el.style.fontSize = (lado * _TEXTO_IMG_ESCALA) + 'px';
+            _ajustarTextoUnaLinea(el, lado * _TEXTO_IMG_ESCALA, lado * _TEXTO_IMG_ESCALA * 0.5);
+        }
     });
+}
+
+// Procura que el texto sobre la imagen quede en UNA sola línea: parte del tamaño normal y, si no cabe, lo achica poco a poco
+// (hasta un mínimo). Solo si ni así cabe permite que baje a una segunda línea.
+function _ajustarTextoUnaLinea(el, tamBase, tamMin) {
+    if (!el) return;
+    el.style.whiteSpace = '';          // vuelve a la regla del CSS (una sola línea)
+    el.style.fontSize = tamBase + 'px';
+    if (!el.clientWidth) return;       // oculto o sin medidas todavía
+    var tam = tamBase;
+    while (el.scrollWidth > el.clientWidth + 0.5 && tam > tamMin) {
+        tam -= 0.5;
+        el.style.fontSize = tam + 'px';
+    }
+    if (el.scrollWidth > el.clientWidth + 0.5) el.style.whiteSpace = 'normal';
+}
+// Igual para el texto de las tarjetas del catálogo (se reajusta si la tarjeta cambia de tamaño)
+var _roTextoCard = (typeof ResizeObserver === 'function') ? new ResizeObserver(function (entradas) {
+    entradas.forEach(function (en) { var t = en.target.querySelector('.texto-sobre-imagen'); if (t) _ajustarTextoCard(t); });
+}) : null;
+function _ajustarTextoCard(el) {
+    var base = (window.innerWidth <= 600) ? 12 : 14;
+    _ajustarTextoUnaLinea(el, base, 9);
 }
 
 function _renderizarMiniaturaPrincipal() {
@@ -7477,7 +7504,7 @@ function _aplicarEstadoTextoImagen(idx, mostrar) {
         if (!c.classList.contains('card-dinamica') && !c.classList.contains('card-portada')) return;
         c.setAttribute('data-mostrar-texto-imagen', mostrar ? '1' : '0');
         var t = c.querySelector('.texto-sobre-imagen');
-        if (t) t.classList.toggle('texto-sobre-imagen-oculto', !mostrar);
+        if (t) { t.classList.toggle('texto-sobre-imagen-oculto', !mostrar); if (mostrar || document.body.classList.contains('kk-admin-ui')) _ajustarTextoCard(t); }
         var b = c.querySelector('.btn-texto-card');
         if (b) {
             b.textContent = mostrar ? '👁️' : '🚫';

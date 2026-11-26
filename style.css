@@ -4586,7 +4586,7 @@ body.modo-oscuro .acordeon-btn .ac-cuenta { background: #f5c46b; color: #2a1d12;
 body.modo-oscuro .ayuda-texto-imagen { color: #b8a595; }
 .recorte-texto-preview {
     position: absolute; top: 3%; left: 50%; transform: translateX(-50%);
-    max-width: 84%; padding: 0.1em 0.2em;
+    max-width: 96%; padding: 0.1em 0.2em; white-space: nowrap;
     color: #fff; font-size: 8px; font-weight: 700; line-height: 1.25;
     text-shadow: -0.03em -0.03em 0 #000, 0.03em -0.03em 0 #000, -0.03em 0.03em 0 #000, 0.03em 0.03em 0 #000, 0 -0.03em 0 #000, 0 0.03em 0 #000, -0.03em 0 0 #000, 0.03em 0 0 #000;
     text-align: center; word-break: break-word; pointer-events: none; display: none;
@@ -4604,7 +4604,7 @@ body.modo-oscuro .ayuda-texto-imagen { color: #b8a595; }
 /* ── Texto sobre la imagen en la tarjeta del catálogo (arriba al centro; deja libre el corazón de la derecha) ── */
 .texto-sobre-imagen {
     position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-    max-width: calc(100% - 150px); padding: 2px 6px;
+    max-width: calc(100% - 110px); padding: 2px 6px; white-space: nowrap;
     color: #fff; font-size: 14px; font-weight: 700; line-height: 1.25;
     text-align: center; word-break: break-word;
     text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000, 1px 0 0 #000;
