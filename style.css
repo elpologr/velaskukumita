@@ -4487,6 +4487,49 @@ body.modo-oscuro .portada-cab h3 { color: #e8ddd5; border-bottom-color: #4a3f38;
 #pantallaCuadricula .cg-enlace:hover { background: #ffd6dc; }
 
 
+/* ── Cuadrícula: precio visible, edición en línea, ajustes y modo oscuro ── */
+#pantallaCuadricula .cg-precio { display: flex; justify-content: center; align-items: baseline; gap: 6px; min-height: 1.2em; font-size: 0.78rem; font-weight: 800; color: #8a5a12; }
+#pantallaCuadricula .cg-p-normal.cg-tachado { text-decoration: line-through; font-weight: 400; opacity: 0.65; }
+#pantallaCuadricula .cg-p-oferta { color: #c0392b; }
+#pantallaCuadricula .cg-nombre, #pantallaCuadricula .cg-p-normal, #pantallaCuadricula .cg-p-oferta { cursor: text; border-radius: 4px; padding: 0 2px; }
+#pantallaCuadricula .cg-nombre:hover, #pantallaCuadricula .cg-p-normal:hover, #pantallaCuadricula .cg-p-oferta:hover { background: rgba(140,117,101,0.2); }
+#pantallaCuadricula .cg-inline {
+    width: 100%; min-width: 0; padding: 3px 4px; border: 1.5px solid #8c7565; border-radius: 6px; font-size: 0.75rem;
+    text-align: center; user-select: text; -webkit-user-select: text; background: #fff; color: #2a1d12;
+}
+#pantallaCuadricula .cg-ajustes { font-size: 1rem; padding: 6px 11px; }
+#pantallaCuadricula .cg-ajustes-menu {
+    position: absolute; top: 54px; right: 16px; z-index: 15; min-width: 190px; padding: 6px;
+    border-radius: 12px; background: #fff; color: #2a1d12; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+}
+#pantallaCuadricula .cg-ajustes-menu[hidden] { display: none; }
+#pantallaCuadricula .cg-ajuste { display: flex; align-items: center; gap: 6px; padding: 9px 10px; border-radius: 8px; cursor: pointer; font-size: 0.92rem; font-weight: 600; }
+#pantallaCuadricula .cg-ajuste:hover { background: rgba(140,117,101,0.15); }
+
+#pantallaCuadricula.cg-oscuro { background: #17110d; color: #f3e6d3; }
+#pantallaCuadricula.cg-oscuro .cg-ayuda { background: #201813; color: #c9b8a4; border-bottom-color: #3a2b20; }
+#pantallaCuadricula.cg-oscuro .cg-pagina { color: #c9b8a4; border-bottom-color: #4a382c; }
+#pantallaCuadricula.cg-oscuro .cg-vacio { color: #c9b8a4; }
+#pantallaCuadricula.cg-oscuro .cg-celda { background: #241912; }
+#pantallaCuadricula.cg-oscuro .cg-celda:not(.cg-cambio):not(.cg-resalta):not(.cg-destino) { border-color: #3a2b20; }
+#pantallaCuadricula.cg-oscuro .cg-foto { background: #3a2b20; }
+#pantallaCuadricula.cg-oscuro .cg-precio { color: #f5c46b; }
+#pantallaCuadricula.cg-oscuro .cg-p-oferta { color: #ff9aa8; }
+#pantallaCuadricula.cg-oscuro .cg-nombre:hover, #pantallaCuadricula.cg-oscuro .cg-p-normal:hover, #pantallaCuadricula.cg-oscuro .cg-p-oferta:hover { background: rgba(255,255,255,0.12); }
+#pantallaCuadricula.cg-oscuro .cg-inline { background: #0e0906; color: #fbefdc; border-color: #f5c46b; }
+#pantallaCuadricula.cg-oscuro .cg-ajustes-menu,
+#pantallaCuadricula.cg-oscuro .cg-modal { background: #241912; color: #f3e6d3; }
+#pantallaCuadricula.cg-oscuro .cg-ajuste:hover { background: rgba(255,255,255,0.1); }
+#pantallaCuadricula.cg-oscuro .cg-campo input[type="text"],
+#pantallaCuadricula.cg-oscuro .cg-campo input[type="number"] { background: #0e0906; color: #fbefdc; border-color: #4a382c; }
+#pantallaCuadricula.cg-oscuro .cg-modal .cg-btn { background: #3a2b20; color: #fbefdc; }
+#pantallaCuadricula.cg-oscuro .cg-modal .cg-btn.principal { background: #f5c46b; color: #2a1d12; }
+#pantallaCuadricula.cg-oscuro .cg-modal-msg { color: #c9b8a4; }
+#pantallaCuadricula.cg-oscuro .cg-vista { background: #3a2b20; }
+#pantallaCuadricula.cg-oscuro .cg-enlace { background: #3a1f24; color: #ff9aa8; }
+#pantallaCuadricula.cg-oscuro .cg-sel { background: #2a1f18; color: #fbefdc; }
+
+
 /* ===== MARCO «AGREGAR PRODUCTO» al final del catálogo (recorte de tijeras; solo administradores, última página) ===== */
 .marco-agregar-producto {
     display: none; position: relative; flex-direction: column; align-items: center; justify-content: center; gap: 6px;

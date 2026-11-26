@@ -21,6 +21,8 @@
     var overlay = null, grid = null, cuerpo = null, selFiltro = null, chkSolo = null;
     var txtEstado = null, btnGuardar = null, btnDeshacer = null, btnDescartar = null, txtMsg = null;
     var items = [], porId = {}, original = [], orden = [], historial = [];
+    var celdaEditando = null;
+    var btnAjustes = null, menuAjustes = null, chkOscuro = null;
     var observador = null, scrollBloqueado = false, ocultos = [];
     var filtro = '', soloFiltro = false, guardando = false, arrastrando = null, recienId = null;
 
@@ -31,7 +33,13 @@
     }
     function esPC() { return window.matchMedia && window.matchMedia('(min-width:' + ANCHO_MIN_PC + 'px)').matches; }
     function U() { return window._portadaUtil || { normSlug: function (s) { return String(s || '').toLowerCase(); }, claveSlug: function (s) { return String(s || '').toLowerCase(); }, nombreFiltro: function (f) { return f; } }; }
+    function dinero(n) { n = Number(n) || 0; return '$' + n.toLocaleString('es-MX', { maximumFractionDigits: 2 }); }
     function toast(m) { if (typeof mostrarToast === 'function') mostrarToast(m); else console.log(m); }
+
+    // ── Modo oscuro (se recuerda en este navegador) ──
+    function leerOscuro() { try { return localStorage.getItem('cgModoOscuro') === '1'; } catch (e) { return false; } }
+    function guardarOscuro(v) { try { localStorage.setItem('cgModoOscuro', v ? '1' : '0'); } catch (e) { /* sin almacenamiento */ } }
+    function aplicarOscuro(v) { if (overlay) overlay.classList.toggle('cg-oscuro', !!v); }
 
     // ── Datos: los productos de la hoja en su orden actual (id = fila de la hoja − 1) ──
     function cargarItems() {
@@ -156,7 +164,17 @@
             c.appendChild(envoltura);
             c.appendChild(el('span', 'cg-pos', String(i + 1)));
             if (posOriginal[it.id] !== i) c.appendChild(el('span', 'cg-antes', 'antes ' + (posOriginal[it.id] + 1)));
-            c.appendChild(el('div', 'cg-nombre', it.nombre));
+            var nom = el('div', 'cg-nombre', it.nombre); nom.setAttribute('data-campo', 'nombre'); nom.title = 'Clic para cambiar el nombre';
+            c.appendChild(nom);
+            var pr = el('div', 'cg-precio');
+            var pn = el('span', 'cg-p-normal', dinero(it.precio)); pn.setAttribute('data-campo', 'precio'); pn.title = 'Clic para cambiar el precio';
+            pr.appendChild(pn);
+            if (it.precioOferta && it.precioOferta < it.precio) {
+                pn.classList.add('cg-tachado');
+                var po = el('span', 'cg-p-oferta', dinero(it.precioOferta)); po.setAttribute('data-campo', 'oferta'); po.title = 'Clic para cambiar el precio de oferta';
+                pr.appendChild(po);
+            }
+            c.appendChild(pr);
             frag.appendChild(c);
         });
         grid.innerHTML = '';
@@ -172,7 +190,7 @@
         btnDescartar.disabled = guardando || n === 0;
         btnDeshacer.disabled = guardando || !historial.length;
     }
-    function mensaje(t, error) { txtMsg.textContent = t || ''; txtMsg.style.color = error ? '#c0392b' : '#6b5a4e'; }
+    function mensaje(t, error) { txtMsg.textContent = t || ''; txtMsg.style.color = error ? '#c0392b' : ''; }
 
     // ── Mover ──
     function mover(desde, hasta) {
@@ -388,14 +406,63 @@
         });
     }
 
+    // Clic en el nombre o en un precio: se edita ahí mismo (Enter o clic fuera = guardar, Esc = cancelar).
+    var timerRecarga = null;
+    function editarEnLinea(it, nodo, campo, celda) {
+        if (celdaEditando) return;
+        var valor = campo === 'nombre' ? it.nombre : campo === 'precio' ? it.precio : it.precioOferta;
+        var inp = document.createElement('input');
+        inp.className = 'cg-inline';
+        inp.type = campo === 'nombre' ? 'text' : 'number';
+        if (campo === 'nombre') inp.maxLength = 200; else { inp.min = '0'; inp.step = 'any'; inp.setAttribute('inputmode', 'decimal'); }
+        inp.value = valor == null ? '' : valor;
+        celdaEditando = celda; celda.setAttribute('draggable', 'false');
+        nodo.replaceWith(inp); inp.focus(); inp.select();
+        var terminado = false;
+        function salir() { terminado = true; celdaEditando = null; pintar(); }
+        function confirmar() {
+            if (terminado) return;
+            var t = inp.value.trim(), nuevo = { nombre: it.nombre, precio: it.precio, precioOferta: it.precioOferta };
+            if (campo === 'nombre') {
+                if (!t) { mensaje('El nombre no puede quedar vacío.', true); return salir(); }
+                nuevo.nombre = t.replace(/[\r\n\t]+/g, ' ');
+            } else {
+                if (campo === 'precio' && (t === '' || isNaN(Number(t)) || Number(t) < 0)) { mensaje('Escribe un precio válido.', true); return salir(); }
+                if (campo === 'oferta' && t !== '' && (isNaN(Number(t)) || Number(t) < 0)) { mensaje('Escribe un precio de oferta válido.', true); return salir(); }
+                if (campo === 'precio') nuevo.precio = Number(t); else nuevo.precioOferta = t === '' ? 0 : Number(t);
+            }
+            if (nuevo.precioOferta && nuevo.precioOferta >= nuevo.precio) { mensaje('El precio de oferta debe ser menor al precio original.', true); return salir(); }
+            if (nuevo.nombre === it.nombre && nuevo.precio === it.precio && nuevo.precioOferta === it.precioOferta) return salir();
+            terminado = true; inp.disabled = true; guardando = true; estado(); mensaje('Guardando…');
+            enviar({
+                accion: 'editarrapido', filaEditar: it.fila, nombreActual: it.nombre, nombre: nuevo.nombre,
+                precio: String(nuevo.precio), precioMayoreo: it.mayoreo ? String(it.mayoreo) : '', precioOferta: nuevo.precioOferta ? String(nuevo.precioOferta) : ''
+            }).then(function () {
+                it.nombre = nuevo.nombre; it.precio = nuevo.precio; it.precioOferta = nuevo.precioOferta;
+                guardando = false; celdaEditando = null; mensaje(''); pintar(); toast('✅ Guardado');
+                clearTimeout(timerRecarga);
+                if (typeof cargarDesdeGoogleSheets === 'function') timerRecarga = setTimeout(cargarDesdeGoogleSheets, 1500);
+            }).catch(function (e) {
+                guardando = false; celdaEditando = null; pintar();
+                mensaje('No se pudo guardar: ' + traducirError(e), true);
+            });
+        }
+        inp.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); confirmar(); }
+            else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); if (!terminado) salir(); }
+        });
+        inp.addEventListener('blur', confirmar);
+    }
+
     function clicBotonProducto(e) {
-        var b = e.target && e.target.closest ? e.target.closest('.cg-lapiz, .cg-borrar') : null;
+        var b = e.target && e.target.closest ? e.target.closest('.cg-lapiz, .cg-borrar, [data-campo]') : null;
         if (!b || guardando) return;
         e.preventDefault(); e.stopPropagation();
         var c = b.closest('.cg-celda'); if (!c) return;
         var it = orden[Number(c.getAttribute('data-i'))]; if (!it) return;
         if (cambios()) { mensaje('Primero guarda o descarta los cambios de posición; luego podrás editar o eliminar productos.', true); return; }
-        if (b.classList.contains('cg-lapiz')) abrirEditar(it); else eliminar(it);
+        if (b.hasAttribute('data-campo')) editarEnLinea(it, b, b.getAttribute('data-campo'), c);
+        else if (b.classList.contains('cg-lapiz')) abrirEditar(it); else eliminar(it);
     }
 
     // ── Construir la pantalla ──
@@ -421,9 +488,22 @@
         btnDescartar = el('button', 'cg-btn', 'Descartar cambios'); btnDescartar.type = 'button';
         btnGuardar = el('button', 'cg-btn principal', 'Guardar y mover productos'); btnGuardar.type = 'button';
         var btnCerrar = el('button', 'cg-btn', '✕ Cerrar'); btnCerrar.type = 'button';
-        [btnDeshacer, btnDescartar, btnGuardar, btnCerrar].forEach(function (b) { acc.appendChild(b); });
+        btnAjustes = el('button', 'cg-btn cg-ajustes', '⚙️'); btnAjustes.type = 'button';
+        btnAjustes.title = 'Ajustes'; btnAjustes.setAttribute('aria-label', 'Ajustes'); btnAjustes.setAttribute('aria-haspopup', 'true');
+        [btnDeshacer, btnDescartar, btnGuardar, btnCerrar, btnAjustes].forEach(function (b) { acc.appendChild(b); });
         cab.appendChild(acc);
         overlay.appendChild(cab);
+
+        menuAjustes = el('div', 'cg-ajustes-menu'); menuAjustes.hidden = true;
+        var lblOscuro = el('label', 'cg-ajuste');
+        chkOscuro = document.createElement('input'); chkOscuro.type = 'checkbox';
+        lblOscuro.appendChild(chkOscuro); lblOscuro.appendChild(document.createTextNode(' 🌙 Modo oscuro'));
+        menuAjustes.appendChild(lblOscuro);
+        overlay.appendChild(menuAjustes);
+        chkOscuro.checked = leerOscuro(); aplicarOscuro(chkOscuro.checked);
+        chkOscuro.addEventListener('change', function () { aplicarOscuro(chkOscuro.checked); guardarOscuro(chkOscuro.checked); });
+        btnAjustes.addEventListener('click', function (e) { e.stopPropagation(); menuAjustes.hidden = !menuAjustes.hidden; });
+        overlay.addEventListener('click', function (e) { if (!menuAjustes.hidden && !(e.target.closest && e.target.closest('.cg-ajustes-menu'))) menuAjustes.hidden = true; });
 
         var barra = el('div', 'cg-ayuda');
         barra.appendChild(el('span', '', 'Arrastra un producto y suéltalo sobre la posición donde quieres que quede; los demás se recorren. No se guarda nada en la hoja hasta presionar «Guardar y mover productos».'));
@@ -445,7 +525,7 @@
         engancharArrastre();
         grid.addEventListener('click', clicBotonProducto);
         document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && overlay.classList.contains('abierta')) { if (modal) cerrarModal(); else cerrar(false); }
+            if (e.key === 'Escape' && overlay.classList.contains('abierta')) { if (modal) cerrarModal(); else if (menuAjustes && !menuAjustes.hidden) menuAjustes.hidden = true; else cerrar(false); }
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && overlay.classList.contains('abierta')) { e.preventDefault(); deshacer(); }
         });
     }
@@ -471,6 +551,7 @@
         if (!forzar && cambios() && !window.confirm('Tienes cambios de posición sin guardar. ¿Salir y perderlos?')) return;
         overlay.classList.remove('abierta');
         liberarFondo();
+        if (menuAjustes) menuAjustes.hidden = true;
         if (observador) { observador.disconnect(); observador = null; }
         grid.innerHTML = '';
     }
