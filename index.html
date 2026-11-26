@@ -552,6 +552,10 @@
                     <label class="panel-nombre-label">Nombre del producto</label>
                     <input id="inputNombreProducto" class="panel-nombre-input" type="text" placeholder="Ej. Vela aromática grande" maxlength="120">
                 </div>
+                <div data-ord="10" class="campo-admin-producto">
+                    <label class="panel-nombre-label">Texto sobre la imagen</label>
+                    <input id="inputTextoImagenProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. ¡Nuevo!, Edición limitada" maxlength="60" oninput="_actualizarTextoSobreImagen()">
+                </div>
                 <div data-ord="15" class="campo-admin-producto campo-zona-posicion-sheet">
                     <label class="panel-nombre-label">Posición en la hoja <span style="font-weight:400; color:#9a8878;">(opcional)</span></label>
                     <input id="inputFilaProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="2" step="1" placeholder="Ej. 2 para que sea el primer producto">
@@ -559,10 +563,6 @@
                 </div>
                 </div>
                 <div class="form-admin-col">
-                <div data-ord="10" class="campo-admin-producto">
-                    <label class="panel-nombre-label">Texto sobre la imagen</label>
-                    <input id="inputTextoImagenProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. ¡Nuevo!, Edición limitada" maxlength="60" oninput="_actualizarTextoSobreImagen()">
-                </div>
                 <div data-ord="3" class="campo-admin-producto campo-modo-precio">
                     <label class="panel-nombre-label">Botón de precio</label>
                     <div class="selector-modo-precio" role="radiogroup" aria-label="Botón de precio del producto">
@@ -741,6 +741,18 @@
                     <label class="panel-nombre-label">Nombre del producto</label>
                     <input id="inputNombreProductoEdit" class="panel-nombre-input" type="text" placeholder="Ej. Vela aromática grande" maxlength="120">
                 </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Texto sobre la imagen</label>
+                    <input id="inputTextoImagenProductoEdit" class="panel-nombre-input" type="text" placeholder="Opcional, ej. ¡Nuevo!, Edición limitada" maxlength="60" oninput="_actualizarTextoSobreImagen()">
+                    <span class="ayuda-texto-imagen">Va arriba al centro de la imagen en el catálogo (no es el nombre del producto). Es independiente de la foto: puedes ocultarlo o mostrarlo cuando quieras.</span>
+                    <div class="campo-admin-checkbox" style="margin-top:8px;">
+                        <label class="pill-btn pill-btn-admin-toggle">
+                            <input id="inputMostrarTextoImagenProductoEdit" type="checkbox" checked onchange="_actualizarTextoSobreImagen()">
+                            <span style="font-size:1.6rem; line-height:1;">👁️</span>
+                            <span class="pill-btn-label">Mostrar texto en el catálogo</span>
+                        </label>
+                    </div>
+                </div>
                 <div class="campo-admin-producto campo-modo-precio">
                     <label class="panel-nombre-label">Botón de precio</label>
                     <div class="selector-modo-precio" role="radiogroup" aria-label="Botón de precio del producto">
@@ -867,18 +879,6 @@
                         <button type="button" class="btn-nueva-etiqueta" onclick="crearEtiquetaPersonalizada('evento', 'inputNuevaEtiquetaEventoEdit')">➕ Crear</button>
                     </div>
                     <input id="inputEventoOtroProductoEdit" class="panel-nombre-input" type="text" maxlength="60" placeholder="¿Otro evento? Escríbelo aquí (opcional)" style="margin-top:8px;">
-                </div>
-                <div class="campo-admin-producto">
-                    <label class="panel-nombre-label">Texto sobre la imagen</label>
-                    <input id="inputTextoImagenProductoEdit" class="panel-nombre-input" type="text" placeholder="Opcional, ej. ¡Nuevo!, Edición limitada" maxlength="60" oninput="_actualizarTextoSobreImagen()">
-                    <span class="ayuda-texto-imagen">Va arriba al centro de la imagen en el catálogo (no es el nombre del producto). Es independiente de la foto: puedes ocultarlo o mostrarlo cuando quieras.</span>
-                    <div class="campo-admin-checkbox" style="margin-top:8px;">
-                        <label class="pill-btn pill-btn-admin-toggle">
-                            <input id="inputMostrarTextoImagenProductoEdit" type="checkbox" checked onchange="_actualizarTextoSobreImagen()">
-                            <span style="font-size:1.6rem; line-height:1;">👁️</span>
-                            <span class="pill-btn-label">Mostrar texto en el catálogo</span>
-                        </label>
-                    </div>
                 </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Cantidad en stock</label>
@@ -2251,7 +2251,7 @@
     <!-- JavaScript externo -->
     <script src="app.js?v=27"></script>
 <script src="admin-producto-ui.js?v=2"></script>
-<script src="lista-precios-admin.js?v=1"></script>
+<script src="lista-precios-admin.js?v=2"></script>
 <script src="descripciones-fijas.js?v=2"></script>
 <script src="sin-precio.js?v=1"></script>
 <script src="portada.js?v=2"></script>

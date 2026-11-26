@@ -171,8 +171,7 @@
         var bC = el('button', 'btn-nueva-etiqueta', '📷 Tomar foto'); bC.type = 'button'; bC.addEventListener('click', function () { inCam.click(); });
         fila.appendChild(bG); fila.appendChild(bC);
         var estadoImg = el('div', 'slp-estado');
-        function alElegir(ev) {
-            var f = ev.target.files && ev.target.files[0]; ev.target.value = '';
+        function procesarArchivo(f) {
             if (!f) return;
             estadoImg.textContent = 'Convirtiendo imagen…'; estadoImg.className = 'slp-estado';
             _convertirArchivoImagenProducto(f).then(function (r) {
@@ -180,8 +179,34 @@
                 estadoImg.textContent = '';
             }).catch(function (err) { estadoImg.textContent = String(err); estadoImg.className = 'slp-estado error'; });
         }
+        function alElegir(ev) { var f = ev.target.files && ev.target.files[0]; ev.target.value = ''; procesarArchivo(f); }
         inGal.addEventListener('change', alElegir); inCam.addEventListener('change', alElegir);
         zonaImg.appendChild(previa); zonaImg.appendChild(fila); zonaImg.appendChild(estadoImg); zonaImg.appendChild(inGal); zonaImg.appendChild(inCam);
+
+        // Arrastrar y soltar una imagen desde la carpeta de la computadora (los botones de siempre siguen igual)
+        var hint = el('div', 'zona-soltar-hint', '⬇️ …o arrastra aquí tu imagen desde tus archivos');
+        zonaImg.insertBefore(hint, estadoImg);
+        zonaImg.classList.add('zona-soltar');
+        function traeArchivos(e) {
+            var t = e.dataTransfer && e.dataTransfer.types;
+            if (!t) return false;
+            for (var i = 0; i < t.length; i++) if (t[i] === 'Files') return true;
+            return false;
+        }
+        var prof = 0;
+        function quitarMarca() { prof = 0; zonaImg.classList.remove('arrastrando-archivos'); }
+        zonaImg.addEventListener('dragenter', function (e) { if (!traeArchivos(e)) return; e.preventDefault(); prof++; zonaImg.classList.add('arrastrando-archivos'); });
+        zonaImg.addEventListener('dragover', function (e) { if (!traeArchivos(e)) return; e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+        zonaImg.addEventListener('dragleave', function (e) { if (!traeArchivos(e)) return; prof = Math.max(0, prof - 1); if (!prof) quitarMarca(); });
+        zonaImg.addEventListener('drop', function (e) {
+            if (!traeArchivos(e)) return;
+            e.preventDefault(); e.stopPropagation(); quitarMarca();
+            var todos = Array.prototype.slice.call(e.dataTransfer.files || []);
+            var imgs = todos.filter(function (f) { return /^image\//.test(f.type); });
+            if (!imgs.length) { estadoImg.textContent = 'Solo se pueden soltar imágenes (JPG, PNG, WebP…).'; estadoImg.className = 'slp-estado error'; return; }
+            if (imgs.length > 1) aviso('Cada producto nuevo lleva una sola imagen: se usó la primera.');
+            procesarArchivo(imgs[0]);
+        });
 
         var iNombre = entrada('text', 'Ej. Gato chico', { maxLength: 120 });
         var iPrecio = entrada('number', 'Ej. 150');
