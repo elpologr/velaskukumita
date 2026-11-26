@@ -251,6 +251,8 @@ function csvAProductos(filas) {
         // O=14 Configuración del bazar (fecha/hora) — NO tocar aquí, se lee aparte en aplicarConfigBazar()
         // P=15 Enfoque de CADA imagen ("X,Y" en % por imagen, separados por "|"), alineado con la columna F
         // Q=16 Precio de Oferta (opcional; solo se muestra si "en oferta" = si)
+        // R=17 Texto sobre la imagen (opcional; se dibuja arriba al centro de la tarjeta, NO es el nombre)
+        // S=18 Mostrar ese texto ("no" = oculto; vacío o "si" = visible)
 
         // Video principal (E=4)
         var videoPrincipal = get(4).replace(/^"+|"+$/g, '').trim();
@@ -301,6 +303,8 @@ function csvAProductos(filas) {
             aditivos:     [],
             oferta:       enOferta,
             precioOferta: precioOferta,
+            textoImagen:  get(17).replace(/^"+|"+$/g, '').trim(),
+            mostrarTextoImagen: get(18).trim().toLowerCase() !== 'no',
             masVendido:   masVendido,
             alto:         get(10),
             ancho:        get(11),
@@ -380,6 +384,8 @@ function _crearCardProducto(p, esCopia) {
         card.setAttribute('data-precio',          String(parseInt(p.precioNormal, 10) || 0));
         card.setAttribute('data-precio-bazar',    String(parseInt(p.precioBazar,  10) || ''));
         card.setAttribute('data-precio-oferta',   String(parseFloat(p.precioOferta) || ''));
+        card.setAttribute('data-texto-imagen',    p.textoImagen || '');
+        card.setAttribute('data-mostrar-texto-imagen', p.mostrarTextoImagen === false ? '0' : '1');
         card.setAttribute('data-tipo',            p.tipo  || 'arreglo');
         card.setAttribute('data-tipos',           (p.tipos || [p.tipo || 'arreglo']).join('|'));
         card.setAttribute('data-nombre',          p.nombre);
@@ -415,6 +421,14 @@ function _crearCardProducto(p, esCopia) {
             if (typeof mostrarPlaceholder === 'function') mostrarPlaceholder(this);
         };
         imgContenedor.appendChild(img);
+
+        // ── Texto sobre la imagen (arriba al centro; aparte del nombre). Solo si hay texto y está activado ──
+        if (p.textoImagen && p.mostrarTextoImagen !== false) {
+            var txtImg = document.createElement('div');
+            txtImg.className = 'texto-sobre-imagen';
+            txtImg.textContent = p.textoImagen;
+            imgContenedor.appendChild(txtImg);
+        }
 
         // ── Botón "hay más fotos" (solo si el producto tiene 2 o más imágenes) ──
         // Al tocarlo, cambia el <img> principal a la SIGUIENTE imagen del producto.
@@ -6146,9 +6160,9 @@ function _abrirRecorteImagenPrincipal() {
 }
 
 // ── Texto sobre la imagen ──
-// El texto se INCRUSTA en la imagen principal al guardar (ver _incrustarTextoEnImagen) y esa imagen ya editada es la que se
-// sube a ImgBB. Aquí solo se muestra una vista previa dentro del recuadro de recorte (arriba al centro), a escala.
-var _TEXTO_IMG_ESCALA = 0.07;          // tamaño de la letra = 7 % del lado del recuadro cuadrado (igual en vista previa e imagen final)
+// El texto va APARTE de la imagen (no se imprime en ella): se guarda en la hoja y el catálogo lo dibuja encima de la tarjeta, arriba al
+// centro, solo si está activado. Aquí solo hay una vista previa dentro del recuadro de recorte, a escala.
+var _TEXTO_IMG_ESCALA = 0.07;          // tamaño de la letra de la vista previa = 7 % del lado del recuadro
 var _recorteTextoVisible = false;      // el modal grande solo muestra el texto cuando se está recortando la imagen principal
 
 function _textoSobreImagenActual() {
@@ -6156,7 +6170,8 @@ function _textoSobreImagenActual() {
     return ((el && el.value) || '').replace(/[\r\n\t]+/g, ' ').trim();
 }
 function _actualizarTextoSobreImagen() {
-    var t = _textoSobreImagenActual();
+    var chkMostrar = document.getElementById('inputMostrarTextoImagenProducto');
+    var t = (chkMostrar && !chkMostrar.checked) ? '' : _textoSobreImagenActual();
     [['recorteTextoPreview', 'recorteCuadro', true], ['recorteGrandeTextoPreview', 'recorteGrandeCuadro', _recorteTextoVisible]].forEach(function (x) {
         var el = document.getElementById(x[0]), cuadro = document.getElementById(x[1]);
         if (!el) return;
@@ -6164,80 +6179,6 @@ function _actualizarTextoSobreImagen() {
         el.style.display = (t && x[2]) ? 'block' : 'none';
         var lado = cuadro ? cuadro.clientWidth : 0;
         if (lado) el.style.fontSize = (lado * _TEXTO_IMG_ESCALA) + 'px';
-    });
-}
-
-// Dibuja el texto (blanco, negrita, sobre una pastilla oscura) arriba al centro del recuadro cuadrado de recorte de la imagen
-// y devuelve el base64 de la imagen ya editada (mismo formato que la original: WebP o JPEG). No modifica la imagen original.
-function _incrustarTextoEnImagen(item, texto) {
-    return new Promise(function (resolve, reject) {
-        var img = new Image();
-        img.onload = function () {
-            try {
-                var w = img.naturalWidth, h = img.naturalHeight;
-                var canvas = document.createElement('canvas');
-                canvas.width = w; canvas.height = h;
-                var ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, w, h);
-
-                // Mismo recuadro cuadrado que se ve en el catálogo (lado = el menor de ancho/alto, según el enfoque elegido)
-                var lado = Math.min(w, h);
-                var fx = (typeof item.enfoqueX === 'number') ? item.enfoqueX : 50;
-                var fy = (typeof item.enfoqueY === 'number') ? item.enfoqueY : 0;
-                var izq = (w - lado) * fx / 100, arr = (h - lado) * fy / 100;
-
-                var fs = Math.max(12, Math.round(lado * _TEXTO_IMG_ESCALA));
-                ctx.font = '700 ' + fs + 'px "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
-                var maxAncho = lado * 0.84 - fs * 1.2;
-
-                // Partir en líneas (por palabras; una palabra muy larga se parte por letras)
-                var lineas = [], actual = '';
-                String(texto).split(/\s+/).filter(Boolean).forEach(function (palabra) {
-                    while (ctx.measureText(palabra).width > maxAncho && palabra.length > 1) {
-                        var n = palabra.length - 1;
-                        while (n > 1 && ctx.measureText(palabra.substring(0, n)).width > maxAncho) n--;
-                        if (actual) { lineas.push(actual); actual = ''; }
-                        lineas.push(palabra.substring(0, n));
-                        palabra = palabra.substring(n);
-                    }
-                    var prueba = actual ? actual + ' ' + palabra : palabra;
-                    if (actual && ctx.measureText(prueba).width > maxAncho) { lineas.push(actual); actual = palabra; }
-                    else actual = prueba;
-                });
-                if (actual) lineas.push(actual);
-
-                var lh = fs * 1.25, padX = fs * 0.6, padY = fs * 0.35;
-                var anchoTexto = 0;
-                lineas.forEach(function (l) { anchoTexto = Math.max(anchoTexto, ctx.measureText(l).width); });
-                var cajaW = anchoTexto + padX * 2, cajaH = lineas.length * lh + padY * 2;
-                var x0 = izq + lado / 2 - cajaW / 2, y0 = arr + lado * 0.03, r = fs * 0.5;
-
-                ctx.fillStyle = 'rgba(0,0,0,0.45)';
-                ctx.beginPath();
-                ctx.moveTo(x0 + r, y0);
-                ctx.arcTo(x0 + cajaW, y0, x0 + cajaW, y0 + cajaH, r);
-                ctx.arcTo(x0 + cajaW, y0 + cajaH, x0, y0 + cajaH, r);
-                ctx.arcTo(x0, y0 + cajaH, x0, y0, r);
-                ctx.arcTo(x0, y0, x0 + cajaW, y0, r);
-                ctx.closePath();
-                ctx.fill();
-
-                ctx.fillStyle = '#ffffff';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = fs * 0.12; ctx.shadowOffsetY = fs * 0.04;
-                lineas.forEach(function (l, i) {
-                    ctx.fillText(l, x0 + cajaW / 2, y0 + padY + lh * i + lh / 2);
-                });
-
-                var tipo = (item.esWebp === false) ? 'image/jpeg' : 'image/webp';
-                var dataUrl = canvas.toDataURL(tipo, 0.85);
-                if (dataUrl.indexOf('data:' + tipo) !== 0) dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-                resolve(dataUrl.split(',')[1]);
-            } catch (err) { reject(err); }
-        };
-        img.onerror = function () { reject(new Error('No se pudo leer la imagen principal.')); };
-        img.src = item.dataUrl;
     });
 }
 
@@ -6584,6 +6525,7 @@ async function guardarProductoAdmin() {
 
     var nombre          = ((document.getElementById('inputNombreProducto')          || {}).value || '').trim();
     var textoImagen     = ((document.getElementById('inputTextoImagenProducto')     || {}).value || '').replace(/[\r\n\t]+/g, ' ').trim();
+    var mostrarTextoImagen = (document.getElementById('inputMostrarTextoImagenProducto') || {}).checked === false ? 'no' : 'si';
     var descripcion     = ((document.getElementById('inputDescripcionProducto')     || {}).value || '').trim();
     var precio          = ((document.getElementById('inputPrecioProducto')          || {}).value || '').trim();
     var precioMayoreo   = ((document.getElementById('inputPrecioMayoreoProducto')   || {}).value || '').trim();
@@ -6640,21 +6582,11 @@ async function guardarProductoAdmin() {
         // Token fresco de Firebase — el servidor lo verifica antes de escribir
         var idToken = await user.getIdToken(true);
 
-        // Imágenes a subir: la principal (la primera) lleva el texto ya incrustado, si se escribió uno
-        var imagenesParaSubir = _adminImagenesProducto.map(function (x) { return x.base64; });
-        if (textoImagen) {
-            _statusAdmin('Incrustando el texto en la imagen…', false);
-            try {
-                imagenesParaSubir[0] = await _incrustarTextoEnImagen(_adminImagenesProducto[0], textoImagen);
-            } catch (errTexto) {
-                throw new Error('No se pudo poner el texto sobre la imagen: ' + (errTexto && errTexto.message ? errTexto.message : errTexto));
-            }
-            _statusAdmin('Subiendo imagen y guardando en la hoja…', false);
-        }
-
         var cuerpo = {
             idToken:           idToken,
             nombre:            nombre,
+            textoImagen:       textoImagen,
+            mostrarTextoImagen: mostrarTextoImagen,
             descripcion:       descripcion,
             precio:            precio,
             precioMayoreo:     precioMayoreo,
@@ -6668,7 +6600,7 @@ async function guardarProductoAdmin() {
             video:             videoYoutube,
             filaDestino:       filaDestino,
             precioOferta:      precioOferta,
-            imagenes:          imagenesParaSubir,
+            imagenes:          _adminImagenesProducto.map(function (x) { return x.base64; }),
             imagenesNombres:   _adminImagenesProducto.map(function (x) { return x.nombre; }),
             // Punto de enfoque de CADA imagen ("X,Y" en %), mismo orden que "imagenes".
             enfoques:          _adminImagenesProducto.map(function (x) {
@@ -6711,6 +6643,8 @@ async function guardarProductoAdmin() {
         });
         var _inputEventoOtro = document.getElementById('inputEventoOtroProducto');
         if (_inputEventoOtro) _inputEventoOtro.value = '';
+        var _chkMostrarTxt = document.getElementById('inputMostrarTextoImagenProducto');
+        if (_chkMostrarTxt) _chkMostrarTxt.checked = true;
         _limpiarImagenesProducto();
         _actualizarTextoSobreImagen();
         var _avisoPosicion = '';
@@ -6813,6 +6747,9 @@ function abrirEdicionProducto(card) {
 
     // ── Prellenar campos de texto ──
     _setValorEdit('inputNombreProductoEdit',        card.getAttribute('data-nombre') || '');
+    _setValorEdit('inputTextoImagenProductoEdit',   card.getAttribute('data-texto-imagen') || '');
+    var _chkMostrarTxtEdit = document.getElementById('inputMostrarTextoImagenProductoEdit');
+    if (_chkMostrarTxtEdit) _chkMostrarTxtEdit.checked = card.getAttribute('data-mostrar-texto-imagen') !== '0';
     _setValorEdit('inputPrecioProductoEdit',         card.getAttribute('data-precio') || '');
     _setValorEdit('inputPrecioMayoreoProductoEdit',  card.getAttribute('data-precio-bazar') || '');
     _setValorEdit('inputDescripcionProductoEdit',    card.getAttribute('data-descripcion') || '');
@@ -7053,6 +6990,8 @@ async function guardarEdicionProducto() {
     }
 
     var nombre          = ((document.getElementById('inputNombreProductoEdit')          || {}).value || '').trim();
+    var textoImagen     = ((document.getElementById('inputTextoImagenProductoEdit')     || {}).value || '').replace(/[\r\n\t]+/g, ' ').trim();
+    var mostrarTextoImagen = (document.getElementById('inputMostrarTextoImagenProductoEdit') || {}).checked === false ? 'no' : 'si';
     var descripcion     = ((document.getElementById('inputDescripcionProductoEdit')     || {}).value || '').trim();
     var precio          = ((document.getElementById('inputPrecioProductoEdit')          || {}).value || '').trim();
     var precioMayoreo   = ((document.getElementById('inputPrecioMayoreoProductoEdit')   || {}).value || '').trim();
@@ -7107,6 +7046,8 @@ async function guardarEdicionProducto() {
             idToken:           idToken,
             filaEditar:        _editFilaActual,
             nombre:            nombre,
+            textoImagen:       textoImagen,
+            mostrarTextoImagen: mostrarTextoImagen,
             descripcion:       descripcion,
             precio:            precio,
             precioMayoreo:     precioMayoreo,

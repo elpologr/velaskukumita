@@ -30,7 +30,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600;1,700&family=Playfair+Display:ital,wght@0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
     <!-- Estilos externos -->
-    <link rel="stylesheet" href="style.css?v=27">
+    <link rel="stylesheet" href="style.css?v=28">
     <link rel="stylesheet" href="mesas.css?v=4">
 
     <!-- Estilos botones de modo catálogo -->
@@ -659,7 +659,14 @@
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Texto sobre la imagen</label>
                     <input id="inputTextoImagenProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. ¡Nuevo!, Edición limitada" maxlength="60" oninput="_actualizarTextoSobreImagen()">
-                    <span class="ayuda-texto-imagen">Se incrusta en la imagen principal, arriba al centro del recuadro, y así se sube a ImgBB. No es el nombre del producto.</span>
+                    <span class="ayuda-texto-imagen">Va arriba al centro de la imagen en el catálogo (no es el nombre del producto). Es independiente de la foto: puedes ocultarlo o mostrarlo cuando quieras.</span>
+                    <div class="campo-admin-checkbox" style="margin-top:8px;">
+                        <label class="pill-btn pill-btn-admin-toggle">
+                            <input id="inputMostrarTextoImagenProducto" type="checkbox" checked onchange="_actualizarTextoSobreImagen()">
+                            <span style="font-size:1.6rem; line-height:1;">👁️</span>
+                            <span class="pill-btn-label">Mostrar texto en el catálogo</span>
+                        </label>
+                    </div>
                 </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Cantidad en stock</label>
@@ -836,6 +843,18 @@
                         <button type="button" class="btn-nueva-etiqueta" onclick="crearEtiquetaPersonalizada('evento', 'inputNuevaEtiquetaEventoEdit')">➕ Crear</button>
                     </div>
                     <input id="inputEventoOtroProductoEdit" class="panel-nombre-input" type="text" maxlength="60" placeholder="¿Otro evento? Escríbelo aquí (opcional)" style="margin-top:8px;">
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Texto sobre la imagen</label>
+                    <input id="inputTextoImagenProductoEdit" class="panel-nombre-input" type="text" placeholder="Opcional, ej. ¡Nuevo!, Edición limitada" maxlength="60" oninput="_actualizarTextoSobreImagen()">
+                    <span class="ayuda-texto-imagen">Va arriba al centro de la imagen en el catálogo (no es el nombre del producto). Es independiente de la foto: puedes ocultarlo o mostrarlo cuando quieras.</span>
+                    <div class="campo-admin-checkbox" style="margin-top:8px;">
+                        <label class="pill-btn pill-btn-admin-toggle">
+                            <input id="inputMostrarTextoImagenProductoEdit" type="checkbox" checked onchange="_actualizarTextoSobreImagen()">
+                            <span style="font-size:1.6rem; line-height:1;">👁️</span>
+                            <span class="pill-btn-label">Mostrar texto en el catálogo</span>
+                        </label>
+                    </div>
                 </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Cantidad en stock</label>
@@ -2180,7 +2199,7 @@
 </div>
 
     <!-- JavaScript externo -->
-    <script src="app.js?v=19"></script>
+    <script src="app.js?v=20"></script>
 <script src="admin-producto-ui.js?v=1"></script>
 <script src="portada.js?v=2"></script>
 <script src="cuadricula.js?v=4"></script>

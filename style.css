@@ -4600,3 +4600,15 @@ body.modo-oscuro .ayuda-texto-imagen { color: #b8a595; }
     background: #8c7565; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap;
 }
 .btn-nueva-etiqueta:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Texto sobre la imagen en la tarjeta del catálogo (arriba al centro; deja libre el corazón de la derecha) ── */
+.texto-sobre-imagen {
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    max-width: calc(100% - 150px); padding: 4px 12px; border-radius: 12px;
+    background: rgba(0,0,0,0.45); color: #fff; font-size: 14px; font-weight: 700; line-height: 1.25;
+    text-align: center; word-break: break-word; text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    pointer-events: none; z-index: 2;
+}
+@media (max-width: 600px) {
+    .texto-sobre-imagen { max-width: calc(100% - 90px); font-size: 12px; padding: 3px 9px; top: 8px; }
+}
