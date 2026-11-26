@@ -233,7 +233,9 @@
         ed.bElegir = boton('🔗 Elegir producto', 'zi-b zi-b-ok');
         ed.bCapturar = boton('📸 Capturar y crear producto', 'zi-b zi-b-captura');
         ed.bDescargar = boton('⬇️ Descargar captura a mi PC', 'zi-b zi-b-captura');
-        b.appendChild(ed.selTxt); b.appendChild(ed.bElegir); b.appendChild(ed.bCapturar); b.appendChild(ed.bDescargar);
+        ed.filaCaptura = el('div', 'zi-fila zi-fila-captura');
+        ed.filaCaptura.appendChild(ed.bCapturar); ed.filaCaptura.appendChild(ed.bDescargar);
+        b.appendChild(ed.selTxt); b.appendChild(ed.bElegir); b.appendChild(ed.filaCaptura);
 
         ed.picker = el('div', 'zi-picker'); ed.picker.hidden = true;
         ed.buscar = document.createElement('input');
@@ -297,7 +299,7 @@
         var z = ed.zonas[i];
         ed.bBorrar.disabled = !z;
         ed.bNuevo.disabled = ed.zonas.length >= MAX_ZONAS;
-        ed.selTxt.hidden = !z; ed.bElegir.hidden = !z; ed.bCapturar.hidden = !z; ed.bDescargar.hidden = !z;
+        ed.selTxt.hidden = !z; ed.bElegir.hidden = !z; ed.filaCaptura.hidden = !z;
         if (z) ed.selTxt.textContent = 'Recuadro ' + (i + 1) + ': ' + (z.p ? '🔗 ' + z.p : 'sin producto anclado');
         else ed.picker.hidden = true;
     }
@@ -305,6 +307,17 @@
     function cajaEdicion(z, i) {
         var c = el('div', 'zi-caja zi-ed'); colocar(c, z);
         c.appendChild(el('span', 'zi-num', String(i + 1)));
+        // Botón de descarga dentro del recuadro (abajo, solo cuando está seleccionado)
+        var bd = boton('⬇️ Guardar captura', 'zi-descarga');
+        bd.title = 'Descargar a mi PC lo que encierra este recuadro';
+        bd.addEventListener('pointerdown', function (e) { e.stopPropagation(); });
+        bd.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var ed = edicion; if (!ed) return;
+            var k = ed.zonas.indexOf(z); if (k < 0) return;
+            seleccionar(k); descargarCaptura(ed);
+        });
+        c.appendChild(bd);
         ['nw', 'ne', 'sw', 'se'].forEach(function (m) {
             var a = el('span', 'zi-asa zi-asa-' + m);
             a.addEventListener('pointerdown', function (e) { arrastrar(e, z, c, m); });

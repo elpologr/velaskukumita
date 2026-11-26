@@ -5193,3 +5193,10 @@ body.modo-oscuro .zi-b-crear { background: #25382a; border-color: #3f6b47; color
 /* Capturar el recuadro y crear un producto con esa imagen (zonas-imagen.js) */
 .zi-b-captura { background: #fff4e0; border-color: #f0d09a; color: #8a5a00; }
 body.modo-oscuro .zi-b-captura { background: #3d3020; border-color: #7a5d2c; color: #f5d9a3; }
+/* Botón de descarga dentro del recuadro seleccionado (zonas-imagen.js) */
+.zi-descarga { display: none; position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 3; max-width: calc(100% - 8px); padding: 7px 12px; border: 2px solid #fff; border-radius: 999px; background: #ffb300; color: #2a1d12; font-size: 13px; font-weight: 800; line-height: 1.1; white-space: nowrap; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.45); touch-action: manipulation; }
+.zi-caja.sel .zi-descarga { display: block; }
+.zi-descarga:active { background: #ff9800; }
+.zi-fila-captura[hidden] { display: none; }
+.zi-fila-captura { flex-wrap: wrap; }
+.zi-fila-captura .zi-b { min-width: 140px; }
