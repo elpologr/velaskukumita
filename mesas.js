@@ -819,7 +819,7 @@
         $('mesasCatAgregar').addEventListener('click', function () {
             if (typeof abrirPantallaAdminProductos === 'function') abrirPantallaAdminProductos();
         });
-        document.addEventListener('catalogoCargado', function () { catRender(); pedirDibujo(); });   // cuando la hoja termina de cargar o se recarga
+        document.addEventListener('catalogoCargado', function () { catRender(); pintarListaCelda(); pedirDibujo(); });   // cuando la hoja termina de cargar o se recarga
     }
 
     // ── Celdas con producto ──
@@ -935,7 +935,7 @@
             : ce ? '🔲 Celda: fila ' + (ce.r % MF + 1) + ', columna ' + (ce.c % MC + 1)
             : S.sel ? 'Toca una celda de la mesa' : 'Toca una mesa';
         $('mesasCeldaActual').textContent = !ce ? '' : !v ? 'Vacía. Busca un producto para ponerlo aquí.'
-            : p ? '✔ ' + p.nombre + (p.precioNormal ? ' · $' + p.precioNormal : '')
+            : p ? '✔ ' + p.nombre + (precioMostrado(p) ? ' · $' + precioMostrado(p) : '')
             : '⚠ ' + v.n + ' (ya no aparece en el catálogo)';
         $('mesasCeldaBuscar').disabled = !ce;
         $('mesasCeldaQuitar').disabled = !v;
@@ -944,23 +944,42 @@
         $('mesasLlenarMesa').disabled = !S.sel;
         if (S.celKey !== k) { S.celKey = k; $('mesasCeldaBuscar').value = ''; pintarListaCelda(); }
     }
+    function itemProductoCelda(p) {
+        var b = h('button', 'mesas-celda-item'); b.type = 'button';
+        if (p.imagen) { var im = document.createElement('img'); im.loading = 'lazy'; im.alt = ''; im.src = p.imagen; b.appendChild(im); }
+        var pr = precioMostrado(p), sp = h('span', '', p.nombre), sm = h('small', '', pr ? '$' + pr : '');
+        sp.appendChild(sm); b.appendChild(sp);
+        b.addEventListener('click', function () { asignarProducto(p); });
+        return b;
+    }
+    function sugerenciasCelda() {
+        if (!S.cel) return null;
+        if (!catalogo().length) return { titulo: 'El catálogo todavía no ha cargado (o está vacío).', lista: [] };
+        var m = mesaDeCelda(S.cel.r, S.cel.c), pm = pendientesMesa(m.mr, m.mc);
+        if (!pm) return { titulo: 'Esta mesa no tiene un texto con precio (por ejemplo «$50 Pesos»), «Más Vendido» o «Centros de Mesa», así que no hay sugeridos. Escribe arriba para buscar un producto.', lista: [] };
+        var r = pm.regla, que = r.tipo === 'precio' ? 'de $' + r.valor : r.tipo === 'vendido' ? 'más vendidos' : 'centros de mesa';
+        return { titulo: pm.lista.length ? 'Sugeridos para esta mesa (productos ' + que + '): ' + pm.lista.length + ' sin colocar' : 'Ya están colocados todos los productos ' + que + '.', lista: pm.lista };
+    }
     function pintarListaCelda() {
         var cont = $('mesasCeldaLista'); if (!cont) return;
         var q = norm($('mesasCeldaBuscar').value.trim());
         cont.innerHTML = '';
-        if (!q) { cont.style.display = 'none'; return; }   // la lista solo aparece al escribir
+        if (!q) {   // sin texto: se sugieren los productos que le tocan a esta mesa según su texto («$50 Pesos», «Más Vendido»…)
+            var sg = sugerenciasCelda();
+            if (!sg) { cont.style.display = 'none'; return; }
+            cont.style.display = 'block';
+            cont.appendChild(h('div', 'mesas-celda-mas', sg.titulo));
+            sg.lista.slice(0, 30).forEach(function (p) { cont.appendChild(itemProductoCelda(p)); });
+            if (sg.lista.length > 30) cont.appendChild(h('div', 'mesas-celda-mas', '…y ' + (sg.lista.length - 30) + ' más. Usa «⚡ Llenar esta mesa» para ponerlos todos.'));
+            return;
+        }
         var L = catProductos();
         cont.style.display = 'block';
         if (!L.length) { cont.textContent = 'El catálogo todavía no ha cargado (o está vacío).'; return; }
         var hallados = L.filter(function (p) { return norm(p.nombre).indexOf(q) !== -1; });
         if (!hallados.length) { cont.textContent = 'Sin resultados.'; return; }
         hallados.slice(0, 30).forEach(function (p) {
-            var b = h('button', 'mesas-celda-item'); b.type = 'button';
-            if (p.imagen) { var im = document.createElement('img'); im.loading = 'lazy'; im.alt = ''; im.src = p.imagen; b.appendChild(im); }
-            var sp = h('span', '', p.nombre), sm = h('small', '', p.precioNormal ? '$' + p.precioNormal : '');
-            sp.appendChild(sm); b.appendChild(sp);
-            b.addEventListener('click', function () { asignarProducto(p); });
-            cont.appendChild(b);
+            cont.appendChild(itemProductoCelda(p));
         });
         if (hallados.length > 30) cont.appendChild(h('div', 'mesas-celda-mas', '…y ' + (hallados.length - 30) + ' más. Escribe más letras para acotar.'));
     }
@@ -1008,22 +1027,32 @@
         if (m) return { tipo: 'precio', valor: parseFloat(m[1]) };
         if (/vendido/.test(t)) return { tipo: 'vendido' };
         if (/centros? de mesa/.test(t)) return { tipo: 'centros' };
+        var m2 = /\$\s*(\d+(?:\.\d+)?)/.exec(crudo) || /(\d+(?:\.\d+)?)\s*pesos/i.exec(crudo);   // «Productos de $50», «Todo a 50 pesos»…
+        if (m2) return { tipo: 'precio', valor: parseFloat(m2[1]) };
         if (!t && n === 39) return { tipo: 'centros' };
         if (!t && n === 40) return { tipo: 'vendido' };
         return null;
     }
     function pzEsCentros(p) { return (p.tipos || []).some(function (t) { return /centros?[ -]de[ -]mesa/.test(norm(t)); }); }
     function pzEsVendido(p) { return !!p.masVendido || (p.tipos || []).some(function (t) { return /vendido/.test(norm(t)); }); }
-    // Devuelve cuántos productos puso (-1 si la mesa no tiene una regla reconocible)
-    function llenarMesa(mr, mc) {
-        var r = reglaMesa(mr, mc); if (!r) return -1;
+    // Precio que se ve en la pieza: el de oferta si está en oferta, si no el normal
+    function precioMostrado(p) { var of = parseFloat(p.precioOferta) || 0; return (p.oferta && of > 0) ? of : (parseFloat(p.precioNormal) || 0); }
+    // Productos que le tocan a una mesa según su texto y que todavía no están puestos en ninguna de sus partes (null = sin regla)
+    function pendientesMesa(mr, mc) {
+        var r = reglaMesa(mr, mc); if (!r) return null;
         var ya = {}, p0;
         for (p0 = 0; p0 < MAX_PAG; p0++) celdasMesaPag(mr, mc, p0).forEach(function (it) { if (it.p) ya[it.p.id] = 1; });   // sin repetir los de ninguna parte
-        var pend = catProductos().filter(function (p) {
+        var lista = catProductos().filter(function (p) {
             if (ya[p.id]) return false;
-            if (r.tipo === 'precio') return Math.abs((parseFloat(p.precioNormal) || 0) - r.valor) < 0.001;
+            if (r.tipo === 'precio') return Math.abs(precioMostrado(p) - r.valor) < 0.001 || Math.abs((parseFloat(p.precioNormal) || 0) - r.valor) < 0.001;
             return r.tipo === 'vendido' ? pzEsVendido(p) : pzEsCentros(p);
         });
+        return { regla: r, lista: lista };
+    }
+    // Devuelve cuántos productos puso (-1 si la mesa no tiene una regla reconocible)
+    function llenarMesa(mr, mc) {
+        var pm = pendientesMesa(mr, mc); if (!pm) return -1;
+        var pend = pm.lista;
         // Se llena la parte 1; si se llena, lo que sobre pasa a la parte 2, y así sucesivamente
         var n = 0;
         for (var pag = 0; pag < MAX_PAG && n < pend.length; pag++) {
