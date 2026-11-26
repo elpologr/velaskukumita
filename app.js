@@ -255,7 +255,7 @@ function _esSinPrecio(card) {
     return !!card && card.getAttribute('data-modo-precio') === 'sinprecio';
 }
 function _consultarPrecioWA(nombre) {
-    var texto = 'Hola, me interesa el producto: ' + nombre + '. ¿Me puedes informar el precio?';
+    var texto = 'Hola, me interesa el producto: ' + nombre + '. Vi que su precio aún no está asignado en la página, ¿me puedes informar el precio real?';
     window.open('https://wa.me/524431469161?text=' + encodeURIComponent(texto), '_blank');
 }
 // Administradores → abre la ventanita para fijar el precio (sin-precio.js); cualquier otra persona → consulta por WhatsApp
@@ -597,7 +597,7 @@ function _crearCardProducto(p, esCopia) {
             franjaSP.className = 'card-sin-precio';
             franjaSP.setAttribute('role', 'button');
             franjaSP.tabIndex = 0;
-            franjaSP.innerHTML = '<span class="csp-publico">💬 Sin precio · consúltalo por WhatsApp</span>' +
+            franjaSP.innerHTML = '<span class="csp-publico">💬 Precio aún no asignado · pregúntalo por WhatsApp</span>' +
                                  '<span class="csp-admin">⚠️ Falta fijar precio · toca para ponerlo</span>';
             var _accionFranja = function(e) {
                 e.stopPropagation();
@@ -1814,7 +1814,7 @@ function aplicarConfigBazar(rawTexto) {
 
         // Botón WhatsApp
         document.getElementById('mpBtnWhatsapp').onclick = () => {
-            const texto = encodeURIComponent('Hola, me interesa el producto: ' + nombre + (_sinPrecio ? '. ¿Me puedes informar el precio?' : (precioNum ? ' ($' + precioNum + ' MXN)' : '')));
+            const texto = encodeURIComponent('Hola, me interesa el producto: ' + nombre + (_sinPrecio ? '. Vi que su precio aún no está asignado en la página, ¿me puedes informar el precio real?' : (precioNum ? ' ($' + precioNum + ' MXN)' : '')));
             window.open('https://wa.me/524431469161?text=' + texto, '_blank');
         };
 
@@ -3847,7 +3847,7 @@ function renderizarFavoritos() {
         var card = document.querySelector('[data-idx="' + idxProd + '"]');
 
         var nombre = prod ? prod.nombre : (card ? (card.querySelector('h3') || {}).textContent : 'Producto');
-        var precio = prod ? (prod.modoPrecio === 'sinprecio' ? 'Sin precio' : ((prod.modoPrecio === 'revisar' ? 'Desde ' : '') + '$' + (prod.precioBazar || prod.precioNormal || '') + ' MXN')) : '';
+        var precio = prod ? (prod.modoPrecio === 'sinprecio' ? 'Precio por consultar' : ((prod.modoPrecio === 'revisar' ? 'Desde ' : '') + '$' + (prod.precioBazar || prod.precioNormal || '') + ' MXN')) : '';
         var imgSrc = prod ? (prod.imagen || (prod.imagenes && prod.imagenes[0]) || '') :
                     (card ? ((card.querySelector('img') || {}).src || '') : '');
         var _enfoqueFav = _objectPositionDesdeEnfoque(prod ? prod.enfoqueImagen :
@@ -4500,7 +4500,7 @@ function construirCarrusel(tipo) {
             '<div class="carrusel-card-info">' +
                 '<div class="carrusel-card-badge' + (esOferta ? '' : ' mv') + '">' + (esOferta ? '🏷️ Oferta' : '🏆 Top') + '</div>' +
                 '<div class="carrusel-card-nombre" title="' + nombre + '">' + nombre + '</div>' +
-                '<div class="carrusel-card-precio">' + (card.getAttribute('data-modo-precio') === 'sinprecio' ? 'Sin precio' : (precioMostrar ? (card.getAttribute('data-modo-precio') === 'revisar' ? 'Desde ' : '') + '$' + precioMostrar + ' MXN' : '')) + '</div>' +
+                '<div class="carrusel-card-precio">' + (card.getAttribute('data-modo-precio') === 'sinprecio' ? 'Precio por consultar' : (precioMostrar ? (card.getAttribute('data-modo-precio') === 'revisar' ? 'Desde ' : '') + '$' + precioMostrar + ' MXN' : '')) + '</div>' +
             '</div>';
 
         // Al hacer click abre el modal de producto
@@ -4603,7 +4603,7 @@ function abrirListaPrecios(card) {
             fila.appendChild(im);
         }
         var n = document.createElement('div'); n.className = 'lp-nombre'; n.textContent = it.nombre;
-        var pr = document.createElement('div'); pr.className = 'lp-precio'; pr.textContent = it.sinPrecio ? 'Sin precio' : _formatoPrecio(it.precio);
+        var pr = document.createElement('div'); pr.className = 'lp-precio'; pr.textContent = it.sinPrecio ? 'Por consultar' : _formatoPrecio(it.precio);
         var b = document.createElement('button'); b.type = 'button'; b.className = 'lp-agregar';
         if (it.sinPrecio) {   // sin precio no se cotiza en el carrito: se consulta por WhatsApp
             b.setAttribute('aria-label', 'Consultar el precio de ' + it.nombre); b.textContent = '💬';
@@ -4827,7 +4827,7 @@ async function _lpResolverParaGuardar(rl, idToken, avisar) {
 // ── Modal de Cantidad ──
 function abrirModalCantidad(card) {
     if (_esSinPrecio(card)) {   // sin precio no se cotiza en el carrito: se consulta por WhatsApp
-        mostrarToast('Este producto aún no tiene precio. Consúltalo por WhatsApp.');
+        mostrarToast('El precio de este producto aún no está asignado. Pregúntalo por WhatsApp.');
         _consultarPrecioWA((card.getAttribute('data-nombre') || 'Producto').trim());
         return;
     }

@@ -42,7 +42,7 @@
             var it = items[i];
             img.src = it.img; img.alt = it.nombre || '';
             nombre.textContent = it.nombre || '';
-            precio.textContent = it.sinPrecio ? 'Sin precio' : ((typeof _formatoPrecio === 'function') ? _formatoPrecio(it.precio) : ('$' + it.precio));
+            precio.textContent = it.sinPrecio ? 'Precio por consultar' : ((typeof _formatoPrecio === 'function') ? _formatoPrecio(it.precio) : ('$' + it.precio));
             cuenta.textContent = (i + 1) + ' / ' + items.length;
             cuenta.style.display = items.length > 1 ? '' : 'none';
             // Precarga la siguiente para que el cambio sea instantáneo

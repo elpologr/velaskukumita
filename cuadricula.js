@@ -57,6 +57,7 @@
                 oferta: !!p.oferta,
                 mas: !!p.masVendido,
                 precio: p.precioNormal || 0,
+                sinPrecio: p.modoPrecio === 'sinprecio',   // aún sin precio asignado: no se muestra como $0
                 mayoreo: p.precioBazar || 0,
                 precioOferta: p.precioOferta || 0
             };
@@ -167,7 +168,7 @@
             var nom = el('div', 'cg-nombre', it.nombre); nom.setAttribute('data-campo', 'nombre'); nom.title = 'Clic para cambiar el nombre';
             c.appendChild(nom);
             var pr = el('div', 'cg-precio');
-            var pn = el('span', 'cg-p-normal', dinero(it.precio)); pn.setAttribute('data-campo', 'precio'); pn.title = 'Clic para cambiar el precio';
+            var pn = el('span', 'cg-p-normal', it.sinPrecio && !(Number(it.precio) > 0) ? 'Precio por consultar' : dinero(it.precio)); pn.setAttribute('data-campo', 'precio'); pn.title = 'Clic para cambiar el precio';
             pr.appendChild(pn);
             if (it.precioOferta && it.precioOferta < it.precio) {
                 pn.classList.add('cg-tachado');
