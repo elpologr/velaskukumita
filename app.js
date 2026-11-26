@@ -1141,7 +1141,8 @@ function aplicarConfigBazar(rawTexto) {
     var _scrollAlCambiarPagina = false;
 
     // Marco «Agregar producto»: solo administradores, solo en la ÚLTIMA página de los productos (no en la portada)
-    // y solo si no hay filtro/búsqueda activos (si no, «después del último producto» no tendría sentido).
+    // y solo si no hay filtro activo (si no, «después del último producto» no tendría sentido).
+    // Con la BÚSQUEDA global activa también se muestra, al final de los resultados (aunque sea uno solo o ninguno).
     function actualizarMarcoAgregar() {
         var marco = document.getElementById('marcoAgregarProducto');
         if (!marco) return;
@@ -1150,7 +1151,10 @@ function aplicarConfigBazar(rawTexto) {
         var total = document.querySelectorAll('#gridProductos .card-dinamica').length;
         var enUltima = total > 0 && tarjetasVisibles.length === total &&
             paginaActual === calcularTotalPaginas() && !(conPortada && paginaActual === 1);
-        marco.classList.toggle('visible', !!(admin && enUltima));
+        var buscando = document.body.classList.contains('busqueda-global-activa');
+        var enUltimaBusqueda = buscando && total > 0 &&
+            paginaActual === Math.max(1, calcularTotalPaginas()) && !(conPortada && paginaActual === 1);
+        marco.classList.toggle('visible', !!(admin && (enUltima || enUltimaBusqueda)));
     }
     window.actualizarMarcoAgregar = actualizarMarcoAgregar;
 
@@ -7090,6 +7094,8 @@ async function guardarProductoAdmin() {
         if (!data.ok) throw new Error(data.error || 'Error del servidor');
 
         mostrarToast('✅ Producto agregado');
+        // Aviso para otros módulos (zonas-imagen.js ancla el producto nuevo al recuadro desde el que se creó)
+        document.dispatchEvent(new CustomEvent('productoAgregado', { detail: { nombre: nombre, fila: data.fila } }));
 
         // Limpiar formulario
         ['inputNombreProducto', 'inputTextoImagenProducto', 'inputDescripcionProducto', 'inputPrecioProducto', 'inputPrecioMayoreoProducto',

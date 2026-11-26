@@ -5060,3 +5060,8 @@ body.modo-oscuro .zi-b-principal { background: #8c7565; border-color: #8c7565; c
 body.modo-oscuro .zi-buscar { background: #1e1611; border-color: #4f4036; color: #f3e6d3; }
 body.modo-oscuro .zi-lista { border-color: #4f4036; }
 body.modo-oscuro .zi-item { border-bottom-color: #3a2e26; }
+/* Crear un producto desde los recuadros (zonas-imagen.js): el formulario «Agregar producto» y su recorte de imagen se ven por encima del submenú del producto */
+body.zi-creando #pantallaAdminProductos.activo { z-index: 10080; }
+body.zi-creando #overlayRecorteImagen { z-index: 10090; }
+.zi-b-crear { background: #e8f5e9; border-color: #a5d6a7; color: #2e7d32; }
+body.modo-oscuro .zi-b-crear { background: #25382a; border-color: #3f6b47; color: #bfe6c6; }

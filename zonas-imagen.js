@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // VELAS KUKÚMITA — Recuadros anclados sobre la imagen del producto
 // Se carga DESPUÉS de app.js (usa auth, _esAdminUI, ADMIN_ENDPOINT, SHEET_ID, parsearCSV, mostrarToast,
-// abrirModalProducto y window._mpCardActual). No hace falta tocar app.js: observa la galería del modal.
+// abrirModalProducto, abrirPantallaAdminProductos y window._mpCardActual; el evento «productoAgregado» lo lanza app.js). No hace falta tocar app.js: observa la galería del modal.
 //
 //   PÚBLICO: si la imagen de un producto tiene recuadros (trazo delgado, centro transparente), el cliente puede tocar uno
 //   y se abre el submenú del producto anclado (por ejemplo, solo el borrego chico con su precio). Arriba a la izquierda
@@ -10,7 +10,8 @@
 //   ADMINISTRADORES (correos de ADMIN_EMAILS): junto al engranaje aparece el botón ▢. Al tocarlo se puede:
 //     · dibujar un recuadro arrastrando sobre la imagen (o con «➕ Nuevo recuadro»),
 //     · moverlo y cambiar su tamaño desde las esquinas,
-//     · anclarle un producto con «🔗 Elegir producto»,
+//     · anclarle un producto con «🔗 Elegir producto», o crearlo ahí mismo con «✨ Crear producto nuevo» (abre el formulario
+//       completo de «Agregar producto»; al guardarlo se ancla solo al recuadro y los recuadros siguen editables),
 //     · borrarlo y guardar todo en la hoja (pestaña «ZonasImagen», la crea sola el Apps Script).
 //   Los recuadros se guardan en porcentajes de la imagen, así que se ven igual en celular y en computadora.
 //   El servidor vuelve a verificar el token y el correo (acción «zonasimagen»); aquí solo se evita mostrar las herramientas.
@@ -25,6 +26,7 @@
     var edicion = null;     // estado mientras un administrador edita una imagen
     var pila = [];          // nombres de los productos de los que se vino al tocar un recuadro (para «Volver»)
     var btnZonas = null, btnVolver = null;
+    var creando = null;     // { ed, z }: recuadro al que se le está creando un producto nuevo desde el formulario «Agregar producto»
 
     function el(tag, cls, texto) { var e = document.createElement(tag); if (cls) e.className = cls; if (texto !== undefined) e.textContent = texto; return e; }
     function boton(texto, cls) { var b = el('button', cls, texto); b.type = 'button'; return b; }
@@ -203,6 +205,7 @@
     function salirEdicion(sinRedibujar) {
         var ed = edicion; if (!ed) return;
         edicion = null;
+        if (creando && creando.ed === ed) creando = null;
         if (ed.capa) ed.capa.remove();
         if (ed.barra) ed.barra.remove();
         ed.track.style.overflowX = '';
@@ -231,7 +234,8 @@
         ed.buscar = document.createElement('input');
         ed.buscar.type = 'search'; ed.buscar.className = 'zi-buscar'; ed.buscar.placeholder = 'Buscar producto por nombre…';
         ed.lista = el('div', 'zi-lista');
-        ed.picker.appendChild(ed.buscar); ed.picker.appendChild(ed.lista);
+        ed.bCrear = boton('✨ Crear producto nuevo', 'zi-b zi-b-crear');
+        ed.picker.appendChild(ed.bCrear); ed.picker.appendChild(ed.buscar); ed.picker.appendChild(ed.lista);
         b.appendChild(ed.picker);
 
         ed.estado = el('div', 'zi-estado');
@@ -259,6 +263,7 @@
         });
         ed.bElegir.addEventListener('click', function () { if (ed.picker.hidden) abrirPicker(); else ed.picker.hidden = true; });
         ed.buscar.addEventListener('input', function () { pintarLista(ed.buscar.value); });
+        ed.bCrear.addEventListener('click', function () { crearProductoNuevo(ed); });
         ed.bCancelar.addEventListener('click', function () {
             if (ed.ocupado) return;
             if (ed.sucio && !window.confirm('¿Salir sin guardar los cambios de los recuadros?')) return;
@@ -408,6 +413,43 @@
         if (!total) lista.appendChild(el('div', 'zi-mas', 'No se encontró ningún producto con ese nombre.'));
         else if (total > mostrados) lista.appendChild(el('div', 'zi-mas', '…y ' + (total - mostrados) + ' más. Escribe para filtrar.'));
     }
+
+    // ── Crear un producto nuevo desde el recuadro (formulario completo de «Agregar producto») ──
+    function crearProductoNuevo(ed) {
+        var z = ed.zonas[ed.sel];
+        if (!z || edicion !== ed) return;
+        if (typeof abrirPantallaAdminProductos !== 'function') { estado('No se pudo abrir «Agregar producto».', true); return; }
+        creando = { ed: ed, z: z };
+        document.body.classList.add('zi-creando');     // sube el formulario por encima del submenú del producto
+        ed.picker.hidden = true;
+        ed.barra.style.display = 'none';
+        abrirPantallaAdminProductos();
+        var pant = document.getElementById('pantallaAdminProductos');
+        if (!pant || !pant.classList.contains('activo')) terminarCreacion();   // no se abrió (sesión sin permiso, etc.)
+    }
+    function terminarCreacion() {
+        var c = creando; creando = null;
+        document.body.classList.remove('zi-creando');
+        if (c && c.ed === edicion) {
+            c.ed.barra.style.display = '';
+            var i = c.ed.zonas.indexOf(c.z);
+            if (i > -1) seleccionar(i);
+        }
+        var m = document.getElementById('modalProducto');   // el submenú del producto sigue abierto debajo
+        if (m && m.classList.contains('abierto') && typeof _modalActivo !== 'undefined') _modalActivo = 'producto';
+    }
+    // Al guardar el producto nuevo, se ancla al recuadro y se vuelve a los recuadros (sin perder lo dibujado)
+    document.addEventListener('productoAgregado', function (e) {
+        var c = creando, nombre = e && e.detail ? String(e.detail.nombre || '').trim() : '';
+        if (!c || !nombre) return;
+        var i = (c.ed === edicion) ? c.ed.zonas.indexOf(c.z) : -1;
+        if (i > -1) { c.z.p = nombre; c.ed.sucio = true; }
+        if (typeof cerrarPantallaAdminProductos === 'function') cerrarPantallaAdminProductos();
+        if (i > -1) aviso('✅ Producto creado y anclado al recuadro ' + (i + 1) + '. Pulsa «Guardar» para conservar los recuadros.');
+    });
+    var pantAdmin = document.getElementById('pantallaAdminProductos');
+    if (pantAdmin) new MutationObserver(function () { if (!pantAdmin.classList.contains('activo')) terminarCreacion(); })
+        .observe(pantAdmin, { attributes: true, attributeFilter: ['class'] });
 
     // ── Guardar en la hoja (Apps Script, acción «zonasimagen») ──
     async function guardar(ed) {
