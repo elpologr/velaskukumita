@@ -22,7 +22,19 @@
 
     <!-- Favicon -->
     <link rel="icon" type="image/webp" href="imagenes/velalogo.webp">
-    <link rel="apple-touch-icon" href="imagenes/velalogo.webp">
+    <link rel="apple-touch-icon" href="icono-180-velas.png">
+
+    <!-- App instalable (PWA): manifest, color de la barra y captura del aviso de instalación -->
+    <link rel="manifest" href="manifest-velas.webmanifest">
+    <meta name="theme-color" content="#5c4d43">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Velas Kukúmita">
+    <script>
+        // Chrome puede avisar «se puede instalar» antes de que cargue pwa-velas.js: se guarda aquí
+        window.__pwa = { evento: null };
+        addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); window.__pwa.evento = e; });
+    </script>
 
     <!-- Fuentes de Google -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2274,6 +2286,7 @@
 <script src="portada.js?v=2"></script>
 <script src="cuadricula.js?v=5"></script>
 <script src="mesas.js?v=10"></script>
+<script src="pwa-velas.js?v=1"></script>
 
     <!-- ── AUTO-FIX MÓVIL: detecta y elimina cualquier elemento que desborde el viewport ── -->
     <script>
