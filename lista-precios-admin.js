@@ -166,16 +166,59 @@
         zonaImg.appendChild(el('label', 'panel-nombre-label', 'Imagen del producto'));
         var previa = el('div', 'slp-previa', '🖼️');
         var iTexto = entrada('text', 'Opcional, ej. ¡Nuevo!, Edición limitada', { maxLength: 60 });
+        // Igual que en «Agregar producto»: arranca con «¡  !» y el cursor entre los dos espacios; si se deja así cuenta como «sin texto»
+        var plantilla = (typeof _TEXTO_IMG_PLANTILLA === 'string') ? _TEXTO_IMG_PLANTILLA : '\u00A1  !';
+        iTexto.value = plantilla;
+        function alCentro() { if (iTexto.value === plantilla) { try { iTexto.setSelectionRange(2, 2); } catch (e) { } } }
+        iTexto.addEventListener('focus', function () { setTimeout(alCentro, 0); });
+        iTexto.addEventListener('click', alCentro);
         function textoActual() { return (typeof _normalizarTextoImagen === 'function') ? _normalizarTextoImagen(iTexto.value) : iTexto.value.trim(); }
-        function pintarPrevia() {
-            previa.innerHTML = '';
-            if (!imgData) { previa.textContent = '🖼️'; return; }
-            var im = document.createElement('img'); im.src = imgData.dataUrl; im.alt = '';
-            im.style.objectPosition = enfX + '% ' + enfY + '%';
-            previa.appendChild(im);
+        // Miniatura con la imagen COMPLETA y un cuadro 1:1 que se arrastra para elegir lo que se ve en las tarjetas del catálogo
+        // (mismo funcionamiento que la miniatura de «Agregar producto»). La imagen que se sube va completa: el cuadro solo guarda un punto de enfoque.
+        var caja = el('div', 'miniatura-principal slp-mini'); caja.style.display = 'none'; caja.style.width = 'min(100%, 220px)';
+        var imgM = document.createElement('img'); imgM.alt = ''; imgM.draggable = false;
+        var cuadro = el('div', 'recorte-cuadro');
+        var tPrev = el('div', 'recorte-texto-preview');
+        cuadro.appendChild(tPrev); caja.appendChild(imgM); caja.appendChild(cuadro);
+        var hintMini = el('span', 'miniatura-principal-hint', 'Arrastra el cuadro para elegir lo que se ve en el catálogo'); hintMini.hidden = true;
+        function posicionar() {
+            if (!imgData) return;
+            var lado = caja.clientWidth || 0;
+            if (!lado) return;
+            cuadro.style.height = lado + 'px';
+            var maxTop = Math.max(0, caja.clientHeight - lado);
+            cuadro.style.top = ((enfY / 100) * maxTop) + 'px';
             var t = textoActual();
-            if (t) { var tt = el('div', 'recorte-texto-preview', t); tt.style.display = 'block'; previa.appendChild(tt); }
-            bRecorte.hidden = false;
+            tPrev.textContent = t;
+            tPrev.style.display = t ? 'block' : 'none';
+            if (t && typeof _ajustarTextoUnaLinea === 'function') {
+                var esc = (typeof _TEXTO_IMG_ESCALA === 'number') ? _TEXTO_IMG_ESCALA : 0.07;
+                tPrev.style.fontSize = (lado * esc) + 'px';
+                _ajustarTextoUnaLinea(tPrev, lado * esc, lado * esc * 0.75);
+            }
+        }
+        imgM.onload = posicionar;
+        var arrastrando = false;
+        function moverA(clientY) {
+            var rect = caja.getBoundingClientRect(), lado = caja.clientWidth || 92;
+            var maxTop = Math.max(0, rect.height - lado);
+            var top = Math.max(0, Math.min(maxTop, (clientY - rect.top) - lado / 2));
+            enfY = maxTop > 0 ? Math.round((top / maxTop) * 100) : 0;
+            cuadro.style.top = top + 'px';
+        }
+        caja.addEventListener('pointerdown', function (e) {
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+            arrastrando = true; try { caja.setPointerCapture(e.pointerId); } catch (x) { }
+            moverA(e.clientY); e.preventDefault();
+        });
+        caja.addEventListener('pointermove', function (e) { if (arrastrando) { moverA(e.clientY); e.preventDefault(); } });
+        function soltar() { arrastrando = false; }
+        caja.addEventListener('pointerup', soltar); caja.addEventListener('pointercancel', soltar);
+        function pintarPrevia() {
+            if (!imgData) { previa.style.display = ''; caja.style.display = 'none'; hintMini.hidden = true; bRecorte.hidden = true; return; }
+            previa.style.display = 'none'; caja.style.display = ''; hintMini.hidden = false; bRecorte.hidden = false;
+            if (imgM.getAttribute('src') !== imgData.dataUrl) imgM.src = imgData.dataUrl;
+            posicionar();
         }
         var inGal = document.createElement('input'); inGal.type = 'file'; inGal.accept = 'image/*'; inGal.style.display = 'none';
         var inCam = document.createElement('input'); inCam.type = 'file'; inCam.accept = 'image/*'; inCam.setAttribute('capture', 'environment'); inCam.style.display = 'none';
@@ -196,13 +239,13 @@
             if (!f) return;
             estadoImg.textContent = 'Convirtiendo imagen…'; estadoImg.className = 'slp-estado';
             _convertirArchivoImagenProducto(f).then(function (r) {
-                imgData = r; enfX = 50; enfY = 0; pintarPrevia();
+                imgData = r; enfX = 50; enfY = 0; imgM.removeAttribute('src'); pintarPrevia();
                 estadoImg.textContent = '';
             }).catch(function (err) { estadoImg.textContent = String(err); estadoImg.className = 'slp-estado error'; });
         }
         function alElegir(ev) { var f = ev.target.files && ev.target.files[0]; ev.target.value = ''; procesarArchivo(f); }
         inGal.addEventListener('change', alElegir); inCam.addEventListener('change', alElegir);
-        zonaImg.appendChild(previa); zonaImg.appendChild(fila); zonaImg.appendChild(bRecorte); zonaImg.appendChild(estadoImg); zonaImg.appendChild(inGal); zonaImg.appendChild(inCam);
+        zonaImg.appendChild(previa); zonaImg.appendChild(caja); zonaImg.appendChild(hintMini); zonaImg.appendChild(fila); zonaImg.appendChild(bRecorte); zonaImg.appendChild(estadoImg); zonaImg.appendChild(inGal); zonaImg.appendChild(inCam);
 
         // Arrastrar y soltar una imagen desde la carpeta de la computadora (los botones de siempre siguen igual)
         var hint = el('div', 'zona-soltar-hint', '⬇️ …o arrastra aquí tu imagen desde tus archivos');
