@@ -952,6 +952,7 @@
             display: flex; align-items: center; justify-content: center;
             transition: background 0.2s, transform 0.15s;
         }
+        .mp-btn-texto { right: 94px; }   /* junto al engranaje */
         .mp-btn-config:hover { background: rgba(140,117,101,1); }
         .mp-btn-config:active { transform: scale(0.92); }
 

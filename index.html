@@ -30,7 +30,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600;1,700&family=Playfair+Display:ital,wght@0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
     <!-- Estilos externos -->
-    <link rel="stylesheet" href="style.css?v=31">
+    <link rel="stylesheet" href="style.css?v=32">
     <link rel="stylesheet" href="mesas.css?v=4">
 
     <!-- Estilos botones de modo catálogo -->
@@ -562,6 +562,10 @@
                         <input id="inputPrecioMayoreoProducto" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Opcional">
                     </div>
                 </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Descripción</label>
+                    <textarea id="inputDescripcionProducto" class="panel-nombre-input" rows="3" maxlength="500" placeholder="Opcional, describe el producto"></textarea>
+                </div>
                 <div class="fila-campos-dobles">
                     <div class="campo-admin-producto">
                         <label class="panel-nombre-label">Alto</label>
@@ -571,33 +575,6 @@
                         <label class="panel-nombre-label">Ancho</label>
                         <input id="inputAnchoProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. 8 cm">
                     </div>
-                </div>
-                <div class="campo-admin-producto">
-                    <label class="panel-nombre-label">Descripción</label>
-                    <textarea id="inputDescripcionProducto" class="panel-nombre-input" rows="3" maxlength="500" placeholder="Opcional, describe el producto"></textarea>
-                </div>
-                <div class="campo-admin-producto campo-admin-checkbox">
-                    <label class="pill-btn pill-btn-admin-toggle">
-                        <input id="inputEnOfertaProducto" type="checkbox" onchange="_toggleZonaOfertaProducto()">
-                        <span style="font-size:2.25rem; line-height:1;">🏷️</span>
-                        <span class="pill-btn-label">En Oferta</span>
-                    </label>
-                    <label class="pill-btn pill-btn-admin-toggle">
-                        <input id="inputMasVendidoProducto" type="checkbox">
-                        <span style="font-size:2.25rem; line-height:1;">🏆</span>
-                        <span class="pill-btn-label">Más Vendido</span>
-                    </label>
-                </div>
-                <div class="campo-admin-producto" id="zonaPrecioOfertaProducto" style="display:none;">
-                    <label class="panel-nombre-label">Precio de oferta</label>
-                    <input id="inputPrecioOfertaProducto" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ej. 120 (debe ser menor al precio original)">
-                    <span style="font-size:11px; color:#9a8878;">Se muestra debajo del precio original, y este queda marcado con una ✕ mientras la oferta esté activa.</span>
-                </div>
-                <div class="campo-admin-producto campo-zona-posicion-sheet">
-                    <label class="panel-nombre-label">Posición en la hoja <span style="font-weight:400; color:#9a8878;">(opcional)</span></label>
-                    <input id="inputFilaProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="2" step="1" placeholder="Ej. 2 para que sea el primer producto">
-                    <span style="font-size:11px; color:#9a8878;">Si lo dejas vacío, el producto se agrega al final de la lista. Si eliges una fila, los productos que ya estén ahí se recorren una posición hacia abajo.</span>
-                    <span id="infoFilasOcupadasSheet"></span>
                 </div>
                 </div>
                 <div class="form-admin-col">
@@ -659,14 +636,6 @@
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Texto sobre la imagen</label>
                     <input id="inputTextoImagenProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. ¡Nuevo!, Edición limitada" maxlength="60" oninput="_actualizarTextoSobreImagen()">
-                    <span class="ayuda-texto-imagen">Va arriba al centro de la imagen en el catálogo (no es el nombre del producto). Es independiente de la foto: puedes ocultarlo o mostrarlo cuando quieras.</span>
-                    <div class="campo-admin-checkbox" style="margin-top:8px;">
-                        <label class="pill-btn pill-btn-admin-toggle">
-                            <input id="inputMostrarTextoImagenProducto" type="checkbox" checked onchange="_actualizarTextoSobreImagen()">
-                            <span style="font-size:1.6rem; line-height:1;">👁️</span>
-                            <span class="pill-btn-label">Mostrar texto en el catálogo</span>
-                        </label>
-                    </div>
                 </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Cantidad en stock</label>
@@ -675,7 +644,28 @@
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Video de YouTube</label>
                     <input id="inputVideoYoutubeProducto" class="panel-nombre-input" type="url" placeholder="Opcional, ej. https://www.youtube.com/embed/XXXXXXXXXXX">
-                    <span style="font-size:11px; color:#9a8878;">Debe ser un link embed de YouTube (youtube.com/embed/…)</span>
+                </div>
+                <div class="campo-admin-producto campo-admin-checkbox">
+                    <label class="pill-btn pill-btn-admin-toggle">
+                        <input id="inputEnOfertaProducto" type="checkbox" onchange="_toggleZonaOfertaProducto()">
+                        <span style="font-size:2.25rem; line-height:1;">🏷️</span>
+                        <span class="pill-btn-label">En Oferta</span>
+                    </label>
+                    <label class="pill-btn pill-btn-admin-toggle">
+                        <input id="inputMasVendidoProducto" type="checkbox">
+                        <span style="font-size:2.25rem; line-height:1;">🏆</span>
+                        <span class="pill-btn-label">Más Vendido</span>
+                    </label>
+                </div>
+                <div class="campo-admin-producto" id="zonaPrecioOfertaProducto" style="display:none;">
+                    <label class="panel-nombre-label">Precio de oferta</label>
+                    <input id="inputPrecioOfertaProducto" class="panel-nombre-input" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Ej. 120 (debe ser menor al precio original)">
+                    <span style="font-size:11px; color:#9a8878;">Se muestra debajo del precio original, y este queda marcado con una ✕ mientras la oferta esté activa.</span>
+                </div>
+                <div class="campo-admin-producto campo-zona-posicion-sheet">
+                    <label class="panel-nombre-label">Posición en la hoja <span style="font-weight:400; color:#9a8878;">(opcional)</span></label>
+                    <input id="inputFilaProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="2" step="1" placeholder="Ej. 2 para que sea el primer producto">
+                    <span id="infoFilasOcupadasSheet"></span>
                 </div>
                 </div>
               </div>
@@ -1624,6 +1614,7 @@
         <div class="mp-galeria-superior">
             <!-- ── Botón engranaje (editar producto) — esquina superior derecha de la imagen, solo admins, ver ADMIN_EMAILS en app.js ── -->
             <button class="mp-btn-config" id="mpBtnConfigProducto" style="display:none;" title="Editar producto">⚙️</button>
+            <button class="mp-btn-config mp-btn-texto" id="mpBtnTextoProducto" style="display:none;" title="Ocultar el texto sobre la imagen">👁️</button>
             <button class="modal-btn-nav modal-btn-prev" id="btnGalPrev" onclick="moverGaleria(-1)">&#8249;</button>
             <div class="modal-galeria-track" id="modalGaleriaTrack"></div>
             <button class="modal-btn-nav modal-btn-next" id="btnGalNext" onclick="moverGaleria(1)">&#8250;</button>
@@ -2199,7 +2190,7 @@
 </div>
 
     <!-- JavaScript externo -->
-    <script src="app.js?v=22"></script>
+    <script src="app.js?v=23"></script>
 <script src="admin-producto-ui.js?v=1"></script>
 <script src="portada.js?v=2"></script>
 <script src="cuadricula.js?v=4"></script>

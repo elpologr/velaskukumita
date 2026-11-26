@@ -1695,6 +1695,14 @@ function aplicarConfigBazar(rawTexto) {
             };
         }
 
+        // Botón 👁️ / 🚫 — ocultar o mostrar el texto sobre la imagen (junto al engranaje, solo administradores)
+        window._mpCardActual = card;
+        _refrescarBtnTextoModal();
+        const mpBtnTexto = document.getElementById('mpBtnTextoProducto');
+        if (mpBtnTexto) {
+            mpBtnTexto.onclick = (e) => { e.stopPropagation(); _alternarTextoImagenCard(card); };
+        }
+
         // Botón Compartir — actualiza OG y abre submenu
         document.getElementById('mpBtnCompartir').onclick = (e) => {
             e.stopPropagation();
@@ -7514,6 +7522,20 @@ function _aplicarEstadoTextoImagen(idx, mostrar) {
     });
 }
 
+// Muestra / oculta y pone el icono correcto del botón del texto en el modal del producto
+function _refrescarBtnTextoModal() {
+    var b = document.getElementById('mpBtnTextoProducto'), c = window._mpCardActual;
+    if (!b) return;
+    var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+    var orig = (c && c._cardOriginal) ? c._cardOriginal() : c;
+    var admin = (typeof _esAdminUI === 'function') ? _esAdminUI(user) : false;
+    var tieneTexto = !!(orig && orig.getAttribute('data-texto-imagen'));
+    b.style.display = (admin && tieneTexto) ? 'flex' : 'none';
+    var visible = !orig || orig.getAttribute('data-mostrar-texto-imagen') !== '0';
+    b.textContent = visible ? '👁️' : '🚫';
+    b.title = visible ? 'Ocultar el texto sobre la imagen' : 'Mostrar el texto sobre la imagen';
+}
+
 async function _alternarTextoImagenCard(card) {
     if (_alternandoTextoImagen) return;
     var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
@@ -7542,6 +7564,7 @@ async function _alternarTextoImagenCard(card) {
         var data = await resp.json();
         if (!data.ok) throw new Error(data.error || 'Error del servidor');
         _aplicarEstadoTextoImagen(idx, nuevo);
+        _refrescarBtnTextoModal();
         mostrarToast(nuevo ? '👁️ Texto visible en el catálogo' : '🚫 Texto oculto en el catálogo');
     } catch (err) {
         console.error('Error alternando el texto sobre la imagen:', err);
