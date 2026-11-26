@@ -6439,10 +6439,29 @@ function _abrirRecorteImagenPrincipal() {
 var _TEXTO_IMG_ESCALA = 0.07;          // tamaño de la letra de la vista previa = 7 % del lado del recuadro
 var _recorteTextoVisible = false;      // el modal grande solo muestra el texto cuando se está recortando la imagen principal
 
+// «Texto sobre la imagen» del formulario Agregar siempre arranca con los signos «¡  !» (dos espacios en medio)
+// y el cursor entre los dos espacios, listo para escribir. Si se deja tal cual, cuenta como «sin texto».
+var _TEXTO_IMG_PLANTILLA = '\u00A1  !';
+function _normalizarTextoImagen(t) {
+    t = String(t || '').replace(/[\r\n\t]+/g, ' ').trim();
+    return (t.replace(/\s+/g, '') === '\u00A1!') ? '' : t;   // solo «¡ !» sin nada adentro = vacío
+}
 function _textoSobreImagenActual() {
     var el = document.getElementById('inputTextoImagenProducto');
-    return ((el && el.value) || '').replace(/[\r\n\t]+/g, ' ').trim();
+    return _normalizarTextoImagen(el && el.value);
 }
+function _restablecerTextoImagenPlantilla() {
+    var el = document.getElementById('inputTextoImagenProducto');
+    if (el) el.value = _TEXTO_IMG_PLANTILLA;
+}
+(function _iniciarTextoImagenPlantilla() {
+    var el = document.getElementById('inputTextoImagenProducto');
+    if (!el) return;
+    if (!el.value) el.value = _TEXTO_IMG_PLANTILLA;
+    function alCentro() { if (el.value === _TEXTO_IMG_PLANTILLA) { try { el.setSelectionRange(2, 2); } catch (e) {} } }
+    el.addEventListener('focus', function () { setTimeout(alCentro, 0); });
+    el.addEventListener('click', alCentro);
+})();
 function _actualizarTextoSobreImagen() {
     var chkMostrar = document.getElementById('inputMostrarTextoImagenProducto');
     var t = (chkMostrar && !chkMostrar.checked) ? '' : _textoSobreImagenActual();
@@ -6824,7 +6843,7 @@ async function guardarProductoAdmin() {
     }
 
     var nombre          = ((document.getElementById('inputNombreProducto')          || {}).value || '').trim();
-    var textoImagen     = ((document.getElementById('inputTextoImagenProducto')     || {}).value || '').replace(/[\r\n\t]+/g, ' ').trim();
+    var textoImagen     = _textoSobreImagenActual();
     var mostrarTextoImagen = (document.getElementById('inputMostrarTextoImagenProducto') || {}).checked === false ? 'no' : 'si';
     var descripcion     = ((document.getElementById('inputDescripcionProducto')     || {}).value || '').trim();
     var precio          = ((document.getElementById('inputPrecioProducto')          || {}).value || '').trim();
@@ -6958,6 +6977,7 @@ async function guardarProductoAdmin() {
         var _chkMostrarTxt = document.getElementById('inputMostrarTextoImagenProducto');
         if (_chkMostrarTxt) _chkMostrarTxt.checked = true;
         _limpiarImagenesProducto();
+        _restablecerTextoImagenPlantilla();
         _actualizarTextoSobreImagen();
         var _avisoPosicion = '';
         if (filaDestino !== '' && String(data.fila) !== String(filaDestino)) {
