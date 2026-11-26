@@ -67,7 +67,7 @@
         b1.addEventListener('click', mostrarExistentes);
         var b2 = el('button', 'slp-opcion'); b2.type = 'button';
         b2.innerHTML = '<span class="slp-op-icono">🆕</span><span><strong>Un producto nuevo</strong><small>Se crea también como producto del catálogo; te pido sus datos.</small></span>';
-        b2.addEventListener('click', mostrarNuevo);
+        b2.addEventListener('click', function () { mostrarNuevo(); });   // sin pasar el evento del clic como si fuera un producto a editar
         var n = (typeof _lpForm !== 'undefined' && _lpForm[kActual]) ? _lpForm[kActual].length : 0;
         var listo = el('button', 'slp-btn-listo', n ? ('✔ Listo (' + n + ' en la lista)') : 'Cerrar'); listo.type = 'button';
         listo.addEventListener('click', cerrar);
@@ -115,6 +115,7 @@
                     if (yaEnLista(p.nombre)) { aviso('«' + p.nombre + '» ya está en la lista'); return; }
                     if (_lpForm[kActual].length >= 40) { aviso('Máximo 40 productos en la lista'); return; }
                     _lpForm[kActual].push({ nombre: p.nombre, precio: p.modoRevisar ? '' : String(p.precio || ''), img: p.img, existente: true });
+                    if (typeof _lpRender === 'function') _lpRender(kActual);
                     marca.textContent = '✓';
                     aviso('✅ «' + p.nombre + '» añadido. Revisa su precio en la lista.');
                 });
@@ -157,6 +158,7 @@
         return caja;
     }
     function mostrarNuevo(editItem) {   // editItem: producto nuevo que ya estaba en la lista y se vuelve a editar
+        if (!editItem || !editItem.nuevo || editItem.creado) editItem = null;
         ponerVista('nuevo', editItem ? '✏️ Editar producto de la lista' : '🆕 Producto nuevo');
         var imgData = null;
         var enfX = 50, enfY = 0;   // zona de la imagen que se verá en el catálogo (igual que en «Agregar producto»)
@@ -353,6 +355,7 @@
                 return;
             }
             _lpForm[kActual].push({ nombre: nombre, precio: precio, img: '', imgData: imgData, creado: false, nuevo: datosNuevo });
+            if (typeof _lpRender === 'function') _lpRender(kActual);   // la lista del formulario se actualiza al instante
             aviso('✅ «' + nombre + '» se creará como producto nuevo al guardar');
             mostrarMenu();
         });
