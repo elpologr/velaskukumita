@@ -4589,7 +4589,7 @@ body.modo-oscuro .ayuda-texto-imagen { color: #b8a595; }
     position: absolute; top: 3%; left: 10%; right: 10%;   /* caja del 80 % del ancho, centrada: el texto no salta de línea antes de llegar a sus bordes */
     padding: 0.1em 0.2em; white-space: nowrap;
     color: #fff; font-size: 8px; font-weight: 700; line-height: 1.25;
-    text-shadow: -0.03em -0.03em 0 #000, 0.03em -0.03em 0 #000, -0.03em 0.03em 0 #000, 0.03em 0.03em 0 #000, 0 -0.03em 0 #000, 0 0.03em 0 #000, -0.03em 0 0 #000, 0.03em 0 0 #000;
+    text-shadow: -0.06em -0.06em 0 #000, 0.06em -0.06em 0 #000, -0.06em 0.06em 0 #000, 0.06em 0.06em 0 #000, 0 -0.06em 0 #000, 0 0.06em 0 #000, -0.06em 0 0 #000, 0.06em 0 0 #000, -0.03em -0.03em 0 #000, 0.03em -0.03em 0 #000, -0.03em 0.03em 0 #000, 0.03em 0.03em 0 #000, 0 -0.03em 0 #000, 0 0.03em 0 #000, -0.03em 0 0 #000, 0.03em 0 0 #000;   /* contorno doble de grueso (antes 0.03em) */
     text-align: center; word-break: break-word; pointer-events: none; display: none;
 }
 
@@ -4608,7 +4608,7 @@ body.modo-oscuro .ayuda-texto-imagen { color: #b8a595; }
     padding: 2px 6px; white-space: nowrap;
     color: #fff; font-size: 14px; font-weight: 700; line-height: 1.25;
     text-align: center; word-break: break-word;
-    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000, 1px 0 0 #000;
+    text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 0 -2px 0 #000, 0 2px 0 #000, -2px 0 0 #000, 2px 0 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000, 1px 0 0 #000;   /* contorno doble de grueso (antes 1px) */
     pointer-events: none; z-index: 2;
 }
 @media (max-width: 600px) {
