@@ -4434,7 +4434,7 @@ body.modo-oscuro .portada-cab h3 { color: #e8ddd5; border-bottom-color: #4a3f38;
     background: rgba(54,42,34,0.88); color: #fff; font-size: 0.74rem; font-weight: 800;
 }
 #pantallaCuadricula .cg-antes {
-    position: absolute; top: 7px; right: 7px; padding: 1px 6px; border-radius: 999px;
+    position: absolute; top: 36px; right: 7px; padding: 1px 6px; border-radius: 999px;
     background: #f5c46b; color: #2a1d12; font-size: 0.66rem; font-weight: 800;
 }
 #pantallaCuadricula .cg-nombre {
@@ -4448,6 +4448,42 @@ body.modo-oscuro .portada-cab h3 { color: #e8ddd5; border-bottom-color: #4a3f38;
 #pantallaCuadricula .cg-destino { border-color: #2e86de; box-shadow: 0 0 0 3px rgba(46,134,222,0.45); transform: scale(1.04); opacity: 1; }
 #pantallaCuadricula .cg-recien { animation: cgRecien 1.4s ease-out 1; }
 @keyframes cgRecien { 0% { box-shadow: 0 0 0 4px rgba(245,196,107,0.95); } 100% { box-shadow: 0 0 0 0 rgba(245,196,107,0); } }
+
+/* ── Cuadrícula: lápiz (editar, abajo-izquierda) y papelera (eliminar, arriba-derecha) sobre la foto ── */
+#pantallaCuadricula .cg-fotowrap { position: relative; }
+#pantallaCuadricula .cg-lapiz, #pantallaCuadricula .cg-borrar {
+    position: absolute; width: 28px; height: 28px; padding: 0; border: none; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1; cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.35); transition: transform 0.12s, background 0.12s;
+}
+#pantallaCuadricula .cg-lapiz { left: 5px; bottom: 5px; background: rgba(255,255,255,0.95); }
+#pantallaCuadricula .cg-lapiz:hover { background: #f5c46b; transform: scale(1.1); }
+#pantallaCuadricula .cg-borrar { right: 5px; top: 5px; background: rgba(255,255,255,0.95); }
+#pantallaCuadricula .cg-borrar:hover { background: #ff9aa8; transform: scale(1.1); }
+
+#pantallaCuadricula .cg-modal-fondo {
+    position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center;
+    background: rgba(20,13,9,0.6); padding: 16px;
+}
+#pantallaCuadricula .cg-modal {
+    width: min(440px, 100%); max-height: 100%; overflow-y: auto; padding: 18px; border-radius: 14px;
+    background: #fff; color: #2a1d12; box-shadow: 0 10px 40px rgba(0,0,0,0.45);
+    display: flex; flex-direction: column; gap: 10px;
+}
+#pantallaCuadricula .cg-modal-titulo { margin: 0; font-size: 1.05rem; font-weight: 800; }
+#pantallaCuadricula .cg-modal-txt { margin: 0; font-size: 0.88rem; line-height: 1.4; }
+#pantallaCuadricula .cg-campo { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; font-weight: 600; }
+#pantallaCuadricula .cg-campo input[type="text"], #pantallaCuadricula .cg-campo input[type="number"] {
+    padding: 9px 10px; border: 1.5px solid #d4c5b8; border-radius: 8px; font-size: 0.95rem; font-weight: 400;
+}
+#pantallaCuadricula .cg-campo input:focus { outline: none; border-color: #8c7565; }
+#pantallaCuadricula .cg-vista { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; background: #efe7df; }
+#pantallaCuadricula .cg-modal-msg { min-height: 18px; font-size: 0.85rem; font-weight: 700; color: #6b5a4e; }
+#pantallaCuadricula .cg-modal-fila { display: flex; gap: 8px; justify-content: flex-end; }
+#pantallaCuadricula .cg-modal .cg-btn { background: #efe7df; color: #2a1d12; }
+#pantallaCuadricula .cg-modal .cg-btn.principal { background: #f5c46b; }
+#pantallaCuadricula .cg-enlace { display: block; padding: 9px 12px; border-radius: 8px; background: #fdecee; color: #a02335; font-weight: 700; font-size: 0.88rem; text-decoration: none; }
+#pantallaCuadricula .cg-enlace:hover { background: #ffd6dc; }
 
 
 /* ===== MARCO «AGREGAR PRODUCTO» al final del catálogo (recorte de tijeras; solo administradores, última página) ===== */

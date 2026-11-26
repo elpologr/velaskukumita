@@ -46,7 +46,10 @@
                 eventos: String(p.eventos || '').split('|').map(u.claveSlug).filter(function (e) { return e && e !== 'sin-evento' && e !== 'sin'; }),
                 tipos: (p.tipos || []).map(u.normSlug).filter(function (t) { return t && t !== 'sin-etiqueta'; }),
                 oferta: !!p.oferta,
-                mas: !!p.masVendido
+                mas: !!p.masVendido,
+                precio: p.precioNormal || 0,
+                mayoreo: p.precioBazar || 0,
+                precioOferta: p.precioOferta || 0
             };
         });
         porId = {}; items.forEach(function (it) { porId[it.id] = it; });
@@ -110,7 +113,14 @@
             if (it.id === recienId) c.classList.add('cg-recien');
             var foto = el('div', 'cg-foto');
             if (it.img) { var im = document.createElement('img'); im.src = it.img; im.alt = ''; im.loading = 'lazy'; im.draggable = false; foto.appendChild(im); }
-            c.appendChild(foto);
+            var envoltura = el('div', 'cg-fotowrap');
+            envoltura.appendChild(foto);
+            var bLapiz = el('button', 'cg-lapiz', '✏️'); bLapiz.type = 'button'; bLapiz.draggable = false;
+            bLapiz.title = 'Editar imagen, nombre y precios'; bLapiz.setAttribute('aria-label', 'Editar ' + it.nombre);
+            var bBorrar = el('button', 'cg-borrar', '🗑️'); bBorrar.type = 'button'; bBorrar.draggable = false;
+            bBorrar.title = 'Eliminar este producto'; bBorrar.setAttribute('aria-label', 'Eliminar ' + it.nombre);
+            envoltura.appendChild(bLapiz); envoltura.appendChild(bBorrar);
+            c.appendChild(envoltura);
             c.appendChild(el('span', 'cg-pos', String(i + 1)));
             if (posOriginal[it.id] !== i) c.appendChild(el('span', 'cg-antes', 'antes ' + (posOriginal[it.id] + 1)));
             c.appendChild(el('div', 'cg-nombre', it.nombre));
@@ -211,6 +221,150 @@
         grid.addEventListener('dragend', function () { arrastrando = null; limpiarDestino(); var a = grid.querySelector('.cg-arrastrando'); if (a) a.classList.remove('cg-arrastrando'); });
     }
 
+    // ── Editar (lápiz) y eliminar (papelera) un producto ──
+    // Las dos acciones se aplican al instante en la hoja (no esperan a «Guardar y mover productos»), así que se
+    // bloquean mientras haya cambios de posición sin guardar: la fila de cada producto cambiaría al guardarlos.
+    var modal = null, modalBusy = false;
+
+    function cerrarModal() { if (modal && !modalBusy) { modal.remove(); modal = null; } }
+    function abrirModal(titulo) {
+        cerrarModal();
+        modal = el('div', 'cg-modal-fondo');
+        var caja = el('div', 'cg-modal'); caja.setAttribute('role', 'dialog'); caja.setAttribute('aria-modal', 'true');
+        caja.appendChild(el('h4', 'cg-modal-titulo', titulo));
+        modal.appendChild(caja);
+        overlay.appendChild(modal);
+        return caja;
+    }
+    function campo(caja, etiqueta, tipo, valor, extra) {
+        var l = el('label', 'cg-campo'); l.appendChild(el('span', '', etiqueta));
+        var i = document.createElement('input'); i.type = tipo; i.value = valor == null ? '' : valor;
+        if (extra) Object.keys(extra).forEach(function (k) { i.setAttribute(k, extra[k]); });
+        l.appendChild(i); caja.appendChild(l); return i;
+    }
+    function pedirToken() {
+        var user = (typeof auth !== 'undefined') ? auth.currentUser : null;
+        if (!esAdmin() || !user) return Promise.reject(new Error('Tu sesión no está autorizada.'));
+        return user.getIdToken(true);
+    }
+    function enviar(cuerpo) {
+        return pedirToken().then(function (tok) {
+            cuerpo.idToken = tok;
+            return fetch(ADMIN_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(cuerpo) });
+        }).then(function (r) { return r.json(); }).then(function (d) {
+            if (!d.ok) throw new Error(d.error || 'Error del servidor');
+            return d;
+        });
+    }
+    function traducirError(e) {
+        var m = String((e && e.message) || e);
+        // Si el Apps Script aún no tiene el código nuevo, cae en la rama de "agregar producto" y responde esto:
+        if (/Falta el imagen|Falta la imagen|Falta el nombre|Precio inv/i.test(m)) m = 'el Apps Script todavía no tiene las acciones nuevas: pega el codigo.gs nuevo y publícalo otra vez.';
+        return m;
+    }
+    // Resumen de lo que pasó con las imágenes en ImgBB (enlaces de borrado de un clic cuando existen)
+    function avisoImgbb(d, alCerrar) {
+        var n = (d.imgbbBorrar || []).length, sin = d.imgbbSinEnlace || 0;
+        if (!n && !sin) { alCerrar(); return; }
+        var caja = abrirModal('Imágenes en ImgBB');
+        if (n) {
+            caja.appendChild(el('p', 'cg-modal-txt', 'Para borrarlas también de tu galería de ImgBB abre cada enlace y confirma ahí el borrado:'));
+            d.imgbbBorrar.forEach(function (u, i) {
+                var a = el('a', 'cg-enlace', 'Borrar imagen ' + (i + 1) + ' en ImgBB ↗'); a.href = u; a.target = '_blank'; a.rel = 'noopener noreferrer';
+                caja.appendChild(a);
+            });
+        }
+        if (sin) caja.appendChild(el('p', 'cg-modal-txt', (sin === 1 ? 'Una imagen' : sin + ' imágenes') + ' se subió antes de que el sistema guardara enlaces de borrado, así que ' + 'tendrás que quitar' + (sin === 1 ? 'la' : 'las') + ' a mano desde tu cuenta de ImgBB.'));
+        var f = el('div', 'cg-modal-fila'); var ok = el('button', 'cg-btn principal', 'Listo'); ok.type = 'button';
+        ok.addEventListener('click', function () { cerrarModal(); alCerrar(); });
+        f.appendChild(ok); caja.appendChild(f);
+    }
+
+    function abrirEditar(it) {
+        var caja = abrirModal('✏️ Editar producto');
+        var iNombre = campo(caja, 'Nombre', 'text', it.nombre, { maxlength: '200' });
+        var iPrecio = campo(caja, 'Precio', 'number', it.precio || '', { min: '0', step: 'any', inputmode: 'decimal' });
+        var iMay = campo(caja, 'Precio de mayoreo (opcional)', 'number', it.mayoreo || '', { min: '0', step: 'any', inputmode: 'decimal' });
+        var iOf = campo(caja, 'Precio de oferta (opcional, menor al precio)', 'number', it.precioOferta || '', { min: '0', step: 'any', inputmode: 'decimal' });
+
+        var bloqueImg = el('div', 'cg-campo'); bloqueImg.appendChild(el('span', '', 'Imagen principal (elige un archivo para reemplazarla)'));
+        var vista = document.createElement('img'); vista.className = 'cg-vista'; vista.alt = ''; if (it.img) vista.src = it.img;
+        bloqueImg.appendChild(vista);
+        var iFile = document.createElement('input'); iFile.type = 'file'; iFile.accept = 'image/*'; bloqueImg.appendChild(iFile);
+        caja.appendChild(bloqueImg);
+
+        var msg = el('div', 'cg-modal-msg'); caja.appendChild(msg);
+        var fila = el('div', 'cg-modal-fila');
+        var bCancel = el('button', 'cg-btn', 'Cancelar'); bCancel.type = 'button';
+        var bGuardar = el('button', 'cg-btn principal', '💾 Guardar'); bGuardar.type = 'button';
+        fila.appendChild(bCancel); fila.appendChild(bGuardar); caja.appendChild(fila);
+
+        var nueva = null;   // { base64, nombre, dataUrl }
+        iFile.addEventListener('change', function () {
+            nueva = null; msg.textContent = ''; msg.style.color = '';
+            var f = iFile.files && iFile.files[0]; if (!f) return;
+            if (typeof _convertirArchivoImagenProducto !== 'function') { msg.textContent = 'No se pudo preparar la imagen (falta app.js).'; msg.style.color = '#c0392b'; return; }
+            msg.textContent = 'Preparando imagen…';
+            _convertirArchivoImagenProducto(f).then(function (r) { nueva = r; vista.src = r.dataUrl; msg.textContent = ''; })
+                .catch(function (e) { msg.textContent = String(e); msg.style.color = '#c0392b'; iFile.value = ''; });
+        });
+        bCancel.addEventListener('click', cerrarModal);
+        bGuardar.addEventListener('click', function () {
+            if (modalBusy) return;
+            var nombre = iNombre.value.trim(), precio = iPrecio.value.trim(), may = iMay.value.trim(), of = iOf.value.trim();
+            function err(t) { msg.textContent = t; msg.style.color = '#c0392b'; }
+            if (!nombre) return err('Escribe el nombre del producto.');
+            if (precio === '' || isNaN(Number(precio)) || Number(precio) < 0) return err('Escribe un precio válido.');
+            if (may !== '' && (isNaN(Number(may)) || Number(may) < 0)) return err('El precio de mayoreo no es válido.');
+            if (of !== '' && (isNaN(Number(of)) || Number(of) < 0)) return err('El precio de oferta no es válido.');
+            if (of !== '' && Number(of) >= Number(precio)) return err('El precio de oferta debe ser menor al precio original.');
+            modalBusy = true; bGuardar.disabled = true; bCancel.disabled = true;
+            msg.style.color = ''; msg.textContent = nueva ? 'Subiendo imagen y guardando…' : 'Guardando…';
+            var cuerpo = { accion: 'editarrapido', filaEditar: it.fila, nombreActual: it.nombre, nombre: nombre, precio: precio, precioMayoreo: may, precioOferta: of };
+            if (nueva) { cuerpo.imagenNueva = nueva.base64; cuerpo.imagenNombre = nueva.nombre; }
+            enviar(cuerpo).then(function (d) {
+                modalBusy = false;
+                it.nombre = nombre; it.precio = Number(precio); it.mayoreo = may === '' ? 0 : Number(may); it.precioOferta = of === '' ? 0 : Number(of);
+                if (d.imagen) it.img = d.imagen;
+                cerrarModal(); pintar(); toast('✅ Producto actualizado');
+                if (typeof cargarDesdeGoogleSheets === 'function') setTimeout(cargarDesdeGoogleSheets, 1200);
+                avisoImgbb(d, function () { });
+            }).catch(function (e) {
+                modalBusy = false; bGuardar.disabled = false; bCancel.disabled = false;
+                err('No se pudo guardar: ' + traducirError(e));
+            });
+        });
+        iNombre.focus();
+    }
+
+    function eliminar(it) {
+        if (!window.confirm('¿Eliminar «' + it.nombre + '» de la hoja de Google Sheets?\n\nEsta acción no se puede deshacer y el producto desaparecerá del sitio para todos.')) return;
+        guardando = true; estado(); mensaje('Eliminando «' + it.nombre + '»… no cierres esta pantalla.');
+        enviar({ accion: 'eliminar', filaEditar: it.fila, nombreActual: it.nombre }).then(function (d) {
+            guardando = false; mensaje('');
+            toast('🗑️ Producto eliminado');
+            // Las filas de abajo subieron una posición: se cierra la cuadrícula y se recarga el catálogo desde la hoja.
+            var despues = function () {
+                cerrar(true);
+                if (typeof cargarDesdeGoogleSheets === 'function') setTimeout(cargarDesdeGoogleSheets, 1200);
+            };
+            avisoImgbb(d, despues);
+        }).catch(function (e) {
+            guardando = false; estado();
+            mensaje('No se pudo eliminar: ' + traducirError(e), true);
+        });
+    }
+
+    function clicBotonProducto(e) {
+        var b = e.target && e.target.closest ? e.target.closest('.cg-lapiz, .cg-borrar') : null;
+        if (!b || guardando) return;
+        e.preventDefault(); e.stopPropagation();
+        var c = b.closest('.cg-celda'); if (!c) return;
+        var it = orden[Number(c.getAttribute('data-i'))]; if (!it) return;
+        if (cambios()) { mensaje('Primero guarda o descarta los cambios de posición; luego podrás editar o eliminar productos.', true); return; }
+        if (b.classList.contains('cg-lapiz')) abrirEditar(it); else eliminar(it);
+    }
+
     // ── Construir la pantalla ──
     function construir() {
         if (overlay) return;
@@ -256,8 +410,9 @@
         btnGuardar.addEventListener('click', guardar);
         btnCerrar.addEventListener('click', function () { cerrar(false); });
         engancharArrastre();
+        grid.addEventListener('click', clicBotonProducto);
         document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && overlay.classList.contains('abierta')) cerrar(false);
+            if (e.key === 'Escape' && overlay.classList.contains('abierta')) { if (modal) cerrarModal(); else cerrar(false); }
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && overlay.classList.contains('abierta')) { e.preventDefault(); deshacer(); }
         });
     }
