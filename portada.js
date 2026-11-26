@@ -193,6 +193,8 @@
         sincronizarCabeceras();
     }
     window.aplicarPortada = aplicarPortada;
+    // Utilidades que reutiliza cuadricula.js
+    window._portadaUtil = { normSlug: normSlug, claveSlug: claveSlug, nombreFiltro: nombreFiltro };
 
     // La paginación (app.js) pregunta si la página 1 es la portada: solo si hay filas Y no hay filtro/búsqueda activos
     window._portadaHayPagina1 = function (nVisibles) {
@@ -276,6 +278,10 @@
             '<div class="cfgp-caja">' +
                 '<div class="cfgp-cab"><h3>⚙️ Configuración</h3><button type="button" class="cfgp-x" id="cfgPortadaCerrar" aria-label="Cerrar">✕</button></div>' +
                 '<div class="cfgp-cuerpo">' +
+                    '<div class="cfgp-bloque-cuadricula">' +
+                        '<button type="button" class="cfgp-cuadricula" id="btnAbrirCuadricula">🧱 Cuadrícula de productos</button>' +
+                        '<p class="cfgp-ayuda">Ve todos los productos juntos (10 por fila, solo en computadora) y arrástralos para cambiarlos de posición.</p>' +
+                    '</div>' +
                     '<h4>Filas de la portada (página 1)</h4>' +
                     '<p class="cfgp-ayuda">La <b>página 1</b> solo muestra estas filas de 3 productos; los productos de la hoja empiezan en la página 2. ' +
                     'En <b>Automático</b>, la fila 1 muestra los primeros 3 productos de la página 2, la fila 2 los de la página 3, y así sucesivamente. ' +
