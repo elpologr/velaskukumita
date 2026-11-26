@@ -30,7 +30,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600;1,700&family=Playfair+Display:ital,wght@0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
     <!-- Estilos externos -->
-    <link rel="stylesheet" href="style.css?v=26">
+    <link rel="stylesheet" href="style.css?v=27">
     <link rel="stylesheet" href="mesas.css?v=4">
 
     <!-- Estilos botones de modo catálogo -->
@@ -549,11 +549,6 @@
                     <span class="contador-imagenes-producto" id="contadorImagenesProducto" style="display:none;"></span>
                 </div>
                 <div class="campo-admin-producto">
-                    <label class="panel-nombre-label">Texto sobre la imagen</label>
-                    <input id="inputTextoImagenProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. ¡Nuevo!, Edición limitada" maxlength="60" oninput="_actualizarTextoSobreImagen()">
-                    <span class="ayuda-texto-imagen">Se muestra arriba al centro de la imagen en el catálogo. No es el nombre del producto.</span>
-                </div>
-                <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Nombre del producto</label>
                     <input id="inputNombreProducto" class="panel-nombre-input" type="text" placeholder="Ej. Vela aromática grande" maxlength="120">
                 </div>
@@ -662,6 +657,11 @@
                     <input id="inputEventoOtroProducto" class="panel-nombre-input" type="text" maxlength="60" placeholder="¿Otro evento? Escríbelo aquí (opcional)" style="margin-top:8px;">
                 </div>
                 <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Texto sobre la imagen</label>
+                    <input id="inputTextoImagenProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. ¡Nuevo!, Edición limitada" maxlength="60" oninput="_actualizarTextoSobreImagen()">
+                    <span class="ayuda-texto-imagen">Se incrusta en la imagen principal, arriba al centro del recuadro, y así se sube a ImgBB. No es el nombre del producto.</span>
+                </div>
+                <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Cantidad en stock</label>
                     <input id="inputStockProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="0" step="1" placeholder="Ej. 20">
                 </div>
@@ -720,11 +720,6 @@
                     <span class="subtitulo-galeria-edicion" id="tituloGaleriaNuevaEdit" style="display:none;">Nuevas (se subirán al guardar)</span>
                     <div class="galeria-imagenes-producto" id="galeriaImagenesNuevasEdit"></div>
                     <span class="contador-imagenes-producto" id="contadorImagenesEdit" style="display:none;"></span>
-                </div>
-                <div class="campo-admin-producto">
-                    <label class="panel-nombre-label">Texto sobre la imagen</label>
-                    <input id="inputTextoImagenProductoEdit" class="panel-nombre-input" type="text" placeholder="Opcional, ej. ¡Nuevo!, Edición limitada" maxlength="60" oninput="_actualizarTextoSobreImagen()">
-                    <span class="ayuda-texto-imagen">Se muestra arriba al centro de la imagen en el catálogo. No es el nombre del producto.</span>
                 </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Nombre del producto</label>
@@ -2007,7 +2002,7 @@
         </div>
         <div class="recorte-grande" id="recorteGrandeCont">
             <img id="recorteGrandeImg" src="" alt="Imagen a recortar" draggable="false">
-            <div class="recorte-cuadro" id="recorteGrandeCuadro"><div class="recorte-texto-preview recorte-texto-preview-grande" id="recorteGrandeTextoPreview"></div></div>
+            <div class="recorte-cuadro" id="recorteGrandeCuadro"><div class="recorte-texto-preview" id="recorteGrandeTextoPreview"></div></div>
         </div>
         <p class="recorte-hint">Arrastra el recuadro para elegir qué parte de esta imagen se mostrará en las miniaturas cuadradas del catálogo</p>
         <div class="recorte-botones">
@@ -2185,7 +2180,7 @@
 </div>
 
     <!-- JavaScript externo -->
-    <script src="app.js?v=18"></script>
+    <script src="app.js?v=19"></script>
 <script src="admin-producto-ui.js?v=1"></script>
 <script src="portada.js?v=2"></script>
 <script src="cuadricula.js?v=4"></script>
