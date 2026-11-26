@@ -243,14 +243,14 @@
         $('mesasLlenarMesa').addEventListener('click', function () {
             if (!S.sel) return;
             var n = llenarMesa(S.sel.mr, S.sel.mc);
-            estado(n < 0 ? 'Esta mesa no tiene un texto reconocible (por ejemplo «$50 Pesos», «Más Vendido» o «Centros de Mesa»).' : n ? '✔ Se pusieron ' + n + ' productos en celdas vacías.' : 'No había productos nuevos que poner (o la mesa ya está llena).', n < 0);
+            estado(n > 0 ? '✔ Se pusieron ' + n + ' productos en celdas vacías.' : diagnosticoMesa(S.sel.mr, S.sel.mc), true);
             actualizarCelda(); pedirDibujo();
         });
         $('mesasLlenarTodas').addEventListener('click', function () {
             if (!window.confirm('Se llenarán las celdas vacías de todas las mesas con los productos que les tocan según su texto («$50 Pesos», «Más Vendido», «Centros de Mesa»). No se borra nada. ¿Continuar?')) return;
             var total = 0;
             for (var mr = 0; mr < MESAS_F; mr++) for (var mc = 0; mc < MESAS_C; mc++) { var n = llenarMesa(mr, mc); if (n > 0) total += n; }
-            estado(total ? '✔ Se pusieron ' + total + ' productos en total.' : 'No había productos nuevos que poner.');
+            estado(total ? '✔ Se pusieron ' + total + ' productos en total.' : 'No había productos nuevos que poner. ' + diagnosticoGeneral(), !total);
             actualizarCelda(); pedirDibujo();
         });
         document.addEventListener('visibilitychange', function () { if (document.hidden) { clearTimeout(S.guardaTimer); guardarCeldasPendientes(); } });
@@ -958,7 +958,7 @@
         var m = mesaDeCelda(S.cel.r, S.cel.c), pm = pendientesMesa(m.mr, m.mc);
         if (!pm) return { titulo: 'Esta mesa no tiene un texto con precio (por ejemplo «$50 Pesos»), «Más Vendido» o «Centros de Mesa», así que no hay sugeridos. Escribe arriba para buscar un producto.', lista: [] };
         var r = pm.regla, que = r.tipo === 'precio' ? 'de $' + r.valor : r.tipo === 'vendido' ? 'más vendidos' : 'centros de mesa';
-        return { titulo: pm.lista.length ? 'Sugeridos para esta mesa (productos ' + que + '): ' + pm.lista.length + ' sin colocar' : 'Ya están colocados todos los productos ' + que + '.', lista: pm.lista };
+        return { titulo: pm.lista.length ? 'Sugeridos para esta mesa (productos ' + que + '): ' + pm.lista.length + ' sin colocar' : 'No hay productos ' + que + ' por colocar. ' + diagnosticoMesa(m.mr, m.mc), lista: pm.lista };
     }
     function pintarListaCelda() {
         var cont = $('mesasCeldaLista'); if (!cont) return;
@@ -1035,6 +1035,25 @@
     }
     function pzEsCentros(p) { return (p.tipos || []).some(function (t) { return /centros?[ -]de[ -]mesa/.test(norm(t)); }); }
     function pzEsVendido(p) { return !!p.masVendido || (p.tipos || []).some(function (t) { return /vendido/.test(norm(t)); }); }
+    // Explica por qué una mesa no recibió productos (para ver qué falta: textos, catálogo, precios…)
+    function diagnosticoGeneral() {
+        var nt = Object.keys(S.textos).length, nc = Object.keys(S.celdas).length, L = catalogo();
+        return '[Textos de mesas leídos: ' + nt + ' de 40 · catálogo: ' + L.length + ' productos · celdas con producto: ' + nc + ']';
+    }
+    function diagnosticoMesa(mr, mc) {
+        var L = catalogo(), num = numeroMesa(mr, mc), txt = S.textos[clave(mr, mc)];
+        if (!L.length) return 'El catálogo todavía no ha cargado (0 productos). Espera a que termine de cargar el sitio y vuelve a intentar. ' + diagnosticoGeneral();
+        var r = reglaMesa(mr, mc);
+        if (!r) return 'Mesa ' + num + ': su texto leído es ' + (txt ? '«' + txt + '»' : 'vacío (no se pudo leer de la hoja «Mesas»)') + ', y no trae un precio, «Más Vendido» ni «Centros de Mesa». ' + diagnosticoGeneral();
+        var pm = pendientesMesa(mr, mc), validos = catProductos(), todos = L.filter(function (p) {
+            if (r.tipo === 'precio') return Math.abs(precioMostrado(p) - r.valor) < 0.001 || Math.abs((parseFloat(p.precioNormal) || 0) - r.valor) < 0.001;
+            return r.tipo === 'vendido' ? pzEsVendido(p) : pzEsCentros(p);
+        });
+        var que = r.tipo === 'precio' ? 'con precio $' + r.valor : r.tipo === 'vendido' ? 'marcados como más vendidos' : 'con etiqueta Centro de Mesa';
+        var excl = todos.length - todos.filter(function (p) { return validos.indexOf(p) !== -1; }).length;
+        return 'Mesa ' + num + ' (' + (txt || 'sin texto') + '): hay ' + todos.length + ' productos ' + que + (excl ? ' (' + excl + ' excluidos por ser «etiqueta»)' : '') +
+            ', ' + (pm ? pm.lista.length : 0) + ' por colocar' + (todos.length && pm && !pm.lista.length ? ' (ya estaban todos puestos)' : '') + '. ' + diagnosticoGeneral();
+    }
     // Precio que se ve en la pieza: el de oferta si está en oferta, si no el normal
     function precioMostrado(p) { var of = parseFloat(p.precioOferta) || 0; return (p.oferta && of > 0) ? of : (parseFloat(p.precioNormal) || 0); }
     // Productos que le tocan a una mesa según su texto y que todavía no están puestos en ninguna de sus partes (null = sin regla)
