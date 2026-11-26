@@ -519,7 +519,7 @@
                         <div class="miniatura-principal-wrap" id="miniaturaPrincipalWrap" style="display:none;">
                             <div class="miniatura-principal" id="miniaturaPrincipal">
                                 <img id="miniaturaPrincipalImg" src="" alt="Imagen principal del producto" draggable="false">
-                                <div class="recorte-cuadro" id="recorteCuadro"></div>
+                                <div class="recorte-cuadro" id="recorteCuadro"><div class="recorte-texto-preview" id="recorteTextoPreview"></div></div>
                                 <button type="button" class="btn-config-miniatura" title="Elegir qué se ve en el catálogo" onclick="_abrirRecorteImagenPrincipal()">⋮</button>
                                 <button type="button" class="btn-quitar-miniatura btn-quitar-principal" title="Quitar esta imagen" onclick="quitarImagenProducto(0)">✕</button>
                             </div>
@@ -547,6 +547,11 @@
                     <input type="file" id="inputImagenProductoCamara" accept="image/*" capture="environment" style="display:none" onchange="procesarImagenProducto(event)">
                     <div class="galeria-imagenes-producto" id="galeriaImagenesProducto"></div>
                     <span class="contador-imagenes-producto" id="contadorImagenesProducto" style="display:none;"></span>
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Texto sobre la imagen</label>
+                    <input id="inputTextoImagenProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. ¡Nuevo!, Edición limitada" maxlength="60" oninput="_actualizarTextoSobreImagen()">
+                    <span class="ayuda-texto-imagen">Se muestra arriba al centro de la imagen en el catálogo. No es el nombre del producto.</span>
                 </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Nombre del producto</label>
@@ -707,6 +712,11 @@
                     <span class="subtitulo-galeria-edicion" id="tituloGaleriaNuevaEdit" style="display:none;">Nuevas (se subirán al guardar)</span>
                     <div class="galeria-imagenes-producto" id="galeriaImagenesNuevasEdit"></div>
                     <span class="contador-imagenes-producto" id="contadorImagenesEdit" style="display:none;"></span>
+                </div>
+                <div class="campo-admin-producto">
+                    <label class="panel-nombre-label">Texto sobre la imagen</label>
+                    <input id="inputTextoImagenProductoEdit" class="panel-nombre-input" type="text" placeholder="Opcional, ej. ¡Nuevo!, Edición limitada" maxlength="60" oninput="_actualizarTextoSobreImagen()">
+                    <span class="ayuda-texto-imagen">Se muestra arriba al centro de la imagen en el catálogo. No es el nombre del producto.</span>
                 </div>
                 <div class="campo-admin-producto">
                     <label class="panel-nombre-label">Nombre del producto</label>
@@ -1981,7 +1991,7 @@
         </div>
         <div class="recorte-grande" id="recorteGrandeCont">
             <img id="recorteGrandeImg" src="" alt="Imagen a recortar" draggable="false">
-            <div class="recorte-cuadro" id="recorteGrandeCuadro"></div>
+            <div class="recorte-cuadro" id="recorteGrandeCuadro"><div class="recorte-texto-preview recorte-texto-preview-grande" id="recorteGrandeTextoPreview"></div></div>
         </div>
         <p class="recorte-hint">Arrastra el recuadro para elegir qué parte de esta imagen se mostrará en las miniaturas cuadradas del catálogo</p>
         <div class="recorte-botones">

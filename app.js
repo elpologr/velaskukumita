@@ -251,6 +251,7 @@ function csvAProductos(filas) {
         // O=14 Configuración del bazar (fecha/hora) — NO tocar aquí, se lee aparte en aplicarConfigBazar()
         // P=15 Enfoque de CADA imagen ("X,Y" en % por imagen, separados por "|"), alineado con la columna F
         // Q=16 Precio de Oferta (opcional; solo se muestra si "en oferta" = si)
+        // R=17 Texto sobre la imagen (opcional; arriba al centro de la imagen, NO es el nombre)
 
         // Video principal (E=4)
         var videoPrincipal = get(4).replace(/^"+|"+$/g, '').trim();
@@ -301,6 +302,7 @@ function csvAProductos(filas) {
             aditivos:     [],
             oferta:       enOferta,
             precioOferta: precioOferta,
+            textoImagen:  get(17).replace(/^"+|"+$/g, '').trim(),
             masVendido:   masVendido,
             alto:         get(10),
             ancho:        get(11),
@@ -380,6 +382,7 @@ function _crearCardProducto(p, esCopia) {
         card.setAttribute('data-precio',          String(parseInt(p.precioNormal, 10) || 0));
         card.setAttribute('data-precio-bazar',    String(parseInt(p.precioBazar,  10) || ''));
         card.setAttribute('data-precio-oferta',   String(parseFloat(p.precioOferta) || ''));
+        card.setAttribute('data-texto-imagen',    p.textoImagen || '');
         card.setAttribute('data-tipo',            p.tipo  || 'arreglo');
         card.setAttribute('data-tipos',           (p.tipos || [p.tipo || 'arreglo']).join('|'));
         card.setAttribute('data-nombre',          p.nombre);
@@ -415,6 +418,14 @@ function _crearCardProducto(p, esCopia) {
             if (typeof mostrarPlaceholder === 'function') mostrarPlaceholder(this);
         };
         imgContenedor.appendChild(img);
+
+        // ── Texto sobre la imagen (arriba al centro; aparte del nombre) ──
+        if (p.textoImagen) {
+            var txtImg = document.createElement('div');
+            txtImg.className = 'texto-sobre-imagen';
+            txtImg.textContent = p.textoImagen;
+            imgContenedor.appendChild(txtImg);
+        }
 
         // ── Botón "hay más fotos" (solo si el producto tiene 2 o más imágenes) ──
         // Al tocarlo, cambia el <img> principal a la SIGUIENTE imagen del producto.
@@ -6145,6 +6156,23 @@ function _abrirRecorteImagenPrincipal() {
     });
 }
 
+// Texto que va sobre la imagen (arriba al centro). Se ve en vivo dentro del recuadro de recorte
+// (miniatura del formulario y modal grande) mientras se escribe.
+function _textoSobreImagenActual() {
+    var edit = document.querySelector('#pantallaEditarProducto.activo');
+    var el = document.getElementById(edit ? 'inputTextoImagenProductoEdit' : 'inputTextoImagenProducto');
+    return ((el && el.value) || '').replace(/[\r\n\t]+/g, ' ').trim();
+}
+function _actualizarTextoSobreImagen() {
+    var t = _textoSobreImagenActual();
+    ['recorteTextoPreview', 'recorteGrandeTextoPreview'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = t;
+        el.style.display = t ? 'block' : 'none';
+    });
+}
+
 function _renderizarMiniaturaPrincipal() {
     var wrap = document.getElementById('miniaturaPrincipalWrap');
     var img  = document.getElementById('miniaturaPrincipalImg');
@@ -6155,6 +6183,7 @@ function _renderizarMiniaturaPrincipal() {
         return;
     }
     wrap.style.display = 'flex';
+    _actualizarTextoSobreImagen();
     img.src = principal.dataUrl;
     // Cuando la imagen ya cargó, recién ahí conocemos su tamaño renderizado
     // real dentro del recuadro (por el object-fit:contain), así que
@@ -6254,6 +6283,7 @@ function abrirModalRecorteImagen(srcImagen, enfoqueXActual, enfoqueYActual, onGu
     var img = document.getElementById('recorteGrandeImg');
     if (!overlay || !img) return;
     img.src = srcImagen;
+    _actualizarTextoSobreImagen();
     overlay.style.display = 'flex';
     _bloquearScrollBody();
     history.pushState({ kukumitaModal: 'recorteImagen' }, '');
@@ -6481,6 +6511,7 @@ async function guardarProductoAdmin() {
     }
 
     var nombre          = ((document.getElementById('inputNombreProducto')          || {}).value || '').trim();
+    var textoImagen     = ((document.getElementById('inputTextoImagenProducto')     || {}).value || '').replace(/[\r\n\t]+/g, ' ').trim();
     var descripcion     = ((document.getElementById('inputDescripcionProducto')     || {}).value || '').trim();
     var precio          = ((document.getElementById('inputPrecioProducto')          || {}).value || '').trim();
     var precioMayoreo   = ((document.getElementById('inputPrecioMayoreoProducto')   || {}).value || '').trim();
@@ -6540,6 +6571,7 @@ async function guardarProductoAdmin() {
         var cuerpo = {
             idToken:           idToken,
             nombre:            nombre,
+            textoImagen:       textoImagen,
             descripcion:       descripcion,
             precio:            precio,
             precioMayoreo:     precioMayoreo,
@@ -6574,7 +6606,7 @@ async function guardarProductoAdmin() {
         mostrarToast('✅ Producto agregado');
 
         // Limpiar formulario
-        ['inputNombreProducto', 'inputDescripcionProducto', 'inputPrecioProducto', 'inputPrecioMayoreoProducto',
+        ['inputNombreProducto', 'inputTextoImagenProducto', 'inputDescripcionProducto', 'inputPrecioProducto', 'inputPrecioMayoreoProducto',
          'inputStockProducto',
          'inputAltoProducto', 'inputAnchoProducto', 'inputVideoYoutubeProducto', 'inputFilaProducto',
          'inputPrecioOfertaProducto']
@@ -6597,6 +6629,7 @@ async function guardarProductoAdmin() {
         var _inputEventoOtro = document.getElementById('inputEventoOtroProducto');
         if (_inputEventoOtro) _inputEventoOtro.value = '';
         _limpiarImagenesProducto();
+        _actualizarTextoSobreImagen();
         var _avisoPosicion = '';
         if (filaDestino !== '' && String(data.fila) !== String(filaDestino)) {
             _avisoPosicion = ' ⚠️ Pediste la posición ' + filaDestino + ' pero se guardó en la ' + data.fila +
@@ -6697,6 +6730,7 @@ function abrirEdicionProducto(card) {
 
     // ── Prellenar campos de texto ──
     _setValorEdit('inputNombreProductoEdit',        card.getAttribute('data-nombre') || '');
+    _setValorEdit('inputTextoImagenProductoEdit',   card.getAttribute('data-texto-imagen') || '');
     _setValorEdit('inputPrecioProductoEdit',         card.getAttribute('data-precio') || '');
     _setValorEdit('inputPrecioMayoreoProductoEdit',  card.getAttribute('data-precio-bazar') || '');
     _setValorEdit('inputDescripcionProductoEdit',    card.getAttribute('data-descripcion') || '');
@@ -6937,6 +6971,7 @@ async function guardarEdicionProducto() {
     }
 
     var nombre          = ((document.getElementById('inputNombreProductoEdit')          || {}).value || '').trim();
+    var textoImagen     = ((document.getElementById('inputTextoImagenProductoEdit')     || {}).value || '').replace(/[\r\n\t]+/g, ' ').trim();
     var descripcion     = ((document.getElementById('inputDescripcionProductoEdit')     || {}).value || '').trim();
     var precio          = ((document.getElementById('inputPrecioProductoEdit')          || {}).value || '').trim();
     var precioMayoreo   = ((document.getElementById('inputPrecioMayoreoProductoEdit')   || {}).value || '').trim();
@@ -6991,6 +7026,7 @@ async function guardarEdicionProducto() {
             idToken:           idToken,
             filaEditar:        _editFilaActual,
             nombre:            nombre,
+            textoImagen:       textoImagen,
             descripcion:       descripcion,
             precio:            precio,
             precioMayoreo:     precioMayoreo,
