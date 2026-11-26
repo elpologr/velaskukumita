@@ -4657,9 +4657,49 @@ function _lpRender(k) {
         var x = document.createElement('button');
         x.type = 'button'; x.className = 'lp-quitar'; x.textContent = '✕'; x.title = 'Quitar de la lista';
         x.addEventListener('click', function () { _lpForm[k].splice(i, 1); _lpRender(k); });
-        fila.appendChild(foto); fila.appendChild(centro); fila.appendChild(p); fila.appendChild(x);
+        fila.appendChild(_lpCrearControlOrden(k, i, fila)); fila.appendChild(foto); fila.appendChild(centro); fila.appendChild(p); fila.appendChild(x);
         cont.appendChild(fila);
     });
+}
+// Cambiar el orden de la lista (el de arriba es el primero que se muestra en el catálogo): botones ▲ ▼ y asa ⠿ para arrastrar
+function _lpMover(k, de, a) {
+    var L = _lpForm[k];
+    if (a < 0 || a >= L.length || de === a) return;
+    var it = L.splice(de, 1)[0];
+    L.splice(a, 0, it);
+    _lpRender(k);
+}
+function _lpCrearControlOrden(k, i, fila) {
+    var w = document.createElement('div'); w.className = 'lp-orden';
+    function btn(txt, cls, titulo) { var b = document.createElement('button'); b.type = 'button'; b.className = cls; b.textContent = txt; b.title = titulo; b.setAttribute('aria-label', titulo); return b; }
+    var sube = btn('▲', 'lp-orden-btn', 'Subir'), asa = btn('⠿', 'lp-orden-asa', 'Arrastra para cambiar el orden'), baja = btn('▼', 'lp-orden-btn', 'Bajar');
+    sube.disabled = (i === 0); baja.disabled = (i === _lpForm[k].length - 1);
+    sube.addEventListener('click', function () { _lpMover(k, i, i - 1); });
+    baja.addEventListener('click', function () { _lpMover(k, i, i + 1); });
+    asa.addEventListener('pointerdown', function (e) {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        e.preventDefault();
+        var cont = fila.parentNode;
+        var filas = Array.prototype.slice.call(cont.querySelectorAll('.lp-fila-form-img'));
+        var y0 = e.clientY;
+        try { asa.setPointerCapture(e.pointerId); } catch (x) { }
+        fila.classList.add('lp-arrastrando');
+        function mover(ev) { fila.style.transform = 'translateY(' + (ev.clientY - y0) + 'px)'; }
+        function limpiar() {
+            asa.removeEventListener('pointermove', mover); asa.removeEventListener('pointerup', soltar); asa.removeEventListener('pointercancel', cancelar);
+            fila.classList.remove('lp-arrastrando'); fila.style.transform = '';
+        }
+        function soltar(ev) {
+            limpiar();
+            var nuevo = 0;
+            filas.forEach(function (f, j) { if (j === i) return; var r = f.getBoundingClientRect(); if (r.top + r.height / 2 < ev.clientY) nuevo++; });
+            _lpMover(k, i, nuevo);
+        }
+        function cancelar() { limpiar(); }
+        asa.addEventListener('pointermove', mover); asa.addEventListener('pointerup', soltar); asa.addEventListener('pointercancel', cancelar);
+    });
+    w.appendChild(sube); w.appendChild(asa); w.appendChild(baja);
+    return w;
 }
 // «➕ Agregar producto a la lista»: abre el submenú (ver lista-precios-admin.js)
 function _lpAgregarFila(k) {

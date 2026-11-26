@@ -4963,3 +4963,11 @@ body.modo-oscuro .btn-pantalla-completa { background: #3a2e26; color: #e8ddd5; }
     pointer-events: none; animation: vicHintFuera 0.4s ease 3s forwards;
 }
 @keyframes vicHintFuera { to { opacity: 0; visibility: hidden; } }
+
+/* ── Orden de la lista de «Revisar precios» (Agregar / Editar producto): ▲ ▼ y asa para arrastrar ── */
+.lp-orden { flex: 0 0 auto; display: flex; flex-direction: column; align-items: stretch; gap: 2px; }
+.lp-orden button { width: 26px; height: 18px; padding: 0; border: 1px solid #d9cfc8; border-radius: 6px; background: #fff; color: #5c4d43; font-size: 10px; line-height: 1; cursor: pointer; }
+.lp-orden button:disabled { opacity: 0.3; cursor: not-allowed; }
+.lp-orden .lp-orden-asa { height: 20px; font-size: 15px; cursor: grab; touch-action: none; user-select: none; }
+.lp-fila-form-img.lp-arrastrando { position: relative; z-index: 5; opacity: 0.9; box-shadow: 0 6px 18px rgba(0,0,0,0.25); }
+body.modo-oscuro .lp-orden button { background: #3a2e26; border-color: #4a3c32; color: #f0e8e0; }

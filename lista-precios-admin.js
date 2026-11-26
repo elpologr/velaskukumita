@@ -287,6 +287,31 @@
         var gP = grupoChecks('Etiqueta principal (elige una o varias)', checksDe(selP), 'principal');
         var gE = grupoChecks('Etiqueta de evento (opcional)', checksDe(selE), 'evento');
 
+        // Etiquetas como dos botones desplegables (igual que en «Agregar producto»): al abrir uno se pliega el otro
+        function botonAcordeon(texto, cls) {
+            var b = el('button', 'acordeon-btn ' + cls); b.type = 'button'; b.setAttribute('aria-expanded', 'false');
+            var c = el('span', 'ac-cuenta'); c.hidden = true;
+            var f = el('span', 'ac-flecha', '▾'); f.setAttribute('aria-hidden', 'true');
+            b.appendChild(el('span', 'ac-texto', texto)); b.appendChild(c); b.appendChild(f);
+            return b;
+        }
+        var bAcP = botonAcordeon('🏷️ Etiqueta principal', 'ac-principal'), bAcE = botonAcordeon('🎉 Etiqueta de evento', 'ac-evento');
+        var filaAc = el('div', 'acordeon-etiquetas'); filaAc.appendChild(bAcP); filaAc.appendChild(bAcE);
+        [gP, gE].forEach(function (g) { if (g.firstChild && g.firstChild.tagName === 'LABEL') g.removeChild(g.firstChild); g.classList.add('acordeon-panel'); });
+        var abiertoAc = null;
+        function mostrarAc(cual) {
+            abiertoAc = cual;
+            gP.hidden = cual !== 'p'; gE.hidden = cual !== 'e';
+            bAcP.setAttribute('aria-expanded', cual === 'p' ? 'true' : 'false');
+            bAcE.setAttribute('aria-expanded', cual === 'e' ? 'true' : 'false');
+        }
+        function cuentaAc(b, n) { var c = b.querySelector('.ac-cuenta'); c.textContent = String(n); c.hidden = !n; }
+        function contarAc() { cuentaAc(bAcP, gP.querySelectorAll('input:checked').length); cuentaAc(bAcE, gE.querySelectorAll('input:checked').length); }
+        bAcP.addEventListener('click', function () { mostrarAc(abiertoAc === 'p' ? null : 'p'); });
+        bAcE.addEventListener('click', function () { mostrarAc(abiertoAc === 'e' ? null : 'e'); });
+        gP.addEventListener('change', contarAc); gE.addEventListener('change', contarAc);
+        mostrarAc(null); contarAc();
+
         var estado = el('div', 'slp-estado');
         var agregar = el('button', 'slp-btn-listo slp-btn-agregar', '➕ Agregar a la lista'); agregar.type = 'button';
         agregar.addEventListener('click', function () {
@@ -320,7 +345,7 @@
         if (typeof window.montarDescripcionesFijas === 'function') window.montarDescripcionesFijas(iDesc);   // botones de descripciones fijas (marcan también la etiqueta del mismo nombre)
         cuerpo.appendChild(filaMedidas);
         cuerpo.appendChild(campo('Existencia (piezas)', iStock));
-        cuerpo.appendChild(gP); cuerpo.appendChild(gE);
+        cuerpo.appendChild(filaAc); cuerpo.appendChild(gP); cuerpo.appendChild(gE);
         cuerpo.appendChild(el('p', 'slp-info', 'El producto se crea en el catálogo al presionar «Guardar» en el producto principal. Los demás datos (oferta, video, etc.) se pueden completar después con ⚙️ Editar.'));
         cuerpo.appendChild(estado); cuerpo.appendChild(agregar);
     }
