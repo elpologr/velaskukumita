@@ -21,6 +21,7 @@
     var overlay = null, grid = null, cuerpo = null, selFiltro = null, chkSolo = null;
     var txtEstado = null, btnGuardar = null, btnDeshacer = null, btnDescartar = null, txtMsg = null;
     var items = [], porId = {}, original = [], orden = [], historial = [];
+    var observador = null, scrollBloqueado = false, ocultos = [];
     var filtro = '', soloFiltro = false, guardando = false, arrastrando = null, recienId = null;
 
     function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
@@ -93,8 +94,40 @@
     // ── Pintar la cuadrícula ──
     function cambios() { var n = 0; for (var i = 0; i < orden.length; i++) if (original[i] !== orden[i].id) n++; return n; }
 
+    // Solo se cargan las imágenes que están en pantalla (más un margen); las que quedan lejos se liberan de la memoria.
+    // El navegador las vuelve a pedir desde su caché al regresar, así que no se vuelven a descargar.
+    function prepararObservador() {
+        if (observador) observador.disconnect();
+        if (!('IntersectionObserver' in window)) { observador = null; return; }
+        observador = new IntersectionObserver(function (entradas) {
+            entradas.forEach(function (en) {
+                var im = en.target;
+                if (en.isIntersecting) { if (!im.getAttribute('src')) im.src = im.getAttribute('data-src'); }
+                else if (im.getAttribute('src')) im.removeAttribute('src');
+            });
+        }, { root: cuerpo, rootMargin: '700px 0px' });
+    }
+    // Mientras la cuadrícula está abierta: el fondo no se desplaza (mismo bloqueo que usan los demás modales) y se oculta,
+    // para que el navegador no lo siga pintando.
+    function bloquearFondo() {
+        if (!scrollBloqueado && typeof _bloquearScrollBody === 'function') { _bloquearScrollBody(); scrollBloqueado = true; }
+        else if (!scrollBloqueado) { document.body.style.overflow = 'hidden'; }
+        ocultos = [];
+        Array.prototype.forEach.call(document.body.children, function (h) {
+            if (h === overlay || /^(SCRIPT|STYLE|LINK|NOSCRIPT)$/.test(h.tagName) || /toast/i.test(h.id + ' ' + h.className)) return;
+            ocultos.push([h, h.style.visibility]); h.style.visibility = 'hidden';
+        });
+    }
+    function liberarFondo() {
+        ocultos.forEach(function (o) { o[0].style.visibility = o[1]; });
+        ocultos = [];
+        if (scrollBloqueado) { scrollBloqueado = false; if (typeof _desbloquearScrollBody === 'function') _desbloquearScrollBody(); }
+        else document.body.style.overflow = '';
+    }
+
     function pintar() {
         var posOriginal = {}; original.forEach(function (id, i) { posOriginal[id] = i; });
+        prepararObservador();
         var frag = document.createDocumentFragment(), solo = !!(soloFiltro && filtro), hayFiltro = !!filtro, coinciden = 0;
         orden.forEach(function (it, i) {
             var ok = coincide(it, filtro);
@@ -112,7 +145,7 @@
             if (hayFiltro) c.classList.add(ok ? 'cg-resalta' : 'cg-tenue');
             if (it.id === recienId) c.classList.add('cg-recien');
             var foto = el('div', 'cg-foto');
-            if (it.img) { var im = document.createElement('img'); im.src = it.img; im.alt = ''; im.loading = 'lazy'; im.draggable = false; foto.appendChild(im); }
+            if (it.img) { var im = document.createElement('img'); im.setAttribute('data-src', it.img); im.alt = ''; im.decoding = 'async'; im.draggable = false; foto.appendChild(im); if (observador) observador.observe(im); }
             var envoltura = el('div', 'cg-fotowrap');
             envoltura.appendChild(foto);
             var bLapiz = el('button', 'cg-lapiz', '✏️'); bLapiz.type = 'button'; bLapiz.draggable = false;
@@ -428,7 +461,7 @@
         mensaje('');
         var cfg = document.getElementById('cfgPortadaCancelar'); if (cfg) cfg.click();   // cierra el panel ⚙️
         overlay.classList.add('abierta');
-        document.body.style.overflow = 'hidden';
+        bloquearFondo();
         cuerpo.scrollTop = 0;
         pintar();
     }
@@ -437,7 +470,8 @@
         if (guardando) return;
         if (!forzar && cambios() && !window.confirm('Tienes cambios de posición sin guardar. ¿Salir y perderlos?')) return;
         overlay.classList.remove('abierta');
-        document.body.style.overflow = '';
+        liberarFondo();
+        if (observador) { observador.disconnect(); observador = null; }
         grid.innerHTML = '';
     }
 
