@@ -548,6 +548,8 @@
                     <div class="galeria-imagenes-producto" id="galeriaImagenesProducto"></div>
                     <span class="contador-imagenes-producto" id="contadorImagenesProducto" style="display:none;"></span>
                 </div>
+                </div>
+                <div class="form-admin-col">
                 <div data-ord="2" class="campo-admin-producto">
                     <label class="panel-nombre-label">Nombre del producto</label>
                     <input id="inputNombreProducto" class="panel-nombre-input" type="text" placeholder="Ej. Vela aromática grande" maxlength="120">
@@ -556,13 +558,6 @@
                     <label class="panel-nombre-label">Texto sobre la imagen</label>
                     <input id="inputTextoImagenProducto" class="panel-nombre-input" type="text" placeholder="Opcional, ej. ¡Nuevo!, Edición limitada" maxlength="60" oninput="_actualizarTextoSobreImagen()">
                 </div>
-                <div data-ord="15" class="campo-admin-producto campo-zona-posicion-sheet">
-                    <label class="panel-nombre-label">Posición en la hoja <span style="font-weight:400; color:#9a8878;">(opcional)</span></label>
-                    <input id="inputFilaProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="2" step="1" placeholder="Ej. 2 para que sea el primer producto">
-                    <span id="infoFilasOcupadasSheet"></span>
-                </div>
-                </div>
-                <div class="form-admin-col">
                 <div data-ord="3" class="campo-admin-producto campo-modo-precio">
                     <label class="panel-nombre-label">Botón de precio</label>
                     <div class="selector-modo-precio" role="radiogroup" aria-label="Botón de precio del producto">
@@ -683,6 +678,11 @@
                 <div data-ord="11" class="campo-admin-producto">
                     <label class="panel-nombre-label">Cantidad en stock</label>
                     <input id="inputStockProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="0" step="1" placeholder="Ej. 20">
+                </div>
+                <div data-ord="15" class="campo-admin-producto campo-zona-posicion-sheet">
+                    <label class="panel-nombre-label">Posición en la hoja <span style="font-weight:400; color:#9a8878;">(opcional)</span></label>
+                    <input id="inputFilaProducto" class="panel-nombre-input" type="number" inputmode="numeric" min="2" step="1" placeholder="Ej. 2 para que sea el primer producto">
+                    <span id="infoFilasOcupadasSheet"></span>
                 </div>
                 </div>
               </div>

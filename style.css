@@ -4703,9 +4703,9 @@ body.modo-oscuro .lp-agregar { background: #3a2e26; }
    (3 columnas a todo el ancho, campos compactos y barra de "Guardar" siempre visible).
    Solo afecta a #pantallaAdminProductos. En celular NADA cambia: las columnas siguen siendo
    transparentes (display: contents) y el atributo data-ord devuelve cada campo a su lugar de siempre.
-     columna 1: imagen → nombre del producto → posición en la hoja
-     columna 2: texto sobre la imagen → precios → descripción → medidas
-     columna 3: etiqueta principal y de evento (botones desplegables) → En oferta / Más vendido → video → stock
+     columna 1: imagen
+     columna 2: nombre del producto → texto sobre la imagen → precios → descripción → medidas
+     columna 3: etiqueta principal y de evento (botones desplegables) → En oferta / Más vendido → video → stock → posición en la hoja
    ══════════════════════════════════════════════════════════════════════════════ */
 /* Orden original (móvil): como las columnas son display:contents, "order" ordena todos los campos juntos */
 #pantallaAdminProductos [data-ord="1"]  { order: 10; }    /* imagen */
