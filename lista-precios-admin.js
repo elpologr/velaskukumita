@@ -159,29 +159,50 @@
     function mostrarNuevo() {
         ponerVista('nuevo', '🆕 Producto nuevo');
         var imgData = null;
+        var enfX = 50, enfY = 0;   // zona de la imagen que se verá en el catálogo (igual que en «Agregar producto»)
 
         // Imagen
         var zonaImg = el('div', 'slp-campo');
         zonaImg.appendChild(el('label', 'panel-nombre-label', 'Imagen del producto'));
         var previa = el('div', 'slp-previa', '🖼️');
+        var iTexto = entrada('text', 'Opcional, ej. ¡Nuevo!, Edición limitada', { maxLength: 60 });
+        function textoActual() { return (typeof _normalizarTextoImagen === 'function') ? _normalizarTextoImagen(iTexto.value) : iTexto.value.trim(); }
+        function pintarPrevia() {
+            previa.innerHTML = '';
+            if (!imgData) { previa.textContent = '🖼️'; return; }
+            var im = document.createElement('img'); im.src = imgData.dataUrl; im.alt = '';
+            im.style.objectPosition = enfX + '% ' + enfY + '%';
+            previa.appendChild(im);
+            var t = textoActual();
+            if (t) { var tt = el('div', 'recorte-texto-preview', t); tt.style.display = 'block'; previa.appendChild(tt); }
+            bRecorte.hidden = false;
+        }
         var inGal = document.createElement('input'); inGal.type = 'file'; inGal.accept = 'image/*'; inGal.style.display = 'none';
         var inCam = document.createElement('input'); inCam.type = 'file'; inCam.accept = 'image/*'; inCam.setAttribute('capture', 'environment'); inCam.style.display = 'none';
         var fila = el('div', 'slp-fila-btns');
         var bG = el('button', 'btn-nueva-etiqueta', '🖼️ Elegir de la galería'); bG.type = 'button'; bG.addEventListener('click', function () { inGal.click(); });
         var bC = el('button', 'btn-nueva-etiqueta', '📷 Tomar foto'); bC.type = 'button'; bC.addEventListener('click', function () { inCam.click(); });
         fila.appendChild(bG); fila.appendChild(bC);
+        var bRecorte = el('button', 'btn-nueva-etiqueta', '✂️ Elegir qué se ve en el catálogo'); bRecorte.type = 'button'; bRecorte.hidden = true;
+        bRecorte.addEventListener('click', function () {
+            if (!imgData || typeof abrirModalRecorteImagen !== 'function') return;
+            var ov = document.getElementById('overlayRecorteImagen');
+            if (ov) ov.style.zIndex = '21500';   // por encima de este submenú
+            abrirModalRecorteImagen(imgData.dataUrl, enfX, enfY, function (x, y) { enfX = x; enfY = y; pintarPrevia(); }, true, textoActual());
+        });
+        iTexto.addEventListener('input', pintarPrevia);
         var estadoImg = el('div', 'slp-estado');
         function procesarArchivo(f) {
             if (!f) return;
             estadoImg.textContent = 'Convirtiendo imagen…'; estadoImg.className = 'slp-estado';
             _convertirArchivoImagenProducto(f).then(function (r) {
-                imgData = r; previa.innerHTML = ''; var im = document.createElement('img'); im.src = r.dataUrl; im.alt = ''; previa.appendChild(im);
+                imgData = r; enfX = 50; enfY = 0; pintarPrevia();
                 estadoImg.textContent = '';
             }).catch(function (err) { estadoImg.textContent = String(err); estadoImg.className = 'slp-estado error'; });
         }
         function alElegir(ev) { var f = ev.target.files && ev.target.files[0]; ev.target.value = ''; procesarArchivo(f); }
         inGal.addEventListener('change', alElegir); inCam.addEventListener('change', alElegir);
-        zonaImg.appendChild(previa); zonaImg.appendChild(fila); zonaImg.appendChild(estadoImg); zonaImg.appendChild(inGal); zonaImg.appendChild(inCam);
+        zonaImg.appendChild(previa); zonaImg.appendChild(fila); zonaImg.appendChild(bRecorte); zonaImg.appendChild(estadoImg); zonaImg.appendChild(inGal); zonaImg.appendChild(inCam);
 
         // Arrastrar y soltar una imagen desde la carpeta de la computadora (los botones de siempre siguen igual)
         var hint = el('div', 'zona-soltar-hint', '⬇️ …o arrastra aquí tu imagen desde tus archivos');
@@ -240,7 +261,7 @@
             var eventos = Array.prototype.map.call(gE.querySelectorAll('input:checked'), function (c) { return c.value; }).join('|');
             _lpForm[kActual].push({
                 nombre: nombre, precio: precio, img: '', imgData: imgData, creado: false,
-                nuevo: { precio: precio, mayoreo: mayoreo, descripcion: iDesc.value.trim(), alto: iAlto.value.trim(), ancho: iAncho.value.trim(),
+                nuevo: { textoImagen: textoActual().substring(0, 60), enfoque: enfX + ',' + enfY, precio: precio, mayoreo: mayoreo, descripcion: iDesc.value.trim(), alto: iAlto.value.trim(), ancho: iAncho.value.trim(),
                          existencia: stock, etiquetaPrincipal: principales, etiquetaEvento: eventos }
             });
             aviso('✅ «' + nombre + '» se creará como producto nuevo al guardar');
@@ -249,6 +270,7 @@
 
         cuerpo.appendChild(zonaImg);
         cuerpo.appendChild(campo('Nombre del producto', iNombre));
+        cuerpo.appendChild(campo('Texto sobre la imagen (opcional)', iTexto));
         cuerpo.appendChild(filaPrecios);
         cuerpo.appendChild(campo('Descripción', iDesc));
         cuerpo.appendChild(filaMedidas);

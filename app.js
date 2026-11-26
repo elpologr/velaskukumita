@@ -4709,11 +4709,11 @@ async function _lpResolverParaGuardar(rl, idToken, avisar) {
             if (avisar) avisar('Creando el producto nuevo «' + e.nombre + '» (' + (i + 1) + '/' + rl.items.length + ')…');
             var n = it.nuevo;
             var cuerpoN = {
-                idToken: idToken, nombre: e.nombre, textoImagen: '', mostrarTextoImagen: 'si',
+                idToken: idToken, nombre: e.nombre, textoImagen: n.textoImagen || '', mostrarTextoImagen: 'si',
                 descripcion: n.descripcion || '', precio: String(e.precio), precioMayoreo: n.mayoreo || '', existencia: n.existencia || '',
                 etiquetaPrincipal: n.etiquetaPrincipal || '', etiquetaEvento: n.etiquetaEvento || '', enOferta: '', masVendido: '',
                 alto: n.alto || '', ancho: n.ancho || '', video: '', filaDestino: '', precioOferta: '', modoPrecio: '', listaPrecios: '',
-                imagenes: [it.imgData.base64], imagenesNombres: [it.imgData.nombre], enfoques: ['50,0']
+                imagenes: [it.imgData.base64], imagenesNombres: [it.imgData.nombre], enfoques: [n.enfoque || '50,0']
             };
             var rN = await fetch(ADMIN_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(cuerpoN) });
             var dN = await rN.json();
@@ -6487,6 +6487,7 @@ function _abrirRecorteImagenPrincipal() {
 // El texto va APARTE de la imagen (no se imprime en ella): se guarda en la hoja y el catálogo lo dibuja encima de la tarjeta, arriba al
 // centro, solo si está activado. Aquí solo hay una vista previa dentro del recuadro de recorte, a escala.
 var _TEXTO_IMG_ESCALA = 0.07;          // tamaño de la letra de la vista previa = 7 % del lado del recuadro
+var _recorteTextoOverride = null;      // texto propio para la vista previa (lo usa «Producto nuevo» de la lista de «Revisar precios»); null = usar el del formulario
 var _recorteTextoVisible = false;      // el modal grande solo muestra el texto cuando se está recortando la imagen principal
 
 // «Texto sobre la imagen» del formulario Agregar siempre arranca con los signos «¡  !» (dos espacios en medio)
@@ -6514,7 +6515,7 @@ function _restablecerTextoImagenPlantilla() {
 })();
 function _actualizarTextoSobreImagen() {
     var chkMostrar = document.getElementById('inputMostrarTextoImagenProducto');
-    var t = (chkMostrar && !chkMostrar.checked) ? '' : _textoSobreImagenActual();
+    var t = (_recorteTextoOverride !== null) ? _recorteTextoOverride : ((chkMostrar && !chkMostrar.checked) ? '' : _textoSobreImagenActual());
     [['recorteTextoPreview', 'recorteCuadro', true], ['recorteGrandeTextoPreview', 'recorteGrandeCuadro', _recorteTextoVisible]].forEach(function (x) {
         var el = document.getElementById(x[0]), cuadro = document.getElementById(x[1]);
         if (!el) return;
@@ -6654,8 +6655,9 @@ var _recorteModalOnGuardar = null;
 var _recorteModalEnfoqueX = 50;
 var _recorteModalEnfoqueY = 0;
 
-function abrirModalRecorteImagen(srcImagen, enfoqueXActual, enfoqueYActual, onGuardar, mostrarTexto) {
+function abrirModalRecorteImagen(srcImagen, enfoqueXActual, enfoqueYActual, onGuardar, mostrarTexto, textoPropio) {
     _recorteModalOnGuardar = onGuardar;
+    _recorteTextoOverride = (typeof textoPropio === 'string') ? textoPropio : null;
     _recorteTextoVisible = !!mostrarTexto;
     _recorteModalEnfoqueX = (typeof enfoqueXActual === 'number') ? enfoqueXActual : 50;
     _recorteModalEnfoqueY = (typeof enfoqueYActual === 'number') ? enfoqueYActual : 0;
@@ -6677,7 +6679,8 @@ function abrirModalRecorteImagen(srcImagen, enfoqueXActual, enfoqueYActual, onGu
 function cerrarModalRecorteImagen() {
     _recorteTextoVisible = false;
     var overlay = document.getElementById('overlayRecorteImagen');
-    if (overlay) overlay.style.display = 'none';
+    if (overlay) { overlay.style.display = 'none'; overlay.style.zIndex = ''; }
+    if (_recorteTextoOverride !== null) { _recorteTextoOverride = null; _actualizarTextoSobreImagen(); }
     _desbloquearScrollBody();
     _recorteModalOnGuardar = null;
     if (history.state && history.state.kukumitaModal === 'recorteImagen') {
