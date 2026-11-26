@@ -310,7 +310,9 @@
         var c = el('div', 'zi-caja zi-ed'); colocar(c, z);
         c.appendChild(el('span', 'zi-num', String(i + 1)));
         // Botón de descarga dentro del recuadro (abajo, solo cuando está seleccionado)
-        var bd = boton('⬇️ Guardar captura', 'zi-descarga');
+        var bd = boton('', 'zi-descarga');
+        bd.innerHTML = '<span class="zi-d-ico">⬇️</span><span class="zi-d-txt"> Guardar</span>';
+        bd.setAttribute('aria-label', 'Guardar captura de este recuadro en mi dispositivo');
         bd.title = 'Descargar a mi PC lo que encierra este recuadro';
         bd.addEventListener('pointerdown', function (e) { e.stopPropagation(); });
         bd.addEventListener('click', function (e) {

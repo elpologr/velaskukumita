@@ -5211,3 +5211,10 @@ body.modo-oscuro .lp-recuadros-estado.error { color: #ff9aa8; }
 .grid-productos-inteligente { min-height: 0 !important; }
 #gridProductos { padding-bottom: 6px !important; }
 #pagControlesAbajo { margin: 0.4rem 0 0.8rem !important; }
+/* Botón de descarga del recuadro: más cómodo con el dedo; si el recuadro es angosto, solo muestra el ícono */
+.zi-caja { container-type: inline-size; }
+.zi-descarga { bottom: 16px; min-height: 40px; padding: 9px 16px; font-size: 14px; }
+@container (max-width: 120px) {
+    .zi-descarga { width: 44px; height: 44px; min-height: 44px; padding: 0; line-height: 40px; font-size: 20px; text-align: center; }
+    .zi-d-txt { display: none; }
+}
