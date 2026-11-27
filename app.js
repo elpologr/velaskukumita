@@ -658,7 +658,10 @@ function renderizarCatalogoCompleto() {
     if (!grid) { console.warn('renderizarCatalogoCompleto: #gridProductos no encontrado'); return; }
     grid.innerHTML = '';
 
-    listaProductos.forEach(function(p) {
+    // ORDEN INVERSO: el producto de la fila MÁS ALTA de la hoja se pinta primero (el más nuevo es el #1 de la página).
+    // Solo cambia el orden de las tarjetas en pantalla; listaProductos, los id y las filas de la hoja no se tocan
+    // (así «mover», «editar», las mesas y la cuadrícula siguen apuntando a la fila correcta).
+    listaProductos.slice().reverse().forEach(function(p) {
         grid.appendChild(_crearCardProducto(p, false));
     });
 
@@ -2975,9 +2978,12 @@ function cerrarModalTienda() {
 
 // ─── COMPARTIR PÁGINA (QR + copiar link) ───
 var URL_PAGINA_COMPARTIR = 'https://velaskukumita.com';
+// El código QR lleva «?origen=qr»: así la página sabe que la persona llegó escaneándolo y le abre primero «Compartir página».
+// (El botón «Copiar link» sigue copiando el link normal, sin el parámetro.)
+var URL_QR_PAGINA = URL_PAGINA_COMPARTIR + '/?origen=qr';
 function abrirModalQR() {
     document.getElementById('modalQR').classList.add('abierto');
-    generarQR(URL_PAGINA_COMPARTIR);
+    generarQR(URL_QR_PAGINA);
 }
 function cerrarModalQR() {
     document.getElementById('modalQR').classList.remove('abierto');
@@ -2986,6 +2992,19 @@ _ready(function() {
     document.getElementById('modalQR').addEventListener('click', function(e) {
         if (e.target === this) cerrarModalQR();
     });
+});
+
+// Llegó escaneando el QR (?origen=qr): lo primero que se abre es «Compartir página».
+_ready(function() {
+    var q = new URLSearchParams(window.location.search);
+    if (q.get('origen') !== 'qr') return;
+    // Se quita el parámetro de la barra de direcciones: si recarga o comparte ese link, ya no se vuelve a abrir solo
+    try {
+        q.delete('origen');
+        var resto = q.toString();
+        history.replaceState(history.state, '', window.location.pathname + (resto ? '?' + resto : '') + window.location.hash);
+    } catch (e) { }
+    setTimeout(abrirModalQR, 500);
 });
 
 function generarQR(texto) {
