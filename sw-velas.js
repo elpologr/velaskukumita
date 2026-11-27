@@ -8,14 +8,14 @@
 //     Firebase guarda la sesión por su cuenta (IndexedDB), este archivo no la ve.
 //  4. «Primero red, luego copia»: el administrador siempre recibe el código más nuevo; la copia solo se usa sin internet o si la red tarda más de 3 s.
 // CUÁNDO SUBIR VERSION: solo si agregas o quitas archivos de la lista de abajo (los que ya están se actualizan solos con la red).
-const VERSION = 2;
+const VERSION = 3;
 const CACHE = "velas-kukumita-v" + VERSION;
 const ESPERA_RED = 3000;
 
 const ARCHIVOS = [
   "./", "index.html", "style.css", "mesas.css",
   "app.js", "admin-producto-ui.js", "lista-precios-admin.js", "galeria-lista-precios.js", "descripciones-fijas.js",
-  "sin-precio.js", "festividades.js", "zonas-imagen.js", "portada.js", "cuadricula.js", "mesas.js", "pwa-velas.js",
+  "sin-precio.js", "festividades.js", "destacados-fechas.js", "editar-recorte-principal.js", "zonas-imagen.js", "portada.js", "cuadricula.js", "mesas.js", "pwa-velas.js",
   "manifest-velas.webmanifest",
   "imagenes/icono-180-velas.png", "imagenes/icono-192-velas.png", "imagenes/icono-512-velas.png", "imagenes/icono-maskable-512-velas.png",
   "imagenes/velalogo.webp",
