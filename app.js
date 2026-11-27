@@ -3670,6 +3670,8 @@ var _pillBtns   = { biografia:'pillBiografia', productos:'pillProductos', oferta
 var _pillPanels = { biografia:'panelPillBiografia', productos:null, ofertas:'panelPillOfertas', masvendidos:'panelPillMasVendidos' };
 
 function activarPill(cual) {
+    // «Biografía» ya no existe como pestaña (se quitó la barra Biografía/Catálogo): cualquier valor guardado antes se trata como el catálogo
+    if (cual === 'biografia') cual = 'productos';
     // Desactivar todos
     Object.values(_pillBtns).forEach(function(id) {
         var el = document.getElementById(id);
@@ -3688,13 +3690,21 @@ function activarPill(cual) {
     var panelEl = panelId ? document.getElementById(panelId) : null;
     if (panelEl) panelEl.classList.add('activo');
 
-    // Mostrar/ocultar catálogo de productos (solo se ve con «Catálogo»; Biografía, Ofertas y Más Vendidos muestran únicamente su propia zona)
+    // El catálogo SIEMPRE se ve. Ofertas y Más Vendidos abren su carrusel arriba del catálogo (no lo reemplazan).
     var catalogo = document.getElementById('zona-catalogo');
-    if (catalogo) catalogo.style.display = (cual === 'biografia' || cual === 'ofertas' || cual === 'masvendidos') ? 'none' : 'block';
+    if (catalogo) catalogo.style.display = 'block';
 
     if (cual === 'productos') {
         // Sin scroll automático al mostrar el panel de productos
     }
+}
+
+// Botones «Ofertas» y «Más Vendidos»: abren su carrusel arriba del catálogo y se desplaza hasta él; tocar el mismo botón otra vez lo cierra.
+function togglePanelPill(cual) {
+    var panel = document.getElementById(_pillPanels[cual]);
+    var abierto = !!(panel && panel.classList.contains('activo'));
+    activarPill(abierto ? 'productos' : cual);
+    if (!abierto && panel) setTimeout(function() { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60);
 }
 
 // ===== PREFERENCIA DE PÁGINA DE INICIO =====

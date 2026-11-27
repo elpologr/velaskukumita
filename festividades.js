@@ -9,6 +9,7 @@
 //     Se guarda en la pestaña «Festividades» de la hoja (la crea sola el Apps Script con la acción «festividades»).
 //     La seguridad real está en el Apps Script, que vuelve a verificar el token de Firebase y el correo; aquí solo se evita mostrar el ⚙️.
 //   · Si todavía no hay nada guardado, sale solo «Navidad».
+//   · Los botones van en UNA sola fila que se desliza hacia los lados (con el dedo o con las flechas ‹ ›): en computadora se ven 5 a la vez.
 // ══════════════════════════════════════════════════════════════════════════════
 (function () {
     'use strict';
@@ -68,12 +69,18 @@
             '#zonaFestividades .fest-gear{position:absolute;right:2px;top:50%;transform:translateY(-50%);width:42px;height:42px;border:1.5px solid #d4c5b8;border-radius:50%;background:#fff;font-size:20px;line-height:1;cursor:pointer}',
             '#zonaFestividades .fest-gear:hover{background:#e8ddd5}',
             '#zonaFestividades .fest-sub{margin:6px 0 14px;font-size:.85rem;color:#5c4d43}',
-            '#zonaFestividades .fest-fila{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}',
-            '#zonaFestividades .fest-btn{flex:0 0 auto;width:min(189px,calc((100% - 12px) / 2));aspect-ratio:1/1;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;',
-            '  background:#f0eae4;border:2px solid #d4c5b8;color:#5c4d43;border-radius:34px;cursor:pointer;font-family:inherit;font-weight:700;line-height:1.15;padding:14px 10px;box-sizing:border-box;overflow:hidden;transition:all .22s}',
+            '#zonaFestividades .fest-carrusel{position:relative;max-width:993px;margin:0 auto}',   /* 5 botones de 189 px + 4 espacios de 12 px */
+            '#zonaFestividades .fest-fila{display:flex;flex-wrap:nowrap;gap:12px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;padding:4px 2px 8px;scroll-behavior:smooth}',
+            '#zonaFestividades .fest-fila::-webkit-scrollbar{display:none}',
+            '#zonaFestividades .fest-fila>:first-child{margin-left:auto}#zonaFestividades .fest-fila>:last-child{margin-right:auto}',   /* centra si caben todos; si no caben, no corta el primero */
+            '#zonaFestividades .fest-btn{flex:0 0 auto;scroll-snap-align:start;width:min(189px,calc((100% - 12px) / 2));aspect-ratio:1/1;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;',
+            '  background:#f0eae4;border:2px solid #d4c5b8;color:#5c4d43;border-radius:34px;cursor:pointer;font-family:inherit;font-weight:700;line-height:1.15;padding:14px 10px;box-sizing:border-box;overflow:hidden;transition:background .22s,border-color .22s,color .22s}',
             '#zonaFestividades .fest-btn:hover{background:#e8ddd5;border-color:#b8a898}',
             '#zonaFestividades .fest-btn:active{background:#8c7565;border-color:#8c7565;color:#fff}',
-            '#zonaFestividades .fest-btn:focus-visible,#zonaFestividades .fest-gear:focus-visible{outline:3px solid #8c7565;outline-offset:3px}',
+            '#zonaFestividades .fest-btn:focus-visible,#zonaFestividades .fest-gear:focus-visible,#zonaFestividades .fest-flecha:focus-visible{outline:3px solid #8c7565;outline-offset:3px}',
+            '#zonaFestividades .fest-flecha{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:46px;height:46px;border:none;border-radius:50%;background:rgba(63,44,37,.92);color:#fff;font-size:30px;line-height:1;padding:0 0 4px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.35)}',
+            '#zonaFestividades .fest-flecha:active{background:#8c7565}',
+            '#zonaFestividades .fest-izq{left:4px}#zonaFestividades .fest-der{right:4px}',
             '#zonaFestividades .fest-emoji{font-size:3.15rem;line-height:1}',
             '#zonaFestividades .fest-label{font-size:1.4rem;word-break:break-word}',
             '#zonaFestividades .fest-vacio{padding:18px 12px;color:#8c7565;font-size:.95rem}',
@@ -104,7 +111,7 @@
 
     // ── Aplicar un filtro (mismo camino que «Filtros de productos») ──
     function aplicar(o) {
-        if (typeof window.activarPill === 'function') window.activarPill('productos');   // por si estaba abierta Biografía
+        if (typeof window.activarPill === 'function') window.activarPill('productos');   // cierra los carruseles de Ofertas / Más Vendidos si estaban abiertos
         if (o.tipo === 'festividad' && typeof window.filtrarPorFestividadCarrusel === 'function') window.filtrarPorFestividadCarrusel(o.btn, o.slug);
         else if (typeof window.filtrarPorEventoCarrusel === 'function') window.filtrarPorEventoCarrusel(o.btn, o.slug);
         if (typeof window.scrollToGrid === 'function') window.scrollToGrid();
@@ -129,7 +136,8 @@
         var admin = esAdmin();
         var m = porFiltro();
         var lista = (cfg || []).map(function (f) { return m[f]; }).filter(Boolean);
-        var barra = document.getElementById('pillNavBarra');
+        // La zona va justo después de los botones de Tienda / Bazar / Mesas: antes del primer panel o del catálogo que exista
+        var barra = document.getElementById('panelPillBiografia') || document.getElementById('panelPillOfertas') || document.getElementById('zona-catalogo');
         if (!barra || !barra.parentNode) return;
         if (!lista.length && !admin) { if (zona) zona.style.display = 'none'; return; }
 
@@ -149,6 +157,7 @@
         }
         zona.appendChild(cab);
         zona.appendChild(el('p', 'fest-sub', lista.length ? 'Toca una fecha para ver sus productos' : ''));
+        var car = el('div', 'fest-carrusel');
         fila = el('div', 'fest-fila');
         if (!lista.length) fila.appendChild(el('div', 'fest-vacio', 'Todavía no hay botones. Toca ⚙️ para elegir cuáles se muestran.'));
         lista.forEach(function (o) {
@@ -158,7 +167,31 @@
             b.addEventListener('click', function () { aplicar(o); });
             fila.appendChild(b);
         });
-        zona.appendChild(fila);
+        var izq = el('button', 'fest-flecha fest-izq', '‹'); izq.type = 'button'; izq.setAttribute('aria-label', 'Ver las fechas anteriores');
+        var der = el('button', 'fest-flecha fest-der', '›'); der.type = 'button'; der.setAttribute('aria-label', 'Ver más fechas');
+        izq.style.display = 'none'; der.style.display = 'none';
+        // Se desplaza de botón en botón: tantos como caben completos en pantalla (5 en computadora)
+        function paso() {
+            var b0 = fila.querySelector('.fest-btn');
+            if (!b0) return fila.clientWidth;
+            var uno = b0.offsetWidth + 12;
+            return Math.max(1, Math.floor((fila.clientWidth + 12) / uno)) * uno;
+        }
+        function flechas() {
+            var max = fila.scrollWidth - fila.clientWidth, x = fila.scrollLeft;
+            var desborda = max > 6;
+            izq.style.display = (desborda && x > 6) ? '' : 'none';
+            der.style.display = (desborda && x < max - 6) ? '' : 'none';
+        }
+        izq.addEventListener('click', function () { fila.scrollBy({ left: -paso(), behavior: 'smooth' }); });
+        der.addEventListener('click', function () { fila.scrollBy({ left: paso(), behavior: 'smooth' }); });
+        fila.addEventListener('scroll', flechas, { passive: true });
+        if (!pintar.resizeOk) { pintar.resizeOk = true; window.addEventListener('resize', function () { if (fila) flechas(); }); }
+        car.appendChild(fila); car.appendChild(izq); car.appendChild(der);
+        zona.appendChild(car);
+        flechas();
+        if (window.requestAnimationFrame) requestAnimationFrame(flechas);
+        setTimeout(flechas, 400);   // por si las fuentes cargan después y cambian el ancho
         estadoEl = el('div', 'fest-estado'); estadoEl.setAttribute('role', 'status');
         zona.appendChild(estadoEl);
         zona.appendChild(el('div', 'fest-linea'));
