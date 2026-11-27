@@ -138,6 +138,24 @@
             '#modalDestacados .md-acc button{flex:1;padding:12px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer}',
             '#modalDestacados .md-guardar{background:#8c7565;color:#fff}#modalDestacados .md-cancelar{background:#e8ddd5;color:#3b2f27}',
             '#modalDestacados .md-acc button:disabled{opacity:.5;cursor:not-allowed}',
+            '#modalDestacados .md-cuad-btn{width:100%;padding:11px;margin:4px 0 6px;border:none;border-radius:12px;background:#f5c46b;color:#2a1d12;font-weight:800;font-size:.95rem;cursor:pointer}',
+            '#dfCuadricula{position:fixed;inset:0;z-index:10070;display:flex;flex-direction:column;background:#fdfbf7;color:#362a22;font-family:inherit}',
+            '#dfCuadricula .dfcg-cab{flex:0 0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 16px;background:#8c7565;color:#fff}',
+            '#dfCuadricula .dfcg-cab h3{margin:0;font-size:1.05rem}#dfCuadricula .dfcg-estado{flex:1;font-size:.85rem;font-weight:700}',
+            '#dfCuadricula .dfcg-cab button{padding:8px 14px;border:none;border-radius:10px;font-weight:700;cursor:pointer;background:rgba(255,255,255,.22);color:#fff}',
+            '#dfCuadricula .dfcg-cab .dfcg-ok{background:#f5c46b;color:#2a1d12}',
+            '#dfCuadricula .dfcg-ayuda{flex:0 0 auto;margin:0;padding:6px 16px;font-size:.8rem;background:#f3ece4;color:#6b5a4e}',
+            '#dfCuadricula .dfcg-cuerpo{flex:1;min-height:0;overflow-y:auto;padding:12px 16px 40px}',
+            '#dfCuadricula .dfcg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}',
+            '#dfCuadricula .dfcg-celda{position:relative;display:flex;flex-direction:column;gap:4px;padding:4px 4px 6px;border:2px solid #e8ddd5;border-radius:10px;background:#fff;cursor:grab;user-select:none}',
+            '#dfCuadricula .dfcg-principal{border-color:#f5c46b;background:#fff8e6}',
+            '#dfCuadricula .dfcg-foto{aspect-ratio:1/1;border-radius:7px;overflow:hidden;background:#efe7df}',
+            '#dfCuadricula .dfcg-foto img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}',
+            '#dfCuadricula .dfcg-pos{position:absolute;top:7px;left:7px;min-width:24px;padding:1px 6px;border-radius:999px;text-align:center;background:rgba(54,42,34,.88);color:#fff;font-size:.74rem;font-weight:800}',
+            '#dfCuadricula .dfcg-nombre{font-size:.72rem;font-weight:600;line-height:1.25;text-align:center;min-height:2.5em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}',
+            '#dfCuadricula .dfcg-pin{padding:4px;border:1px dashed #b8a898;border-radius:8px;background:transparent;color:#8c7565;font-size:.66rem;font-weight:700;cursor:pointer}',
+            '#dfCuadricula .dfcg-mueve{opacity:.35}#dfCuadricula .dfcg-destino{border-color:#2e86de;box-shadow:0 0 0 3px rgba(46,134,222,.45)}',
+            '#dfCuadricula .dfcg-linea{grid-column:1/-1;padding:5px 0;border-bottom:2px solid #f5c46b;font-size:.78rem;font-weight:800;color:#8c7565}',
             '#modalDestacados .md-msg{min-height:18px;margin-top:8px;font-size:.85rem;color:#6b5a4f}#modalDestacados .md-msg.error{color:#c0392b}'
         ].join('\n');
         document.head.appendChild(s);
@@ -173,6 +191,10 @@
         var caja = modal.querySelector('.md-caja'); caja.textContent = '';
         caja.appendChild(el('h3', '', '⭐ Productos principales: ' + nombreFiltro(f)));
         caja.appendChild(el('p', 'md-nota', 'Estos salen primero al entrar a esta fecha, en este orden (hasta ' + POR_PAGINA + '). Después siguen, sin dejar huecos, todos los demás productos de la fecha; los que elijas aquí ya no se repiten en esa parte.'));
+
+        var bCuad = boton('🧱 Ver en cuadrícula y arrastrar', 'md-cuad-btn');
+        bCuad.addEventListener('click', abrirCuadricula);
+        caja.appendChild(bCuad);
 
         caja.appendChild(el('h4', '', 'Al inicio (' + trabajo.length + '/' + POR_PAGINA + ')'));
         if (!trabajo.length) caja.appendChild(el('p', 'md-nota', 'Ninguno: se muestran todos en el orden normal de la hoja.'));
@@ -228,6 +250,69 @@
         g.addEventListener('click', guardar); c.addEventListener('click', cerrarPanel);
         acc.appendChild(g); acc.appendChild(c); caja.appendChild(acc);
     }
+    // ── Cuadrícula para arrastrar (productos de la fecha, en el orden en que se verán) ──
+    var cg = null, cgLista = [], cgCorte = 0, cgArrastra = null;
+    function cgCerrar() { if (cg) { cg.remove(); cg = null; } }
+    function cgPintar() {
+        if (!cg) return;
+        var grid = cg.querySelector('.dfcg-grid'); grid.textContent = '';
+        cg.querySelector('.dfcg-estado').textContent = cgCorte + '/' + POR_PAGINA + ' productos principales · ' + cgLista.length + ' productos en esta fecha';
+        cgLista.forEach(function (c, i) {
+            var celda = el('div', 'dfcg-celda' + (i < cgCorte ? ' dfcg-principal' : ''));
+            celda.draggable = true; celda.setAttribute('data-i', String(i));
+            var foto = el('div', 'dfcg-foto'), mi = miniatura(c); if (mi) { mi.draggable = false; foto.appendChild(mi); }
+            celda.appendChild(foto);
+            celda.appendChild(el('span', 'dfcg-pos', String(i + 1)));
+            celda.appendChild(el('div', 'dfcg-nombre', nombreDe(c)));
+            var pin = boton(i < cgCorte && i === cgCorte - 1 ? '📌 Aquí terminan' : '📌 Principales hasta aquí', 'dfcg-pin');
+            pin.draggable = false;
+            pin.addEventListener('click', function (e) { e.stopPropagation(); cgCorte = Math.min(POR_PAGINA, i + 1); cgPintar(); });
+            celda.appendChild(pin);
+            celda.addEventListener('dragstart', function (e) { cgArrastra = i; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', String(i)); } catch (x) { } setTimeout(function () { celda.classList.add('dfcg-mueve'); }, 0); });
+            celda.addEventListener('dragover', function (e) { if (cgArrastra == null) return; e.preventDefault(); var d = grid.querySelector('.dfcg-destino'); if (d && d !== celda) d.classList.remove('dfcg-destino'); celda.classList.add('dfcg-destino'); });
+            celda.addEventListener('drop', function (e) {
+                e.preventDefault(); if (cgArrastra == null) return;
+                var de = cgArrastra, a = i; cgArrastra = null;
+                if (de === a) { cgPintar(); return; }
+                var item = cgLista.splice(de, 1)[0];
+                var corte = cgCorte - (de < cgCorte ? 1 : 0);
+                cgLista.splice(a, 0, item);
+                if (a < corte || (de < cgCorte && a <= corte)) corte++;
+                cgCorte = Math.max(0, Math.min(POR_PAGINA, corte));
+                cgPintar();
+            });
+            celda.addEventListener('dragend', function () { cgArrastra = null; celda.classList.remove('dfcg-mueve'); });
+            grid.appendChild(celda);
+            if (i === cgCorte - 1 && cgCorte < cgLista.length) grid.appendChild(el('div', 'dfcg-linea', '⬆ Principales · ⬇ Los demás de la fecha, en su orden normal'));
+        });
+    }
+    function abrirCuadricula() {
+        var f = filtroModal; if (!f) return;
+        var normales = cards().sort(function (a, b) { return idx(a) - idx(b); }).filter(function (c) { return coincide(c, f); });
+        var porN = {}; normales.forEach(function (c) { var k = norm(nombreDe(c)); if (!porN[k]) porN[k] = c; });
+        var usados = {}, primeros = [];
+        trabajo.forEach(function (n) { var c = porN[norm(n)]; if (c && !usados[idx(c)]) { usados[idx(c)] = 1; primeros.push(c); } });
+        cgLista = primeros.concat(normales.filter(function (c) { return !usados[idx(c)]; }));
+        cgCorte = primeros.length;
+        cgCerrar();
+        cg = el('div'); cg.id = 'dfCuadricula';
+        var cab = el('div', 'dfcg-cab');
+        cab.appendChild(el('h3', '', '🧱 ' + nombreFiltro(f)));
+        cab.appendChild(el('span', 'dfcg-estado'));
+        var bOk = boton('✔ Usar este orden', 'dfcg-ok'), bNo = boton('Cancelar', 'dfcg-no');
+        cab.appendChild(bOk); cab.appendChild(bNo);
+        cg.appendChild(cab);
+        cg.appendChild(el('p', 'dfcg-ayuda', 'Arrastra un producto y suéltalo sobre la posición donde lo quieres. Los que quedan en la parte dorada son los principales (máx. ' + POR_PAGINA + '); usa «📌 Principales hasta aquí» para mover el corte. Después presiona «Guardar» en el panel.'));
+        var cuerpo = el('div', 'dfcg-cuerpo'); cuerpo.appendChild(el('div', 'dfcg-grid')); cg.appendChild(cuerpo);
+        bNo.addEventListener('click', cgCerrar);
+        bOk.addEventListener('click', function () {
+            trabajo = limpiar(cgLista.slice(0, cgCorte).map(nombreDe));
+            cgCerrar(); pintarPanel(); msg('Orden listo: presiona «Guardar» para publicarlo.');
+        });
+        document.body.appendChild(cg);
+        cgPintar();
+    }
+
     function abrirPanel() {
         if (!esAdmin()) { aviso('Tu sesión no está autorizada.'); return; }
         var f = filtroActivo(); if (!f) return;
