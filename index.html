@@ -394,7 +394,6 @@
             <p class="privacidad-parrafo">Este sitio <strong>no utiliza cookies propias</strong> de rastreo o publicidad. Sin embargo, utiliza <strong>almacenamiento local del navegador (localStorage)</strong> para guardar:</p>
             <ul class="privacidad-lista">
                 <li>Preferencia de modo oscuro o claro.</li>
-                <li>Sección de inicio preferida (productos o biografía).</li>
                 <li>Datos de sesión del usuario autenticado (nombre, foto, correo) de manera local como respaldo.</li>
             </ul>
             <p class="privacidad-parrafo">Estos datos <strong>no salen de tu dispositivo</strong> salvo los que Firebase gestiona para la autenticación. Puedes eliminarlos en cualquier momento limpiando el almacenamiento del navegador en la configuración de tu dispositivo.</p>
@@ -1008,18 +1007,6 @@
                     <span>🌙 Modo oscuro</span>
                     <div class="toggle-interruptor-drawer" id="toggleOscuroDrawer"></div>
                 </button>
-                <!-- Preferencia de página de inicio -->
-                <p style="font-size:0.75rem; font-weight:700; color:#aaa; text-transform:uppercase; letter-spacing:0.7px; margin:10px 0 6px;">🏠 Página de inicio</p>
-                <div style="display:flex; gap:6px;">
-                    <button id="btnInicioProductos" class="drawer-sub-btn" onclick="setPaginaInicio('productos')"
-                        style="flex:1; font-size:0.8rem; padding:8px 6px;">
-                        🛍️ Productos
-                    </button>
-                    <button id="btnInicioBiografia" class="drawer-sub-btn" onclick="setPaginaInicio('biografia')"
-                        style="flex:1; font-size:0.8rem; padding:8px 6px;">
-                        🕯️ Biografía
-                    </button>
-                </div>
                 <a href="https://wa.me/524431469161?text=Hola,%20me%20interesa%20una%20vela"
                    target="_blank" style="text-decoration:none; margin-top:6px; display:block;">
                     <button class="drawer-sub-btn" style="width:100%; background:#e8fef0; border-color:#25D366; color:#128c35;">
@@ -1197,36 +1184,6 @@
         </div>
     </div>
 
-    <!-- ===== BARRA DE PÍLDORAS: BIOGRAFÍA / OFERTAS / MÁS VENDIDOS ===== -->
-    <div class="pill-nav-barra" id="pillNavBarra">
-        <button class="pill-btn" id="pillBiografia" onclick="activarPill('biografia')">
-            <span style="font-size:2.25rem; line-height:1;">🕯️</span>
-            <span class="pill-btn-label">Biografía</span>
-        </button>
-        <button class="pill-btn" id="pillProductos" onclick="activarPill('productos')">
-            <span style="font-size:2.25rem; line-height:1;">🛍️</span>
-            <span class="pill-btn-label">Catálogo</span>
-        </button>
-    </div>
-
-    <!-- Panel Biografía: Empresa familiar + páginas de Yesos Fer y Yesos Polo -->
-    <div class="pill-panel" id="panelPillBiografia">
-        <div class="pill-panel-inner">
-            <h2 class="fam-titulo">Empresa Familiar Kukúmita</h2>
-            <p class="fam-texto">También vendemos figuras de yeso. Pueden contactar a mi hijo o a mi hija, Polo o Fer a través de sus páginas web.</p>
-            <div class="fam-yesos">
-                <a class="fam-yeso" href="https://dulcefer.github.io/yesosferkukumita/" target="_blank" rel="noopener nofollow" title="Visitar Yesos Fer Kukumita">
-                    <img src="imagenes/yesosferperfil.webp" alt="Yesos Fer Kukumita — visitar página" onerror="this.style.display='none';">
-                    <span class="fam-yeso-nombre">Yesos Fer</span>
-                </a>
-                <a class="fam-yeso" href="https://elpologr.github.io/yesospolokukumita/" target="_blank" rel="noopener nofollow" title="Visitar Yesos Polo Kukumita">
-                    <img src="imagenes/yesospoloperfil.webp" alt="Yesos Polo Kukumita — visitar página" onerror="this.style.display='none';">
-                    <span class="fam-yeso-nombre">Yesos Polo</span>
-                </a>
-            </div>
-        </div>
-    </div>
-
     <!-- Panel Ofertas — carrusel dinámico -->
     <div class="pill-panel" id="panelPillOfertas">
         <div class="pill-panel-inner">
@@ -1291,11 +1248,11 @@
                     <span class="btn-modo-velas-emoji">🔎</span>
                     <span class="btn-modo-velas-label">Filtros de<br>productos</span>
                 </button>
-                <button class="btn-modo-velas btn-modo-extra btn-modo-ofertas" id="btnModoOfertas" onclick="activarPill('ofertas'); document.getElementById('pillNavBarra').scrollIntoView({behavior:'smooth', block:'start'});">
+                <button class="btn-modo-velas btn-modo-extra btn-modo-ofertas" id="btnModoOfertas" onclick="activarPill('ofertas'); var _p=document.getElementById('panelPillOfertas'); if(_p) _p.scrollIntoView({behavior:'smooth', block:'start'});">
                     <span class="btn-modo-velas-emoji">🏷️</span>
                     <span class="btn-modo-velas-label">Ofertas</span>
                 </button>
-                <button class="btn-modo-velas btn-modo-extra btn-modo-masvendidos" id="btnModoMasVendidos" onclick="activarPill('masvendidos'); document.getElementById('pillNavBarra').scrollIntoView({behavior:'smooth', block:'start'});">
+                <button class="btn-modo-velas btn-modo-extra btn-modo-masvendidos" id="btnModoMasVendidos" onclick="activarPill('masvendidos'); var _p=document.getElementById('panelPillMasVendidos'); if(_p) _p.scrollIntoView({behavior:'smooth', block:'start'});">
                     <span class="btn-modo-velas-emoji">🏆</span>
                     <span class="btn-modo-velas-label">Más Vendidos</span>
                 </button>
@@ -2286,9 +2243,10 @@
 <script src="portada.js?v=2"></script>
 <script src="cuadricula.js?v=5"></script>
 <script src="mesas.js?v=10"></script>
-<script src="festividades.js?v=1"></script>
+<script src="festividades.js?v=2"></script>
 <script src="destacados-fechas.js?v=1"></script>
 <script src="editar-recorte-principal.js?v=1"></script>
+<script src="historial-atras.js?v=1"></script>
 <script src="pwa-velas.js?v=1"></script>
 
     <!-- ── AUTO-FIX MÓVIL: detecta y elimina cualquier elemento que desborde el viewport ── -->

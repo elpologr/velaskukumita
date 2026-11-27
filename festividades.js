@@ -69,8 +69,8 @@
             '#zonaFestividades .fest-gear{position:absolute;right:2px;top:50%;transform:translateY(-50%);width:42px;height:42px;border:1.5px solid #d4c5b8;border-radius:50%;background:#fff;font-size:20px;line-height:1;cursor:pointer}',
             '#zonaFestividades .fest-gear:hover{background:#e8ddd5}',
             '#zonaFestividades .fest-sub{margin:6px 0 14px;font-size:.85rem;color:#5c4d43}',
-            '#zonaFestividades .fest-carrusel{position:relative;max-width:993px;margin:0 auto}',   /* 5 botones de 189 px + 4 espacios de 12 px */
-            '#zonaFestividades .fest-fila{display:flex;flex-wrap:nowrap;gap:12px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;padding:4px 2px 8px;scroll-behavior:smooth}',
+            '#zonaFestividades .fest-carrusel{position:relative;max-width:993px;width:100%;margin:0 auto}',   /* 5 botones de 189 px + 4 espacios de 12 px */
+            '#zonaFestividades .fest-fila{display:flex;flex-wrap:nowrap!important;gap:12px;overflow-x:auto!important;width:100%;box-sizing:border-box;scroll-snap-type:x proximity;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;padding:4px 2px 8px;scroll-behavior:smooth}',
             '#zonaFestividades .fest-fila::-webkit-scrollbar{display:none}',
             '#zonaFestividades .fest-fila>:first-child{margin-left:auto}#zonaFestividades .fest-fila>:last-child{margin-right:auto}',   /* centra si caben todos; si no caben, no corta el primero */
             '#zonaFestividades .fest-btn{flex:0 0 auto;scroll-snap-align:start;width:min(189px,calc((100% - 12px) / 2));aspect-ratio:1/1;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;',
@@ -137,7 +137,7 @@
         var m = porFiltro();
         var lista = (cfg || []).map(function (f) { return m[f]; }).filter(Boolean);
         // La zona va justo después de los botones de Tienda / Bazar / Mesas: antes del primer panel o del catálogo que exista
-        var barra = document.getElementById('panelPillBiografia') || document.getElementById('panelPillOfertas') || document.getElementById('zona-catalogo');
+        var barra = document.getElementById('panelPillOfertas') || document.getElementById('zona-catalogo');
         if (!barra || !barra.parentNode) return;
         if (!lista.length && !admin) { if (zona) zona.style.display = 'none'; return; }
 
