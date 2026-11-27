@@ -17,7 +17,7 @@ const ARCHIVOS = [
   "app.js", "admin-producto-ui.js", "lista-precios-admin.js", "galeria-lista-precios.js", "descripciones-fijas.js",
   "sin-precio.js", "zonas-imagen.js", "portada.js", "cuadricula.js", "mesas.js", "pwa-velas.js",
   "manifest-velas.webmanifest",
-  "icono-180-velas.png", "icono-192-velas.png", "icono-512-velas.png", "icono-maskable-512-velas.png",
+  "imagenes/icono-180-velas.png", "imagenes/icono-192-velas.png", "imagenes/icono-512-velas.png", "imagenes/icono-maskable-512-velas.png",
   "imagenes/velalogo.webp",
 ];
 
